@@ -4,7 +4,6 @@ import { useState, useEffect } from "react"
 import { Card } from "@/components/ui/card"
 import { CompanySelector } from "@/components/auth/CompanySelector"
 import { WorkerSelector } from "@/components/auth/WorkerSelector"
-import { getAllCompanies } from "@/lib/companies/metadata"
 import { getCompanyWorkers } from "@/lib/companies/workers"
 import type { CompanyMetadata } from "@/lib/companies/metadata"
 import type { Worker } from "@/lib/auth/mockData"
@@ -26,8 +25,14 @@ export default function LoginPage() {
   useEffect(() => {
     async function loadCompanies() {
       try {
-        const allCompanies = await getAllCompanies()
-        setCompanies(allCompanies)
+        // Use API route instead of direct server action for better production compatibility
+        const response = await fetch("/api/companies")
+        if (response.ok) {
+          const data = await response.json()
+          setCompanies(data)
+        } else {
+          console.error("Failed to load companies:", response.statusText)
+        }
       } catch (error) {
         console.error("Error loading companies:", error)
       }

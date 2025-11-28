@@ -1,24 +1,9 @@
 {
   "node": {
-    "00d65cab2d2c6acbedd229aabb27df4af89284b766": {
-      "workers": {
-        "app/(auth)/login/page": {
-          "moduleId": "[project]/.next-internal/server/app/(auth)/login/page/actions.js { ACTIONS_MODULE0 => \"[project]/lib/companies/metadata.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/lib/companies/workers.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE2 => \"[project]/lib/auth/authServer.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
-          "async": false,
-          "exportedName": "getAllCompanies",
-          "filename": "lib/companies/metadata.ts"
-        }
-      },
-      "layer": {
-        "app/(auth)/login/page": "action-browser"
-      },
-      "exportedName": "getAllCompanies",
-      "filename": "lib/companies/metadata.ts"
-    },
     "40a0f5fbdc65e39265f0539e0044af3d7c60b4fca8": {
       "workers": {
         "app/(auth)/login/page": {
-          "moduleId": "[project]/.next-internal/server/app/(auth)/login/page/actions.js { ACTIONS_MODULE0 => \"[project]/lib/companies/metadata.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/lib/companies/workers.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE2 => \"[project]/lib/auth/authServer.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "moduleId": "[project]/.next-internal/server/app/(auth)/login/page/actions.js { ACTIONS_MODULE0 => \"[project]/lib/companies/workers.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/lib/auth/authServer.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
           "async": false,
           "exportedName": "getCompanyWorkers",
           "filename": "lib/companies/workers.ts"
@@ -33,7 +18,7 @@
     "706eaece57029aad276a30b25bf6e85547c101354f": {
       "workers": {
         "app/(auth)/login/page": {
-          "moduleId": "[project]/.next-internal/server/app/(auth)/login/page/actions.js { ACTIONS_MODULE0 => \"[project]/lib/companies/metadata.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/lib/companies/workers.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE2 => \"[project]/lib/auth/authServer.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "moduleId": "[project]/.next-internal/server/app/(auth)/login/page/actions.js { ACTIONS_MODULE0 => \"[project]/lib/companies/workers.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/lib/auth/authServer.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
           "async": false,
           "exportedName": "loginWorker",
           "filename": "lib/auth/authServer.ts"
