@@ -19,7 +19,7 @@ import { getDatabase } from "./client"
 export async function getCompanyCollection<T = any>(
   companyId: string,
   collectionName: string
-): Promise<Collection<T>> {
+): Promise<Collection<T & any>> {
   if (!companyId || !collectionName) {
     throw new Error("companyId and collectionName are required")
   }
@@ -27,7 +27,7 @@ export async function getCompanyCollection<T = any>(
   const db = await getDatabase()
   const collectionNameWithPrefix = `company_${companyId}_${collectionName}`
   
-  return db.collection<T>(collectionNameWithPrefix)
+  return db.collection<T & any>(collectionNameWithPrefix)
 }
 
 /**
@@ -57,7 +57,7 @@ export async function getCompaniesCollection() {
  * Creates indexes for better query performance
  */
 export async function ensureCompanyCollections(companyId: string) {
-  const collections = ["logs", "workers", "sessions", "settings"]
+  const collections = ["logs", "workers", "sessions", "settings", "products"]
   
   for (const collectionName of collections) {
     const collection = await getCompanyCollection(companyId, collectionName)
@@ -74,6 +74,9 @@ export async function ensureCompanyCollections(companyId: string) {
     } else if (collectionName === "sessions") {
       await collection.createIndex({ workerId: 1 })
       await collection.createIndex({ createdAt: -1 })
+    } else if (collectionName === "products") {
+      await collection.createIndex({ value: 1 }, { unique: true })
+      await collection.createIndex({ isCustom: 1 })
     }
   }
 }

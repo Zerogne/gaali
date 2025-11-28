@@ -1,0 +1,466 @@
+module.exports = [
+"[externals]/next/dist/compiled/next-server/app-route-turbo.runtime.dev.js [external] (next/dist/compiled/next-server/app-route-turbo.runtime.dev.js, cjs)", ((__turbopack_context__, module, exports) => {
+
+const mod = __turbopack_context__.x("next/dist/compiled/next-server/app-route-turbo.runtime.dev.js", () => require("next/dist/compiled/next-server/app-route-turbo.runtime.dev.js"));
+
+module.exports = mod;
+}),
+"[externals]/next/dist/compiled/@opentelemetry/api [external] (next/dist/compiled/@opentelemetry/api, cjs)", ((__turbopack_context__, module, exports) => {
+
+const mod = __turbopack_context__.x("next/dist/compiled/@opentelemetry/api", () => require("next/dist/compiled/@opentelemetry/api"));
+
+module.exports = mod;
+}),
+"[externals]/next/dist/compiled/next-server/app-page-turbo.runtime.dev.js [external] (next/dist/compiled/next-server/app-page-turbo.runtime.dev.js, cjs)", ((__turbopack_context__, module, exports) => {
+
+const mod = __turbopack_context__.x("next/dist/compiled/next-server/app-page-turbo.runtime.dev.js", () => require("next/dist/compiled/next-server/app-page-turbo.runtime.dev.js"));
+
+module.exports = mod;
+}),
+"[externals]/next/dist/server/app-render/work-unit-async-storage.external.js [external] (next/dist/server/app-render/work-unit-async-storage.external.js, cjs)", ((__turbopack_context__, module, exports) => {
+
+const mod = __turbopack_context__.x("next/dist/server/app-render/work-unit-async-storage.external.js", () => require("next/dist/server/app-render/work-unit-async-storage.external.js"));
+
+module.exports = mod;
+}),
+"[externals]/next/dist/server/app-render/work-async-storage.external.js [external] (next/dist/server/app-render/work-async-storage.external.js, cjs)", ((__turbopack_context__, module, exports) => {
+
+const mod = __turbopack_context__.x("next/dist/server/app-render/work-async-storage.external.js", () => require("next/dist/server/app-render/work-async-storage.external.js"));
+
+module.exports = mod;
+}),
+"[externals]/next/dist/shared/lib/no-fallback-error.external.js [external] (next/dist/shared/lib/no-fallback-error.external.js, cjs)", ((__turbopack_context__, module, exports) => {
+
+const mod = __turbopack_context__.x("next/dist/shared/lib/no-fallback-error.external.js", () => require("next/dist/shared/lib/no-fallback-error.external.js"));
+
+module.exports = mod;
+}),
+"[externals]/next/dist/server/app-render/after-task-async-storage.external.js [external] (next/dist/server/app-render/after-task-async-storage.external.js, cjs)", ((__turbopack_context__, module, exports) => {
+
+const mod = __turbopack_context__.x("next/dist/server/app-render/after-task-async-storage.external.js", () => require("next/dist/server/app-render/after-task-async-storage.external.js"));
+
+module.exports = mod;
+}),
+"[externals]/mongodb [external] (mongodb, cjs)", ((__turbopack_context__, module, exports) => {
+
+const mod = __turbopack_context__.x("mongodb", () => require("mongodb"));
+
+module.exports = mod;
+}),
+"[project]/lib/db/client.ts [app-route] (ecmascript)", ((__turbopack_context__) => {
+"use strict";
+
+__turbopack_context__.s([
+    "default",
+    ()=>__TURBOPACK__default__export__,
+    "getDatabase",
+    ()=>getDatabase
+]);
+var __TURBOPACK__imported__module__$5b$externals$5d2f$mongodb__$5b$external$5d$__$28$mongodb$2c$__cjs$29$__ = __turbopack_context__.i("[externals]/mongodb [external] (mongodb, cjs)");
+;
+if (!process.env.MONGODB_URI) {
+    throw new Error('Invalid/Missing environment variable: "MONGODB_URI"');
+}
+const uri = process.env.MONGODB_URI;
+const options = {};
+let client;
+let clientPromise;
+if ("TURBOPACK compile-time truthy", 1) {
+    // In development mode, use a global variable so that the value
+    // is preserved across module reloads caused by HMR (Hot Module Replacement).
+    let globalWithMongo = /*TURBOPACK member replacement*/ __turbopack_context__.g;
+    if (!globalWithMongo._mongoClientPromise) {
+        client = new __TURBOPACK__imported__module__$5b$externals$5d2f$mongodb__$5b$external$5d$__$28$mongodb$2c$__cjs$29$__["MongoClient"](uri, options);
+        globalWithMongo._mongoClientPromise = client.connect();
+    }
+    clientPromise = globalWithMongo._mongoClientPromise;
+} else //TURBOPACK unreachable
+;
+const __TURBOPACK__default__export__ = clientPromise;
+async function getDatabase() {
+    const client = await clientPromise;
+    return client.db(process.env.MONGODB_DB_NAME || "truck-weighing-dashboard");
+}
+}),
+"[project]/lib/db/companyDb.ts [app-route] (ecmascript)", ((__turbopack_context__) => {
+"use strict";
+
+__turbopack_context__.s([
+    "ensureCompanyCollections",
+    ()=>ensureCompanyCollections,
+    "getCompaniesCollection",
+    ()=>getCompaniesCollection,
+    "getCompanyCollection",
+    ()=>getCompanyCollection,
+    "getCompanyDB",
+    ()=>getCompanyDB
+]);
+var __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$db$2f$client$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/lib/db/client.ts [app-route] (ecmascript)");
+;
+async function getCompanyCollection(companyId, collectionName) {
+    if (!companyId || !collectionName) {
+        throw new Error("companyId and collectionName are required");
+    }
+    const db = await (0, __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$db$2f$client$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["getDatabase"])();
+    const collectionNameWithPrefix = `company_${companyId}_${collectionName}`;
+    return db.collection(collectionNameWithPrefix);
+}
+async function getCompanyDB(companyId) {
+    if (!companyId) {
+        throw new Error("companyId is required");
+    }
+    return (0, __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$db$2f$client$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["getDatabase"])();
+}
+async function getCompaniesCollection() {
+    const db = await (0, __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$db$2f$client$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["getDatabase"])();
+    return db.collection("companies");
+}
+async function ensureCompanyCollections(companyId) {
+    const collections = [
+        "logs",
+        "workers",
+        "sessions",
+        "settings",
+        "products"
+    ];
+    for (const collectionName of collections){
+        const collection = await getCompanyCollection(companyId, collectionName);
+        // Create indexes for common queries
+        if (collectionName === "logs") {
+            await collection.createIndex({
+                createdAt: -1
+            });
+            await collection.createIndex({
+                direction: 1
+            });
+            await collection.createIndex({
+                sentToCustoms: 1
+            });
+            await collection.createIndex({
+                plate: 1
+            });
+        } else if (collectionName === "workers") {
+            await collection.createIndex({
+                companyId: 1
+            });
+            await collection.createIndex({
+                id: 1
+            }, {
+                unique: true
+            });
+        } else if (collectionName === "sessions") {
+            await collection.createIndex({
+                workerId: 1
+            });
+            await collection.createIndex({
+                createdAt: -1
+            });
+        } else if (collectionName === "products") {
+            await collection.createIndex({
+                value: 1
+            }, {
+                unique: true
+            });
+            await collection.createIndex({
+                isCustom: 1
+            });
+        }
+    }
+}
+}),
+"[externals]/next/dist/server/app-render/action-async-storage.external.js [external] (next/dist/server/app-render/action-async-storage.external.js, cjs)", ((__turbopack_context__, module, exports) => {
+
+const mod = __turbopack_context__.x("next/dist/server/app-render/action-async-storage.external.js", () => require("next/dist/server/app-render/action-async-storage.external.js"));
+
+module.exports = mod;
+}),
+"[project]/lib/auth/session.ts [app-route] (ecmascript)", ((__turbopack_context__) => {
+"use strict";
+
+/* __next_internal_action_entry_do_not_use__ [{"000715302b051ea7b5623840b0db766a97d00b9db2":"isAuthenticated","0073376b4ecb99a15d5ff9cefb5c313ab32d6bbb74":"getActiveCompany","00d0b42c47ec01bb90079d5ec43c87b2e0447eb268":"getSession","00fbbfe765f52a63405acb369adb3b5da9afdf9aa7":"clearSession","6073ef65211c37ee1746a85099ae8d1a41d91f8c10":"setSession"},"",""] */ __turbopack_context__.s([
+    "clearSession",
+    ()=>clearSession,
+    "getActiveCompany",
+    ()=>getActiveCompany,
+    "getSession",
+    ()=>getSession,
+    "isAuthenticated",
+    ()=>isAuthenticated,
+    "setSession",
+    ()=>setSession
+]);
+var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$build$2f$webpack$2f$loaders$2f$next$2d$flight$2d$loader$2f$server$2d$reference$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/next/dist/build/webpack/loaders/next-flight-loader/server-reference.js [app-route] (ecmascript)");
+var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$headers$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/next/headers.js [app-route] (ecmascript)");
+var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$api$2f$navigation$2e$react$2d$server$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__$3c$locals$3e$__ = __turbopack_context__.i("[project]/node_modules/next/dist/api/navigation.react-server.js [app-route] (ecmascript) <locals>");
+var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$client$2f$components$2f$navigation$2e$react$2d$server$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/next/dist/client/components/navigation.react-server.js [app-route] (ecmascript)");
+var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$build$2f$webpack$2f$loaders$2f$next$2d$flight$2d$loader$2f$action$2d$validate$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/next/dist/build/webpack/loaders/next-flight-loader/action-validate.js [app-route] (ecmascript)");
+;
+;
+;
+const SESSION_COOKIE_NAME = "truck-dashboard-session";
+const COMPANY_ID_COOKIE = "company-id";
+const WORKER_ID_COOKIE = "worker-id";
+async function getActiveCompany() {
+    const cookieStore = await (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$headers$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["cookies"])();
+    const companyId = cookieStore.get(COMPANY_ID_COOKIE)?.value;
+    if (!companyId) {
+        (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$client$2f$components$2f$navigation$2e$react$2d$server$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["redirect"])("/login");
+    }
+    return companyId;
+}
+async function getSession() {
+    const cookieStore = await (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$headers$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["cookies"])();
+    const companyId = cookieStore.get(COMPANY_ID_COOKIE)?.value;
+    const workerId = cookieStore.get(WORKER_ID_COOKIE)?.value;
+    if (!companyId || !workerId) {
+        return null;
+    }
+    return {
+        companyId,
+        workerId
+    };
+}
+async function setSession(companyId, workerId) {
+    const cookieStore = await (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$headers$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["cookies"])();
+    // Set cookies with httpOnly for security
+    cookieStore.set(COMPANY_ID_COOKIE, companyId, {
+        httpOnly: true,
+        secure: ("TURBOPACK compile-time value", "development") === "production",
+        sameSite: "lax",
+        maxAge: 60 * 60 * 24 * 7,
+        path: "/"
+    });
+    cookieStore.set(WORKER_ID_COOKIE, workerId, {
+        httpOnly: true,
+        secure: ("TURBOPACK compile-time value", "development") === "production",
+        sameSite: "lax",
+        maxAge: 60 * 60 * 24 * 7,
+        path: "/"
+    });
+}
+async function clearSession() {
+    const cookieStore = await (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$headers$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["cookies"])();
+    cookieStore.delete(COMPANY_ID_COOKIE);
+    cookieStore.delete(WORKER_ID_COOKIE);
+}
+async function isAuthenticated() {
+    const session = await getSession();
+    return session !== null;
+}
+;
+(0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$build$2f$webpack$2f$loaders$2f$next$2d$flight$2d$loader$2f$action$2d$validate$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["ensureServerEntryExports"])([
+    getActiveCompany,
+    getSession,
+    setSession,
+    clearSession,
+    isAuthenticated
+]);
+(0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$build$2f$webpack$2f$loaders$2f$next$2d$flight$2d$loader$2f$server$2d$reference$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["registerServerReference"])(getActiveCompany, "0073376b4ecb99a15d5ff9cefb5c313ab32d6bbb74", null);
+(0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$build$2f$webpack$2f$loaders$2f$next$2d$flight$2d$loader$2f$server$2d$reference$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["registerServerReference"])(getSession, "00d0b42c47ec01bb90079d5ec43c87b2e0447eb268", null);
+(0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$build$2f$webpack$2f$loaders$2f$next$2d$flight$2d$loader$2f$server$2d$reference$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["registerServerReference"])(setSession, "6073ef65211c37ee1746a85099ae8d1a41d91f8c10", null);
+(0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$build$2f$webpack$2f$loaders$2f$next$2d$flight$2d$loader$2f$server$2d$reference$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["registerServerReference"])(clearSession, "00fbbfe765f52a63405acb369adb3b5da9afdf9aa7", null);
+(0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$build$2f$webpack$2f$loaders$2f$next$2d$flight$2d$loader$2f$server$2d$reference$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["registerServerReference"])(isAuthenticated, "000715302b051ea7b5623840b0db766a97d00b9db2", null);
+}),
+"[project]/lib/products/products.ts [app-route] (ecmascript)", ((__turbopack_context__) => {
+"use strict";
+
+/* __next_internal_action_entry_do_not_use__ [{"005ebce003b6395f45a72dc0b1289e87c1f53c4f09":"getProducts","4012d929aa14781b6eab2dfc40a9eb4a2b9e069ce3":"deleteProduct","409f0e7d0af18076bc397bc86df9601fc62d0f6321":"addProduct","40b690501fdf9a548c6b6f9cab15e3faea9a5e7278":"getAllProductsForCompany"},"",""] */ __turbopack_context__.s([
+    "addProduct",
+    ()=>addProduct,
+    "deleteProduct",
+    ()=>deleteProduct,
+    "getAllProductsForCompany",
+    ()=>getAllProductsForCompany,
+    "getProducts",
+    ()=>getProducts
+]);
+var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$build$2f$webpack$2f$loaders$2f$next$2d$flight$2d$loader$2f$server$2d$reference$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/next/dist/build/webpack/loaders/next-flight-loader/server-reference.js [app-route] (ecmascript)");
+var __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$db$2f$companyDb$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/lib/db/companyDb.ts [app-route] (ecmascript)");
+var __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$auth$2f$session$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/lib/auth/session.ts [app-route] (ecmascript)");
+var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$build$2f$webpack$2f$loaders$2f$next$2d$flight$2d$loader$2f$action$2d$validate$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/next/dist/build/webpack/loaders/next-flight-loader/action-validate.js [app-route] (ecmascript)");
+;
+;
+;
+// Default products that are always available
+const DEFAULT_PRODUCTS = [
+    {
+        value: "industrial",
+        label: "Аж үйлдвэрийн тоног төхөөрөмж"
+    },
+    {
+        value: "food",
+        label: "Хүнсний бүтээгдэхүүн"
+    },
+    {
+        value: "textiles",
+        label: "Текстиль"
+    },
+    {
+        value: "electronics",
+        label: "Электроник"
+    },
+    {
+        value: "construction",
+        label: "Барилгын материал"
+    },
+    {
+        value: "machinery",
+        label: "Машин механизм"
+    },
+    {
+        value: "chemicals",
+        label: "Химийн бодис"
+    },
+    {
+        value: "other",
+        label: "Бусад"
+    }
+];
+async function getProducts() {
+    const companyId = await (0, __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$auth$2f$session$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["getActiveCompany"])();
+    const productsCollection = await (0, __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$db$2f$companyDb$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["getCompanyCollection"])(companyId, "products");
+    // Get custom products from database
+    const customProducts = await productsCollection.find({}).toArray();
+    // Serialize and combine with default products
+    const defaultProducts = DEFAULT_PRODUCTS.map((p)=>({
+            ...p,
+            id: `default-${p.value}`,
+            isCustom: false
+        }));
+    const customProductsSerialized = customProducts.map((p)=>{
+        const { _id, ...productData } = p;
+        return {
+            ...productData,
+            isCustom: true
+        };
+    });
+    // Combine: default products first, then custom products
+    return [
+        ...defaultProducts,
+        ...customProductsSerialized
+    ];
+}
+async function addProduct(label) {
+    const companyId = await (0, __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$auth$2f$session$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["getActiveCompany"])();
+    const productsCollection = await (0, __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$db$2f$companyDb$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["getCompanyCollection"])(companyId, "products");
+    // Generate value from label (lowercase, replace spaces with hyphens)
+    const value = label.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "");
+    // Check if product with this value already exists
+    const existing = await productsCollection.findOne({
+        value
+    });
+    if (existing) {
+        throw new Error("Product with this name already exists");
+    }
+    const product = {
+        id: `custom-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+        value,
+        label,
+        isCustom: true,
+        createdAt: new Date().toISOString()
+    };
+    await productsCollection.insertOne(product);
+    return product;
+}
+async function deleteProduct(productId) {
+    const companyId = await (0, __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$auth$2f$session$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["getActiveCompany"])();
+    const productsCollection = await (0, __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$db$2f$companyDb$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["getCompanyCollection"])(companyId, "products");
+    // Only allow deleting custom products
+    await productsCollection.deleteOne({
+        id: productId,
+        isCustom: true
+    });
+}
+async function getAllProductsForCompany(companyId) {
+    const productsCollection = await (0, __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$db$2f$companyDb$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["getCompanyCollection"])(companyId, "products");
+    const customProducts = await productsCollection.find({}).toArray();
+    const defaultProducts = DEFAULT_PRODUCTS.map((p)=>({
+            ...p,
+            id: `default-${p.value}`,
+            isCustom: false
+        }));
+    const customProductsSerialized = customProducts.map((p)=>{
+        const { _id, ...productData } = p;
+        return {
+            ...productData,
+            isCustom: true
+        };
+    });
+    return [
+        ...defaultProducts,
+        ...customProductsSerialized
+    ];
+}
+;
+(0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$build$2f$webpack$2f$loaders$2f$next$2d$flight$2d$loader$2f$action$2d$validate$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["ensureServerEntryExports"])([
+    getProducts,
+    addProduct,
+    deleteProduct,
+    getAllProductsForCompany
+]);
+(0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$build$2f$webpack$2f$loaders$2f$next$2d$flight$2d$loader$2f$server$2d$reference$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["registerServerReference"])(getProducts, "005ebce003b6395f45a72dc0b1289e87c1f53c4f09", null);
+(0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$build$2f$webpack$2f$loaders$2f$next$2d$flight$2d$loader$2f$server$2d$reference$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["registerServerReference"])(addProduct, "409f0e7d0af18076bc397bc86df9601fc62d0f6321", null);
+(0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$build$2f$webpack$2f$loaders$2f$next$2d$flight$2d$loader$2f$server$2d$reference$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["registerServerReference"])(deleteProduct, "4012d929aa14781b6eab2dfc40a9eb4a2b9e069ce3", null);
+(0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$build$2f$webpack$2f$loaders$2f$next$2d$flight$2d$loader$2f$server$2d$reference$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["registerServerReference"])(getAllProductsForCompany, "40b690501fdf9a548c6b6f9cab15e3faea9a5e7278", null);
+}),
+"[project]/app/api/products/route.ts [app-route] (ecmascript)", ((__turbopack_context__) => {
+"use strict";
+
+__turbopack_context__.s([
+    "GET",
+    ()=>GET,
+    "POST",
+    ()=>POST
+]);
+var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$server$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/next/server.js [app-route] (ecmascript)");
+var __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$products$2f$products$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/lib/products/products.ts [app-route] (ecmascript)");
+;
+;
+async function GET() {
+    try {
+        const products = await (0, __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$products$2f$products$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["getProducts"])();
+        return __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$server$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["NextResponse"].json(products);
+    } catch (error) {
+        console.error("Error getting products:", error);
+        return __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$server$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["NextResponse"].json({
+            error: "Failed to get products"
+        }, {
+            status: 500
+        });
+    }
+}
+async function POST(request) {
+    try {
+        const body = await request.json();
+        const { label } = body;
+        if (!label || typeof label !== "string" || !label.trim()) {
+            return __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$server$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["NextResponse"].json({
+                error: "Product label is required"
+            }, {
+                status: 400
+            });
+        }
+        const product = await (0, __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$products$2f$products$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["addProduct"])(label.trim());
+        return __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$server$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["NextResponse"].json(product, {
+            status: 201
+        });
+    } catch (error) {
+        console.error("Error adding product:", error);
+        if (error instanceof Error && error.message.includes("already exists")) {
+            return __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$server$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["NextResponse"].json({
+                error: error.message
+            }, {
+                status: 409
+            });
+        }
+        return __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$server$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["NextResponse"].json({
+            error: "Failed to add product"
+        }, {
+            status: 500
+        });
+    }
+}
+}),
+];
+
+//# sourceMappingURL=%5Broot-of-the-server%5D__c2bc7c76._.js.map

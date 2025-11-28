@@ -78,7 +78,8 @@ async function ensureCompanyCollections(companyId) {
         "logs",
         "workers",
         "sessions",
-        "settings"
+        "settings",
+        "products"
     ];
     for (const collectionName of collections){
         const collection = await getCompanyCollection(companyId, collectionName);
@@ -111,6 +112,15 @@ async function ensureCompanyCollections(companyId) {
             });
             await collection.createIndex({
                 createdAt: -1
+            });
+        } else if (collectionName === "products") {
+            await collection.createIndex({
+                value: 1
+            }, {
+                unique: true
+            });
+            await collection.createIndex({
+                isCustom: 1
             });
         }
     }

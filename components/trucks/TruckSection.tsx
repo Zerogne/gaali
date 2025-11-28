@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -12,6 +12,14 @@ import { Camera, CheckCircle2, Clock, Zap, Loader2 } from "lucide-react"
 import type { Direction, TruckLog } from "@/lib/types"
 import { saveTruckLog, sendTruckLogToCustoms } from "@/lib/api"
 import { useToast } from "@/hooks/use-toast"
+import { ProductManager } from "@/components/products/ProductManager"
+
+interface Product {
+  id: string
+  value: string
+  label: string
+  isCustom: boolean
+}
 
 interface TruckSectionProps {
   direction: Direction
@@ -25,6 +33,8 @@ export function TruckSection({ direction, onSave, onSend }: TruckSectionProps) {
   const [isSending, setIsSending] = useState(false)
   const [savedLogId, setSavedLogId] = useState<string | null>(null)
   const [errors, setErrors] = useState<Record<string, string>>({})
+  const [products, setProducts] = useState<Product[]>([])
+  const [isLoadingProducts, setIsLoadingProducts] = useState(true)
 
   // Form state
   const [plate, setPlate] = useState("Б1234АВ")
@@ -39,6 +49,43 @@ export function TruckSection({ direction, onSave, onSend }: TruckSectionProps) {
   const [destination, setDestination] = useState("")
   const [senderOrganization, setSenderOrganization] = useState("")
   const [receiverOrganization, setReceiverOrganization] = useState("")
+
+  // Load products on mount
+  useEffect(() => {
+    async function loadProducts() {
+      try {
+        setIsLoadingProducts(true)
+        const response = await fetch("/api/products")
+        if (response.ok) {
+          const data = await response.json()
+          setProducts(data)
+        }
+      } catch (error) {
+        console.error("Error loading products:", error)
+      } finally {
+        setIsLoadingProducts(false)
+      }
+    }
+
+    loadProducts()
+  }, [])
+
+  const handleProductAdded = () => {
+    // Reload products after adding/deleting
+    async function reloadProducts() {
+      try {
+        const response = await fetch("/api/products")
+        if (response.ok) {
+          const data = await response.json()
+          setProducts(data)
+        }
+      } catch (error) {
+        console.error("Error reloading products:", error)
+      }
+    }
+
+    reloadProducts()
+  }
 
   // Mock plate recognition data
   const confidence = 98.5
@@ -302,22 +349,26 @@ export function TruckSection({ direction, onSave, onSend }: TruckSectionProps) {
           </div>
 
           <div>
-            <Label htmlFor={`cargo-${direction}`} className="text-sm font-medium text-gray-700">
-              Бүтээгдэхүүн (Cargo)
-            </Label>
-            <Select value={cargoType} onValueChange={(value) => handleFieldChange(setCargoType, value)}>
+            <div className="flex items-center justify-between mb-2">
+              <Label htmlFor={`cargo-${direction}`} className="text-sm font-medium text-gray-700">
+                Бүтээгдэхүүн (Cargo)
+              </Label>
+              <ProductManager products={products} onProductAdded={handleProductAdded} />
+            </div>
+            <Select 
+              value={cargoType} 
+              onValueChange={(value) => handleFieldChange(setCargoType, value)}
+              disabled={isLoadingProducts}
+            >
               <SelectTrigger className="mt-1 bg-white border-gray-300 focus:border-blue-500 focus:ring-blue-500">
-                <SelectValue placeholder="Бүтээгдэхүүн сонгох" />
+                <SelectValue placeholder={isLoadingProducts ? "Loading products..." : "Бүтээгдэхүүн сонгох"} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="industrial">Аж үйлдвэрийн тоног төхөөрөмж</SelectItem>
-                <SelectItem value="food">Хүнсний бүтээгдэхүүн</SelectItem>
-                <SelectItem value="textiles">Текстиль</SelectItem>
-                <SelectItem value="electronics">Электроник</SelectItem>
-                <SelectItem value="construction">Барилгын материал</SelectItem>
-                <SelectItem value="machinery">Машин механизм</SelectItem>
-                <SelectItem value="chemicals">Химийн бодис</SelectItem>
-                <SelectItem value="other">Бусад</SelectItem>
+                {products.map((product: Product) => (
+                  <SelectItem key={product.id} value={product.value}>
+                    {product.label}
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
             {errors.cargoType && (
