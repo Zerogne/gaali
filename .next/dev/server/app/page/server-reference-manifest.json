@@ -1,4 +1,65 @@
 {
-  "node": {},
+  "node": {
+    "003823d3910066eeba55100ec7665dcabbb8bf509e": {
+      "workers": {
+        "app/page": {
+          "moduleId": "[project]/.next-internal/server/app/page/actions.js { ACTIONS_MODULE0 => \"[project]/lib/api.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/lib/auth/authServer.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false,
+          "exportedName": "getTruckLogs",
+          "filename": "lib/api.ts"
+        }
+      },
+      "layer": {
+        "app/page": "action-browser"
+      },
+      "exportedName": "getTruckLogs",
+      "filename": "lib/api.ts"
+    },
+    "40d4e21626266eb13b2afb47fa55c2fcffae3980c2": {
+      "workers": {
+        "app/page": {
+          "moduleId": "[project]/.next-internal/server/app/page/actions.js { ACTIONS_MODULE0 => \"[project]/lib/api.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/lib/auth/authServer.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false,
+          "exportedName": "saveTruckLog",
+          "filename": "lib/api.ts"
+        }
+      },
+      "layer": {
+        "app/page": "action-browser"
+      },
+      "exportedName": "saveTruckLog",
+      "filename": "lib/api.ts"
+    },
+    "40a2ead62e15f1c40ce6d586420a2c191a6a5596a9": {
+      "workers": {
+        "app/page": {
+          "moduleId": "[project]/.next-internal/server/app/page/actions.js { ACTIONS_MODULE0 => \"[project]/lib/api.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/lib/auth/authServer.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false,
+          "exportedName": "sendTruckLogToCustoms",
+          "filename": "lib/api.ts"
+        }
+      },
+      "layer": {
+        "app/page": "action-browser"
+      },
+      "exportedName": "sendTruckLogToCustoms",
+      "filename": "lib/api.ts"
+    },
+    "00db69d86cc3b8562947f5f5012a7dc7936b0621ed": {
+      "workers": {
+        "app/page": {
+          "moduleId": "[project]/.next-internal/server/app/page/actions.js { ACTIONS_MODULE0 => \"[project]/lib/api.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/lib/auth/authServer.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false,
+          "exportedName": "logout",
+          "filename": "lib/auth/authServer.ts"
+        }
+      },
+      "layer": {
+        "app/page": "action-browser"
+      },
+      "exportedName": "logout",
+      "filename": "lib/auth/authServer.ts"
+    }
+  },
   "edge": {}
 }

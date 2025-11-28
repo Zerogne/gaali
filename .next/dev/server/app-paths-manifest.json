@@ -1,6 +1,5 @@
 {
-  "/history/page": "app/history/page.js",
-  "/page": "app/page.js",
-  "/reports/page": "app/reports/page.js",
-  "/settings/page": "app/settings/page.js"
+  "/(auth)/login/page": "app/(auth)/login/page.js",
+  "/api/user/route": "app/api/user/route.js",
+  "/page": "app/page.js"
 }
