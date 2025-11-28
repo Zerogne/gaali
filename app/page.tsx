@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import { useRouter } from "next/navigation"
 import { Sidebar } from "@/components/layout/Sidebar"
 import { TopBar } from "@/components/layout/TopBar"
 import { AlertBanner } from "@/components/layout/AlertBanner"
@@ -11,11 +12,35 @@ import { getTruckLogs } from "@/lib/api"
 import type { TruckLog } from "@/lib/types"
 
 export default function DashboardPage() {
+  const router = useRouter()
   const [logs, setLogs] = useState<TruckLog[]>([])
   const [isLoading, setIsLoading] = useState(true)
+  const [isCheckingAuth, setIsCheckingAuth] = useState(true)
 
-  // Load company-scoped logs on mount
+  // Check authentication on mount
   useEffect(() => {
+    async function checkAuth() {
+      try {
+        const response = await fetch("/api/user")
+        if (!response.ok) {
+          // Not authenticated, redirect to login
+          router.push("/login")
+          return
+        }
+        setIsCheckingAuth(false)
+      } catch (error) {
+        console.error("Auth check error:", error)
+        router.push("/login")
+      }
+    }
+
+    checkAuth()
+  }, [router])
+
+  // Load company-scoped logs on mount (only if authenticated)
+  useEffect(() => {
+    if (isCheckingAuth) return // Wait for auth check
+
     async function loadLogs() {
       try {
         setIsLoading(true)
@@ -23,13 +48,17 @@ export default function DashboardPage() {
         setLogs(companyLogs)
       } catch (error) {
         console.error("Error loading logs:", error)
+        // If error loading logs, might be auth issue, redirect to login
+        if (error instanceof Error && error.message.includes("redirect")) {
+          router.push("/login")
+        }
       } finally {
         setIsLoading(false)
       }
     }
 
     loadLogs()
-  }, [])
+  }, [isCheckingAuth, router])
 
   const handleSave = async (log: TruckLog) => {
     // Add to local state immediately for optimistic UI
@@ -59,6 +88,18 @@ export default function DashboardPage() {
     } catch (error) {
       console.error("Error reloading logs:", error)
     }
+  }
+
+  // Show loading state while checking authentication
+  if (isCheckingAuth) {
+    return (
+      <div className="flex h-screen bg-gray-50 items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading...</p>
+        </div>
+      </div>
+    )
   }
 
   return (

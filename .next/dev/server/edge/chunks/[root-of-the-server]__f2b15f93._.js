@@ -26,7 +26,7 @@ var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist
 function middleware(request) {
     const { pathname } = request.nextUrl;
     // Check if user is trying to access protected routes
-    const isProtectedRoute = pathname === "/" || pathname.startsWith("/dashboard");
+    const isProtectedRoute = pathname === "/" || pathname.startsWith("/dashboard") || pathname.startsWith("/history") || pathname.startsWith("/reports") || pathname.startsWith("/settings");
     const isAuthRoute = pathname.startsWith("/login");
     // Get session cookies
     const companyId = request.cookies.get("company-id")?.value;
@@ -46,7 +46,10 @@ const config = {
     matcher: [
         "/",
         "/login",
-        "/dashboard/:path*"
+        "/dashboard/:path*",
+        "/history/:path*",
+        "/reports/:path*",
+        "/settings/:path*"
     ]
 };
 }),
