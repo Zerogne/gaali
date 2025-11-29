@@ -21,8 +21,9 @@ async function getAllCompanies() {
         name: 1
     }).toArray();
     // Serialize MongoDB documents to plain objects
+    // Note: password is NOT included in serialized output for security
     return companies.map((company)=>{
-        const { _id, ...companyData } = company;
+        const { _id, password, ...companyData } = company;
         return {
             companyId: companyData.companyId,
             name: companyData.name,
@@ -41,7 +42,8 @@ async function getCompany(companyId) {
     });
     if (!company) return null;
     // Serialize MongoDB document to plain object
-    const { _id, ...companyData } = company;
+    // Note: password is NOT included in serialized output for security
+    const { _id, password, ...companyData } = company;
     return {
         companyId: companyData.companyId,
         name: companyData.name,

@@ -1,0 +1,65 @@
+{
+  "node": {
+    "60c913ff288f0a2422913de5e2c5b09887ef227229": {
+      "workers": {
+        "app/(auth)/login/page": {
+          "moduleId": 37198,
+          "async": false,
+          "exportedName": "loginCompany",
+          "filename": "lib/auth/authServer.ts"
+        }
+      },
+      "layer": {
+        "app/(auth)/login/page": "action-browser"
+      },
+      "exportedName": "loginCompany",
+      "filename": "lib/auth/authServer.ts"
+    },
+    "402582b0951a06df0eb131427e865b4473008935b1": {
+      "workers": {
+        "app/(auth)/login/page": {
+          "moduleId": 37198,
+          "async": false,
+          "exportedName": "selectWorker",
+          "filename": "lib/auth/authServer.ts"
+        }
+      },
+      "layer": {
+        "app/(auth)/login/page": "action-browser"
+      },
+      "exportedName": "selectWorker",
+      "filename": "lib/auth/authServer.ts"
+    },
+    "7051d44f51699ad001678871b691d83c1f02e0ae25": {
+      "workers": {
+        "app/(auth)/login/page": {
+          "moduleId": 37198,
+          "async": false,
+          "exportedName": "loginWorker",
+          "filename": "lib/auth/authServer.ts"
+        }
+      },
+      "layer": {
+        "app/(auth)/login/page": "action-browser"
+      },
+      "exportedName": "loginWorker",
+      "filename": "lib/auth/authServer.ts"
+    },
+    "4098e4b0dbe81639cb25dc0148a0c46f6b9c53ab00": {
+      "workers": {
+        "app/(auth)/login/page": {
+          "moduleId": 37198,
+          "async": false,
+          "exportedName": "getCompanyWorkers",
+          "filename": "lib/companies/workers.ts"
+        }
+      },
+      "layer": {
+        "app/(auth)/login/page": "action-browser"
+      },
+      "exportedName": "getCompanyWorkers",
+      "filename": "lib/companies/workers.ts"
+    }
+  },
+  "edge": {}
+}

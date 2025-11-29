@@ -23,33 +23,58 @@ __turbopack_context__.s([
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$esm$2f$api$2f$server$2e$js__$5b$middleware$2d$edge$5d$__$28$ecmascript$29$__$3c$locals$3e$__ = __turbopack_context__.i("[project]/node_modules/next/dist/esm/api/server.js [middleware-edge] (ecmascript) <locals>");
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$esm$2f$server$2f$web$2f$exports$2f$index$2e$js__$5b$middleware$2d$edge$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/next/dist/esm/server/web/exports/index.js [middleware-edge] (ecmascript)");
 ;
-function middleware(request) {
+async function middleware(request) {
     const { pathname } = request.nextUrl;
-    // Check if user is trying to access protected routes
-    const isProtectedRoute = pathname === "/" || pathname.startsWith("/dashboard") || pathname.startsWith("/history") || pathname.startsWith("/reports") || pathname.startsWith("/settings");
-    const isAuthRoute = pathname.startsWith("/login");
-    // Get session cookies
-    const companyId = request.cookies.get("company-id")?.value;
-    const workerId = request.cookies.get("worker-id")?.value;
-    const isAuthenticated = companyId && workerId;
-    // Redirect to login if accessing protected route without auth
-    if (isProtectedRoute && !isAuthenticated) {
-        return __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$esm$2f$server$2f$web$2f$exports$2f$index$2e$js__$5b$middleware$2d$edge$5d$__$28$ecmascript$29$__["NextResponse"].redirect(new URL("/login", request.url));
+    // Allow public routes
+    if (pathname.startsWith('/login') || pathname.startsWith('/_next') || pathname.startsWith('/api/companies') && pathname === '/api/companies' || // Only allow GET /api/companies (no params)
+    pathname.startsWith('/api/auth') || pathname.match(/\.(ico|png|jpg|jpeg|svg|gif|webp|css|js|woff|woff2|ttf|eot)$/)) {
+        return __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$esm$2f$server$2f$web$2f$exports$2f$index$2e$js__$5b$middleware$2d$edge$5d$__$28$ecmascript$29$__["NextResponse"].next();
     }
-    // Redirect to dashboard if accessing login while authenticated
-    if (isAuthRoute && isAuthenticated) {
-        return __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$esm$2f$server$2f$web$2f$exports$2f$index$2e$js__$5b$middleware$2d$edge$5d$__$28$ecmascript$29$__["NextResponse"].redirect(new URL("/", request.url));
+    // Check for authentication cookies
+    const companyId = request.cookies.get('company-id')?.value;
+    const workerId = request.cookies.get('worker-id')?.value;
+    const expiresAt = request.cookies.get('session-expires')?.value;
+    // Check if session exists
+    if (!companyId || !workerId) {
+        // Redirect to login if not authenticated
+        if (pathname.startsWith('/api/')) {
+            // API routes return 401 instead of redirect
+            return __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$esm$2f$server$2f$web$2f$exports$2f$index$2e$js__$5b$middleware$2d$edge$5d$__$28$ecmascript$29$__["NextResponse"].json({
+                error: 'Authentication required'
+            }, {
+                status: 401
+            });
+        }
+        return __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$esm$2f$server$2f$web$2f$exports$2f$index$2e$js__$5b$middleware$2d$edge$5d$__$28$ecmascript$29$__["NextResponse"].redirect(new URL('/login', request.url));
+    }
+    // Check session expiration
+    if (expiresAt) {
+        const expires = parseInt(expiresAt, 10);
+        if (!isNaN(expires) && expires < Date.now()) {
+            // Session expired
+            const response = pathname.startsWith('/api/') ? __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$esm$2f$server$2f$web$2f$exports$2f$index$2e$js__$5b$middleware$2d$edge$5d$__$28$ecmascript$29$__["NextResponse"].json({
+                error: 'Session expired'
+            }, {
+                status: 401
+            }) : __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$esm$2f$server$2f$web$2f$exports$2f$index$2e$js__$5b$middleware$2d$edge$5d$__$28$ecmascript$29$__["NextResponse"].redirect(new URL('/login', request.url));
+            // Clear expired cookies
+            response.cookies.delete('company-id');
+            response.cookies.delete('worker-id');
+            response.cookies.delete('session-expires');
+            return response;
+        }
     }
     return __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$esm$2f$server$2f$web$2f$exports$2f$index$2e$js__$5b$middleware$2d$edge$5d$__$28$ecmascript$29$__["NextResponse"].next();
 }
 const config = {
     matcher: [
-        "/",
-        "/login",
-        "/dashboard/:path*",
-        "/history/:path*",
-        "/reports/:path*",
-        "/settings/:path*"
+        /*
+     * Match all request paths except for the ones starting with:
+     * - _next/static (static files)
+     * - _next/image (image optimization files)
+     * - favicon.ico (favicon file)
+     * - public folder files (already handled above)
+     */ '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)'
     ]
 };
 }),

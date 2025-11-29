@@ -131,7 +131,16 @@ export const workers: Worker[] = [
   },
 ];
 
-// Mock password map: workerId -> password
+// Mock password map: companyId -> password
+// All companies use the same password for simplicity
+export const companyPasswords: Record<string, string> = {
+  "altan-logistics": "password123",
+  "steppe-mining": "password123",
+  "blueroad-transport": "password123",
+  "frontier-customs": "password123",
+};
+
+// Legacy: Keep worker passwords for backward compatibility (not used in new flow)
 export const workerPasswords: Record<string, string> = {
   "worker-altan-1": "password123",
   "worker-altan-2": "password123",

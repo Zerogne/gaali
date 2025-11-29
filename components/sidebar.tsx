@@ -1,5 +1,6 @@
 "use client"
 
+import { useState, useEffect } from "react"
 import { Truck, History, FileText, Settings, LayoutDashboard } from "lucide-react"
 import { cn } from "@/lib/utils"
 import Link from "next/link"
@@ -12,8 +13,36 @@ const menuItems = [
   { icon: Settings, label: "Settings", href: "/settings" },
 ]
 
+interface UserInfo {
+  name: string
+  role: string
+  companyName?: string
+}
+
 export function Sidebar() {
   const pathname = usePathname()
+  const [companyName, setCompanyName] = useState<string>("XP Agency")
+  const [isLoading, setIsLoading] = useState(true)
+
+  useEffect(() => {
+    async function loadCompanyName() {
+      try {
+        const response = await fetch("/api/user")
+        if (response.ok) {
+          const data: UserInfo = await response.json()
+          if (data.companyName) {
+            setCompanyName(data.companyName)
+          }
+        }
+      } catch (error) {
+        console.error("Error loading company name:", error)
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    loadCompanyName()
+  }, [])
 
   return (
     <aside className="w-64 bg-sidebar border-r border-sidebar-border flex flex-col">
@@ -23,7 +52,9 @@ export function Sidebar() {
             <Truck className="w-6 h-6 text-primary-foreground" />
           </div>
           <div>
-            <h1 className="text-lg font-semibold text-sidebar-foreground">XP Agency</h1>
+            <h1 className="text-lg font-semibold text-sidebar-foreground">
+              {isLoading ? "Loading..." : companyName}
+            </h1>
             <p className="text-xs text-sidebar-foreground/60">Logistics Platform</p>
           </div>
         </div>

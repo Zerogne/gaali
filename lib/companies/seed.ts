@@ -1,24 +1,31 @@
 "use server"
 
+import bcrypt from "bcryptjs"
 import { getCompanyCollection } from "@/lib/db/companyDb"
 import { getCompaniesCollection } from "@/lib/db/companyDb"
 import { ensureCompanyCollections } from "@/lib/db/companyDb"
-import { companies, workers, workerPasswords } from "@/lib/auth/mockData"
+import { companies, workers, workerPasswords, companyPasswords } from "@/lib/auth/mockData"
 import type { Worker } from "@/lib/auth/mockData"
 import type { CompanyMetadata } from "./metadata"
 
 /**
  * Seed company metadata into the shared companies collection
+ * Passwords are hashed with bcrypt before storage
  */
 export async function seedCompanies() {
   const companiesCollection = await getCompaniesCollection()
 
   for (const company of companies) {
+    // Hash password with bcrypt (10 rounds)
+    const plainPassword = companyPasswords[company.id] || "password123"
+    const hashedPassword = await bcrypt.hash(plainPassword, 10)
+
     const companyMetadata: CompanyMetadata = {
       companyId: company.id,
       name: company.name,
       description: company.description,
       logoInitials: company.logoInitials,
+      password: hashedPassword, // Store hashed password
       createdAt: new Date(),
       updatedAt: new Date(),
     }
@@ -30,11 +37,12 @@ export async function seedCompanies() {
     )
   }
 
-  console.log("✅ Companies metadata seeded")
+  console.log("✅ Companies metadata seeded with hashed passwords")
 }
 
 /**
  * Seed workers into company-scoped collections
+ * Passwords are hashed with bcrypt before storage
  */
 export async function seedWorkers() {
   // Group workers by company
@@ -55,9 +63,13 @@ export async function seedWorkers() {
     )
 
     for (const worker of companyWorkers) {
+      // Hash password with bcrypt (10 rounds)
+      const plainPassword = workerPasswords[worker.id] || "password123"
+      const hashedPassword = await bcrypt.hash(plainPassword, 10)
+
       const workerWithPassword = {
         ...worker,
-        password: workerPasswords[worker.id] || "password123", // Default password
+        password: hashedPassword, // Store hashed password
       }
 
       await workersCollection.updateOne(
@@ -67,7 +79,7 @@ export async function seedWorkers() {
       )
     }
 
-    console.log(`✅ Workers seeded for company: ${companyId}`)
+    console.log(`✅ Workers seeded for company: ${companyId} (passwords hashed)`)
   }
 }
 

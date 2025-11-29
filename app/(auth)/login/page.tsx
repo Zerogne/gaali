@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { Card } from "@/components/ui/card"
-import { CompanySelector } from "@/components/auth/CompanySelector"
+import { CompanyLoginForm } from "@/components/auth/CompanyLoginForm"
 import { WorkerSelector } from "@/components/auth/WorkerSelector"
 import { getCompanyWorkers } from "@/lib/companies/workers"
 import type { CompanyMetadata } from "@/lib/companies/metadata"
@@ -18,12 +18,14 @@ export default function LoginPage() {
   const [companies, setCompanies] = useState<CompanyMetadata[]>([])
   const [companyWorkers, setCompanyWorkers] = useState<Worker[]>([])
   const [isLoadingWorkers, setIsLoadingWorkers] = useState(false)
+  const [isLoadingCompanies, setIsLoadingCompanies] = useState(true)
 
   const selectedCompany = companies.find((c) => c.companyId === selectedCompanyId)
 
   // Load companies on mount
   useEffect(() => {
     async function loadCompanies() {
+      setIsLoadingCompanies(true)
       try {
         // Use API route instead of direct server action for better production compatibility
         const response = await fetch("/api/companies")
@@ -35,15 +37,17 @@ export default function LoginPage() {
         }
       } catch (error) {
         console.error("Error loading companies:", error)
+      } finally {
+        setIsLoadingCompanies(false)
       }
     }
     loadCompanies()
   }, [])
 
-  // Load workers when company is selected
+  // Load workers when company is authenticated
   useEffect(() => {
     async function loadWorkers() {
-      if (!selectedCompanyId) {
+      if (!selectedCompanyId || step !== "worker") {
         setCompanyWorkers([])
         return
       }
@@ -61,13 +65,13 @@ export default function LoginPage() {
     }
 
     loadWorkers()
-  }, [selectedCompanyId])
+  }, [selectedCompanyId, step])
 
-  const handleCompanyContinue = () => {
-    if (selectedCompanyId) {
-      setStep("worker")
-      setSelectedWorkerId(null) // Reset worker selection when moving to step 2
-    }
+  const handleCompanyLoginSuccess = (companyId: string) => {
+    // After company login is successful, move to worker selection
+    setSelectedCompanyId(companyId)
+    setStep("worker")
+    setSelectedWorkerId(null) // Reset worker selection
   }
 
   const handleBackToCompany = () => {
@@ -108,7 +112,7 @@ export default function LoginPage() {
                 step === "company" ? "text-gray-900" : "text-gray-500"
               }`}
             >
-              Step 1: Choose Company
+              Step 1: Company Login
             </span>
           </div>
           <div className="w-12 h-0.5 bg-gray-300" />
@@ -129,7 +133,7 @@ export default function LoginPage() {
                 step === "worker" ? "text-gray-900" : "text-gray-500"
               }`}
             >
-              Step 2: Worker Login
+              Step 2: Select Worker
             </span>
           </div>
         </div>
@@ -142,17 +146,16 @@ export default function LoginPage() {
               ${step === "company" ? "opacity-100" : "hidden"}
             `}
           >
-            <CompanySelector
-              companies={companies.map((c) => ({
-                id: c.companyId,
-                name: c.name,
-                description: c.description || "",
-                logoInitials: c.logoInitials || c.name.substring(0, 2).toUpperCase(),
-              }))}
-              selectedCompanyId={selectedCompanyId}
-              onSelect={setSelectedCompanyId}
-              onContinue={handleCompanyContinue}
-            />
+            {isLoadingCompanies ? (
+              <div className="text-center py-8">
+                <p className="text-gray-500">Loading companies...</p>
+              </div>
+            ) : (
+              <CompanyLoginForm
+                companies={companies}
+                onSuccess={handleCompanyLoginSuccess}
+              />
+            )}
           </div>
 
           <div

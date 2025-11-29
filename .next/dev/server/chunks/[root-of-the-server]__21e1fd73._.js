@@ -120,7 +120,8 @@ async function ensureCompanyCollections(companyId) {
         "logs",
         "workers",
         "sessions",
-        "settings"
+        "settings",
+        "products"
     ];
     for (const collectionName of collections){
         const collection = await getCompanyCollection(companyId, collectionName);
@@ -154,6 +155,15 @@ async function ensureCompanyCollections(companyId) {
             await collection.createIndex({
                 createdAt: -1
             });
+        } else if (collectionName === "products") {
+            await collection.createIndex({
+                value: 1
+            }, {
+                unique: true
+            });
+            await collection.createIndex({
+                isCustom: 1
+            });
         }
     }
 }
@@ -164,6 +174,8 @@ async function ensureCompanyCollections(companyId) {
 __turbopack_context__.s([
     "companies",
     ()=>companies,
+    "companyPasswords",
+    ()=>companyPasswords,
     "workerPasswords",
     ()=>workerPasswords,
     "workers",
@@ -285,6 +297,12 @@ const workers = [
         companyId: "frontier-customs"
     }
 ];
+const companyPasswords = {
+    "altan-logistics": "password123",
+    "steppe-mining": "password123",
+    "blueroad-transport": "password123",
+    "frontier-customs": "password123"
+};
 const workerPasswords = {
     "worker-altan-1": "password123",
     "worker-altan-2": "password123",
@@ -330,6 +348,7 @@ async function seedCompanies() {
             name: company.name,
             description: company.description,
             logoInitials: company.logoInitials,
+            password: __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$auth$2f$mockData$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["companyPasswords"][company.id] || "password123",
             createdAt: new Date(),
             updatedAt: new Date()
         };

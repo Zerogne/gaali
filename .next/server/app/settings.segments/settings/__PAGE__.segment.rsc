@@ -1,0 +1,8 @@
+1:"$Sreact.fragment"
+2:I[53199,["/_next/static/chunks/a0f59c3469eab38e.js","/_next/static/chunks/4875ce7a213c7577.js","/_next/static/chunks/e84af507c72b4057.js","/_next/static/chunks/35dbcb442804bae3.js"],"Sidebar"]
+3:I[13293,["/_next/static/chunks/a0f59c3469eab38e.js","/_next/static/chunks/4875ce7a213c7577.js","/_next/static/chunks/e84af507c72b4057.js","/_next/static/chunks/35dbcb442804bae3.js"],"Header"]
+4:I[12794,["/_next/static/chunks/a0f59c3469eab38e.js","/_next/static/chunks/4875ce7a213c7577.js","/_next/static/chunks/e84af507c72b4057.js","/_next/static/chunks/35dbcb442804bae3.js"],"SettingsPanel"]
+5:I[97367,["/_next/static/chunks/ff1a16fafef87110.js","/_next/static/chunks/247eb132b7f7b574.js"],"OutletBoundary"]
+6:"$Sreact.suspense"
+0:{"buildId":"BPlHPZhIgr_3A1EMoN2Dz","rsc":["$","$1","c",{"children":[["$","div",null,{"className":"flex h-screen bg-background","children":[["$","$L2",null,{}],["$","div",null,{"className":"flex-1 flex flex-col overflow-hidden","children":[["$","$L3",null,{}],["$","main",null,{"className":"flex-1 overflow-auto p-6","children":[["$","div",null,{"className":"mb-6","children":[["$","h1",null,{"className":"text-3xl font-bold text-foreground mb-2","children":"Settings"}],["$","p",null,{"className":"text-muted-foreground","children":"Configure system preferences and integrations"}]]}],["$","$L4",null,{}]]}]]}]]}],[["$","script","script-0",{"src":"/_next/static/chunks/e84af507c72b4057.js","async":true}],["$","script","script-1",{"src":"/_next/static/chunks/35dbcb442804bae3.js","async":true}]],["$","$L5",null,{"children":["$","$6",null,{"name":"Next.MetadataOutlet","children":"$@7"}]}]]}],"loading":null,"isPartial":false}
+7:null

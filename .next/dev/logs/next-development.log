@@ -1,34 +1,412 @@
-[00:00:00.505] Server  WARN     ⚠ The "middleware" file convention is deprecated. Please use "proxy" instead. Learn more: https://nextjs.org/docs/messages/middleware-to-proxy
-[00:00:00.564] Server  LOG      ✓ Ready in 388ms
-[00:00:03.729] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
-[00:00:03.962] Browser LOG     %c[Vercel Web Analytics]%c Debug mode is enabled by default in development. No requests will be sent to the server. color: rgb(120, 120, 120) color: inherit
-[00:00:03.962] Browser LOG     %c[Vercel Web Analytics]%c Running queued event color: rgb(120, 120, 120) color: inherit pageview {"path":"/","route":"/"}
-[00:00:03.962] Browser LOG     %c[Vercel Web Analytics]%c [pageview] http://localhost:3000/ color: rgb(120, 120, 120) color: inherit {"dp":"/","o":"http://localhost:3000/","r":"","sdkn":"@vercel/analytics/next","sdkv":"1.5.0","sv":"0.1.3","ts":1764303207274}
-[00:00:08.598] Server  ERROR   Error: aborted
-[00:00:08.598] Server  ERROR    ⨯ "uncaughtException:" Error: aborted
-[00:00:08.599] Server  ERROR    ⨯ "uncaughtException: " Error: aborted
-[00:00:08.602] Server  ERROR   Error: aborted
-[00:00:08.602] Server  ERROR    ⨯ "uncaughtException:" Error: aborted
-[00:00:08.602] Server  ERROR    ⨯ "uncaughtException: " Error: aborted
-[00:00:08.657] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
-[00:00:08.910] Browser LOG     %c[Vercel Web Analytics]%c Debug mode is enabled by default in development. No requests will be sent to the server. color: rgb(120, 120, 120) color: inherit
-[00:00:08.910] Browser LOG     %c[Vercel Web Analytics]%c Running queued event color: rgb(120, 120, 120) color: inherit pageview {"path":"/login","route":"/login"}
-[00:00:08.910] Browser LOG     %c[Vercel Web Analytics]%c [pageview] http://localhost:3000/login color: rgb(120, 120, 120) color: inherit {"dp":"/login","o":"http://localhost:3000/login","sdkn":"@vercel/analytics/next","sdkv":"1.5.0","sv":"0.1.3","ts":1764303212346}
-[00:00:09.815] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
-[00:00:10.058] Browser LOG     %c[Vercel Web Analytics]%c Debug mode is enabled by default in development. No requests will be sent to the server. color: rgb(120, 120, 120) color: inherit
-[00:00:10.058] Browser LOG     %c[Vercel Web Analytics]%c Running queued event color: rgb(120, 120, 120) color: inherit pageview {"path":"/login","route":"/login"}
-[00:00:10.058] Browser LOG     %c[Vercel Web Analytics]%c [pageview] http://localhost:3000/login color: rgb(120, 120, 120) color: inherit {"dp":"/login","o":"http://localhost:3000/login","sdkn":"@vercel/analytics/next","sdkv":"1.5.0","sv":"0.1.3","ts":1764303213494}
-[00:00:10.532] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
-[00:00:10.806] Browser LOG     %c[Vercel Web Analytics]%c Debug mode is enabled by default in development. No requests will be sent to the server. color: rgb(120, 120, 120) color: inherit
-[00:00:10.806] Browser LOG     %c[Vercel Web Analytics]%c Running queued event color: rgb(120, 120, 120) color: inherit pageview {"path":"/login","route":"/login"}
-[00:00:10.806] Browser LOG     %c[Vercel Web Analytics]%c [pageview] http://localhost:3000/login color: rgb(120, 120, 120) color: inherit {"dp":"/login","o":"http://localhost:3000/login","sdkn":"@vercel/analytics/next","sdkv":"1.5.0","sv":"0.1.3","ts":1764303214241}
-[00:00:11.100] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
-[00:00:11.267] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
-[00:00:11.418] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
-[00:00:11.626] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
-[00:00:11.797] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
-[00:00:11.953] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
-[00:00:12.197] Browser LOG     %c[Vercel Web Analytics]%c Debug mode is enabled by default in development. No requests will be sent to the server. color: rgb(120, 120, 120) color: inherit
-[00:00:12.197] Browser LOG     %c[Vercel Web Analytics]%c Running queued event color: rgb(120, 120, 120) color: inherit pageview {"path":"/login","route":"/login"}
-[00:00:12.197] Browser LOG     %c[Vercel Web Analytics]%c [pageview] http://localhost:3000/login color: rgb(120, 120, 120) color: inherit {"dp":"/login","o":"http://localhost:3000/login","sdkn":"@vercel/analytics/next","sdkv":"1.5.0","sv":"0.1.3","ts":1764303215633}
-[00:00:40.933] Server  LOG      ✓ Compiled in 29ms
+[00:00:00.491] Server  LOG      ✓ Ready in 331ms
+[00:00:02.673] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:00:03.018] Browser LOG     %c[Vercel Web Analytics]%c Debug mode is enabled by default in development. No requests will be sent to the server. color: rgb(120, 120, 120) color: inherit
+[00:00:03.018] Browser LOG     %c[Vercel Web Analytics]%c Running queued event color: rgb(120, 120, 120) color: inherit pageview {"path":"/login","route":"/login"}
+[00:00:03.018] Browser LOG     %c[Vercel Web Analytics]%c [pageview] http://localhost:3000/login color: rgb(120, 120, 120) color: inherit {"dp":"/login","o":"http://localhost:3000/login","sdkn":"@vercel/analytics/next","sdkv":"1.5.0","sv":"0.1.3","ts":1764427368582}
+[00:02:49.223] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:02:49.351] Browser LOG     %c[Vercel Web Analytics]%c Debug mode is enabled by default in development. No requests will be sent to the server. color: rgb(120, 120, 120) color: inherit
+[00:02:49.351] Browser LOG     %c[Vercel Web Analytics]%c Running queued event color: rgb(120, 120, 120) color: inherit pageview {"path":"/","route":"/"}
+[00:02:49.351] Browser LOG     %c[Vercel Web Analytics]%c [pageview] http://localhost:3000/ color: rgb(120, 120, 120) color: inherit {"dp":"/","o":"http://localhost:3000/","sdkn":"@vercel/analytics/next","sdkv":"1.5.0","sv":"0.1.3","ts":1764427535109}
+[00:03:33.089] Server  ERROR   Only plain objects can be passed to Client Components from Server Components. Objects with toJSON methods are not supported. Convert it manually to a simple value before passing it to props.
+  {direction: "IN", plate: "Б1234АВ", driverName: ..., cargoType: ..., weightKg: ..., comments: ..., vehicleRegistrationNumber: ..., vehicleRegistrationYear: ..., origin: ..., destination: ..., senderOrganization: ..., receiverOrganization: ..., id: ..., createdAt: ..., sentToCustoms: ..., _id: {buffer: ...}}
+                                                                                                                                                                                                                                                                                                        ^^^^^^^^^^^^^
+[00:04:12.418] Server  LOG      ✓ Compiled in 42ms
+[00:04:50.153] Server  LOG      ✓ Compiled in 21ms
+[00:05:16.263] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:05:16.732] Browser LOG     %c[Vercel Web Analytics]%c Debug mode is enabled by default in development. No requests will be sent to the server. color: rgb(120, 120, 120) color: inherit
+[00:05:16.732] Browser LOG     %c[Vercel Web Analytics]%c Running queued event color: rgb(120, 120, 120) color: inherit pageview {"path":"/","route":"/"}
+[00:05:16.732] Browser LOG     %c[Vercel Web Analytics]%c [pageview] http://localhost:3000/ color: rgb(120, 120, 120) color: inherit {"dp":"/","o":"http://localhost:3000/","sdkn":"@vercel/analytics/next","sdkv":"1.5.0","sv":"0.1.3","ts":1764427682488}
+[00:06:17.227] Server  LOG      ✓ Compiled in 27ms
+[00:07:24.180] Server  LOG      ✓ Compiled in 36ms
+[00:07:29.080] Server  LOG      ✓ Compiled in 25ms
+[00:07:34.501] Server  LOG      ✓ Compiled in 43ms
+[00:07:39.361] Server  LOG      ✓ Compiled in 27ms
+[00:07:44.125] Server  LOG      ✓ Compiled in 22ms
+[00:09:43.550] Server  LOG      ✓ Compiled in 33ms
+[00:09:44.016] Browser ERROR   Error caught by boundary: {} {"componentStack":"\n    at EditLogDialog (http://localhost:3000/_next/static/chunks/_e24180ea._.js?id=%255Bproject%255D%252Fcomponents%252Fhistory%252FEditLogDialog.tsx+%255Bapp-client%255D+%2528ecmascript%2529:30:26)\n    at div (<anonymous>)\n    at Card (http://localhost:3000/_next/static/chunks/_95c9a075._.js:1001:17)\n    at TruckTable (http://localhost:3000/_next/static/chunks/_e24180ea._.js?id=%255Bproject%255D%252Fcomponents%252Ftrucks%252FTruckTable.tsx+%255Bapp-client%255D+%2528ecmascript%2529:36:23)\n    at div (<anonymous>)\n    at main (<anonymous>)\n    at div (<anonymous>)\n    at div (<anonymous>)\n    at DashboardPage (http://localhost:3000/_next/static/chunks/_e24180ea._.js?id=%255Bproject%255D%252Fapp%252Fpage.tsx+%255Bapp-client%255D+%2528ecmascript%2529:28:171)\n    at ClientPageRoot (http://localhost:3000/_next/static/chunks/node_modules_next_dist_094231d7._.js:2157:27)\n    at SegmentViewNode (http://localhost:3000/_next/static/chunks/node_modules_next_dist_7a8122d0._.js:3299:28)\n    at InnerLayoutRouter (http://localhost:3000/_next/static/chunks/node_modules_next_dist_094231d7._.js:390:34)\n    at RedirectErrorBoundary (http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_aaee43fe._.js:9326:9)\n    at RedirectBoundary (http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_aaee43fe._.js:9368:29)\n    at HTTPAccessFallbackErrorBoundary (http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_aaee43fe._.js:9816:9)\n    at HTTPAccessFallbackBoundary (http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_aaee43fe._.js:9891:39)\n    at LoadingBoundary (http://localhost:3000/_next/static/chunks/node_modules_next_dist_094231d7._.js:496:32)\n    at ErrorBoundary (http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_aaee43fe._.js:1048:26)\n    at InnerScrollAndFocusHandler (http://localhost:3000/_next/static/chunks/node_modules_next_dist_094231d7._.js:290:9)\n    at ScrollAndFocusHandler (http://localhost:3000/_next/static/chunks/node_modules_next_dist_094231d7._.js:373:34)\n    at RenderFromTemplateContext (http://localhost:3000/_next/static/chunks/node_modules_next_dist_094231d7._.js:769:44)\n    at SegmentStateProvider (http://localhost:3000/_next/static/chunks/node_modules_next_dist_7a8122d0._.js:3315:33)\n    at OuterLayoutRouter (http://localhost:3000/_next/static/chunks/node_modules_next_dist_094231d7._.js:532:30)\n    at ErrorBoundary (http://localhost:3000/_next/static/chunks/_11dcfcba._.js:495:9)\n    at body (<anonymous>)\n    at html (<anonymous>)\n    at RootLayout [Server] (<anonymous>)\n    at SegmentViewNode (http://localhost:3000/_next/static/chunks/node_modules_next_dist_7a8122d0._.js:3299:28)\n    at __next_root_layout_boundary__ (http://localhost:3000/_next/static/chunks/node_modules_next_dist_7a8122d0._.js:1666:64)\n    at RedirectErrorBoundary (http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_aaee43fe._.js:9326:9)\n    at RedirectBoundary (http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_aaee43fe._.js:9368:29)\n    at HTTPAccessFallbackErrorBoundary (http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_aaee43fe._.js:9816:9)\n    at HTTPAccessFallbackBoundary (http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_aaee43fe._.js:9891:39)\n    at DevRootHTTPAccessFallbackBoundary (http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_aaee43fe._.js:9960:46)\n    at AppDevOverlayErrorBoundary (http://localhost:3000/_next/static/chunks/node_modules_next_dist_7a8122d0._.js:3410:9)\n    at HotReload (http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_aaee43fe._.js:10954:22)\n    at Router (http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_aaee43fe._.js:11132:23)\n    at ErrorBoundaryHandler (http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_aaee43fe._.js:982:9)\n    at ErrorBoundary (http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_aaee43fe._.js:1048:26)\n    at RootErrorBoundary (http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_aaee43fe._.js:9640:30)\n    at AppRouter (http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_aaee43fe._.js:11449:22)\n    at ServerRoot (http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_aaee43fe._.js:12966:23)\n    at Root (http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_aaee43fe._.js:12984:17)"}
+[00:09:49.066] Server  LOG      ✓ Compiled in 24ms
+[00:09:57.027] Server  LOG      ✓ Compiled in 23ms
+[00:10:02.822] Server  LOG      ✓ Compiled in 24ms
+[00:11:38.628] Server  LOG      ✓ Compiled in 86ms
+[00:11:54.637] Server  LOG      ✓ Compiled in 37ms
+[00:12:32.629] Browser ERROR   `DialogContent` requires a `DialogTitle` for the component to be accessible for screen reader users.
+
+If you want to hide the `DialogTitle`, you can wrap it with our VisuallyHidden component.
+
+For more information, see https://radix-ui.com/primitives/docs/components/dialog
+[00:12:32.629] Browser WARN    Warning: Missing `Description` or `aria-describedby={undefined}` for {DialogContent}.
+[00:12:32.629] Browser ERROR   `DialogContent` requires a `DialogTitle` for the component to be accessible for screen reader users.
+
+If you want to hide the `DialogTitle`, you can wrap it with our VisuallyHidden component.
+
+For more information, see https://radix-ui.com/primitives/docs/components/dialog
+[00:12:32.629] Browser WARN    Warning: Missing `Description` or `aria-describedby={undefined}` for {DialogContent}.
+[00:19:28.626] Server  LOG      ✓ Compiled in 78ms
+[00:19:47.395] Server  LOG      ✓ Compiled in 49ms
+[00:20:27.754] Server  LOG      ✓ Compiled in 24ms
+[00:20:31.439] Server  LOG      ✓ Compiled in 25ms
+[00:20:31.528] Browser ERROR   Error caught by boundary: {} {"componentStack":"\n    at TruckSection (http://localhost:3000/_next/static/chunks/_e24180ea._.js?id=%255Bproject%255D%252Fcomponents%252Ftrucks%252FTruckSection.tsx+%255Bapp-client%255D+%2528ecmascript%2529:41:25)\n    at div (<anonymous>)\n    at div (<anonymous>)\n    at main (<anonymous>)\n    at div (<anonymous>)\n    at div (<anonymous>)\n    at DashboardPage (http://localhost:3000/_next/static/chunks/_e24180ea._.js?id=%255Bproject%255D%252Fapp%252Fpage.tsx+%255Bapp-client%255D+%2528ecmascript%2529:28:171)\n    at ClientPageRoot (http://localhost:3000/_next/static/chunks/node_modules_next_dist_094231d7._.js:2157:27)\n    at SegmentViewNode (http://localhost:3000/_next/static/chunks/node_modules_next_dist_7a8122d0._.js:3299:28)\n    at InnerLayoutRouter (http://localhost:3000/_next/static/chunks/node_modules_next_dist_094231d7._.js:390:34)\n    at RedirectErrorBoundary (http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_aaee43fe._.js:9326:9)\n    at RedirectBoundary (http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_aaee43fe._.js:9368:29)\n    at HTTPAccessFallbackErrorBoundary (http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_aaee43fe._.js:9816:9)\n    at HTTPAccessFallbackBoundary (http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_aaee43fe._.js:9891:39)\n    at LoadingBoundary (http://localhost:3000/_next/static/chunks/node_modules_next_dist_094231d7._.js:496:32)\n    at ErrorBoundary (http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_aaee43fe._.js:1048:26)\n    at InnerScrollAndFocusHandler (http://localhost:3000/_next/static/chunks/node_modules_next_dist_094231d7._.js:290:9)\n    at ScrollAndFocusHandler (http://localhost:3000/_next/static/chunks/node_modules_next_dist_094231d7._.js:373:34)\n    at RenderFromTemplateContext (http://localhost:3000/_next/static/chunks/node_modules_next_dist_094231d7._.js:769:44)\n    at SegmentStateProvider (http://localhost:3000/_next/static/chunks/node_modules_next_dist_7a8122d0._.js:3315:33)\n    at OuterLayoutRouter (http://localhost:3000/_next/static/chunks/node_modules_next_dist_094231d7._.js:532:30)\n    at ErrorBoundary (http://localhost:3000/_next/static/chunks/_11dcfcba._.js:495:9)\n    at body (<anonymous>)\n    at html (<anonymous>)\n    at RootLayout [Server] (<anonymous>)\n    at SegmentViewNode (http://localhost:3000/_next/static/chunks/node_modules_next_dist_7a8122d0._.js:3299:28)\n    at __next_root_layout_boundary__ (http://localhost:3000/_next/static/chunks/node_modules_next_dist_7a8122d0._.js:1666:64)\n    at RedirectErrorBoundary (http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_aaee43fe._.js:9326:9)\n    at RedirectBoundary (http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_aaee43fe._.js:9368:29)\n    at HTTPAccessFallbackErrorBoundary (http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_aaee43fe._.js:9816:9)\n    at HTTPAccessFallbackBoundary (http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_aaee43fe._.js:9891:39)\n    at DevRootHTTPAccessFallbackBoundary (http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_aaee43fe._.js:9960:46)\n    at AppDevOverlayErrorBoundary (http://localhost:3000/_next/static/chunks/node_modules_next_dist_7a8122d0._.js:3410:9)\n    at HotReload (http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_aaee43fe._.js:10954:22)\n    at Router (http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_aaee43fe._.js:11132:23)\n    at ErrorBoundaryHandler (http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_aaee43fe._.js:982:9)\n    at ErrorBoundary (http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_aaee43fe._.js:1048:26)\n    at RootErrorBoundary (http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_aaee43fe._.js:9640:30)\n    at AppRouter (http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_aaee43fe._.js:11449:22)\n    at ServerRoot (http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_aaee43fe._.js:12966:23)\n    at Root (http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_aaee43fe._.js:12984:17)"}
+[00:20:35.862] Server  LOG      ✓ Compiled in 22ms
+[00:20:37.016] Browser ERROR   Error caught by boundary: {} {"componentStack":"\n    at TruckSection (http://localhost:3000/_next/static/chunks/_e24180ea._.js?id=%255Bproject%255D%252Fcomponents%252Ftrucks%252FTruckSection.tsx+%255Bapp-client%255D+%2528ecmascript%2529:41:25)\n    at div (<anonymous>)\n    at div (<anonymous>)\n    at main (<anonymous>)\n    at div (<anonymous>)\n    at div (<anonymous>)\n    at DashboardPage (http://localhost:3000/_next/static/chunks/_e24180ea._.js?id=%255Bproject%255D%252Fapp%252Fpage.tsx+%255Bapp-client%255D+%2528ecmascript%2529:28:171)\n    at ClientPageRoot (http://localhost:3000/_next/static/chunks/node_modules_next_dist_094231d7._.js:2157:27)\n    at SegmentViewNode (http://localhost:3000/_next/static/chunks/node_modules_next_dist_7a8122d0._.js:3299:28)\n    at InnerLayoutRouter (http://localhost:3000/_next/static/chunks/node_modules_next_dist_094231d7._.js:390:34)\n    at RedirectErrorBoundary (http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_aaee43fe._.js:9326:9)\n    at RedirectBoundary (http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_aaee43fe._.js:9368:29)\n    at HTTPAccessFallbackErrorBoundary (http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_aaee43fe._.js:9816:9)\n    at HTTPAccessFallbackBoundary (http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_aaee43fe._.js:9891:39)\n    at LoadingBoundary (http://localhost:3000/_next/static/chunks/node_modules_next_dist_094231d7._.js:496:32)\n    at ErrorBoundary (http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_aaee43fe._.js:1048:26)\n    at InnerScrollAndFocusHandler (http://localhost:3000/_next/static/chunks/node_modules_next_dist_094231d7._.js:290:9)\n    at ScrollAndFocusHandler (http://localhost:3000/_next/static/chunks/node_modules_next_dist_094231d7._.js:373:34)\n    at RenderFromTemplateContext (http://localhost:3000/_next/static/chunks/node_modules_next_dist_094231d7._.js:769:44)\n    at SegmentStateProvider (http://localhost:3000/_next/static/chunks/node_modules_next_dist_7a8122d0._.js:3315:33)\n    at OuterLayoutRouter (http://localhost:3000/_next/static/chunks/node_modules_next_dist_094231d7._.js:532:30)\n    at ErrorBoundary (http://localhost:3000/_next/static/chunks/_11dcfcba._.js:495:9)\n    at body (<anonymous>)\n    at html (<anonymous>)\n    at RootLayout [Server] (<anonymous>)\n    at SegmentViewNode (http://localhost:3000/_next/static/chunks/node_modules_next_dist_7a8122d0._.js:3299:28)\n    at __next_root_layout_boundary__ (http://localhost:3000/_next/static/chunks/node_modules_next_dist_7a8122d0._.js:1666:64)\n    at RedirectErrorBoundary (http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_aaee43fe._.js:9326:9)\n    at RedirectBoundary (http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_aaee43fe._.js:9368:29)\n    at HTTPAccessFallbackErrorBoundary (http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_aaee43fe._.js:9816:9)\n    at HTTPAccessFallbackBoundary (http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_aaee43fe._.js:9891:39)\n    at DevRootHTTPAccessFallbackBoundary (http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_aaee43fe._.js:9960:46)\n    at AppDevOverlayErrorBoundary (http://localhost:3000/_next/static/chunks/node_modules_next_dist_7a8122d0._.js:3410:9)\n    at HotReload (http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_aaee43fe._.js:10954:22)\n    at Router (http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_aaee43fe._.js:11132:23)\n    at ErrorBoundaryHandler (http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_aaee43fe._.js:982:9)\n    at ErrorBoundary (http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_aaee43fe._.js:1048:26)\n    at RootErrorBoundary (http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_aaee43fe._.js:9640:30)\n    at AppRouter (http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_aaee43fe._.js:11449:22)\n    at ServerRoot (http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_aaee43fe._.js:12966:23)\n    at Root (http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_aaee43fe._.js:12984:17)"}
+[00:20:41.626] Server  LOG      ✓ Compiled in 30ms
+[00:20:42.000] Browser ERROR   Error caught by boundary: {} {"componentStack":"\n    at TruckSection (http://localhost:3000/_next/static/chunks/_e24180ea._.js?id=%255Bproject%255D%252Fcomponents%252Ftrucks%252FTruckSection.tsx+%255Bapp-client%255D+%2528ecmascript%2529:41:25)\n    at div (<anonymous>)\n    at div (<anonymous>)\n    at main (<anonymous>)\n    at div (<anonymous>)\n    at div (<anonymous>)\n    at DashboardPage (http://localhost:3000/_next/static/chunks/_e24180ea._.js?id=%255Bproject%255D%252Fapp%252Fpage.tsx+%255Bapp-client%255D+%2528ecmascript%2529:28:171)\n    at ClientPageRoot (http://localhost:3000/_next/static/chunks/node_modules_next_dist_094231d7._.js:2157:27)\n    at SegmentViewNode (http://localhost:3000/_next/static/chunks/node_modules_next_dist_7a8122d0._.js:3299:28)\n    at InnerLayoutRouter (http://localhost:3000/_next/static/chunks/node_modules_next_dist_094231d7._.js:390:34)\n    at RedirectErrorBoundary (http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_aaee43fe._.js:9326:9)\n    at RedirectBoundary (http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_aaee43fe._.js:9368:29)\n    at HTTPAccessFallbackErrorBoundary (http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_aaee43fe._.js:9816:9)\n    at HTTPAccessFallbackBoundary (http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_aaee43fe._.js:9891:39)\n    at LoadingBoundary (http://localhost:3000/_next/static/chunks/node_modules_next_dist_094231d7._.js:496:32)\n    at ErrorBoundary (http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_aaee43fe._.js:1048:26)\n    at InnerScrollAndFocusHandler (http://localhost:3000/_next/static/chunks/node_modules_next_dist_094231d7._.js:290:9)\n    at ScrollAndFocusHandler (http://localhost:3000/_next/static/chunks/node_modules_next_dist_094231d7._.js:373:34)\n    at RenderFromTemplateContext (http://localhost:3000/_next/static/chunks/node_modules_next_dist_094231d7._.js:769:44)\n    at SegmentStateProvider (http://localhost:3000/_next/static/chunks/node_modules_next_dist_7a8122d0._.js:3315:33)\n    at OuterLayoutRouter (http://localhost:3000/_next/static/chunks/node_modules_next_dist_094231d7._.js:532:30)\n    at ErrorBoundary (http://localhost:3000/_next/static/chunks/_11dcfcba._.js:495:9)\n    at body (<anonymous>)\n    at html (<anonymous>)\n    at RootLayout [Server] (<anonymous>)\n    at SegmentViewNode (http://localhost:3000/_next/static/chunks/node_modules_next_dist_7a8122d0._.js:3299:28)\n    at __next_root_layout_boundary__ (http://localhost:3000/_next/static/chunks/node_modules_next_dist_7a8122d0._.js:1666:64)\n    at RedirectErrorBoundary (http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_aaee43fe._.js:9326:9)\n    at RedirectBoundary (http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_aaee43fe._.js:9368:29)\n    at HTTPAccessFallbackErrorBoundary (http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_aaee43fe._.js:9816:9)\n    at HTTPAccessFallbackBoundary (http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_aaee43fe._.js:9891:39)\n    at DevRootHTTPAccessFallbackBoundary (http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_aaee43fe._.js:9960:46)\n    at AppDevOverlayErrorBoundary (http://localhost:3000/_next/static/chunks/node_modules_next_dist_7a8122d0._.js:3410:9)\n    at HotReload (http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_aaee43fe._.js:10954:22)\n    at Router (http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_aaee43fe._.js:11132:23)\n    at ErrorBoundaryHandler (http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_aaee43fe._.js:982:9)\n    at ErrorBoundary (http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_aaee43fe._.js:1048:26)\n    at RootErrorBoundary (http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_aaee43fe._.js:9640:30)\n    at AppRouter (http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_aaee43fe._.js:11449:22)\n    at ServerRoot (http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_aaee43fe._.js:12966:23)\n    at Root (http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_aaee43fe._.js:12984:17)"}
+[00:20:45.727] Server  LOG      ✓ Compiled in 26ms
+[00:20:47.016] Browser ERROR   Error caught by boundary: {} {"componentStack":"\n    at TruckSection (http://localhost:3000/_next/static/chunks/_e24180ea._.js?id=%255Bproject%255D%252Fcomponents%252Ftrucks%252FTruckSection.tsx+%255Bapp-client%255D+%2528ecmascript%2529:41:25)\n    at div (<anonymous>)\n    at div (<anonymous>)\n    at main (<anonymous>)\n    at div (<anonymous>)\n    at div (<anonymous>)\n    at DashboardPage (http://localhost:3000/_next/static/chunks/_e24180ea._.js?id=%255Bproject%255D%252Fapp%252Fpage.tsx+%255Bapp-client%255D+%2528ecmascript%2529:28:171)\n    at ClientPageRoot (http://localhost:3000/_next/static/chunks/node_modules_next_dist_094231d7._.js:2157:27)\n    at SegmentViewNode (http://localhost:3000/_next/static/chunks/node_modules_next_dist_7a8122d0._.js:3299:28)\n    at InnerLayoutRouter (http://localhost:3000/_next/static/chunks/node_modules_next_dist_094231d7._.js:390:34)\n    at RedirectErrorBoundary (http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_aaee43fe._.js:9326:9)\n    at RedirectBoundary (http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_aaee43fe._.js:9368:29)\n    at HTTPAccessFallbackErrorBoundary (http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_aaee43fe._.js:9816:9)\n    at HTTPAccessFallbackBoundary (http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_aaee43fe._.js:9891:39)\n    at LoadingBoundary (http://localhost:3000/_next/static/chunks/node_modules_next_dist_094231d7._.js:496:32)\n    at ErrorBoundary (http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_aaee43fe._.js:1048:26)\n    at InnerScrollAndFocusHandler (http://localhost:3000/_next/static/chunks/node_modules_next_dist_094231d7._.js:290:9)\n    at ScrollAndFocusHandler (http://localhost:3000/_next/static/chunks/node_modules_next_dist_094231d7._.js:373:34)\n    at RenderFromTemplateContext (http://localhost:3000/_next/static/chunks/node_modules_next_dist_094231d7._.js:769:44)\n    at SegmentStateProvider (http://localhost:3000/_next/static/chunks/node_modules_next_dist_7a8122d0._.js:3315:33)\n    at OuterLayoutRouter (http://localhost:3000/_next/static/chunks/node_modules_next_dist_094231d7._.js:532:30)\n    at ErrorBoundary (http://localhost:3000/_next/static/chunks/_11dcfcba._.js:495:9)\n    at body (<anonymous>)\n    at html (<anonymous>)\n    at RootLayout [Server] (<anonymous>)\n    at SegmentViewNode (http://localhost:3000/_next/static/chunks/node_modules_next_dist_7a8122d0._.js:3299:28)\n    at __next_root_layout_boundary__ (http://localhost:3000/_next/static/chunks/node_modules_next_dist_7a8122d0._.js:1666:64)\n    at RedirectErrorBoundary (http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_aaee43fe._.js:9326:9)\n    at RedirectBoundary (http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_aaee43fe._.js:9368:29)\n    at HTTPAccessFallbackErrorBoundary (http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_aaee43fe._.js:9816:9)\n    at HTTPAccessFallbackBoundary (http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_aaee43fe._.js:9891:39)\n    at DevRootHTTPAccessFallbackBoundary (http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_aaee43fe._.js:9960:46)\n    at AppDevOverlayErrorBoundary (http://localhost:3000/_next/static/chunks/node_modules_next_dist_7a8122d0._.js:3410:9)\n    at HotReload (http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_aaee43fe._.js:10954:22)\n    at Router (http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_aaee43fe._.js:11132:23)\n    at ErrorBoundaryHandler (http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_aaee43fe._.js:982:9)\n    at ErrorBoundary (http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_aaee43fe._.js:1048:26)\n    at RootErrorBoundary (http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_aaee43fe._.js:9640:30)\n    at AppRouter (http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_aaee43fe._.js:11449:22)\n    at ServerRoot (http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_aaee43fe._.js:12966:23)\n    at Root (http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_aaee43fe._.js:12984:17)"}
+[00:20:48.153] Server  LOG      ✓ Compiled in 26ms
+[00:20:49.015] Browser ERROR   Error caught by boundary: {} {"componentStack":"\n    at TruckSection (http://localhost:3000/_next/static/chunks/_e24180ea._.js?id=%255Bproject%255D%252Fcomponents%252Ftrucks%252FTruckSection.tsx+%255Bapp-client%255D+%2528ecmascript%2529:41:25)\n    at div (<anonymous>)\n    at div (<anonymous>)\n    at main (<anonymous>)\n    at div (<anonymous>)\n    at div (<anonymous>)\n    at DashboardPage (http://localhost:3000/_next/static/chunks/_e24180ea._.js?id=%255Bproject%255D%252Fapp%252Fpage.tsx+%255Bapp-client%255D+%2528ecmascript%2529:28:171)\n    at ClientPageRoot (http://localhost:3000/_next/static/chunks/node_modules_next_dist_094231d7._.js:2157:27)\n    at SegmentViewNode (http://localhost:3000/_next/static/chunks/node_modules_next_dist_7a8122d0._.js:3299:28)\n    at InnerLayoutRouter (http://localhost:3000/_next/static/chunks/node_modules_next_dist_094231d7._.js:390:34)\n    at RedirectErrorBoundary (http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_aaee43fe._.js:9326:9)\n    at RedirectBoundary (http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_aaee43fe._.js:9368:29)\n    at HTTPAccessFallbackErrorBoundary (http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_aaee43fe._.js:9816:9)\n    at HTTPAccessFallbackBoundary (http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_aaee43fe._.js:9891:39)\n    at LoadingBoundary (http://localhost:3000/_next/static/chunks/node_modules_next_dist_094231d7._.js:496:32)\n    at ErrorBoundary (http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_aaee43fe._.js:1048:26)\n    at InnerScrollAndFocusHandler (http://localhost:3000/_next/static/chunks/node_modules_next_dist_094231d7._.js:290:9)\n    at ScrollAndFocusHandler (http://localhost:3000/_next/static/chunks/node_modules_next_dist_094231d7._.js:373:34)\n    at RenderFromTemplateContext (http://localhost:3000/_next/static/chunks/node_modules_next_dist_094231d7._.js:769:44)\n    at SegmentStateProvider (http://localhost:3000/_next/static/chunks/node_modules_next_dist_7a8122d0._.js:3315:33)\n    at OuterLayoutRouter (http://localhost:3000/_next/static/chunks/node_modules_next_dist_094231d7._.js:532:30)\n    at ErrorBoundary (http://localhost:3000/_next/static/chunks/_11dcfcba._.js:495:9)\n    at body (<anonymous>)\n    at html (<anonymous>)\n    at RootLayout [Server] (<anonymous>)\n    at SegmentViewNode (http://localhost:3000/_next/static/chunks/node_modules_next_dist_7a8122d0._.js:3299:28)\n    at __next_root_layout_boundary__ (http://localhost:3000/_next/static/chunks/node_modules_next_dist_7a8122d0._.js:1666:64)\n    at RedirectErrorBoundary (http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_aaee43fe._.js:9326:9)\n    at RedirectBoundary (http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_aaee43fe._.js:9368:29)\n    at HTTPAccessFallbackErrorBoundary (http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_aaee43fe._.js:9816:9)\n    at HTTPAccessFallbackBoundary (http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_aaee43fe._.js:9891:39)\n    at DevRootHTTPAccessFallbackBoundary (http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_aaee43fe._.js:9960:46)\n    at AppDevOverlayErrorBoundary (http://localhost:3000/_next/static/chunks/node_modules_next_dist_7a8122d0._.js:3410:9)\n    at HotReload (http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_aaee43fe._.js:10954:22)\n    at Router (http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_aaee43fe._.js:11132:23)\n    at ErrorBoundaryHandler (http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_aaee43fe._.js:982:9)\n    at ErrorBoundary (http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_aaee43fe._.js:1048:26)\n    at RootErrorBoundary (http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_aaee43fe._.js:9640:30)\n    at AppRouter (http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_aaee43fe._.js:11449:22)\n    at ServerRoot (http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_aaee43fe._.js:12966:23)\n    at Root (http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_aaee43fe._.js:12984:17)"}
+[00:21:59.029] Server  LOG      ✓ Compiled in 76ms
+[00:22:00.016] Browser ERROR   Error caught by boundary: {} {"componentStack":"\n    at TruckSection (http://localhost:3000/_next/static/chunks/_96336278._.js?id=%255Bproject%255D%252Fcomponents%252Ftrucks%252FTruckSection.tsx+%255Bapp-client%255D+%2528ecmascript%2529:49:25)\n    at div (<anonymous>)\n    at div (<anonymous>)\n    at main (<anonymous>)\n    at div (<anonymous>)\n    at div (<anonymous>)\n    at DashboardPage (http://localhost:3000/_next/static/chunks/_e24180ea._.js?id=%255Bproject%255D%252Fapp%252Fpage.tsx+%255Bapp-client%255D+%2528ecmascript%2529:28:171)\n    at ClientPageRoot (http://localhost:3000/_next/static/chunks/node_modules_next_dist_094231d7._.js:2157:27)\n    at SegmentViewNode (http://localhost:3000/_next/static/chunks/node_modules_next_dist_7a8122d0._.js:3299:28)\n    at InnerLayoutRouter (http://localhost:3000/_next/static/chunks/node_modules_next_dist_094231d7._.js:390:34)\n    at RedirectErrorBoundary (http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_aaee43fe._.js:9326:9)\n    at RedirectBoundary (http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_aaee43fe._.js:9368:29)\n    at HTTPAccessFallbackErrorBoundary (http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_aaee43fe._.js:9816:9)\n    at HTTPAccessFallbackBoundary (http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_aaee43fe._.js:9891:39)\n    at LoadingBoundary (http://localhost:3000/_next/static/chunks/node_modules_next_dist_094231d7._.js:496:32)\n    at ErrorBoundary (http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_aaee43fe._.js:1048:26)\n    at InnerScrollAndFocusHandler (http://localhost:3000/_next/static/chunks/node_modules_next_dist_094231d7._.js:290:9)\n    at ScrollAndFocusHandler (http://localhost:3000/_next/static/chunks/node_modules_next_dist_094231d7._.js:373:34)\n    at RenderFromTemplateContext (http://localhost:3000/_next/static/chunks/node_modules_next_dist_094231d7._.js:769:44)\n    at SegmentStateProvider (http://localhost:3000/_next/static/chunks/node_modules_next_dist_7a8122d0._.js:3315:33)\n    at OuterLayoutRouter (http://localhost:3000/_next/static/chunks/node_modules_next_dist_094231d7._.js:532:30)\n    at ErrorBoundary (http://localhost:3000/_next/static/chunks/_11dcfcba._.js:495:9)\n    at body (<anonymous>)\n    at html (<anonymous>)\n    at RootLayout [Server] (<anonymous>)\n    at SegmentViewNode (http://localhost:3000/_next/static/chunks/node_modules_next_dist_7a8122d0._.js:3299:28)\n    at __next_root_layout_boundary__ (http://localhost:3000/_next/static/chunks/node_modules_next_dist_7a8122d0._.js:1666:64)\n    at RedirectErrorBoundary (http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_aaee43fe._.js:9326:9)\n    at RedirectBoundary (http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_aaee43fe._.js:9368:29)\n    at HTTPAccessFallbackErrorBoundary (http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_aaee43fe._.js:9816:9)\n    at HTTPAccessFallbackBoundary (http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_aaee43fe._.js:9891:39)\n    at DevRootHTTPAccessFallbackBoundary (http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_aaee43fe._.js:9960:46)\n    at AppDevOverlayErrorBoundary (http://localhost:3000/_next/static/chunks/node_modules_next_dist_7a8122d0._.js:3410:9)\n    at HotReload (http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_aaee43fe._.js:10954:22)\n    at Router (http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_aaee43fe._.js:11132:23)\n    at ErrorBoundaryHandler (http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_aaee43fe._.js:982:9)\n    at ErrorBoundary (http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_aaee43fe._.js:1048:26)\n    at RootErrorBoundary (http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_aaee43fe._.js:9640:30)\n    at AppRouter (http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_aaee43fe._.js:11449:22)\n    at ServerRoot (http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_aaee43fe._.js:12966:23)\n    at Root (http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_aaee43fe._.js:12984:17)"}
+[00:22:18.504] Server  LOG      ✓ Compiled in 27ms
+[00:22:28.666] Server  LOG      ✓ Compiled in 35ms
+[00:24:33.979] Server  LOG      ✓ Compiled in 26ms
+[00:24:40.339] Server  LOG      ✓ Compiled in 29ms
+[00:24:48.233] Server  LOG      ✓ Compiled in 20ms
+[00:24:59.475] Server  LOG      ✓ Compiled in 26ms
+[00:26:52.366] Server  LOG      ✓ Compiled in 38ms
+[00:26:57.169] Server  LOG      ✓ Compiled in 23ms
+[00:27:04.165] Server  LOG      ✓ Compiled in 28ms
+[00:27:10.074] Server  LOG      ✓ Compiled in 24ms
+[00:27:15.753] Server  LOG      ✓ Compiled in 21ms
+[00:27:19.092] Server  LOG      ✓ Compiled in 44ms
+[00:27:21.251] Server  LOG      ✓ Compiled in 24ms
+[00:27:23.851] Server  LOG      ✓ Compiled in 26ms
+[00:27:26.946] Server  LOG      ✓ Compiled in 21ms
+[00:27:29.904] Server  LOG      ✓ Compiled in 20ms
+[00:27:35.578] Server  LOG      ✓ Compiled in 27ms
+[00:27:37.266] Server  LOG      ✓ Compiled in 21ms
+[00:27:38.986] Server  LOG      ✓ Compiled in 24ms
+[00:27:42.440] Server  LOG      ✓ Compiled in 21ms
+[00:27:46.450] Server  LOG      ✓ Compiled in 21ms
+[00:27:52.978] Server  LOG      ✓ Compiled in 17ms
+[00:27:58.893] Server  LOG      ✓ Compiled in 24ms
+[00:28:04.960] Server  LOG      ✓ Compiled in 21ms
+[00:28:10.472] Server  LOG      ✓ Compiled in 24ms
+[00:28:16.242] Server  LOG      ✓ Compiled in 19ms
+[00:28:21.658] Server  LOG      ✓ Compiled in 19ms
+[00:28:27.557] Server  LOG      ✓ Compiled in 21ms
+[00:28:33.797] Server  LOG      ✓ Compiled in 19ms
+[00:28:43.698] Server  LOG      ✓ Compiled in 46ms
+[00:28:46.073] Server  LOG      ✓ Compiled in 23ms
+[00:28:49.158] Server  LOG      ✓ Compiled in 75ms
+[00:28:50.936] Server  LOG      ✓ Compiled in 21ms
+[00:28:52.910] Server  LOG      ✓ Compiled in 22ms
+[00:29:01.157] Server  LOG      ✓ Compiled in 20ms
+[00:31:15.728] Server  LOG      ✓ Compiled in 46ms
+[00:34:30.439] Browser ERROR   `DialogContent` requires a `DialogTitle` for the component to be accessible for screen reader users.
+
+If you want to hide the `DialogTitle`, you can wrap it with our VisuallyHidden component.
+
+For more information, see https://radix-ui.com/primitives/docs/components/dialog
+[00:34:30.439] Browser WARN    Warning: Missing `Description` or `aria-describedby={undefined}` for {DialogContent}.
+[00:34:30.439] Browser ERROR   `DialogContent` requires a `DialogTitle` for the component to be accessible for screen reader users.
+
+If you want to hide the `DialogTitle`, you can wrap it with our VisuallyHidden component.
+
+For more information, see https://radix-ui.com/primitives/docs/components/dialog
+[00:34:30.439] Browser WARN    Warning: Missing `Description` or `aria-describedby={undefined}` for {DialogContent}.
+[00:34:45.866] Server  LOG      ✓ Compiled in 23ms
+[00:36:44.013] Server  LOG      ✓ Compiled in 24ms
+[00:37:05.481] Server  LOG      ✓ Compiled in 28ms
+[00:37:08.734] Server  LOG      ✓ Compiled in 29ms
+[00:37:17.442] Server  LOG      ✓ Compiled in 32ms
+[00:37:18.016] Browser ERROR   Error caught by boundary: {} {"componentStack":"\n    at EditLogDialog (http://localhost:3000/_next/static/chunks/_07f81ae3._.js?id=%255Bproject%255D%252Fcomponents%252Fhistory%252FEditLogDialog.tsx+%255Bapp-client%255D+%2528ecmascript%2529:40:26)\n    at div (<anonymous>)\n    at Card (http://localhost:3000/_next/static/chunks/_95c9a075._.js:1001:17)\n    at TruckTable (http://localhost:3000/_next/static/chunks/_07f81ae3._.js?id=%255Bproject%255D%252Fcomponents%252Ftrucks%252FTruckTable.tsx+%255Bapp-client%255D+%2528ecmascript%2529:36:23)\n    at div (<anonymous>)\n    at main (<anonymous>)\n    at div (<anonymous>)\n    at div (<anonymous>)\n    at DashboardPage (http://localhost:3000/_next/static/chunks/_07f81ae3._.js?id=%255Bproject%255D%252Fapp%252Fpage.tsx+%255Bapp-client%255D+%2528ecmascript%2529:28:171)\n    at ClientPageRoot (http://localhost:3000/_next/static/chunks/node_modules_next_dist_094231d7._.js:2157:27)\n    at SegmentViewNode (http://localhost:3000/_next/static/chunks/node_modules_next_dist_7a8122d0._.js:3299:28)\n    at InnerLayoutRouter (http://localhost:3000/_next/static/chunks/node_modules_next_dist_094231d7._.js:390:34)\n    at RedirectErrorBoundary (http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_aaee43fe._.js:9326:9)\n    at RedirectBoundary (http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_aaee43fe._.js:9368:29)\n    at HTTPAccessFallbackErrorBoundary (http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_aaee43fe._.js:9816:9)\n    at HTTPAccessFallbackBoundary (http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_aaee43fe._.js:9891:39)\n    at LoadingBoundary (http://localhost:3000/_next/static/chunks/node_modules_next_dist_094231d7._.js:496:32)\n    at ErrorBoundary (http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_aaee43fe._.js:1048:26)\n    at InnerScrollAndFocusHandler (http://localhost:3000/_next/static/chunks/node_modules_next_dist_094231d7._.js:290:9)\n    at ScrollAndFocusHandler (http://localhost:3000/_next/static/chunks/node_modules_next_dist_094231d7._.js:373:34)\n    at RenderFromTemplateContext (http://localhost:3000/_next/static/chunks/node_modules_next_dist_094231d7._.js:769:44)\n    at SegmentStateProvider (http://localhost:3000/_next/static/chunks/node_modules_next_dist_7a8122d0._.js:3315:33)\n    at OuterLayoutRouter (http://localhost:3000/_next/static/chunks/node_modules_next_dist_094231d7._.js:532:30)\n    at ErrorBoundary (http://localhost:3000/_next/static/chunks/_11dcfcba._.js:495:9)\n    at body (<anonymous>)\n    at html (<anonymous>)\n    at RootLayout [Server] (<anonymous>)\n    at SegmentViewNode (http://localhost:3000/_next/static/chunks/node_modules_next_dist_7a8122d0._.js:3299:28)\n    at __next_root_layout_boundary__ (http://localhost:3000/_next/static/chunks/node_modules_next_dist_7a8122d0._.js:1666:64)\n    at RedirectErrorBoundary (http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_aaee43fe._.js:9326:9)\n    at RedirectBoundary (http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_aaee43fe._.js:9368:29)\n    at HTTPAccessFallbackErrorBoundary (http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_aaee43fe._.js:9816:9)\n    at HTTPAccessFallbackBoundary (http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_aaee43fe._.js:9891:39)\n    at DevRootHTTPAccessFallbackBoundary (http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_aaee43fe._.js:9960:46)\n    at AppDevOverlayErrorBoundary (http://localhost:3000/_next/static/chunks/node_modules_next_dist_7a8122d0._.js:3410:9)\n    at HotReload (http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_aaee43fe._.js:10954:22)\n    at Router (http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_aaee43fe._.js:11132:23)\n    at ErrorBoundaryHandler (http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_aaee43fe._.js:982:9)\n    at ErrorBoundary (http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_aaee43fe._.js:1048:26)\n    at RootErrorBoundary (http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_aaee43fe._.js:9640:30)\n    at AppRouter (http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_aaee43fe._.js:11449:22)\n    at ServerRoot (http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_aaee43fe._.js:12966:23)\n    at Root (http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_aaee43fe._.js:12984:17)"}
+[00:37:19.911] Server  LOG      ✓ Compiled in 24ms
+[00:38:26.148] Server  LOG      ✓ Compiled in 59ms
+[00:38:34.082] Server  LOG      ✓ Compiled in 25ms
+[00:38:36.129] Server  LOG      ✓ Compiled in 22ms
+[00:38:37.654] Server  LOG      ✓ Compiled in 26ms
+[00:38:41.006] Server  LOG      ✓ Compiled in 20ms
+[00:38:43.880] Server  LOG      ✓ Compiled in 30ms
+[00:38:47.557] Server  LOG      ✓ Compiled in 28ms
+[00:38:48.016] Browser ERROR   Error caught by boundary: {} {"componentStack":"\n    at TruckSection (http://localhost:3000/_next/static/chunks/_07f81ae3._.js?id=%255Bproject%255D%252Fcomponents%252Ftrucks%252FTruckSection.tsx+%255Bapp-client%255D+%2528ecmascript%2529:49:25)\n    at div (<anonymous>)\n    at div (<anonymous>)\n    at main (<anonymous>)\n    at div (<anonymous>)\n    at div (<anonymous>)\n    at DashboardPage (http://localhost:3000/_next/static/chunks/_07f81ae3._.js?id=%255Bproject%255D%252Fapp%252Fpage.tsx+%255Bapp-client%255D+%2528ecmascript%2529:28:171)\n    at ClientPageRoot (http://localhost:3000/_next/static/chunks/node_modules_next_dist_094231d7._.js:2157:27)\n    at SegmentViewNode (http://localhost:3000/_next/static/chunks/node_modules_next_dist_7a8122d0._.js:3299:28)\n    at InnerLayoutRouter (http://localhost:3000/_next/static/chunks/node_modules_next_dist_094231d7._.js:390:34)\n    at RedirectErrorBoundary (http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_aaee43fe._.js:9326:9)\n    at RedirectBoundary (http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_aaee43fe._.js:9368:29)\n    at HTTPAccessFallbackErrorBoundary (http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_aaee43fe._.js:9816:9)\n    at HTTPAccessFallbackBoundary (http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_aaee43fe._.js:9891:39)\n    at LoadingBoundary (http://localhost:3000/_next/static/chunks/node_modules_next_dist_094231d7._.js:496:32)\n    at ErrorBoundary (http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_aaee43fe._.js:1048:26)\n    at InnerScrollAndFocusHandler (http://localhost:3000/_next/static/chunks/node_modules_next_dist_094231d7._.js:290:9)\n    at ScrollAndFocusHandler (http://localhost:3000/_next/static/chunks/node_modules_next_dist_094231d7._.js:373:34)\n    at RenderFromTemplateContext (http://localhost:3000/_next/static/chunks/node_modules_next_dist_094231d7._.js:769:44)\n    at SegmentStateProvider (http://localhost:3000/_next/static/chunks/node_modules_next_dist_7a8122d0._.js:3315:33)\n    at OuterLayoutRouter (http://localhost:3000/_next/static/chunks/node_modules_next_dist_094231d7._.js:532:30)\n    at ErrorBoundary (http://localhost:3000/_next/static/chunks/_11dcfcba._.js:495:9)\n    at body (<anonymous>)\n    at html (<anonymous>)\n    at RootLayout [Server] (<anonymous>)\n    at SegmentViewNode (http://localhost:3000/_next/static/chunks/node_modules_next_dist_7a8122d0._.js:3299:28)\n    at __next_root_layout_boundary__ (http://localhost:3000/_next/static/chunks/node_modules_next_dist_7a8122d0._.js:1666:64)\n    at RedirectErrorBoundary (http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_aaee43fe._.js:9326:9)\n    at RedirectBoundary (http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_aaee43fe._.js:9368:29)\n    at HTTPAccessFallbackErrorBoundary (http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_aaee43fe._.js:9816:9)\n    at HTTPAccessFallbackBoundary (http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_aaee43fe._.js:9891:39)\n    at DevRootHTTPAccessFallbackBoundary (http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_aaee43fe._.js:9960:46)\n    at AppDevOverlayErrorBoundary (http://localhost:3000/_next/static/chunks/node_modules_next_dist_7a8122d0._.js:3410:9)\n    at HotReload (http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_aaee43fe._.js:10954:22)\n    at Router (http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_aaee43fe._.js:11132:23)\n    at ErrorBoundaryHandler (http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_aaee43fe._.js:982:9)\n    at ErrorBoundary (http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_aaee43fe._.js:1048:26)\n    at RootErrorBoundary (http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_aaee43fe._.js:9640:30)\n    at AppRouter (http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_aaee43fe._.js:11449:22)\n    at ServerRoot (http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_aaee43fe._.js:12966:23)\n    at Root (http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_aaee43fe._.js:12984:17)"}
+[00:38:50.901] Server  LOG      ✓ Compiled in 26ms
+[00:38:52.014] Browser ERROR   Error caught by boundary: {} {"componentStack":"\n    at TruckSection (http://localhost:3000/_next/static/chunks/_07f81ae3._.js?id=%255Bproject%255D%252Fcomponents%252Ftrucks%252FTruckSection.tsx+%255Bapp-client%255D+%2528ecmascript%2529:49:25)\n    at div (<anonymous>)\n    at div (<anonymous>)\n    at main (<anonymous>)\n    at div (<anonymous>)\n    at div (<anonymous>)\n    at DashboardPage (http://localhost:3000/_next/static/chunks/_07f81ae3._.js?id=%255Bproject%255D%252Fapp%252Fpage.tsx+%255Bapp-client%255D+%2528ecmascript%2529:28:171)\n    at ClientPageRoot (http://localhost:3000/_next/static/chunks/node_modules_next_dist_094231d7._.js:2157:27)\n    at SegmentViewNode (http://localhost:3000/_next/static/chunks/node_modules_next_dist_7a8122d0._.js:3299:28)\n    at InnerLayoutRouter (http://localhost:3000/_next/static/chunks/node_modules_next_dist_094231d7._.js:390:34)\n    at RedirectErrorBoundary (http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_aaee43fe._.js:9326:9)\n    at RedirectBoundary (http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_aaee43fe._.js:9368:29)\n    at HTTPAccessFallbackErrorBoundary (http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_aaee43fe._.js:9816:9)\n    at HTTPAccessFallbackBoundary (http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_aaee43fe._.js:9891:39)\n    at LoadingBoundary (http://localhost:3000/_next/static/chunks/node_modules_next_dist_094231d7._.js:496:32)\n    at ErrorBoundary (http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_aaee43fe._.js:1048:26)\n    at InnerScrollAndFocusHandler (http://localhost:3000/_next/static/chunks/node_modules_next_dist_094231d7._.js:290:9)\n    at ScrollAndFocusHandler (http://localhost:3000/_next/static/chunks/node_modules_next_dist_094231d7._.js:373:34)\n    at RenderFromTemplateContext (http://localhost:3000/_next/static/chunks/node_modules_next_dist_094231d7._.js:769:44)\n    at SegmentStateProvider (http://localhost:3000/_next/static/chunks/node_modules_next_dist_7a8122d0._.js:3315:33)\n    at OuterLayoutRouter (http://localhost:3000/_next/static/chunks/node_modules_next_dist_094231d7._.js:532:30)\n    at ErrorBoundary (http://localhost:3000/_next/static/chunks/_11dcfcba._.js:495:9)\n    at body (<anonymous>)\n    at html (<anonymous>)\n    at RootLayout [Server] (<anonymous>)\n    at SegmentViewNode (http://localhost:3000/_next/static/chunks/node_modules_next_dist_7a8122d0._.js:3299:28)\n    at __next_root_layout_boundary__ (http://localhost:3000/_next/static/chunks/node_modules_next_dist_7a8122d0._.js:1666:64)\n    at RedirectErrorBoundary (http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_aaee43fe._.js:9326:9)\n    at RedirectBoundary (http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_aaee43fe._.js:9368:29)\n    at HTTPAccessFallbackErrorBoundary (http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_aaee43fe._.js:9816:9)\n    at HTTPAccessFallbackBoundary (http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_aaee43fe._.js:9891:39)\n    at DevRootHTTPAccessFallbackBoundary (http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_aaee43fe._.js:9960:46)\n    at AppDevOverlayErrorBoundary (http://localhost:3000/_next/static/chunks/node_modules_next_dist_7a8122d0._.js:3410:9)\n    at HotReload (http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_aaee43fe._.js:10954:22)\n    at Router (http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_aaee43fe._.js:11132:23)\n    at ErrorBoundaryHandler (http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_aaee43fe._.js:982:9)\n    at ErrorBoundary (http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_aaee43fe._.js:1048:26)\n    at RootErrorBoundary (http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_aaee43fe._.js:9640:30)\n    at AppRouter (http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_aaee43fe._.js:11449:22)\n    at ServerRoot (http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_aaee43fe._.js:12966:23)\n    at Root (http://localhost:3000/_next/static/chunks/node_modules_next_dist_client_aaee43fe._.js:12984:17)"}
+[00:39:03.460] Server  LOG      ✓ Compiled in 22ms
+[00:39:44.878] Server  LOG      ✓ Compiled in 23ms
+[00:42:17.579] Server  LOG      ✓ Compiled in 27ms
+[00:42:22.777] Server  LOG      ✓ Compiled in 31ms
+[00:42:31.376] Server  LOG      ✓ Compiled in 25ms
+[00:42:37.872] Server  LOG      ✓ Compiled in 28ms
+[00:42:40.667] Server  LOG      ✓ Compiled in 22ms
+[00:42:46.036] Server  LOG      ✓ Compiled in 22ms
+[00:45:15.315] Server  LOG      ✓ Compiled in 68ms
+[00:46:09.955] Server  LOG      ✓ Compiled in 123ms
+[00:46:16.836] Server  LOG      ✓ Compiled in 26ms
+[00:46:24.512] Server  LOG      ✓ Compiled in 29ms
+[00:46:28.109] Server  LOG      ✓ Compiled in 28ms
+[00:46:30.523] Server  LOG      ✓ Compiled in 32ms
+[00:46:33.893] Server  LOG      ✓ Compiled in 22ms
+[00:46:38.401] Server  LOG      ✓ Compiled in 30ms
+[00:46:41.101] Server  LOG      ✓ Compiled in 25ms
+[00:46:44.205] Server  LOG      ✓ Compiled in 23ms
+[00:46:46.149] Server  LOG      ✓ Compiled in 19ms
+[00:46:51.981] Server  LOG      ✓ Compiled in 19ms
+[00:46:56.401] Server  LOG      ✓ Compiled in 22ms
+[00:47:14.872] Server  LOG      ✓ Compiled in 24ms
+[00:47:23.580] Server  LOG      ✓ Compiled in 28ms
+[00:50:02.265] Server  LOG      ✓ Compiled in 56ms
+[00:50:12.713] Server  LOG      ✓ Compiled in 26ms
+[00:50:36.359] Server  LOG      ✓ Compiled in 39ms
+[00:50:38.996] Server  LOG      ✓ Compiled in 27ms
+[00:50:42.739] Server  LOG      ✓ Compiled in 22ms
+[00:50:46.235] Server  LOG      ✓ Compiled in 29ms
+[00:51:26.246] Server  LOG      ✓ Compiled in 49ms
+[00:51:42.390] Server  LOG      ✓ Compiled in 27ms
+[00:51:43.015] Browser ERROR   ./components/trucks/TruckSection.tsx:799:21
+Parsing ecmascript source code failed
+  797 |           </Button>
+  798 |         </div>
+> 799 |       </CardContent>
+      |                     ^
+> 800 |     </Card>
+      | ^^^^^
+  801 |   )
+  802 | }
+  803 |
+
+Expected '</', got 'jsx text (
+    )'
+
+Import traces:
+  Client Component Browser:
+    ./components/trucks/TruckSection.tsx [Client Component Browser]
+    ./app/page.tsx [Client Component Browser]
+    ./app/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./components/trucks/TruckSection.tsx [Client Component SSR]
+    ./app/page.tsx [Client Component SSR]
+    ./app/page.tsx [Server Component]
+[00:53:52.794] Server  LOG      ✓ Compiled in 35ms
+[00:54:00.490] Server  LOG      ✓ Compiled in 23ms
+[00:54:02.608] Server  LOG      ✓ Compiled in 23ms
+[00:54:05.017] Server  LOG      ✓ Compiled in 24ms
+[00:54:48.461] Server  LOG      ✓ Compiled in 30ms
+[00:54:53.712] Server  LOG      ✓ Compiled in 23ms
+[00:54:55.762] Server  LOG      ✓ Compiled in 24ms
+[00:54:58.143] Server  LOG      ✓ Compiled in 22ms
+[00:55:00.569] Server  LOG      ✓ Compiled in 23ms
+[00:55:02.883] Server  LOG      ✓ Compiled in 25ms
+[00:55:05.585] Server  LOG      ✓ Compiled in 23ms
+[00:55:09.600] Server  LOG      ✓ Compiled in 23ms
+[00:55:29.028] Server  LOG      ✓ Compiled in 26ms
+[00:57:04.863] Server  LOG      ✓ Compiled in 35ms
+[01:00:03.868] Server  LOG      ✓ Compiled in 29ms
+[01:00:07.992] Server  LOG      ✓ Compiled in 548ms
+[01:00:09.015] Browser ERROR   ./lib/pdf-export.ts:232:9
+Ecmascript file had an error
+  230 |   // Generate filename
+  231 |   const date = new Date(log.createdAt || Date.now())
+> 232 |   const dateStr = date.toISOString().split("T")[0]
+      |         ^^^^^^^
+  233 |   const filename = `truck-log-${log.plate || "unknown"}-${dateStr}.pdf`
+  234 |
+  235 |   // Save PDF
+
+the name `dateStr` is defined multiple times
+
+Import traces:
+  Client Component Browser:
+    ./lib/pdf-export.ts [Client Component Browser]
+    ./components/trucks/TruckTable.tsx [Client Component Browser]
+    ./app/page.tsx [Client Component Browser]
+    ./app/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./lib/pdf-export.ts [Client Component SSR]
+    ./components/trucks/TruckTable.tsx [Client Component SSR]
+    ./app/page.tsx [Client Component SSR]
+    ./app/page.tsx [Server Component]
+[01:00:09.015] Browser ERROR   ./lib/pdf-export.ts:232:9
+Ecmascript file had an error
+  230 |   // Generate filename
+  231 |   const date = new Date(log.createdAt || Date.now())
+> 232 |   const dateStr = date.toISOString().split("T")[0]
+      |         ^^^^^^^
+  233 |   const filename = `truck-log-${log.plate || "unknown"}-${dateStr}.pdf`
+  234 |
+  235 |   // Save PDF
+
+the name `dateStr` is defined multiple times
+
+Import traces:
+  Client Component Browser:
+    ./lib/pdf-export.ts [Client Component Browser]
+    ./components/trucks/TruckTable.tsx [Client Component Browser]
+    ./app/page.tsx [Client Component Browser]
+    ./app/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./lib/pdf-export.ts [Client Component SSR]
+    ./components/trucks/TruckTable.tsx [Client Component SSR]
+    ./app/page.tsx [Client Component SSR]
+    ./app/page.tsx [Server Component]
+[01:00:22.017] Browser ERROR   ./lib/pdf-export.ts:232:9
+Ecmascript file had an error
+  230 |   // Generate filename
+  231 |   const date = new Date(log.createdAt || Date.now())
+> 232 |   const dateStr = date.toISOString().split("T")[0]
+      |         ^^^^^^^
+  233 |   const filename = `truck-log-${log.plate || "unknown"}-${dateStr}.pdf`
+  234 |
+  235 |   // Save PDF
+
+the name `dateStr` is defined multiple times
+
+Import traces:
+  Client Component Browser:
+    ./lib/pdf-export.ts [Client Component Browser]
+    ./components/trucks/TruckTable.tsx [Client Component Browser]
+    ./app/page.tsx [Client Component Browser]
+    ./app/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./lib/pdf-export.ts [Client Component SSR]
+    ./components/trucks/TruckTable.tsx [Client Component SSR]
+    ./app/page.tsx [Client Component SSR]
+    ./app/page.tsx [Server Component]
+[01:00:29.016] Browser ERROR   ./lib/pdf-export.ts:231:9
+Ecmascript file had an error
+  229 |   // Generate filename
+  230 |   const date = new Date(log.createdAt || Date.now())
+> 231 |   const dateStr = date.toISOString().split("T")[0]
+      |         ^^^^^^^
+  232 |   const filename = `truck-log-${log.plate || "unknown"}-${dateStr}.pdf`
+  233 |
+  234 |   // Save PDF
+
+the name `dateStr` is defined multiple times
+
+Import traces:
+  Client Component Browser:
+    ./lib/pdf-export.ts [Client Component Browser]
+    ./components/trucks/TruckTable.tsx [Client Component Browser]
+    ./app/page.tsx [Client Component Browser]
+    ./app/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./lib/pdf-export.ts [Client Component SSR]
+    ./components/trucks/TruckTable.tsx [Client Component SSR]
+    ./app/page.tsx [Client Component SSR]
+    ./app/page.tsx [Server Component]
+[01:00:54.086] Server  LOG      ✓ Compiled in 50ms
+[01:00:55.020] Browser ERROR   ./lib/pdf-export.ts:264:9
+Ecmascript file had an error
+  262 |   // Generate filename
+  263 |   const date = new Date(log.createdAt || Date.now())
+> 264 |   const dateStr = date.toISOString().split("T")[0]
+      |         ^^^^^^^
+  265 |   const filename = `truck-log-${log.plate || "unknown"}-${dateStr}.pdf`
+  266 |
+  267 |   // Save PDF
+
+the name `dateStr` is defined multiple times
+
+Import traces:
+  Client Component Browser:
+    ./lib/pdf-export.ts [Client Component Browser]
+    ./components/trucks/TruckTable.tsx [Client Component Browser]
+    ./app/page.tsx [Client Component Browser]
+    ./app/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./lib/pdf-export.ts [Client Component SSR]
+    ./components/trucks/TruckTable.tsx [Client Component SSR]
+    ./app/page.tsx [Client Component SSR]
+    ./app/page.tsx [Server Component]
+[01:00:55.020] Browser ERROR   ./lib/pdf-export.ts:264:9
+Ecmascript file had an error
+  262 |   // Generate filename
+  263 |   const date = new Date(log.createdAt || Date.now())
+> 264 |   const dateStr = date.toISOString().split("T")[0]
+      |         ^^^^^^^
+  265 |   const filename = `truck-log-${log.plate || "unknown"}-${dateStr}.pdf`
+  266 |
+  267 |   // Save PDF
+
+the name `dateStr` is defined multiple times
+
+Import traces:
+  Client Component Browser:
+    ./lib/pdf-export.ts [Client Component Browser]
+    ./components/trucks/TruckTable.tsx [Client Component Browser]
+    ./app/page.tsx [Client Component Browser]
+    ./app/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./lib/pdf-export.ts [Client Component SSR]
+    ./components/trucks/TruckTable.tsx [Client Component SSR]
+    ./app/page.tsx [Client Component SSR]
+    ./app/page.tsx [Server Component]
+[01:01:04.306] Server  LOG      ✓ Compiled in 23ms
+[01:01:05.015] Browser ERROR   ./lib/pdf-export.ts:264:9
+Ecmascript file had an error
+  262 |   // Generate filename
+  263 |   const date = new Date(log.createdAt || Date.now())
+> 264 |   const dateStr = date.toISOString().split("T")[0]
+      |         ^^^^^^^
+  265 |   const filename = `truck-log-${log.plate || "unknown"}-${dateStr}.pdf`
+  266 |
+  267 |   // Save PDF
+
+the name `dateStr` is defined multiple times
+
+Import traces:
+  Client Component Browser:
+    ./lib/pdf-export.ts [Client Component Browser]
+    ./components/trucks/TruckTable.tsx [Client Component Browser]
+    ./app/page.tsx [Client Component Browser]
+    ./app/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./lib/pdf-export.ts [Client Component SSR]
+    ./components/trucks/TruckTable.tsx [Client Component SSR]
+    ./app/page.tsx [Client Component SSR]
+    ./app/page.tsx [Server Component]
+[01:01:25.014] Server  LOG      ✓ Compiled in 30ms
+[01:04:52.459] Server  LOG      ✓ Compiled in 44ms
+[01:05:08.323] Server  LOG      ✓ Compiled in 29ms
+[01:05:50.391] Browser ERROR   Error exporting PDF: {}
+[01:05:53.526] Browser ERROR   Error exporting PDF: {}
+[01:06:03.754] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[01:06:03.898] Browser LOG     %c[Vercel Web Analytics]%c Debug mode is enabled by default in development. No requests will be sent to the server. color: rgb(120, 120, 120) color: inherit
+[01:06:03.898] Browser LOG     %c[Vercel Web Analytics]%c Running queued event color: rgb(120, 120, 120) color: inherit pageview {"path":"/","route":"/"}
+[01:06:03.898] Browser LOG     %c[Vercel Web Analytics]%c [pageview] http://localhost:3000/ color: rgb(120, 120, 120) color: inherit {"dp":"/","o":"http://localhost:3000/","sdkn":"@vercel/analytics/next","sdkv":"1.5.0","sv":"0.1.3","ts":1764431329724}
+[01:06:08.002] Browser ERROR   Error exporting PDF: {}
+[01:06:49.294] Server  LOG      ✓ Compiled in 40ms
+[01:06:56.588] Server  LOG      ✓ Compiled in 25ms
+[01:07:01.988] Server  LOG      ✓ Compiled in 28ms
+[01:07:03.835] Server  LOG      ✓ Compiled in 24ms
+[01:07:05.902] Server  LOG      ✓ Compiled in 23ms
+[01:07:08.083] Server  LOG      ✓ Compiled in 24ms
+[01:07:10.032] Server  LOG      ✓ Compiled in 22ms
+[01:07:14.152] Server  LOG      ✓ Compiled in 36ms
+[01:07:16.007] Server  LOG      ✓ Compiled in 26ms
+[01:07:18.206] Server  LOG      ✓ Compiled in 24ms
+[01:07:31.348] Server  LOG      ✓ Compiled in 43ms
+[01:07:44.933] Server  LOG      ✓ Compiled in 28ms
+[01:07:58.218] Server  LOG      ✓ Compiled in 29ms
+[01:08:15.612] Server  LOG      ✓ Compiled in 51ms
+[01:08:22.140] Server  LOG      ✓ Compiled in 36ms
+[01:11:10.042] Server  ERROR   Only plain objects can be passed to Client Components from Server Components. Objects with toJSON methods are not supported. Convert it manually to a simple value before passing it to props.
+  {direction: "IN", plate: "7712UBA", driverName: ..., cargoType: ..., weightKg: ..., comments: ..., origin: ..., destination: ..., id: ..., createdAt: ..., sentToCustoms: ..., _id: {buffer: ...}}
+                                                                                                                                                                                      ^^^^^^^^^^^^^
+[01:14:17.220] Server  LOG      ✓ Compiled in 52ms
+[01:14:44.453] Server  LOG      ✓ Compiled in 26ms
+[01:14:48.179] Server  LOG      ✓ Compiled in 24ms
+[01:14:51.623] Server  LOG      ✓ Compiled in 25ms
+[01:15:15.711] Server  LOG      ✓ Compiled in 28ms
+[01:16:47.383] Server  LOG      ✓ Compiled in 72ms
+[01:16:53.730] Server  LOG      ✓ Compiled in 33ms
+[01:17:01.631] Server  LOG      ✓ Compiled in 113ms
+[01:17:39.548] Server  LOG      ✓ Compiled in 57ms
+[01:17:43.204] Server  LOG      ✓ Compiled in 29ms
+[01:17:46.562] Server  LOG      ✓ Compiled in 30ms
+[01:17:52.416] Server  LOG      ✓ Compiled in 26ms
+[01:18:08.633] Server  LOG      ✓ Compiled in 24ms
+[01:18:18.000] Server  LOG      ✓ Compiled in 60ms
+[01:18:33.510] Server  LOG      ✓ Compiled in 65ms
+[01:18:40.235] Server  LOG      ✓ Compiled in 27ms
+[01:18:43.151] Server  LOG      ✓ Compiled in 25ms
+[01:18:45.696] Server  LOG      ✓ Compiled in 25ms
+[01:18:48.787] Server  LOG      ✓ Compiled in 29ms

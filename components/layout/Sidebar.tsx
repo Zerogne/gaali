@@ -1,9 +1,39 @@
 "use client"
 
+import { useState, useEffect } from "react"
 import { Truck } from "lucide-react"
 import { cn } from "@/lib/utils"
 
+interface UserInfo {
+  name: string
+  role: string
+  companyName?: string
+}
+
 export function Sidebar() {
+  const [companyName, setCompanyName] = useState<string>("XP Agency")
+  const [isLoading, setIsLoading] = useState(true)
+
+  useEffect(() => {
+    async function loadCompanyName() {
+      try {
+        const response = await fetch("/api/user")
+        if (response.ok) {
+          const data: UserInfo = await response.json()
+          if (data.companyName) {
+            setCompanyName(data.companyName)
+          }
+        }
+      } catch (error) {
+        console.error("Error loading company name:", error)
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    loadCompanyName()
+  }, [])
+
   return (
     <aside className="w-64 bg-white border-r border-gray-200 flex flex-col">
       <div className="p-6 border-b border-gray-200">
@@ -12,7 +42,9 @@ export function Sidebar() {
             <Truck className="w-6 h-6 text-white" />
           </div>
           <div>
-            <h1 className="text-lg font-semibold text-gray-900">XP Agency</h1>
+            <h1 className="text-lg font-semibold text-gray-900">
+              {isLoading ? "Loading..." : companyName}
+            </h1>
             <p className="text-xs text-gray-500">Logistics Platform</p>
           </div>
         </div>

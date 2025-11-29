@@ -44,8 +44,9 @@ export default function DashboardPage() {
     async function loadLogs() {
       try {
         setIsLoading(true)
-        const companyLogs = await getTruckLogs()
-        setLogs(companyLogs)
+        // Get first page of logs (pagination support)
+        const result = await getTruckLogs(1, 50)
+        setLogs(result.logs)
       } catch (error) {
         console.error("Error loading logs:", error)
         // If error loading logs, might be auth issue, redirect to login
@@ -66,8 +67,8 @@ export default function DashboardPage() {
     
     // Reload from server to ensure consistency
     try {
-      const companyLogs = await getTruckLogs()
-      setLogs(companyLogs)
+      const result = await getTruckLogs(1, 50)
+      setLogs(result.logs)
     } catch (error) {
       console.error("Error reloading logs:", error)
     }
@@ -83,8 +84,8 @@ export default function DashboardPage() {
     
     // Reload from server to ensure consistency
     try {
-      const companyLogs = await getTruckLogs()
-      setLogs(companyLogs)
+      const result = await getTruckLogs(1, 50)
+      setLogs(result.logs)
     } catch (error) {
       console.error("Error reloading logs:", error)
     }
@@ -107,7 +108,6 @@ export default function DashboardPage() {
       <Sidebar />
       <div className="flex-1 flex flex-col overflow-hidden">
         <TopBar />
-        <AlertBanner />
         <main className="flex-1 overflow-auto">
           <div className="max-w-[1920px] mx-auto p-6 lg:p-8 space-y-8">
             {/* Header */}
@@ -126,7 +126,14 @@ export default function DashboardPage() {
             </div>
 
             {/* History Table */}
-            <TruckTable logs={logs} onSend={handleSend} />
+            <TruckTable 
+              logs={logs} 
+              onSend={handleSend}
+              onUpdate={() => {
+                // Reload logs after update
+                getTruckLogs(1, 50).then(({ logs }) => setLogs(logs)).catch(console.error)
+              }}
+            />
           </div>
         </main>
       </div>

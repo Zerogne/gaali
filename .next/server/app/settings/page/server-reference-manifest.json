@@ -1,0 +1,20 @@
+{
+  "node": {
+    "002aaa44fc4d8d053062b4a4224916d4927773c390": {
+      "workers": {
+        "app/settings/page": {
+          "moduleId": 84337,
+          "async": false,
+          "exportedName": "logout",
+          "filename": "lib/auth/authServer.ts"
+        }
+      },
+      "layer": {
+        "app/settings/page": "action-browser"
+      },
+      "exportedName": "logout",
+      "filename": "lib/auth/authServer.ts"
+    }
+  },
+  "edge": {}
+}

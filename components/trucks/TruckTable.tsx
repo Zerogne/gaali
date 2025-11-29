@@ -7,7 +7,9 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Send, Search } from "lucide-react"
+import { Send, Search, Edit, FileDown } from "lucide-react"
+import { EditLogDialog } from "@/components/history/EditLogDialog"
+import { exportLogToPDF } from "@/lib/pdf-export"
 import type { TruckLog, Direction } from "@/lib/types"
 import { sendTruckLogToCustoms } from "@/lib/api"
 import { useToast } from "@/hooks/use-toast"
@@ -15,13 +17,29 @@ import { useToast } from "@/hooks/use-toast"
 interface TruckTableProps {
   logs: TruckLog[]
   onSend: (logId: string) => void
+  onUpdate?: () => void
 }
 
-export function TruckTable({ logs, onSend }: TruckTableProps) {
+export function TruckTable({ logs, onSend, onUpdate }: TruckTableProps) {
   const { toast } = useToast()
   const [directionFilter, setDirectionFilter] = useState<Direction | "ALL">("ALL")
   const [searchQuery, setSearchQuery] = useState("")
   const [sendingIds, setSendingIds] = useState<Set<string>>(new Set())
+  const [editingLog, setEditingLog] = useState<TruckLog | null>(null)
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
+
+  const handleEdit = (log: TruckLog) => {
+    setEditingLog(log)
+    setIsEditDialogOpen(true)
+  }
+
+  const handleEditSuccess = () => {
+    setIsEditDialogOpen(false)
+    setEditingLog(null)
+    if (onUpdate) {
+      onUpdate()
+    }
+  }
 
   const filteredLogs = logs.filter((log) => {
     const matchesDirection = directionFilter === "ALL" || log.direction === directionFilter
@@ -170,24 +188,53 @@ export function TruckTable({ logs, onSend }: TruckTableProps) {
                       )}
                     </TableCell>
                     <TableCell>
-                      {!log.sentToCustoms && (
+                      <div className="flex items-center gap-2">
                         <Button
                           size="sm"
                           variant="outline"
-                          onClick={() => handleResend(log)}
-                          disabled={sendingIds.has(log.id)}
+                          onClick={() => handleEdit(log)}
+                          disabled={log.sentToCustoms}
+                          title={log.sentToCustoms ? "Cannot edit logs sent to customs" : "Edit log"}
                           className="border-gray-300 hover:bg-gray-50"
                         >
-                          {sendingIds.has(log.id) ? (
-                            "Sending..."
-                          ) : (
-                            <>
-                              <Send className="w-3.5 h-3.5 mr-1.5" />
-                              Resend
-                            </>
-                          )}
+                          <Edit className="w-3.5 h-3.5 mr-1.5" />
+                          Edit
                         </Button>
-                      )}
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={async () => {
+                            try {
+                              await exportLogToPDF(log)
+                            } catch (error) {
+                              console.error("Error exporting PDF:", error)
+                            }
+                          }}
+                          title="Export to PDF"
+                          className="border-gray-300 hover:bg-gray-50"
+                        >
+                          <FileDown className="w-3.5 h-3.5 mr-1.5" />
+                          PDF
+                        </Button>
+                        {!log.sentToCustoms && (
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => handleResend(log)}
+                            disabled={sendingIds.has(log.id)}
+                            className="border-gray-300 hover:bg-gray-50"
+                          >
+                            {sendingIds.has(log.id) ? (
+                              "Sending..."
+                            ) : (
+                              <>
+                                <Send className="w-3.5 h-3.5 mr-1.5" />
+                                Resend
+                              </>
+                            )}
+                          </Button>
+                        )}
+                      </div>
                     </TableCell>
                   </TableRow>
                 ))}
@@ -196,6 +243,13 @@ export function TruckTable({ logs, onSend }: TruckTableProps) {
           </div>
         )}
       </CardContent>
+
+      <EditLogDialog
+        log={editingLog}
+        open={isEditDialogOpen}
+        onOpenChange={setIsEditDialogOpen}
+        onSuccess={handleEditSuccess}
+      />
     </Card>
   )
 }

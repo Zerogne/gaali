@@ -3,11 +3,10 @@
 import { useState } from "react"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Loader2 } from "lucide-react"
 import type { Worker } from "@/lib/auth/mockData"
-import { handleLogin } from "@/lib/auth/authClient"
+import { handleWorkerSelect } from "@/lib/auth/authClient"
 
 interface WorkerSelectorProps {
   companyName: string
@@ -26,52 +25,36 @@ export function WorkerSelector({
   onBack,
   isLoading: isLoadingWorkers = false,
 }: WorkerSelectorProps) {
-  const [password, setPassword] = useState("")
   const [error, setError] = useState<string | null>(null)
-  const [isLoggingIn, setIsLoggingIn] = useState(false)
+  const [isSelecting, setIsSelecting] = useState(false)
 
   const selectedWorker = workers.find((w) => w.id === selectedWorkerId)
 
-  const handleWorkerSelect = (workerId: string) => {
+  const handleWorkerClick = async (workerId: string) => {
+    // Immediately select the worker visually
     onSelect(workerId)
-    setError(null) // Clear error when selecting new worker
-  }
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-
-    if (!selectedWorkerId || !password.trim()) {
-      return
-    }
-
     setError(null)
-    setIsLoggingIn(true)
+
+    // Auto-submit after selection
+    setIsSelecting(true)
 
     try {
-      // Find companyId from the selected worker
-      const companyId = selectedWorker?.companyId
-      if (!companyId) {
-        setError("Invalid worker selection")
-        setIsLoggingIn(false)
-        return
-      }
-
-      const result = await handleLogin({
-        companyId,
-        workerId: selectedWorkerId,
-        password: password.trim(),
+      // SECURITY: Only send workerId - server gets companyId from session
+      // This prevents client-side manipulation of companyId
+      const result = await handleWorkerSelect({
+        workerId,
       })
 
       if (!result.success) {
-        setError(result.error || "Login failed")
-        setPassword("") // Clear password on error
+        setError(result.error || "Failed to select worker")
+        // Don't deselect on error - keep the visual selection
       }
       // If success, redirect happens in authServer
     } catch (err) {
       setError("An unexpected error occurred")
-      setPassword("")
+      // Don't deselect on error - keep the visual selection
     } finally {
-      setIsLoggingIn(false)
+      setIsSelecting(false)
     }
   }
 
@@ -103,26 +86,27 @@ export function WorkerSelector({
             d="M15 19l-7-7 7-7"
           />
         </svg>
-        Back to company selection
+        Back to company password
       </button>
 
       <div className="text-center space-y-2">
         <h2 className="text-2xl font-bold text-gray-900">
-          Login to {companyName}
+          Select Worker Account
         </h2>
         <p className="text-sm text-gray-600">
-          Select your profile and enter your password.
+          Choose your worker profile to continue.
         </p>
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-6">
+      <div className="space-y-4">
         {/* Worker Profiles */}
         <div>
           <Label className="text-sm font-medium text-gray-700 mb-3 block">
-            Select Worker Profile
+            Available Workers
           </Label>
           {isLoadingWorkers ? (
             <div className="text-center py-8 text-gray-500">
+              <Loader2 className="w-6 h-6 animate-spin mx-auto mb-2" />
               Loading workers...
             </div>
           ) : workers.length === 0 ? (
@@ -132,106 +116,73 @@ export function WorkerSelector({
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
               {workers.map((worker) => {
-              const isSelected = selectedWorkerId === worker.id
-              return (
-                <Card
-                  key={worker.id}
-                  onClick={() => handleWorkerSelect(worker.id)}
-                  className={`
-                    p-4 cursor-pointer transition-all duration-200
-                    ${isSelected
-                      ? "border-2 border-blue-600 bg-blue-50 shadow-md"
-                      : "border border-gray-200 bg-white hover:border-blue-300 hover:shadow-md"
-                    }
-                  `}
-                >
-                  <div className="flex items-center gap-3">
-                    <div
-                      className={`
-                        w-10 h-10 rounded-full flex items-center justify-center text-white font-semibold text-sm
-                        ${worker.avatarColor}
-                      `}
-                    >
-                      {getInitials(worker.name)}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="font-medium text-gray-900 truncate">
-                        {worker.name}
-                      </p>
-                      <p className="text-xs text-gray-600">{worker.role}</p>
-                    </div>
-                    {isSelected && (
-                      <div className="w-5 h-5 rounded-full bg-blue-600 flex items-center justify-center flex-shrink-0">
-                        <svg
-                          className="w-3 h-3 text-white"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M5 13l4 4L19 7"
-                          />
-                        </svg>
+                const isSelected = selectedWorkerId === worker.id
+                const isProcessing = isSelected && isSelecting
+                return (
+                  <Card
+                    key={worker.id}
+                    onClick={() => !isSelecting && handleWorkerClick(worker.id)}
+                    className={`
+                      p-4 cursor-pointer transition-all duration-200
+                      ${isSelected
+                        ? "border-2 border-blue-600 bg-blue-50 shadow-md"
+                        : "border border-gray-200 bg-white hover:border-blue-300 hover:shadow-md"
+                      }
+                      ${isSelecting ? "opacity-50 cursor-wait" : ""}
+                    `}
+                  >
+                    <div className="flex items-center gap-3">
+                      <div
+                        className={`
+                          w-10 h-10 rounded-full flex items-center justify-center text-white font-semibold text-sm
+                          ${worker.avatarColor}
+                        `}
+                      >
+                        {getInitials(worker.name)}
                       </div>
-                    )}
-                  </div>
-                </Card>
-              )
-            })}
+                      <div className="flex-1 min-w-0">
+                        <p className="font-medium text-gray-900 truncate">
+                          {worker.name}
+                        </p>
+                        <p className="text-xs text-gray-600">{worker.role}</p>
+                      </div>
+                      {isSelected && (
+                        <div className="flex items-center gap-2 flex-shrink-0">
+                          {isProcessing ? (
+                            <Loader2 className="w-4 h-4 animate-spin text-blue-600" />
+                          ) : (
+                            <div className="w-5 h-5 rounded-full bg-blue-600 flex items-center justify-center">
+                              <svg
+                                className="w-3 h-3 text-white"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth={2}
+                                  d="M5 13l4 4L19 7"
+                                />
+                              </svg>
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  </Card>
+                )
+              })}
             </div>
           )}
         </div>
 
-        {/* Password Input */}
-        <div className="space-y-4">
-          <div>
-            <Label htmlFor="password" className="text-sm font-medium text-gray-700">
-              Password
-            </Label>
-            <Input
-              id="password"
-              type="password"
-              value={password}
-              onChange={(e) => {
-                setPassword(e.target.value)
-                setError(null) // Clear error when typing
-              }}
-              disabled={isLoggingIn}
-              className="mt-1 bg-white border-gray-300 focus:border-blue-500 focus:ring-blue-500"
-              placeholder="Enter your password"
-            />
-            {error && (
-              <p className="mt-2 text-sm text-red-600">{error}</p>
-            )}
+        {error && (
+          <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
+            <p className="text-sm text-red-600">{error}</p>
           </div>
-
-          <div className="flex items-center justify-between">
-            <Button
-              type="submit"
-              disabled={!selectedWorkerId || !password.trim() || isLoggingIn}
-              className="w-full sm:w-auto bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {isLoggingIn ? (
-                <>
-                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  Logging in...
-                </>
-              ) : (
-                "Log in"
-              )}
-            </Button>
-            <button
-              type="button"
-              className="text-sm text-gray-500 hover:text-gray-700 transition-colors"
-            >
-              Forgot password?
-            </button>
-          </div>
-        </div>
-      </form>
+        )}
+      </div>
     </div>
   )
 }

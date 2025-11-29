@@ -8,11 +8,17 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { FilterableSelect } from "@/components/ui/filterable-select"
 import { Camera, CheckCircle2, Clock, Zap, Loader2 } from "lucide-react"
 import type { Direction, TruckLog } from "@/lib/types"
 import { saveTruckLog, sendTruckLogToCustoms } from "@/lib/api"
 import { useToast } from "@/hooks/use-toast"
 import { ProductManager } from "@/components/products/ProductManager"
+import { TransportCompanyManager } from "@/components/transport/TransportCompanyManager"
+import { DriverManager } from "@/components/drivers/DriverManager"
+import { OrganizationManager } from "@/components/organizations/OrganizationManager"
+import { Checkbox } from "@/components/ui/checkbox"
+import type { TransportCompany, Organization, Driver, TransportType } from "@/lib/types"
 
 interface Product {
   id: string
@@ -35,24 +41,35 @@ export function TruckSection({ direction, onSave, onSend }: TruckSectionProps) {
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [products, setProducts] = useState<Product[]>([])
   const [isLoadingProducts, setIsLoadingProducts] = useState(true)
+  const [transportCompanies, setTransportCompanies] = useState<TransportCompany[]>([])
+  const [isLoadingCompanies, setIsLoadingCompanies] = useState(true)
+  const [drivers, setDrivers] = useState<Driver[]>([])
+  const [isLoadingDrivers, setIsLoadingDrivers] = useState(true)
+  const [senderOrganizations, setSenderOrganizations] = useState<Organization[]>([])
+  const [receiverOrganizations, setReceiverOrganizations] = useState<Organization[]>([])
+  const [isLoadingOrganizations, setIsLoadingOrganizations] = useState(true)
 
   // Form state
   const [plate, setPlate] = useState("Б1234АВ")
-  const [driverName, setDriverName] = useState("")
+  const [driverId, setDriverId] = useState<string>("")
+  const [driverName, setDriverName] = useState("") // Fallback for manual entry
   const [cargoType, setCargoType] = useState("")
   const [weight, setWeight] = useState("")
   const [comments, setComments] = useState("")
-
-  const [vehicleRegistrationNumber, setVehicleRegistrationNumber] = useState("")
-  const [vehicleRegistrationYear, setVehicleRegistrationYear] = useState("")
   const [origin, setOrigin] = useState("")
   const [destination, setDestination] = useState("")
-  const [senderOrganization, setSenderOrganization] = useState("")
-  const [receiverOrganization, setReceiverOrganization] = useState("")
+  const [senderOrganizationId, setSenderOrganizationId] = useState<string>("")
+  const [receiverOrganizationId, setReceiverOrganizationId] = useState<string>("")
+  const [transportCompanyId, setTransportCompanyId] = useState<string>("")
+  const [transportType, setTransportType] = useState<TransportType | "">("")
+  const [sealNumber, setSealNumber] = useState("")
+  const [hasTrailer, setHasTrailer] = useState(false)
+  const [trailerPlate, setTrailerPlate] = useState("")
 
-  // Load products on mount
+  // Load all data on mount
   useEffect(() => {
-    async function loadProducts() {
+    async function loadData() {
+      // Load products
       try {
         setIsLoadingProducts(true)
         const response = await fetch("/api/products")
@@ -65,13 +82,65 @@ export function TruckSection({ direction, onSave, onSend }: TruckSectionProps) {
       } finally {
         setIsLoadingProducts(false)
       }
+
+      // Load transport companies
+      try {
+        setIsLoadingCompanies(true)
+        const response = await fetch("/api/transport-companies")
+        if (response.ok) {
+          const data = await response.json()
+          setTransportCompanies(data)
+        }
+      } catch (error) {
+        console.error("Error loading transport companies:", error)
+      } finally {
+        setIsLoadingCompanies(false)
+      }
+
+      // Load drivers
+      try {
+        setIsLoadingDrivers(true)
+        const response = await fetch("/api/drivers")
+        if (response.ok) {
+          const data = await response.json()
+          setDrivers(data)
+        }
+      } catch (error) {
+        console.error("Error loading drivers:", error)
+      } finally {
+        setIsLoadingDrivers(false)
+      }
+
+      // Load sender organizations
+      try {
+        setIsLoadingOrganizations(true)
+        const senderResponse = await fetch("/api/organizations?type=sender")
+        if (senderResponse.ok) {
+          const senderData = await senderResponse.json()
+          setSenderOrganizations(senderData)
+        }
+      } catch (error) {
+        console.error("Error loading sender organizations:", error)
+      }
+
+      // Load receiver organizations
+      try {
+        const receiverResponse = await fetch("/api/organizations?type=receiver")
+        if (receiverResponse.ok) {
+          const receiverData = await receiverResponse.json()
+          setReceiverOrganizations(receiverData)
+        }
+      } catch (error) {
+        console.error("Error loading receiver organizations:", error)
+      } finally {
+        setIsLoadingOrganizations(false)
+      }
     }
 
-    loadProducts()
+    loadData()
   }, [])
 
   const handleProductAdded = () => {
-    // Reload products after adding/deleting
     async function reloadProducts() {
       try {
         const response = await fetch("/api/products")
@@ -83,8 +152,67 @@ export function TruckSection({ direction, onSave, onSend }: TruckSectionProps) {
         console.error("Error reloading products:", error)
       }
     }
-
     reloadProducts()
+  }
+
+  const handleCompanyAdded = () => {
+    async function reloadCompanies() {
+      try {
+        const response = await fetch("/api/transport-companies")
+        if (response.ok) {
+          const data = await response.json()
+          setTransportCompanies(data)
+        }
+      } catch (error) {
+        console.error("Error reloading companies:", error)
+      }
+    }
+    reloadCompanies()
+  }
+
+  const handleDriverAdded = () => {
+    async function reloadDrivers() {
+      try {
+        const response = await fetch("/api/drivers")
+        if (response.ok) {
+          const data = await response.json()
+          setDrivers(data)
+        }
+      } catch (error) {
+        console.error("Error reloading drivers:", error)
+      }
+    }
+    reloadDrivers()
+  }
+
+  const handleSenderOrganizationAdded = () => {
+    async function reloadSenderOrganizations() {
+      try {
+        const response = await fetch("/api/organizations?type=sender")
+        if (response.ok) {
+          const data = await response.json()
+          setSenderOrganizations(data)
+        }
+      } catch (error) {
+        console.error("Error reloading sender organizations:", error)
+      }
+    }
+    reloadSenderOrganizations()
+  }
+
+  const handleReceiverOrganizationAdded = () => {
+    async function reloadReceiverOrganizations() {
+      try {
+        const response = await fetch("/api/organizations?type=receiver")
+        if (response.ok) {
+          const data = await response.json()
+          setReceiverOrganizations(data)
+        }
+      } catch (error) {
+        console.error("Error reloading receiver organizations:", error)
+      }
+    }
+    reloadReceiverOrganizations()
   }
 
   // Mock plate recognition data
@@ -120,25 +248,38 @@ export function TruckSection({ direction, onSave, onSend }: TruckSectionProps) {
   }
 
   const handleSave = async () => {
+    // Early return if already saving (double-click protection)
+    if (isSaving) {
+      return
+    }
+
     if (!validate()) {
       return
     }
 
     setIsSaving(true)
     try {
+      // Get driver name from selected driver or use manual entry
+      const selectedDriver = driverId ? drivers.find(d => d.id === driverId) : null
+      const finalDriverName = selectedDriver?.name || driverName.trim()
+
       const log = await saveTruckLog({
         direction,
         plate: plate.trim(),
-        driverName: driverName.trim(),
+        driverId: driverId || undefined,
+        driverName: finalDriverName,
         cargoType: cargoType.trim(),
         weightKg: Number(weight),
         comments: comments.trim() || undefined,
-        vehicleRegistrationNumber: vehicleRegistrationNumber.trim() || undefined,
-        vehicleRegistrationYear: vehicleRegistrationYear.trim() || undefined,
         origin: origin.trim() || undefined,
         destination: destination.trim() || undefined,
-        senderOrganization: senderOrganization.trim() || undefined,
-        receiverOrganization: receiverOrganization.trim() || undefined,
+        senderOrganizationId: senderOrganizationId || undefined,
+        receiverOrganizationId: receiverOrganizationId || undefined,
+        transportCompanyId: transportCompanyId || undefined,
+        transportType: transportType || undefined,
+        sealNumber: sealNumber.trim() || undefined,
+        hasTrailer: hasTrailer || undefined,
+        trailerPlate: hasTrailer ? (trailerPlate.trim() || undefined) : undefined,
       })
 
       setSavedLogId(log.id)
@@ -150,16 +291,20 @@ export function TruckSection({ direction, onSave, onSend }: TruckSectionProps) {
       })
 
       // Reset form (but keep plate and savedLogId for sending)
+      setDriverId("")
       setDriverName("")
       setCargoType("")
       setWeight("")
       setComments("")
-      setVehicleRegistrationNumber("")
-      setVehicleRegistrationYear("")
       setOrigin("")
       setDestination("")
-      setSenderOrganization("")
-      setReceiverOrganization("")
+      setSenderOrganizationId("")
+      setReceiverOrganizationId("")
+      setTransportCompanyId("")
+      setTransportType("")
+      setSealNumber("")
+      setHasTrailer(false)
+      setTrailerPlate("")
       setErrors({})
     } catch (error) {
       toast({
@@ -181,6 +326,11 @@ export function TruckSection({ direction, onSave, onSend }: TruckSectionProps) {
   }
 
   const handleSend = async () => {
+    // Early return if already sending (double-click protection)
+    if (isSending) {
+      return
+    }
+
     if (!savedLogId) {
       toast({
         title: "Error",
@@ -219,8 +369,8 @@ export function TruckSection({ direction, onSave, onSend }: TruckSectionProps) {
     }
   }
 
-  const title = direction === "IN" ? "Truck IN – Gate Entry" : "Truck OUT – Gate Exit"
-  const weightLabel = direction === "IN" ? "Gross Weight (kg)" : "Net Weight (kg)"
+  const title = direction === "IN" ? "Тээврийн хэрэгсэл ОРОХ – Хаалгаар орох" : "Тээврийн хэрэгсэл ГАРАХ – Хаалгаар гарах"
+  const weightLabel = direction === "IN" ? "Бүрэн жин (кг)" : "Цэвэр жин (кг)"
 
   return (
     <Card className="border-gray-200 bg-white hover:shadow-lg transition-shadow">
@@ -234,7 +384,7 @@ export function TruckSection({ direction, onSave, onSend }: TruckSectionProps) {
           </CardTitle>
           <Badge className="bg-green-50 text-green-700 border-green-200 px-2.5 py-1">
             <CheckCircle2 className="w-3.5 h-3.5 mr-1.5" />
-            Recognized
+            Танигдсан
           </Badge>
         </div>
       </CardHeader>
@@ -243,7 +393,7 @@ export function TruckSection({ direction, onSave, onSend }: TruckSectionProps) {
         <div className="bg-gray-50 rounded-xl p-4 border border-gray-200">
           <h3 className="text-sm font-semibold text-gray-900 mb-3 flex items-center gap-2">
             <Camera className="w-4 h-4 text-blue-600" />
-            Real-Time License Plate Recognition
+            Улсын дугаарыг бодит цагт таних
           </h3>
           
           <div className="aspect-video bg-gray-100 rounded-lg overflow-hidden relative border-2 border-gray-200 mb-4">
@@ -255,11 +405,11 @@ export function TruckSection({ direction, onSave, onSend }: TruckSectionProps) {
             <div className="absolute bottom-3 left-3 right-3 bg-white/95 backdrop-blur-sm rounded-lg p-3 border border-blue-200 shadow-sm">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-xs font-medium text-gray-500 mb-1">Detected Plate</p>
+                  <p className="text-xs font-medium text-gray-500 mb-1">Танигдсан дугаар</p>
                   <p className="text-xl font-mono font-bold text-blue-600 tracking-wider">{plate}</p>
                 </div>
                 <div className="text-right">
-                  <p className="text-xs font-medium text-gray-500 mb-1">Confidence</p>
+                  <p className="text-xs font-medium text-gray-500 mb-1">Найдвартай байдал</p>
                   <div className="flex items-center gap-1.5">
                     <Zap className="w-4 h-4 text-green-600" />
                     <p className="text-lg font-bold text-green-600">{confidence}%</p>
@@ -273,12 +423,12 @@ export function TruckSection({ direction, onSave, onSend }: TruckSectionProps) {
             <div className="bg-white rounded-lg p-3 border border-gray-200">
               <div className="flex items-center gap-2 text-gray-500 mb-1">
                 <Clock className="w-4 h-4" />
-                <span className="text-xs font-medium">Captured</span>
+                <span className="text-xs font-medium">Авагдсан</span>
               </div>
               <p className="text-sm font-semibold text-gray-900">{timestamp}</p>
             </div>
             <div className="bg-white rounded-lg p-3 border border-gray-200">
-              <p className="text-xs font-medium text-gray-500 mb-1">Processing Time</p>
+              <p className="text-xs font-medium text-gray-500 mb-1">Боловсруулах хугацаа</p>
               <p className="text-sm font-semibold text-gray-900">0.82s</p>
             </div>
           </div>
@@ -288,98 +438,68 @@ export function TruckSection({ direction, onSave, onSend }: TruckSectionProps) {
         <div className="space-y-4">
           <div>
             <Label htmlFor={`plate-${direction}`} className="text-sm font-medium text-gray-700">
-              Plate Number
+              Улсын дугаар
             </Label>
             <Input
               id={`plate-${direction}`}
               value={plate}
               onChange={(e) => setPlate(e.target.value)}
               className="mt-1 bg-white border-gray-300 focus:border-blue-500 focus:ring-blue-500"
-              placeholder="Enter plate number"
+              placeholder="Улсын дугаар оруулах"
             />
             {errors.plate && (
               <p className="mt-1 text-xs text-red-600">{errors.plate}</p>
             )}
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <Label htmlFor={`reg-number-${direction}`} className="text-sm font-medium text-gray-700">
-                Тээврийн хэрэгслийн улсын дугаар
-              </Label>
-              <Input
-                id={`reg-number-${direction}`}
-                value={vehicleRegistrationNumber}
-                onChange={(e) => handleFieldChange(setVehicleRegistrationNumber, e.target.value)}
-                className="mt-1 bg-white border-gray-300 focus:border-blue-500 focus:ring-blue-500"
-                placeholder="Улсын дугаар"
-              />
-            </div>
-            <div>
-              <Label htmlFor={`reg-year-${direction}`} className="text-sm font-medium text-gray-700">
-                Тээврийн хэрэгслийн жил
-              </Label>
-              <Input
-                id={`reg-year-${direction}`}
-                type="number"
-                value={vehicleRegistrationYear}
-                onChange={(e) => handleFieldChange(setVehicleRegistrationYear, e.target.value)}
-                className="mt-1 bg-white border-gray-300 focus:border-blue-500 focus:ring-blue-500"
-                placeholder="Жил"
-                min="1900"
-                max={new Date().getFullYear()}
-              />
-            </div>
-          </div>
-
+          {/* 3. IN weight input (manual for now) */}
           <div>
-            <Label htmlFor={`driver-${direction}`} className="text-sm font-medium text-gray-700">
-              Driver Name
+            <Label htmlFor={`weight-${direction}`} className="text-sm font-medium text-gray-700">
+              {weightLabel}
             </Label>
             <Input
-              id={`driver-${direction}`}
-              value={driverName}
-              onChange={(e) => handleFieldChange(setDriverName, e.target.value)}
+              id={`weight-${direction}`}
+              type="number"
+              value={weight}
+              onChange={(e) => handleFieldChange(setWeight, e.target.value)}
               className="mt-1 bg-white border-gray-300 focus:border-blue-500 focus:ring-blue-500"
-              placeholder="Enter driver name"
+              placeholder="Жин (кг) оруулах"
             />
-            {errors.driverName && (
-              <p className="mt-1 text-xs text-red-600">{errors.driverName}</p>
+            {errors.weight && (
+              <p className="mt-1 text-xs text-red-600">{errors.weight}</p>
             )}
           </div>
 
+          {/* 4. Transport company dropdown + "Add New" */}
           <div>
-            <div className="flex items-center justify-between mb-2">
-              <Label htmlFor={`cargo-${direction}`} className="text-sm font-medium text-gray-700">
-                Бүтээгдэхүүн (Cargo)
-              </Label>
-              <ProductManager products={products} onProductAdded={handleProductAdded} />
+            <Label htmlFor={`transport-company-${direction}`} className="text-sm font-medium text-gray-700 mb-2 block">
+              Тээврийн компани
+            </Label>
+            <div className="flex gap-2 items-center">
+              <FilterableSelect
+                options={transportCompanies.map((company) => ({
+                  value: company.id,
+                  label: company.name,
+                }))}
+                value={transportCompanyId}
+                onValueChange={(value) => {
+                  handleFieldChange(setTransportCompanyId, value)
+                  setTransportCompanyId(value)
+                }}
+                disabled={isLoadingCompanies}
+                placeholder={isLoadingCompanies ? "Уншиж байна..." : "Тээврийн компани сонгох"}
+                searchPlaceholder="Тээврийн компани хайх..."
+                className="flex-1"
+              />
+              <TransportCompanyManager companies={transportCompanies} onCompanyAdded={handleCompanyAdded} />
             </div>
-            <Select 
-              value={cargoType} 
-              onValueChange={(value) => handleFieldChange(setCargoType, value)}
-              disabled={isLoadingProducts}
-            >
-              <SelectTrigger className="mt-1 bg-white border-gray-300 focus:border-blue-500 focus:ring-blue-500">
-                <SelectValue placeholder={isLoadingProducts ? "Loading products..." : "Бүтээгдэхүүн сонгох"} />
-              </SelectTrigger>
-              <SelectContent>
-                {products.map((product: Product) => (
-                  <SelectItem key={product.id} value={product.value}>
-                    {product.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            {errors.cargoType && (
-              <p className="mt-1 text-xs text-red-600">{errors.cargoType}</p>
-            )}
           </div>
 
+          {/* 5. Route fields (Haanaas & Haashaa) */}
           <div className="grid grid-cols-2 gap-4">
             <div>
               <Label htmlFor={`origin-${direction}`} className="text-sm font-medium text-gray-700">
-                Хаанаас (Origin)
+                Хаанаас
               </Label>
               <Input
                 id={`origin-${direction}`}
@@ -391,7 +511,7 @@ export function TruckSection({ direction, onSave, onSend }: TruckSectionProps) {
             </div>
             <div>
               <Label htmlFor={`destination-${direction}`} className="text-sm font-medium text-gray-700">
-                Хаашаа (Destination)
+                Хаашаа
               </Label>
               <Input
                 id={`destination-${direction}`}
@@ -403,53 +523,215 @@ export function TruckSection({ direction, onSave, onSend }: TruckSectionProps) {
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <Label htmlFor={`sender-${direction}`} className="text-sm font-medium text-gray-700">
-                Илгээч байгууллага (Sender Organization)
-              </Label>
-              <Input
-                id={`sender-${direction}`}
-                value={senderOrganization}
-                onChange={(e) => handleFieldChange(setSenderOrganization, e.target.value)}
-                className="mt-1 bg-white border-gray-300 focus:border-blue-500 focus:ring-blue-500"
-                placeholder="Илгээч байгууллага"
-              />
-            </div>
-            <div>
-              <Label htmlFor={`receiver-${direction}`} className="text-sm font-medium text-gray-700">
-                Хүлээн авагч байгууллага (Receiver Organization)
-              </Label>
-              <Input
-                id={`receiver-${direction}`}
-                value={receiverOrganization}
-                onChange={(e) => handleFieldChange(setReceiverOrganization, e.target.value)}
-                className="mt-1 bg-white border-gray-300 focus:border-blue-500 focus:ring-blue-500"
-                placeholder="Хүлээн авагч байгууллага"
-              />
-            </div>
-          </div>
-
+          {/* 6. Product type dropdown + "Add New" */}
           <div>
-            <Label htmlFor={`weight-${direction}`} className="text-sm font-medium text-gray-700">
-              {weightLabel}
+            <Label htmlFor={`cargo-${direction}`} className="text-sm font-medium text-gray-700 mb-2 block">
+              Бүтээгдэхүүн
             </Label>
-            <Input
-              id={`weight-${direction}`}
-              type="number"
-              value={weight}
-              onChange={(e) => handleFieldChange(setWeight, e.target.value)}
-              className="mt-1 bg-white border-gray-300 focus:border-blue-500 focus:ring-blue-500"
-              placeholder="Enter weight in kg"
-            />
-            {errors.weight && (
-              <p className="mt-1 text-xs text-red-600">{errors.weight}</p>
+            <div className="flex gap-2 items-center">
+              <FilterableSelect
+                options={products.map((product: Product) => ({
+                  value: product.value,
+                  label: product.label,
+                }))}
+                value={cargoType}
+                onValueChange={(value) => handleFieldChange(setCargoType, value)}
+                disabled={isLoadingProducts}
+                placeholder={isLoadingProducts ? "Уншиж байна..." : "Бүтээгдэхүүн сонгох"}
+                searchPlaceholder="Бүтээгдэхүүн хайх..."
+                className="flex-1"
+              />
+              <ProductManager products={products} onProductAdded={handleProductAdded} />
+            </div>
+            {errors.cargoType && (
+              <p className="mt-1 text-xs text-red-600">{errors.cargoType}</p>
             )}
           </div>
 
+          {/* 7. Sender/Receiver dropdowns + add/edit */}
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor={`sender-${direction}`} className="text-sm font-medium text-gray-700 mb-2 block">
+                Илгээч байгууллага
+              </Label>
+              <div className="flex gap-2 items-center">
+                <FilterableSelect
+                  options={senderOrganizations.map((org) => ({
+                    value: org.id,
+                    label: org.name,
+                  }))}
+                  value={senderOrganizationId}
+                  onValueChange={(value) => {
+                    handleFieldChange(setSenderOrganizationId, value)
+                    setSenderOrganizationId(value)
+                  }}
+                  disabled={isLoadingOrganizations}
+                  placeholder={isLoadingOrganizations ? "Уншиж байна..." : "Илгээч байгууллага сонгох"}
+                  searchPlaceholder="Илгээч байгууллага хайх..."
+                  className="flex-1"
+                />
+                <OrganizationManager
+                  organizations={senderOrganizations}
+                  type="sender"
+                  onOrganizationAdded={handleSenderOrganizationAdded}
+                  onOrganizationUpdated={handleSenderOrganizationAdded}
+                />
+              </div>
+            </div>
+            <div>
+              <Label htmlFor={`receiver-${direction}`} className="text-sm font-medium text-gray-700 mb-2 block">
+                Хүлээн авагч байгууллага
+              </Label>
+              <div className="flex gap-2 items-center">
+                <FilterableSelect
+                  options={receiverOrganizations.map((org) => ({
+                    value: org.id,
+                    label: org.name,
+                  }))}
+                  value={receiverOrganizationId}
+                  onValueChange={(value) => {
+                    handleFieldChange(setReceiverOrganizationId, value)
+                    setReceiverOrganizationId(value)
+                  }}
+                  disabled={isLoadingOrganizations}
+                  placeholder={isLoadingOrganizations ? "Уншиж байна..." : "Хүлээн авагч байгууллага сонгох"}
+                  searchPlaceholder="Хүлээн авагч байгууллага хайх..."
+                  className="flex-1"
+                />
+                <OrganizationManager
+                  organizations={receiverOrganizations}
+                  type="receiver"
+                  onOrganizationAdded={handleReceiverOrganizationAdded}
+                  onOrganizationUpdated={handleReceiverOrganizationAdded}
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* 8. Driver registration & selection */}
+          <div>
+            <Label htmlFor={`driver-${direction}`} className="text-sm font-medium text-gray-700 mb-2 block">
+              Жолооч
+            </Label>
+            <div className="flex gap-2 items-center">
+              <FilterableSelect
+                options={drivers.map((driver) => ({
+                  value: driver.id,
+                  label: `${driver.name}${driver.licenseNumber ? ` (${driver.licenseNumber})` : ""}`,
+                }))}
+                value={driverId}
+                onValueChange={(value) => {
+                  const selectedDriver = drivers.find(d => d.id === value)
+                  setDriverId(value)
+                  setDriverName(selectedDriver?.name || "")
+                  handleFieldChange(() => {}, value)
+                }}
+                disabled={isLoadingDrivers}
+                placeholder={isLoadingDrivers ? "Уншиж байна..." : driverName || "Жолооч сонгох"}
+                searchPlaceholder="Жолооч хайх..."
+                className="flex-1"
+              />
+              <DriverManager drivers={drivers} onDriverAdded={handleDriverAdded} onDriverUpdated={handleDriverAdded} />
+            </div>
+            {!driverId && (
+              <Input
+                id={`driver-manual-${direction}`}
+                value={driverName}
+                onChange={(e) => handleFieldChange(setDriverName, e.target.value)}
+                className="mt-2 bg-white border-gray-300 focus:border-blue-500 focus:ring-blue-500"
+                placeholder="Эсвэл жолоочийн нэрийг гараар оруулах"
+              />
+            )}
+            {errors.driverName && (
+              <p className="mt-1 text-xs text-red-600">{errors.driverName}</p>
+            )}
+          </div>
+
+          {/* 9. Seal number input - only show for OUT direction */}
+          {direction === "OUT" && (
+            <div>
+              <Label htmlFor={`seal-${direction}`} className="text-sm font-medium text-gray-700">
+                Лацны дугаар
+              </Label>
+              <Input
+                id={`seal-${direction}`}
+                value={sealNumber}
+                onChange={(e) => handleFieldChange(setSealNumber, e.target.value)}
+                className="mt-1 bg-white border-gray-300 focus:border-blue-500 focus:ring-blue-500"
+                placeholder="Лацны дугаар оруулах"
+              />
+            </div>
+          )}
+
+          {/* 10. Transport type dropdown */}
+          <div>
+            <Label htmlFor={`transport-type-${direction}`} className="text-sm font-medium text-gray-700">
+              Тээврийн төрөл
+            </Label>
+            <Select
+              value={transportType}
+              onValueChange={(value) => {
+                const transportTypeValue = value as TransportType
+                setTransportType(transportTypeValue)
+                if (savedLogId) {
+                  setSavedLogId(null)
+                }
+              }}
+            >
+              <SelectTrigger className="mt-1 bg-white border-gray-300 focus:border-blue-500 focus:ring-blue-500">
+                <SelectValue placeholder="Тээврийн төрөл сонгох" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="truck">Truck</SelectItem>
+                <SelectItem value="container">Container</SelectItem>
+                <SelectItem value="tanker">Tanker</SelectItem>
+                <SelectItem value="flatbed">Flatbed</SelectItem>
+                <SelectItem value="refrigerated">Refrigerated</SelectItem>
+                <SelectItem value="other">Other</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* 11. Chirguultei checkbox (show/hide trailer fields) */}
+          <div className="flex items-center space-x-2">
+            <Checkbox
+              id={`has-trailer-${direction}`}
+              checked={hasTrailer}
+              onCheckedChange={(checked) => {
+                setHasTrailer(checked === true)
+                if (!checked) {
+                  setTrailerPlate("")
+                }
+              }}
+            />
+            <Label
+              htmlFor={`has-trailer-${direction}`}
+              className="text-sm font-medium text-gray-700 cursor-pointer"
+            >
+              Чиргүүлтэй
+            </Label>
+          </div>
+
+          {/* Trailer fields (shown when hasTrailer is true) */}
+          {hasTrailer && (
+            <div>
+              <Label htmlFor={`trailer-plate-${direction}`} className="text-sm font-medium text-gray-700">
+                Чиргүүлийн улсын дугаар
+              </Label>
+              <Input
+                id={`trailer-plate-${direction}`}
+                value={trailerPlate}
+                onChange={(e) => handleFieldChange(setTrailerPlate, e.target.value)}
+                className="mt-1 bg-white border-gray-300 focus:border-blue-500 focus:ring-blue-500"
+                placeholder="Чиргүүлийн улсын дугаар"
+              />
+            </div>
+          )}
+
+          {/* 12. Additional notes textarea */}
           <div>
             <Label htmlFor={`comments-${direction}`} className="text-sm font-medium text-gray-700">
-              Нэмэлт (Additional Notes)
+              Нэмэлт
             </Label>
             <Textarea
               id={`comments-${direction}`}
@@ -460,6 +742,9 @@ export function TruckSection({ direction, onSave, onSend }: TruckSectionProps) {
               rows={3}
             />
           </div>
+
+          
+
         </div>
 
         {/* Action Buttons */}
@@ -473,10 +758,10 @@ export function TruckSection({ direction, onSave, onSend }: TruckSectionProps) {
             {isSaving ? (
               <>
                 <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                Saving...
+                Хадгалж байна...
               </>
             ) : (
-              "Save"
+              "Хадгалах"
             )}
           </Button>
           <Button
@@ -487,10 +772,10 @@ export function TruckSection({ direction, onSave, onSend }: TruckSectionProps) {
             {isSending ? (
               <>
                 <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                Sending...
+                Илгээж байна...
               </>
             ) : (
-              "Send to Customs"
+              "Гаалид илгээх"
             )}
           </Button>
         </div>

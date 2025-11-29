@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server"
 import { getCurrentUser } from "@/lib/auth/user"
+import { errorToResponse } from "@/lib/errors"
 
 /**
  * API route to get current user information
@@ -21,13 +22,14 @@ export async function GET() {
       name: user.name,
       role: user.role,
       companyName: user.companyName,
-    })
+    }, { status: 200 })
   } catch (error) {
-    console.error("Error getting user:", error)
-    return NextResponse.json(
-      { error: "Failed to get user information" },
-      { status: 500 }
-    )
+    const errorResponse = errorToResponse(error)
+    const statusCode = error instanceof Error && 'statusCode' in error
+      ? (error as { statusCode: number }).statusCode
+      : 500
+    
+    return NextResponse.json(errorResponse, { status: statusCode })
   }
 }
 

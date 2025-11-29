@@ -8,6 +8,7 @@ export interface CompanyMetadata {
   description?: string
   logoUrl?: string
   logoInitials?: string
+  password?: string  // Company password for authentication
   createdAt: string | Date  // Can be Date from DB or ISO string after serialization
   updatedAt: string | Date
 }
@@ -24,8 +25,9 @@ export async function getAllCompanies(): Promise<CompanyMetadata[]> {
     .toArray()
 
   // Serialize MongoDB documents to plain objects
+  // Note: password is NOT included in serialized output for security
   return companies.map((company: any) => {
-    const { _id, ...companyData } = company
+    const { _id, password, ...companyData } = company
     return {
       companyId: companyData.companyId,
       name: companyData.name,
@@ -57,7 +59,8 @@ export async function getCompany(companyId: string): Promise<CompanyMetadata | n
   if (!company) return null
 
   // Serialize MongoDB document to plain object
-  const { _id, ...companyData } = company as any
+  // Note: password is NOT included in serialized output for security
+  const { _id, password, ...companyData } = company as any
   return {
     companyId: companyData.companyId,
     name: companyData.name,

@@ -1,31 +1,46 @@
 import { NextResponse } from "next/server"
 import { deleteProduct } from "@/lib/products/products"
+import { validateCSRF, csrfErrorResponse } from "@/lib/csrf"
+import { deleteProductSchema } from "@/lib/validation"
+import { errorToResponse } from "@/lib/errors"
 
 /**
  * DELETE /api/products/[id] - Delete a custom product
+ * Includes CSRF protection and input validation
  */
 export async function DELETE(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id } = params
+    // CSRF protection
+    if (!validateCSRF(request)) {
+      return csrfErrorResponse()
+    }
 
-    if (!id) {
+    const { id } = await params
+
+    // Validate input
+    const validation = deleteProductSchema.safeParse({ id })
+    if (!validation.success) {
       return NextResponse.json(
-        { error: "Product ID is required" },
+        { 
+          error: "Validation failed",
+          details: validation.error.issues.map(i => i.message).join(", ")
+        },
         { status: 400 }
       )
     }
 
-    await deleteProduct(id)
-    return NextResponse.json({ success: true })
+    await deleteProduct(validation.data.id)
+    return NextResponse.json({ success: true }, { status: 200 })
   } catch (error) {
-    console.error("Error deleting product:", error)
-    return NextResponse.json(
-      { error: "Failed to delete product" },
-      { status: 500 }
-    )
+    const errorResponse = errorToResponse(error)
+    const statusCode = error instanceof Error && 'statusCode' in error
+      ? (error as { statusCode: number }).statusCode
+      : 500
+    
+    return NextResponse.json(errorResponse, { status: statusCode })
   }
 }
 

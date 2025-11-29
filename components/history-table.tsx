@@ -1,80 +1,92 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useMemo } from "react"
 import { Card } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
-import { Search, FileDown, Eye, Filter, ChevronLeft, ChevronRight } from "lucide-react"
+import { Search, FileDown, Eye, Filter, ChevronLeft, ChevronRight, Edit } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
+import { EditLogDialog } from "@/components/history/EditLogDialog"
+import { exportLogToPDF } from "@/lib/pdf-export"
+import type { TruckLog } from "@/lib/types"
 
-const historyData = [
-  {
-    id: 1,
-    plate: "Б1234АВ",
-    time: "2024-01-15 14:32:15",
-    driver: "Батмөнх Дорж",
-    cargo: "Steel Pipes",
-    weight: "24.5 т",
-    status: "verified",
-  },
-  {
-    id: 2,
-    plate: "У5678ГД",
-    time: "2024-01-15 14:18:42",
-    driver: "Энхбат Түвшин",
-    cargo: "Construction Materials",
-    weight: "18.2 т",
-    status: "verified",
-  },
-  {
-    id: 3,
-    plate: "UNKNOWN",
-    time: "2024-01-15 14:05:23",
-    driver: "N/A",
-    cargo: "Unknown",
-    weight: "15.3 т",
-    status: "unrecognized",
-  },
-  {
-    id: 4,
-    plate: "М9012ЕЖ",
-    time: "2024-01-15 13:47:11",
-    driver: "Ганбат Өлзий",
-    cargo: "Food Products",
-    weight: "12.8 т",
-    status: "pending",
-  },
-  {
-    id: 5,
-    plate: "А3456ЗИ",
-    time: "2024-01-15 13:22:55",
-    driver: "Сүхбат Болд",
-    cargo: "Textiles",
-    weight: "9.4 т",
-    status: "verified",
-  },
-  {
-    id: 6,
-    plate: "Х7890ЙК",
-    time: "2024-01-15 12:58:30",
-    driver: "Төмөр Бат",
-    cargo: "Electronics",
-    weight: "7.6 т",
-    status: "verified",
-  },
-]
+interface HistoryTableProps {
+  logs: TruckLog[]
+  onUpdate?: () => void
+}
 
-export function HistoryTable() {
+export function HistoryTable({ logs, onUpdate }: HistoryTableProps) {
   const [searchQuery, setSearchQuery] = useState("")
   const [currentPage, setCurrentPage] = useState(1)
+  const [editingLog, setEditingLog] = useState<TruckLog | null>(null)
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
   const itemsPerPage = 10
 
-  const filteredData = historyData.filter(
-    (item) =>
-      item.plate.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      item.driver.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      item.cargo.toLowerCase().includes(searchQuery.toLowerCase()),
-  )
+  const handleEdit = (log: TruckLog) => {
+    setEditingLog(log)
+    setIsEditDialogOpen(true)
+  }
+
+  const handleEditSuccess = () => {
+    setIsEditDialogOpen(false)
+    setEditingLog(null)
+    if (onUpdate) {
+      onUpdate()
+    }
+  }
+
+  // Filter logs based on search query
+  const filteredData = useMemo(() => {
+    return logs.filter(
+      (log) =>
+        log.plate?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        log.driverName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        log.cargoType?.toLowerCase().includes(searchQuery.toLowerCase()),
+    )
+  }, [logs, searchQuery])
+
+  // Paginate filtered data
+  const paginatedData = useMemo(() => {
+    const startIndex = (currentPage - 1) * itemsPerPage
+    return filteredData.slice(startIndex, startIndex + itemsPerPage)
+  }, [filteredData, currentPage, itemsPerPage])
+
+  const totalPages = Math.ceil(filteredData.length / itemsPerPage)
+
+  // Format date for display
+  const formatDate = (dateString: string) => {
+    try {
+      const date = new Date(dateString)
+      return date.toLocaleString("en-US", {
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+      })
+    } catch {
+      return dateString
+    }
+  }
+
+  // Format weight for display
+  const formatWeight = (weight?: number) => {
+    if (!weight) return "—"
+    return `${weight.toLocaleString()} kg`
+  }
+
+  // Get status badge variant
+  const getStatusVariant = (log: TruckLog) => {
+    if (log.sentToCustoms) return "default"
+    return "secondary"
+  }
+
+  // Get status text
+  const getStatusText = (log: TruckLog) => {
+    if (log.sentToCustoms) return "Sent to Customs"
+    return "Saved"
+  }
 
   return (
     <Card className="p-6">
@@ -114,55 +126,77 @@ export function HistoryTable() {
             </tr>
           </thead>
           <tbody>
-            {filteredData.map((row) => (
-              <tr key={row.id} className="border-b border-border hover:bg-muted/50 transition-colors">
-                <td className="py-4 px-4">
-                  <span className="font-mono font-semibold text-foreground">{row.plate}</span>
-                </td>
-                <td className="py-4 px-4 text-sm text-muted-foreground">{row.time}</td>
-                <td className="py-4 px-4 text-sm text-foreground">{row.driver}</td>
-                <td className="py-4 px-4 text-sm text-foreground">{row.cargo}</td>
-                <td className="py-4 px-4 text-sm font-semibold text-foreground">{row.weight}</td>
-                <td className="py-4 px-4">
-                  <Badge
-                    variant={
-                      row.status === "verified"
-                        ? "default"
-                        : row.status === "unrecognized"
-                          ? "destructive"
-                          : "secondary"
-                    }
-                  >
-                    {row.status}
-                  </Badge>
-                </td>
-                <td className="py-4 px-4">
-                  <div className="flex items-center justify-end gap-2">
-                    <Button size="sm" variant="ghost" className="gap-1">
-                      <Eye className="w-4 h-4" />
-                      View
-                    </Button>
-                    <Button size="sm" variant="ghost" className="gap-1">
-                      <FileDown className="w-4 h-4" />
-                      PDF
-                    </Button>
-                  </div>
+            {paginatedData.length === 0 ? (
+              <tr>
+                <td colSpan={7} className="py-12 text-center">
+                  <p className="text-muted-foreground">No records found matching your search</p>
                 </td>
               </tr>
-            ))}
+            ) : (
+              paginatedData.map((log) => (
+                <tr key={log.id} className="border-b border-border hover:bg-muted/50 transition-colors">
+                  <td className="py-4 px-4">
+                    <span className="font-mono font-semibold text-foreground">{log.plate || "—"}</span>
+                  </td>
+                  <td className="py-4 px-4 text-sm text-muted-foreground">
+                    {log.createdAt ? formatDate(log.createdAt) : "—"}
+                  </td>
+                  <td className="py-4 px-4 text-sm text-foreground">{log.driverName || "—"}</td>
+                  <td className="py-4 px-4 text-sm text-foreground">{log.cargoType || "—"}</td>
+                  <td className="py-4 px-4 text-sm font-semibold text-foreground">
+                    {formatWeight(log.weightKg)}
+                  </td>
+                  <td className="py-4 px-4">
+                    <Badge variant={getStatusVariant(log)}>
+                      {getStatusText(log)}
+                    </Badge>
+                  </td>
+                  <td className="py-4 px-4">
+                    <div className="flex items-center justify-end gap-2">
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        className="gap-1"
+                        onClick={() => handleEdit(log)}
+                        disabled={log.sentToCustoms}
+                        title={log.sentToCustoms ? "Cannot edit logs sent to customs" : "Edit log"}
+                      >
+                        <Edit className="w-4 h-4" />
+                        Edit
+                      </Button>
+                      <Button size="sm" variant="ghost" className="gap-1">
+                        <Eye className="w-4 h-4" />
+                        View
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        className="gap-1"
+                        onClick={async () => {
+                          try {
+                            await exportLogToPDF(log)
+                          } catch (error) {
+                            console.error("Error exporting PDF:", error)
+                          }
+                        }}
+                        title="Export to PDF"
+                      >
+                        <FileDown className="w-4 h-4" />
+                        PDF
+                      </Button>
+                    </div>
+                  </td>
+                </tr>
+              ))
+            )}
           </tbody>
         </table>
       </div>
 
-      {filteredData.length === 0 && (
-        <div className="text-center py-12">
-          <p className="text-muted-foreground">No records found matching your search</p>
-        </div>
-      )}
-
       <div className="flex items-center justify-between mt-6">
         <p className="text-sm text-muted-foreground">
-          Showing {filteredData.length} of {historyData.length} records
+          Showing {paginatedData.length > 0 ? (currentPage - 1) * itemsPerPage + 1 : 0} to{" "}
+          {Math.min(currentPage * itemsPerPage, filteredData.length)} of {filteredData.length} records
         </p>
         <div className="flex items-center gap-2">
           <Button
@@ -173,12 +207,26 @@ export function HistoryTable() {
           >
             <ChevronLeft className="w-4 h-4" />
           </Button>
-          <span className="text-sm text-foreground px-3">Page {currentPage}</span>
-          <Button size="sm" variant="outline" onClick={() => setCurrentPage((p) => p + 1)}>
+          <span className="text-sm text-foreground px-3">
+            Page {currentPage} of {totalPages || 1}
+          </span>
+          <Button
+            size="sm"
+            variant="outline"
+            disabled={currentPage >= totalPages}
+            onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+          >
             <ChevronRight className="w-4 h-4" />
           </Button>
         </div>
       </div>
+
+      <EditLogDialog
+        log={editingLog}
+        open={isEditDialogOpen}
+        onOpenChange={setIsEditDialogOpen}
+        onSuccess={handleEditSuccess}
+      />
     </Card>
   )
 }

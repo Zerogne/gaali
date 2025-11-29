@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -108,15 +108,18 @@ export function ProductManager({ products, onProductAdded }: ProductManagerProps
         <Button
           variant="outline"
           size="sm"
-          className="gap-2 border-gray-300 hover:bg-gray-50"
+          className="gap-2 border-gray-300 hover:bg-gray-50 flex-shrink-0 h-10"
         >
           <Plus className="w-4 h-4" />
-          Manage Products
+          Нэмэх
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
           <DialogTitle>Manage Products</DialogTitle>
+          <DialogDescription>
+            Add or remove custom product types for cargo selection.
+          </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4">

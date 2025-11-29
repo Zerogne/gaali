@@ -1,0 +1,65 @@
+{
+  "node": {
+    "002aaa44fc4d8d053062b4a4224916d4927773c390": {
+      "workers": {
+        "app/page": {
+          "moduleId": 32869,
+          "async": false,
+          "exportedName": "logout",
+          "filename": "lib/auth/authServer.ts"
+        }
+      },
+      "layer": {
+        "app/page": "action-browser"
+      },
+      "exportedName": "logout",
+      "filename": "lib/auth/authServer.ts"
+    },
+    "4058b122e308e364a24ba05695bd0c197e19386dfe": {
+      "workers": {
+        "app/page": {
+          "moduleId": 32869,
+          "async": false,
+          "exportedName": "saveTruckLog",
+          "filename": "lib/api.ts"
+        }
+      },
+      "layer": {
+        "app/page": "action-browser"
+      },
+      "exportedName": "saveTruckLog",
+      "filename": "lib/api.ts"
+    },
+    "40516e7e258a23fbfc95ed115874980e9c4dedda18": {
+      "workers": {
+        "app/page": {
+          "moduleId": 32869,
+          "async": false,
+          "exportedName": "sendTruckLogToCustoms",
+          "filename": "lib/api.ts"
+        }
+      },
+      "layer": {
+        "app/page": "action-browser"
+      },
+      "exportedName": "sendTruckLogToCustoms",
+      "filename": "lib/api.ts"
+    },
+    "60cd7b9c1de90cb658d4b00e637cb5c82adeca4656": {
+      "workers": {
+        "app/page": {
+          "moduleId": 32869,
+          "async": false,
+          "exportedName": "getTruckLogs",
+          "filename": "lib/api.ts"
+        }
+      },
+      "layer": {
+        "app/page": "action-browser"
+      },
+      "exportedName": "getTruckLogs",
+      "filename": "lib/api.ts"
+    }
+  },
+  "edge": {}
+}
