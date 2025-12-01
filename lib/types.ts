@@ -4,10 +4,9 @@ export type TransportType = "truck" | "container" | "tanker" | "flatbed" | "refr
 export interface Driver {
   id: string;
   name: string;
-  licenseNumber?: string;
-  licenseExpiry?: string;
-  registrationNumber?: string; // Тээврийн хэрэгслийн улсын дугаар
-  registrationYear?: string; // Тээврийн хэрэгслийн жил
+  phone?: string;
+  registrationNumber?: string;
+  additionalInfo?: string;
 }
 
 export interface TransportCompany {
@@ -31,6 +30,7 @@ export interface TruckLog {
   driverName: string; // Keep for backward compatibility
   cargoType: string;
   weightKg?: number;
+  netWeightKg?: number; // Цэвэр жин (net weight) - only for OUT direction
   comments?: string;
   origin?: string; // Haanaas
   destination?: string; // Haashaa

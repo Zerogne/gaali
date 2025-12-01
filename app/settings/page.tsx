@@ -1,5 +1,4 @@
 import { Sidebar } from "@/components/sidebar"
-import { Header } from "@/components/header"
 import { SettingsPanel } from "@/components/settings-panel"
 
 export default function SettingsPage() {
@@ -7,7 +6,6 @@ export default function SettingsPage() {
     <div className="flex h-screen bg-background">
       <Sidebar />
       <div className="flex-1 flex flex-col overflow-hidden">
-        <Header />
         <main className="flex-1 overflow-auto p-6">
           <div className="mb-6">
             <h1 className="text-3xl font-bold text-foreground mb-2">Settings</h1>

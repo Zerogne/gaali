@@ -46,7 +46,7 @@ export async function POST(request: Request) {
     const companyId = session.companyId
     const driversCollection = await getCompanyCollection(companyId, "drivers")
     const body = await request.json()
-    const { name, licenseNumber, licenseExpiry, registrationNumber, registrationYear } = body
+    const { name, phone, registrationNumber, additionalInfo } = body
 
     if (!name || typeof name !== "string" || !name.trim()) {
       return NextResponse.json(
@@ -58,10 +58,9 @@ export async function POST(request: Request) {
     const newDriver = {
       id: `drv_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
       name: name.trim(),
-      licenseNumber: licenseNumber?.trim() || undefined,
-      licenseExpiry: licenseExpiry?.trim() || undefined,
+      phone: phone?.trim() || undefined,
       registrationNumber: registrationNumber?.trim() || undefined,
-      registrationYear: registrationYear?.trim() || undefined,
+      additionalInfo: additionalInfo?.trim() || undefined,
       createdAt: new Date().toISOString(),
     }
 

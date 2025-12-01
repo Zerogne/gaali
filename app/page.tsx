@@ -3,7 +3,6 @@
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { Sidebar } from "@/components/layout/Sidebar"
-import { TopBar } from "@/components/layout/TopBar"
 import { AlertBanner } from "@/components/layout/AlertBanner"
 import { SummaryCards } from "@/components/layout/SummaryCards"
 import { TruckSection } from "@/components/trucks/TruckSection"
@@ -107,14 +106,9 @@ export default function DashboardPage() {
     <div className="flex h-screen bg-gray-50">
       <Sidebar />
       <div className="flex-1 flex flex-col overflow-hidden">
-        <TopBar />
         <main className="flex-1 overflow-auto">
           <div className="max-w-[1920px] mx-auto p-6 lg:p-8 space-y-8">
             {/* Header */}
-            <div className="space-y-2">
-              <h1 className="text-3xl font-bold tracking-tight text-gray-900">Dashboard Overview</h1>
-              <p className="text-gray-600">Monitor truck weighing operations and license plate recognition in real-time</p>
-            </div>
             
             {/* Summary Cards */}
             

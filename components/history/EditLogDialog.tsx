@@ -18,11 +18,8 @@ import { Badge } from "@/components/ui/badge"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Camera, CheckCircle2, Clock, Zap, Loader2 } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
-import { ProductManager } from "@/components/products/ProductManager"
-import { TransportCompanyManager } from "@/components/transport/TransportCompanyManager"
 import { DriverManager } from "@/components/drivers/DriverManager"
-import { OrganizationManager } from "@/components/organizations/OrganizationManager"
-import type { TruckLog, TransportCompany, Organization, Driver, TransportType } from "@/lib/types"
+import type { TruckLog, TransportCompany, Organization, Driver } from "@/lib/types"
 
 interface Product {
   id: string
@@ -63,13 +60,13 @@ export function EditLogDialog({
   const [driverName, setDriverName] = useState("")
   const [cargoType, setCargoType] = useState("")
   const [weight, setWeight] = useState("")
+  const [netWeight, setNetWeight] = useState("") // Цэвэр жин (net weight) - only for OUT
   const [comments, setComments] = useState("")
   const [origin, setOrigin] = useState("")
   const [destination, setDestination] = useState("")
   const [senderOrganizationId, setSenderOrganizationId] = useState<string>("")
   const [receiverOrganizationId, setReceiverOrganizationId] = useState<string>("")
   const [transportCompanyId, setTransportCompanyId] = useState<string>("")
-  const [transportType, setTransportType] = useState<TransportType | "">("")
   const [sealNumber, setSealNumber] = useState("")
   const [hasTrailer, setHasTrailer] = useState(false)
   const [trailerPlate, setTrailerPlate] = useState("")
@@ -232,13 +229,13 @@ export function EditLogDialog({
       setDriverName(log.driverName || "")
       setCargoType(log.cargoType || "")
       setWeight(log.weightKg?.toString() || "")
+      setNetWeight(log.netWeightKg?.toString() || "")
       setComments(log.comments || "")
       setOrigin(log.origin || "")
       setDestination(log.destination || "")
       setSenderOrganizationId(log.senderOrganizationId || "")
       setReceiverOrganizationId(log.receiverOrganizationId || "")
       setTransportCompanyId(log.transportCompanyId || "")
-      setTransportType(log.transportType || "")
       setSealNumber(log.sealNumber || "")
       setHasTrailer(log.hasTrailer || false)
       setTrailerPlate(log.trailerPlate || "")
@@ -247,14 +244,70 @@ export function EditLogDialog({
     }
   }, [log])
 
+  // Auto-calculate net weight for OUT direction
+  useEffect(() => {
+    if (direction === "OUT" && weight && plate && Number(weight) > 0) {
+      async function calculateNetWeight() {
+        try {
+          // Fetch logs to find the IN log for this plate
+          const response = await fetch("/api/logs?page=1&limit=100")
+          if (response.ok) {
+            const data = await response.json()
+            const logs = data.logs || []
+            
+            // Find the most recent IN log for the same plate (excluding current log if editing)
+            const inLog = logs
+              .filter((logItem: TruckLog) => 
+                logItem.direction === "IN" && 
+                logItem.plate.trim().toUpperCase() === plate.trim().toUpperCase() &&
+                logItem.weightKg &&
+                logItem.weightKg > 0 &&
+                (!log || logItem.id !== log.id) // Exclude current log if editing
+              )
+              .sort((a: TruckLog, b: TruckLog) => 
+                new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+              )[0]
+
+            if (inLog && inLog.weightKg) {
+              const outWeight = Number(weight)
+              const inWeight = inLog.weightKg
+              const calculatedNetWeight = outWeight - inWeight
+              
+              if (calculatedNetWeight > 0) {
+                setNetWeight(Math.round(calculatedNetWeight).toString())
+              } else {
+                setNetWeight("")
+              }
+            } else {
+              // If no IN log found, keep existing netWeight if it exists, otherwise clear it
+              if (!log?.netWeightKg) {
+                setNetWeight("")
+              }
+            }
+          }
+        } catch (error) {
+          console.error("Error calculating net weight:", error)
+          // Keep existing netWeight if it exists
+          if (!log?.netWeightKg) {
+            setNetWeight("")
+          }
+        }
+      }
+      
+      calculateNetWeight()
+    } else if (direction === "IN" || !weight || !plate || Number(weight) <= 0) {
+      setNetWeight("")
+    }
+  }, [direction, weight, plate, log])
+
   const validate = (): boolean => {
     const newErrors: Record<string, string> = {}
     
     if (!plate.trim()) {
       newErrors.plate = "Улсын дугаар заавал оруулна."
     }
-    if (!driverId && !driverName.trim()) {
-      newErrors.driverName = "Жолоочийн нэр эсвэл жолооч сонгох заавал оруулна."
+    if (!driverId) {
+      newErrors.driverId = "Жолооч сонгох заавал оруулна."
     }
     if (!cargoType.trim()) {
       newErrors.cargoType = "Бүтээгдэхүүний төрөл заавал оруулна."
@@ -279,6 +332,18 @@ export function EditLogDialog({
 
     setIsSaving(true)
     try {
+      // Get driver name from selected driver
+      const selectedDriver = drivers.find(d => d.id === driverId)
+      if (!selectedDriver) {
+        toast({
+          title: "Error",
+          description: "Please select a driver",
+          variant: "destructive",
+        })
+        setIsSaving(false)
+        return
+      }
+
       const response = await fetch(`/api/logs/${log.id}`, {
         method: "PUT",
         headers: {
@@ -287,17 +352,17 @@ export function EditLogDialog({
         body: JSON.stringify({
           direction,
           plate: plate.trim(),
-          driverId: driverId || undefined,
-          driverName: driverName.trim(),
+          driverId: driverId,
+          driverName: selectedDriver.name,
           cargoType: cargoType.trim(),
           weightKg: Number(weight),
+          netWeightKg: direction === "OUT" && netWeight ? Number(netWeight) : undefined,
           comments: comments.trim() || undefined,
           origin: origin.trim() || undefined,
           destination: destination.trim() || undefined,
           senderOrganizationId: senderOrganizationId || undefined,
           receiverOrganizationId: receiverOrganizationId || undefined,
           transportCompanyId: transportCompanyId || undefined,
-          transportType: transportType || undefined,
           sealNumber: sealNumber.trim() || undefined,
           hasTrailer: hasTrailer || undefined,
           trailerPlate: hasTrailer ? (trailerPlate.trim() || undefined) : undefined,
@@ -332,7 +397,7 @@ export function EditLogDialog({
 
   const isSentToCustoms = log.sentToCustoms
   const title = direction === "IN" ? "Тээврийн хэрэгсэл ОРОХ – Хаалгаар орох" : "Тээврийн хэрэгсэл ГАРАХ – Хаалгаар гарах"
-  const weightLabel = direction === "IN" ? "Бүрэн жин (кг)" : "Цэвэр жин (кг)"
+  const weightLabel = direction === "IN" ? "Бүрэн жин (кг)" : "Бүрэн жин (кг)"
   
   // Mock plate recognition data
   const confidence = 98.5
@@ -346,7 +411,7 @@ export function EditLogDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-4xl max-h-[95vh] overflow-y-auto p-0">
+      <DialogContent className="!max-w-[60vw] !w-[98vw] max-h-[95vh] overflow-y-auto p-0">
         <DialogTitle className="sr-only">Edit Truck Log</DialogTitle>
         <DialogDescription className="sr-only">
           Update the truck log information below.
@@ -439,7 +504,7 @@ export function EditLogDialog({
                     )}
                   </div>
 
-                  {/* 3. Жин input */}
+                  {/* 2. Weight input */}
                   <div>
                     <Label htmlFor="edit-weight" className="text-sm font-medium text-gray-700">
                       {weightLabel}
@@ -457,33 +522,31 @@ export function EditLogDialog({
                     )}
                   </div>
 
-                  {/* Direction */}
-                  <div>
-                    <Label htmlFor="edit-direction" className="text-sm font-medium text-gray-700">
-                      Чиглэл
-                    </Label>
-                    <Select
-                      value={direction}
-                      onValueChange={(value: "IN" | "OUT") => setDirection(value)}
-                    >
-                      <SelectTrigger id="edit-direction" className="mt-1 bg-white border-gray-300 focus:border-blue-500 focus:ring-blue-500">
-                        <SelectValue placeholder="Чиглэл сонгох" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="IN">ОРОХ</SelectItem>
-                        <SelectItem value="OUT">ГАРАХ</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  {/* 4. Тээврийн компани dropdown + "Add New" */}
-                  <div>
-                    <div className="flex items-center justify-between mb-2">
-                      <Label htmlFor="edit-transport-company" className="text-sm font-medium text-gray-700">
-                        Тээврийн компани
+                  {/* Net weight input - only for OUT direction (auto-calculated) */}
+                  {direction === "OUT" && (
+                    <div>
+                      <Label htmlFor="edit-net-weight" className="text-sm font-medium text-gray-700">
+                        Цэвэр жин (кг) <span className="text-xs text-gray-500 font-normal">(автоматаар тооцоолно)</span>
                       </Label>
-                      <TransportCompanyManager companies={transportCompanies} onCompanyAdded={handleCompanyAdded} />
+                      <Input
+                        id="edit-net-weight"
+                        type="number"
+                        value={netWeight}
+                        readOnly
+                        className="mt-1 bg-gray-50 border-gray-300 text-gray-700 cursor-not-allowed"
+                        placeholder="Цэвэр жин автоматаар тооцоологдоно"
+                      />
+                      {errors.netWeight && (
+                        <p className="mt-1 text-xs text-red-600">{errors.netWeight}</p>
+                      )}
                     </div>
+                  )}
+
+                  {/* 3. Transport company dropdown */}
+                  <div>
+                    <Label htmlFor="edit-transport-company" className="text-sm font-medium text-gray-700 mb-2 block">
+                      Тээврийн компани
+                    </Label>
                     <FilterableSelect
                       options={transportCompanies.map((company) => ({
                         value: company.id,
@@ -494,11 +557,10 @@ export function EditLogDialog({
                       disabled={isLoadingCompanies}
                       placeholder={isLoadingCompanies ? "Уншиж байна..." : "Тээврийн компани сонгох"}
                       searchPlaceholder="Тээврийн компани хайх..."
-                      className="mt-1"
                     />
                   </div>
 
-                  {/* 5. Хаанаас & Хаашаа */}
+                  {/* 4. Route fields (Haanaas & Haashaa) */}
                   <div className="grid grid-cols-2 gap-4">
                     <div>
                       <Label htmlFor="edit-origin" className="text-sm font-medium text-gray-700">
@@ -526,13 +588,11 @@ export function EditLogDialog({
                     </div>
                   </div>
 
+                  {/* 5. Product type dropdown */}
                   <div>
-                    <div className="flex items-center justify-between mb-2">
-                      <Label htmlFor="edit-cargo" className="text-sm font-medium text-gray-700">
-                        Бүтээгдэхүүн (Cargo)
-                      </Label>
-                      <ProductManager products={products} onProductAdded={handleProductAdded} />
-                    </div>
+                    <Label htmlFor="edit-cargo" className="text-sm font-medium text-gray-700 mb-2 block">
+                      Бүтээгдэхүүн
+                    </Label>
                     <FilterableSelect
                       options={products.map((product: Product) => ({
                         value: product.value,
@@ -543,27 +603,18 @@ export function EditLogDialog({
                       disabled={isLoadingProducts}
                       placeholder={isLoadingProducts ? "Уншиж байна..." : "Бүтээгдэхүүн сонгох"}
                       searchPlaceholder="Бүтээгдэхүүн хайх..."
-                      className="mt-1"
                     />
                     {errors.cargoType && (
                       <p className="mt-1 text-xs text-red-600">{errors.cargoType}</p>
                     )}
                   </div>
 
-                  {/* 7. Илгээч/Хүлээн авагч dropdowns + add/edit */}
-                  <div className="grid grid-cols-2 gap-4">
+                  {/* 6. Sender/Receiver dropdowns */}
+                  <div className="space-y-4">
                     <div>
-                      <div className="flex items-center justify-between mb-2">
-                        <Label htmlFor="edit-sender" className="text-sm font-medium text-gray-700">
-                          Илгээч байгууллага
-                        </Label>
-                        <OrganizationManager
-                          organizations={senderOrganizations}
-                          type="sender"
-                          onOrganizationAdded={handleSenderOrganizationAdded}
-                          onOrganizationUpdated={handleSenderOrganizationAdded}
-                        />
-                      </div>
+                      <Label htmlFor="edit-sender" className="text-sm font-medium text-gray-700 mb-2 block">
+                        Илгээч байгууллага
+                      </Label>
                       <FilterableSelect
                         options={senderOrganizations.map((org) => ({
                           value: org.id,
@@ -574,21 +625,12 @@ export function EditLogDialog({
                         disabled={isLoadingOrganizations}
                         placeholder={isLoadingOrganizations ? "Уншиж байна..." : "Илгээч байгууллага сонгох"}
                         searchPlaceholder="Илгээч байгууллага хайх..."
-                        className="mt-1"
                       />
                     </div>
                     <div>
-                      <div className="flex items-center justify-between mb-2">
-                        <Label htmlFor="edit-receiver" className="text-sm font-medium text-gray-700">
-                          Хүлээн авагч байгууллага
-                        </Label>
-                        <OrganizationManager
-                          organizations={receiverOrganizations}
-                          type="receiver"
-                          onOrganizationAdded={handleReceiverOrganizationAdded}
-                          onOrganizationUpdated={handleReceiverOrganizationAdded}
-                        />
-                      </div>
+                      <Label htmlFor="edit-receiver" className="text-sm font-medium text-gray-700 mb-2 block">
+                        Хүлээн авагч байгууллага
+                      </Label>
                       <FilterableSelect
                         options={receiverOrganizations.map((org) => ({
                           value: org.id,
@@ -599,87 +641,61 @@ export function EditLogDialog({
                         disabled={isLoadingOrganizations}
                         placeholder={isLoadingOrganizations ? "Уншиж байна..." : "Хүлээн авагч байгууллага сонгох"}
                         searchPlaceholder="Хүлээн авагч байгууллага хайх..."
-                        className="mt-1"
                       />
                     </div>
                   </div>
 
-                  {/* 8. Жолооч registration & selection */}
+                  {/* 7. Driver registration & selection */}
                   <div>
-                    <div className="flex items-center justify-between mb-2">
-                      <Label htmlFor="edit-driver" className="text-sm font-medium text-gray-700">
-                        Жолооч
+                    <Label htmlFor="edit-driver" className="text-sm font-medium text-gray-700 mb-2 block">
+                      Жолооч
+                    </Label>
+                    <div className="flex items-center gap-2">
+                      <div className="flex-1">
+                        <FilterableSelect
+                          options={drivers.map((driver) => ({
+                            value: driver.id,
+                            label: `${driver.name}${driver.phone ? ` (${driver.phone})` : ""}`,
+                          }))}
+                          value={driverId}
+                          onValueChange={(value) => {
+                            const selectedDriver = drivers.find(d => d.id === value)
+                            setDriverId(value)
+                            setDriverName(selectedDriver?.name || "")
+                          }}
+                          disabled={isLoadingDrivers}
+                          placeholder={isLoadingDrivers ? "Уншиж байна..." : "Жолооч сонгох"}
+                          searchPlaceholder="Жолооч хайх..."
+                        />
+                      </div>
+                      <DriverManager 
+                        drivers={drivers} 
+                        onDriverAdded={handleDriverAdded} 
+                        onDriverUpdated={handleDriverAdded} 
+                      />
+                    </div>
+                    {errors.driverId && (
+                      <p className="mt-1 text-xs text-red-600">{errors.driverId}</p>
+                    )}
+                  </div>
+
+                  {/* 8. Seal number input - only show for OUT direction */}
+                  {direction === "OUT" && (
+                    <div>
+                      <Label htmlFor="edit-seal" className="text-sm font-medium text-gray-700">
+                        Лацны дугаар
                       </Label>
-                      <DriverManager drivers={drivers} onDriverAdded={handleDriverAdded} onDriverUpdated={handleDriverAdded} />
-                    </div>
-                    <FilterableSelect
-                      options={drivers.map((driver) => ({
-                        value: driver.id,
-                        label: `${driver.name}${driver.licenseNumber ? ` (${driver.licenseNumber})` : ""}`,
-                      }))}
-                      value={driverId}
-                      onValueChange={(value) => {
-                        const selectedDriver = drivers.find(d => d.id === value)
-                        setDriverId(value)
-                        setDriverName(selectedDriver?.name || "")
-                      }}
-                      disabled={isLoadingDrivers}
-                      placeholder={isLoadingDrivers ? "Уншиж байна..." : driverName || "Жолооч сонгох"}
-                      searchPlaceholder="Жолооч хайх..."
-                      className="mt-1"
-                    />
-                    {!driverId && (
                       <Input
-                        id="edit-driver-manual"
-                        value={driverName}
-                        onChange={(e) => setDriverName(e.target.value)}
-                        className="mt-2 bg-white border-gray-300 focus:border-blue-500 focus:ring-blue-500"
-                        placeholder="Эсвэл жолоочийн нэрийг гараар оруулах"
+                        id="edit-seal"
+                        value={sealNumber}
+                        onChange={(e) => setSealNumber(e.target.value)}
+                        className="mt-1 bg-white border-gray-300 focus:border-blue-500 focus:ring-blue-500"
+                        placeholder="Лацны дугаар оруулах"
                       />
-                    )}
-                    {errors.driverName && (
-                      <p className="mt-1 text-xs text-red-600">{errors.driverName}</p>
-                    )}
-                  </div>
+                    </div>
+                  )}
 
-                  {/* 9. Тамганы дугаар input */}
-                  <div>
-                    <Label htmlFor="edit-seal" className="text-sm font-medium text-gray-700">
-                      Тамганы дугаар
-                    </Label>
-                    <Input
-                      id="edit-seal"
-                      value={sealNumber}
-                      onChange={(e) => setSealNumber(e.target.value)}
-                      className="mt-1 bg-white border-gray-300 focus:border-blue-500 focus:ring-blue-500"
-                      placeholder="Тамганы дугаар оруулах"
-                    />
-                  </div>
-
-                  {/* 10. Тээврийн төрөл dropdown */}
-                  <div>
-                    <Label htmlFor="edit-transport-type" className="text-sm font-medium text-gray-700">
-                      Тээврийн төрөл
-                    </Label>
-                    <Select
-                      value={transportType}
-                      onValueChange={(value) => setTransportType(value as TransportType)}
-                    >
-                      <SelectTrigger id="edit-transport-type" className="mt-1 bg-white border-gray-300 focus:border-blue-500 focus:ring-blue-500">
-                        <SelectValue placeholder="Тээврийн төрөл сонгох" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="truck">Ачааны машин</SelectItem>
-                        <SelectItem value="container">Контейнер</SelectItem>
-                        <SelectItem value="tanker">Тусгай зориулалтын машин</SelectItem>
-                        <SelectItem value="flatbed">Хавтгай тавцант машин</SelectItem>
-                        <SelectItem value="refrigerated">Хөргүүртэй машин</SelectItem>
-                        <SelectItem value="other">Бусад</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  {/* 11. Чиргүүлтэй checkbox (show/hide trailer fields) */}
+                  {/* 9. Chirguultei checkbox (show/hide trailer fields) */}
                   <div className="flex items-center space-x-2">
                     <Checkbox
                       id="edit-has-trailer"
@@ -710,29 +726,15 @@ export function EditLogDialog({
                         value={trailerPlate}
                         onChange={(e) => setTrailerPlate(e.target.value)}
                         className="mt-1 bg-white border-gray-300 focus:border-blue-500 focus:ring-blue-500"
-                        placeholder="Чиргүүлийн улсын дугаар оруулах"
+                        placeholder="Чиргүүлийн улсын дугаар"
                       />
                     </div>
                   )}
 
-                  {/* 12. Нэмэлт textarea */}
+                  {/* 10. Additional notes textarea */}
                   <div>
                     <Label htmlFor="edit-comments" className="text-sm font-medium text-gray-700">
                       Нэмэлт
-                    </Label>
-                    <Textarea
-                      id="edit-comments"
-                      value={comments}
-                      onChange={(e) => setComments(e.target.value)}
-                      className="mt-1 bg-white border-gray-300 focus:border-blue-500 focus:ring-blue-500"
-                      placeholder="Нэмэлт мэдээлэл..."
-                      rows={3}
-                    />
-                  </div>
-
-                  <div>
-                    <Label htmlFor="edit-comments" className="text-sm font-medium text-gray-700">
-                      Нэмэлт (Additional Notes)
                     </Label>
                     <Textarea
                       id="edit-comments"

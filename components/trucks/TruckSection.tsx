@@ -5,20 +5,18 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { FilterableSelect } from "@/components/ui/filterable-select"
-import { Camera, CheckCircle2, Clock, Zap, Loader2 } from "lucide-react"
+import { Camera, Clock, Zap, Loader2, Plus, ArrowRight, ArrowLeft } from "lucide-react"
 import type { Direction, TruckLog } from "@/lib/types"
 import { saveTruckLog, sendTruckLogToCustoms } from "@/lib/api"
 import { useToast } from "@/hooks/use-toast"
-import { ProductManager } from "@/components/products/ProductManager"
-import { TransportCompanyManager } from "@/components/transport/TransportCompanyManager"
-import { DriverManager } from "@/components/drivers/DriverManager"
-import { OrganizationManager } from "@/components/organizations/OrganizationManager"
 import { Checkbox } from "@/components/ui/checkbox"
-import type { TransportCompany, Organization, Driver, TransportType } from "@/lib/types"
+import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog"
+import { ScrollArea } from "@/components/ui/scroll-area"
+import type { TransportCompany, Organization, Driver } from "@/lib/types"
+import { DriverManager } from "@/components/drivers/DriverManager"
 
 interface Product {
   id: string
@@ -35,6 +33,7 @@ interface TruckSectionProps {
 
 export function TruckSection({ direction, onSave, onSend }: TruckSectionProps) {
   const { toast } = useToast()
+  const [isDialogOpen, setIsDialogOpen] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
   const [isSending, setIsSending] = useState(false)
   const [savedLogId, setSavedLogId] = useState<string | null>(null)
@@ -55,90 +54,152 @@ export function TruckSection({ direction, onSave, onSend }: TruckSectionProps) {
   const [driverName, setDriverName] = useState("") // Fallback for manual entry
   const [cargoType, setCargoType] = useState("")
   const [weight, setWeight] = useState("")
+  const [netWeight, setNetWeight] = useState("") // Цэвэр жин (net weight) - only for OUT
   const [comments, setComments] = useState("")
   const [origin, setOrigin] = useState("")
   const [destination, setDestination] = useState("")
   const [senderOrganizationId, setSenderOrganizationId] = useState<string>("")
   const [receiverOrganizationId, setReceiverOrganizationId] = useState<string>("")
   const [transportCompanyId, setTransportCompanyId] = useState<string>("")
-  const [transportType, setTransportType] = useState<TransportType | "">("")
   const [sealNumber, setSealNumber] = useState("")
   const [hasTrailer, setHasTrailer] = useState(false)
   const [trailerPlate, setTrailerPlate] = useState("")
 
-  // Load all data on mount
-  useEffect(() => {
-    async function loadData() {
-      // Load products
-      try {
-        setIsLoadingProducts(true)
-        const response = await fetch("/api/products")
-        if (response.ok) {
-          const data = await response.json()
-          setProducts(data)
-        }
-      } catch (error) {
-        console.error("Error loading products:", error)
-      } finally {
-        setIsLoadingProducts(false)
+  // Function to load all data
+  const loadAllData = async () => {
+    // Load products
+    try {
+      setIsLoadingProducts(true)
+      const response = await fetch("/api/products")
+      if (response.ok) {
+        const data = await response.json()
+        setProducts(data)
       }
-
-      // Load transport companies
-      try {
-        setIsLoadingCompanies(true)
-        const response = await fetch("/api/transport-companies")
-        if (response.ok) {
-          const data = await response.json()
-          setTransportCompanies(data)
-        }
-      } catch (error) {
-        console.error("Error loading transport companies:", error)
-      } finally {
-        setIsLoadingCompanies(false)
-      }
-
-      // Load drivers
-      try {
-        setIsLoadingDrivers(true)
-        const response = await fetch("/api/drivers")
-        if (response.ok) {
-          const data = await response.json()
-          setDrivers(data)
-        }
-      } catch (error) {
-        console.error("Error loading drivers:", error)
-      } finally {
-        setIsLoadingDrivers(false)
-      }
-
-      // Load sender organizations
-      try {
-        setIsLoadingOrganizations(true)
-        const senderResponse = await fetch("/api/organizations?type=sender")
-        if (senderResponse.ok) {
-          const senderData = await senderResponse.json()
-          setSenderOrganizations(senderData)
-        }
-      } catch (error) {
-        console.error("Error loading sender organizations:", error)
-      }
-
-      // Load receiver organizations
-      try {
-        const receiverResponse = await fetch("/api/organizations?type=receiver")
-        if (receiverResponse.ok) {
-          const receiverData = await receiverResponse.json()
-          setReceiverOrganizations(receiverData)
-        }
-      } catch (error) {
-        console.error("Error loading receiver organizations:", error)
-      } finally {
-        setIsLoadingOrganizations(false)
-      }
+    } catch (error) {
+      console.error("Error loading products:", error)
+    } finally {
+      setIsLoadingProducts(false)
     }
 
-    loadData()
+    // Load transport companies
+    try {
+      setIsLoadingCompanies(true)
+      const response = await fetch("/api/transport-companies")
+      if (response.ok) {
+        const data = await response.json()
+        setTransportCompanies(data)
+      }
+    } catch (error) {
+      console.error("Error loading transport companies:", error)
+    } finally {
+      setIsLoadingCompanies(false)
+    }
+
+    // Load drivers
+    try {
+      setIsLoadingDrivers(true)
+      const response = await fetch("/api/drivers")
+      if (response.ok) {
+        const data = await response.json()
+        setDrivers(data)
+      }
+    } catch (error) {
+      console.error("Error loading drivers:", error)
+    } finally {
+      setIsLoadingDrivers(false)
+    }
+
+    // Load sender organizations
+    try {
+      setIsLoadingOrganizations(true)
+      const senderResponse = await fetch("/api/organizations?type=sender")
+      if (senderResponse.ok) {
+        const senderData = await senderResponse.json()
+        setSenderOrganizations(senderData)
+      }
+    } catch (error) {
+      console.error("Error loading sender organizations:", error)
+    }
+
+    // Load receiver organizations
+    try {
+      const receiverResponse = await fetch("/api/organizations?type=receiver")
+      if (receiverResponse.ok) {
+        const receiverData = await receiverResponse.json()
+        setReceiverOrganizations(receiverData)
+      }
+    } catch (error) {
+      console.error("Error loading receiver organizations:", error)
+    } finally {
+      setIsLoadingOrganizations(false)
+    }
+  }
+
+  // Load all data on mount
+  useEffect(() => {
+    loadAllData()
   }, [])
+
+  // Listen for refresh events from other sections
+  useEffect(() => {
+    const handleRefresh = () => {
+      loadAllData()
+    }
+
+    window.addEventListener("refreshDropdownData", handleRefresh)
+    return () => {
+      window.removeEventListener("refreshDropdownData", handleRefresh)
+    }
+  }, [])
+
+  // Auto-calculate net weight for OUT direction
+  useEffect(() => {
+    if (direction === "OUT" && weight && plate && Number(weight) > 0) {
+      async function calculateNetWeight() {
+        try {
+          // Fetch logs to find the IN log for this plate
+          const response = await fetch("/api/logs?page=1&limit=100")
+          if (response.ok) {
+            const data = await response.json()
+            const logs = data.logs || []
+            
+            // Find the most recent IN log for the same plate
+            const inLog = logs
+              .filter((log: TruckLog) => 
+                log.direction === "IN" && 
+                log.plate.trim().toUpperCase() === plate.trim().toUpperCase() &&
+                log.weightKg &&
+                log.weightKg > 0
+              )
+              .sort((a: TruckLog, b: TruckLog) => 
+                new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+              )[0]
+
+            if (inLog && inLog.weightKg) {
+              const outWeight = Number(weight)
+              const inWeight = inLog.weightKg
+              const calculatedNetWeight = outWeight - inWeight
+              
+              if (calculatedNetWeight > 0) {
+                setNetWeight(Math.round(calculatedNetWeight).toString())
+              } else {
+                setNetWeight("")
+              }
+            } else {
+              setNetWeight("")
+            }
+          }
+        } catch (error) {
+          console.error("Error calculating net weight:", error)
+          setNetWeight("")
+        }
+      }
+      
+      calculateNetWeight()
+    } else if (direction === "IN" || !weight || !plate || Number(weight) <= 0) {
+      setNetWeight("")
+    }
+  }, [direction, weight, plate])
 
   const handleProductAdded = () => {
     async function reloadProducts() {
@@ -231,8 +292,8 @@ export function TruckSection({ direction, onSave, onSend }: TruckSectionProps) {
     if (!plate.trim()) {
       newErrors.plate = "Plate number is required"
     }
-    if (!driverName.trim()) {
-      newErrors.driverName = "Driver name is required"
+    if (!driverId) {
+      newErrors.driverId = "Driver selection is required"
     }
     if (!cargoType.trim()) {
       newErrors.cargoType = "Cargo type is required"
@@ -259,24 +320,32 @@ export function TruckSection({ direction, onSave, onSend }: TruckSectionProps) {
 
     setIsSaving(true)
     try {
-      // Get driver name from selected driver or use manual entry
-      const selectedDriver = driverId ? drivers.find(d => d.id === driverId) : null
-      const finalDriverName = selectedDriver?.name || driverName.trim()
+      // Get driver name from selected driver
+      const selectedDriver = drivers.find(d => d.id === driverId)
+      if (!selectedDriver) {
+        toast({
+          title: "Error",
+          description: "Please select a driver",
+          variant: "destructive",
+        })
+        setIsSaving(false)
+        return
+      }
 
       const log = await saveTruckLog({
         direction,
         plate: plate.trim(),
-        driverId: driverId || undefined,
-        driverName: finalDriverName,
+        driverId: driverId,
+        driverName: selectedDriver.name,
         cargoType: cargoType.trim(),
         weightKg: Number(weight),
+        netWeightKg: direction === "OUT" && netWeight ? Number(netWeight) : undefined,
         comments: comments.trim() || undefined,
         origin: origin.trim() || undefined,
         destination: destination.trim() || undefined,
         senderOrganizationId: senderOrganizationId || undefined,
         receiverOrganizationId: receiverOrganizationId || undefined,
         transportCompanyId: transportCompanyId || undefined,
-        transportType: transportType || undefined,
         sealNumber: sealNumber.trim() || undefined,
         hasTrailer: hasTrailer || undefined,
         trailerPlate: hasTrailer ? (trailerPlate.trim() || undefined) : undefined,
@@ -290,21 +359,7 @@ export function TruckSection({ direction, onSave, onSend }: TruckSectionProps) {
         description: `${direction === "IN" ? "Inbound" : "Outbound"} truck saved to log`,
       })
 
-      // Reset form (but keep plate and savedLogId for sending)
-      setDriverId("")
-      setDriverName("")
-      setCargoType("")
-      setWeight("")
-      setComments("")
-      setOrigin("")
-      setDestination("")
-      setSenderOrganizationId("")
-      setReceiverOrganizationId("")
-      setTransportCompanyId("")
-      setTransportType("")
-      setSealNumber("")
-      setHasTrailer(false)
-      setTrailerPlate("")
+      // Don't close dialog or reset form - keep it open for sending
       setErrors({})
     } catch (error) {
       toast({
@@ -351,6 +406,24 @@ export function TruckSection({ direction, onSave, onSend }: TruckSectionProps) {
           description: "Data successfully sent to Mongolian Customs",
         })
         setSavedLogId(null) // Reset after successful send
+        
+        // Reset form and close dialog after successful send
+        setDriverId("")
+        setDriverName("")
+        setCargoType("")
+        setWeight("")
+        setNetWeight("")
+        setComments("")
+        setOrigin("")
+        setDestination("")
+        setSenderOrganizationId("")
+        setReceiverOrganizationId("")
+        setTransportCompanyId("")
+        setSealNumber("")
+        setHasTrailer(false)
+        setTrailerPlate("")
+        setPlate("Б1234АВ")
+        setIsDialogOpen(false)
       } else {
         toast({
           title: "Error",
@@ -369,26 +442,82 @@ export function TruckSection({ direction, onSave, onSend }: TruckSectionProps) {
     }
   }
 
-  const title = direction === "IN" ? "Тээврийн хэрэгсэл ОРОХ – Хаалгаар орох" : "Тээврийн хэрэгсэл ГАРАХ – Хаалгаар гарах"
-  const weightLabel = direction === "IN" ? "Бүрэн жин (кг)" : "Цэвэр жин (кг)"
+  const title = direction === "IN" ? "Тээврийн хэрэгсэл орох" : "Тээврийн хэрэгсэл гарах"
+  const weightLabel = direction === "IN" ? "Бүрэн жин (кг)" : "Бүрэн жин (кг)"
 
   return (
-    <Card className="border-gray-200 bg-white hover:shadow-lg transition-shadow">
-      <CardHeader className="pb-4">
-        <div className="flex items-center justify-between">
-          <CardTitle className="flex items-center gap-2.5 text-gray-900 text-lg font-semibold">
-            <div className="p-2 rounded-lg bg-blue-50">
-              <Camera className="w-5 h-5 text-blue-600" />
+    <>
+      <Card className={`border-2 hover:shadow-xl transition-all duration-300 relative overflow-hidden ${
+        direction === "IN" 
+          ? "bg-gradient-to-br from-blue-50 via-white to-blue-50/30 border-blue-200" 
+          : "bg-gradient-to-br from-green-50 via-white to-green-50/30 border-green-200"
+      }`}>
+        {/* Decorative background element */}
+        <div className={`absolute top-0 right-0 w-32 h-32 opacity-10 ${
+          direction === "IN" ? "bg-blue-500" : "bg-green-500"
+        } rounded-full -mr-16 -mt-16`}></div>
+        
+        <CardHeader className="pb-6 relative z-10">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className={`p-3 rounded-xl shadow-sm ${
+                direction === "IN" 
+                  ? "bg-blue-100 text-blue-600" 
+                  : "bg-green-100 text-green-600"
+              }`}>
+                {direction === "IN" ? (
+                  <ArrowRight className="w-6 h-6" />
+                ) : (
+                  <ArrowLeft className="w-6 h-6" />
+                )}
+              </div>
+              <div>
+                <CardTitle className="text-gray-900 text-xl font-bold mb-1">
+                  {title}
+                </CardTitle>
+                <p className="text-sm text-gray-500">
+                  {direction === "IN" 
+                    ? "Тээврийн хэрэгсэл орох бүртгэл хийх" 
+                    : "Тээврийн хэрэгсэл гарах бүртгэл хийх"}
+                </p>
+              </div>
             </div>
-            {title}
-          </CardTitle>
-          <Badge className="bg-green-50 text-green-700 border-green-200 px-2.5 py-1">
-            <CheckCircle2 className="w-3.5 h-3.5 mr-1.5" />
-            Танигдсан
-          </Badge>
-        </div>
-      </CardHeader>
-      <CardContent className="space-y-5">
+          </div>
+        </CardHeader>
+        
+        <CardContent className="relative z-10 pb-6">
+          <div className="flex items-center justify-between">
+            <div className="flex-1">
+              <p className="text-sm text-gray-600 mb-4">
+                {direction === "IN" 
+                  ? "Тээврийн хэрэгсэл орох үед бүртгэл хийх" 
+                  : "Тээврийн хэрэгсэл гарах үед бүртгэл хийх"}
+              </p>
+            </div>
+            <Button
+              onClick={() => setIsDialogOpen(true)}
+              className={`shadow-md hover:shadow-lg transition-all px-6 py-3 ${
+                direction === "IN"
+                  ? "bg-blue-600 hover:bg-blue-700 text-white"
+                  : "bg-green-600 hover:bg-green-700 text-white"
+              }`}
+              size="default"
+            >
+              <Plus className="w-5 h-5 mr-2" />
+              {direction === "IN" ? "ОРОХ" : "ГАРАХ"}
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+
+      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+        <DialogContent className="!max-w-[60vw] !w-[95vw] max-h-[90vh] p-0" style={{ width: '95vw', maxWidth: '95vw' }}>
+          <DialogTitle className="sr-only">{direction === "IN" ? "ОРОХ бүртгэл" : "ГАРАХ бүртгэл"}</DialogTitle>
+          <DialogDescription className="sr-only">
+            {direction === "IN" ? "Орох тээврийн хэрэгслийн бүртгэл" : "Гарах тээврийн хэрэгслийн бүртгэл"}
+          </DialogDescription>
+          <ScrollArea className="max-h-[90vh]">
+            <div className="p-6 space-y-5">
         {/* License Plate Recognition */}
         <div className="bg-gray-50 rounded-xl p-4 border border-gray-200">
           <h3 className="text-sm font-semibold text-gray-900 mb-3 flex items-center gap-2">
@@ -452,7 +581,7 @@ export function TruckSection({ direction, onSave, onSend }: TruckSectionProps) {
             )}
           </div>
 
-          {/* 3. IN weight input (manual for now) */}
+          {/* 3. Weight input */}
           <div>
             <Label htmlFor={`weight-${direction}`} className="text-sm font-medium text-gray-700">
               {weightLabel}
@@ -470,29 +599,45 @@ export function TruckSection({ direction, onSave, onSend }: TruckSectionProps) {
             )}
           </div>
 
+          {/* Net weight input - only for OUT direction (auto-calculated) */}
+          {direction === "OUT" && (
+            <div>
+              <Label htmlFor={`net-weight-${direction}`} className="text-sm font-medium text-gray-700">
+                Цэвэр жин (кг) <span className="text-xs text-gray-500 font-normal">(автоматаар тооцоолно)</span>
+              </Label>
+              <Input
+                id={`net-weight-${direction}`}
+                type="number"
+                value={netWeight}
+                readOnly
+                className="mt-1 bg-gray-50 border-gray-300 text-gray-700 cursor-not-allowed"
+                placeholder="Цэвэр жин автоматаар тооцоологдоно"
+              />
+              {errors.netWeight && (
+                <p className="mt-1 text-xs text-red-600">{errors.netWeight}</p>
+              )}
+            </div>
+          )}
+
           {/* 4. Transport company dropdown + "Add New" */}
           <div>
             <Label htmlFor={`transport-company-${direction}`} className="text-sm font-medium text-gray-700 mb-2 block">
               Тээврийн компани
             </Label>
-            <div className="flex gap-2 items-center">
-              <FilterableSelect
-                options={transportCompanies.map((company) => ({
-                  value: company.id,
-                  label: company.name,
-                }))}
-                value={transportCompanyId}
-                onValueChange={(value) => {
-                  handleFieldChange(setTransportCompanyId, value)
-                  setTransportCompanyId(value)
-                }}
-                disabled={isLoadingCompanies}
-                placeholder={isLoadingCompanies ? "Уншиж байна..." : "Тээврийн компани сонгох"}
-                searchPlaceholder="Тээврийн компани хайх..."
-                className="flex-1"
-              />
-              <TransportCompanyManager companies={transportCompanies} onCompanyAdded={handleCompanyAdded} />
-            </div>
+            <FilterableSelect
+              options={transportCompanies.map((company) => ({
+                value: company.id,
+                label: company.name,
+              }))}
+              value={transportCompanyId}
+              onValueChange={(value) => {
+                handleFieldChange(setTransportCompanyId, value)
+                setTransportCompanyId(value)
+              }}
+              disabled={isLoadingCompanies}
+              placeholder={isLoadingCompanies ? "Уншиж байна..." : "Тээврийн компани сонгох"}
+              searchPlaceholder="Тээврийн компани хайх..."
+            />
           </div>
 
           {/* 5. Route fields (Haanaas & Haashaa) */}
@@ -528,21 +673,17 @@ export function TruckSection({ direction, onSave, onSend }: TruckSectionProps) {
             <Label htmlFor={`cargo-${direction}`} className="text-sm font-medium text-gray-700 mb-2 block">
               Бүтээгдэхүүн
             </Label>
-            <div className="flex gap-2 items-center">
-              <FilterableSelect
-                options={products.map((product: Product) => ({
-                  value: product.value,
-                  label: product.label,
-                }))}
-                value={cargoType}
-                onValueChange={(value) => handleFieldChange(setCargoType, value)}
-                disabled={isLoadingProducts}
-                placeholder={isLoadingProducts ? "Уншиж байна..." : "Бүтээгдэхүүн сонгох"}
-                searchPlaceholder="Бүтээгдэхүүн хайх..."
-                className="flex-1"
-              />
-              <ProductManager products={products} onProductAdded={handleProductAdded} />
-            </div>
+            <FilterableSelect
+              options={products.map((product: Product) => ({
+                value: product.value,
+                label: product.label,
+              }))}
+              value={cargoType}
+              onValueChange={(value) => handleFieldChange(setCargoType, value)}
+              disabled={isLoadingProducts}
+              placeholder={isLoadingProducts ? "Уншиж байна..." : "Бүтээгдэхүүн сонгох"}
+              searchPlaceholder="Бүтээгдэхүүн хайх..."
+            />
             {errors.cargoType && (
               <p className="mt-1 text-xs text-red-600">{errors.cargoType}</p>
             )}
@@ -554,57 +695,39 @@ export function TruckSection({ direction, onSave, onSend }: TruckSectionProps) {
               <Label htmlFor={`sender-${direction}`} className="text-sm font-medium text-gray-700 mb-2 block">
                 Илгээч байгууллага
               </Label>
-              <div className="flex gap-2 items-center">
-                <FilterableSelect
-                  options={senderOrganizations.map((org) => ({
-                    value: org.id,
-                    label: org.name,
-                  }))}
-                  value={senderOrganizationId}
-                  onValueChange={(value) => {
-                    handleFieldChange(setSenderOrganizationId, value)
-                    setSenderOrganizationId(value)
-                  }}
-                  disabled={isLoadingOrganizations}
-                  placeholder={isLoadingOrganizations ? "Уншиж байна..." : "Илгээч байгууллага сонгох"}
-                  searchPlaceholder="Илгээч байгууллага хайх..."
-                  className="flex-1"
-                />
-                <OrganizationManager
-                  organizations={senderOrganizations}
-                  type="sender"
-                  onOrganizationAdded={handleSenderOrganizationAdded}
-                  onOrganizationUpdated={handleSenderOrganizationAdded}
-                />
-              </div>
+              <FilterableSelect
+                options={senderOrganizations.map((org) => ({
+                  value: org.id,
+                  label: org.name,
+                }))}
+                value={senderOrganizationId}
+                onValueChange={(value) => {
+                  handleFieldChange(setSenderOrganizationId, value)
+                  setSenderOrganizationId(value)
+                }}
+                disabled={isLoadingOrganizations}
+                placeholder={isLoadingOrganizations ? "Уншиж байна..." : "Илгээч байгууллага сонгох"}
+                searchPlaceholder="Илгээч байгууллага хайх..."
+              />
             </div>
             <div>
               <Label htmlFor={`receiver-${direction}`} className="text-sm font-medium text-gray-700 mb-2 block">
                 Хүлээн авагч байгууллага
               </Label>
-              <div className="flex gap-2 items-center">
-                <FilterableSelect
-                  options={receiverOrganizations.map((org) => ({
-                    value: org.id,
-                    label: org.name,
-                  }))}
-                  value={receiverOrganizationId}
-                  onValueChange={(value) => {
-                    handleFieldChange(setReceiverOrganizationId, value)
-                    setReceiverOrganizationId(value)
-                  }}
-                  disabled={isLoadingOrganizations}
-                  placeholder={isLoadingOrganizations ? "Уншиж байна..." : "Хүлээн авагч байгууллага сонгох"}
-                  searchPlaceholder="Хүлээн авагч байгууллага хайх..."
-                  className="flex-1"
-                />
-                <OrganizationManager
-                  organizations={receiverOrganizations}
-                  type="receiver"
-                  onOrganizationAdded={handleReceiverOrganizationAdded}
-                  onOrganizationUpdated={handleReceiverOrganizationAdded}
-                />
-              </div>
+              <FilterableSelect
+                options={receiverOrganizations.map((org) => ({
+                  value: org.id,
+                  label: org.name,
+                }))}
+                value={receiverOrganizationId}
+                onValueChange={(value) => {
+                  handleFieldChange(setReceiverOrganizationId, value)
+                  setReceiverOrganizationId(value)
+                }}
+                disabled={isLoadingOrganizations}
+                placeholder={isLoadingOrganizations ? "Уншиж байна..." : "Хүлээн авагч байгууллага сонгох"}
+                searchPlaceholder="Хүлээн авагч байгууллага хайх..."
+              />
             </div>
           </div>
 
@@ -613,37 +736,33 @@ export function TruckSection({ direction, onSave, onSend }: TruckSectionProps) {
             <Label htmlFor={`driver-${direction}`} className="text-sm font-medium text-gray-700 mb-2 block">
               Жолооч
             </Label>
-            <div className="flex gap-2 items-center">
-              <FilterableSelect
-                options={drivers.map((driver) => ({
-                  value: driver.id,
-                  label: `${driver.name}${driver.licenseNumber ? ` (${driver.licenseNumber})` : ""}`,
-                }))}
-                value={driverId}
-                onValueChange={(value) => {
-                  const selectedDriver = drivers.find(d => d.id === value)
-                  setDriverId(value)
-                  setDriverName(selectedDriver?.name || "")
-                  handleFieldChange(() => {}, value)
-                }}
-                disabled={isLoadingDrivers}
-                placeholder={isLoadingDrivers ? "Уншиж байна..." : driverName || "Жолооч сонгох"}
-                searchPlaceholder="Жолооч хайх..."
-                className="flex-1"
+            <div className="flex items-center gap-2">
+              <div className="flex-1">
+                <FilterableSelect
+                  options={drivers.map((driver) => ({
+                    value: driver.id,
+                    label: `${driver.name}${driver.phone ? ` (${driver.phone})` : ""}`,
+                  }))}
+                  value={driverId}
+                  onValueChange={(value) => {
+                    setDriverId(value)
+                    const selectedDriver = drivers.find(d => d.id === value)
+                    setDriverName(selectedDriver?.name || "")
+                    handleFieldChange(() => {}, value)
+                  }}
+                  disabled={isLoadingDrivers}
+                  placeholder={isLoadingDrivers ? "Уншиж байна..." : "Жолооч сонгох"}
+                  searchPlaceholder="Жолооч хайх..."
+                />
+              </div>
+              <DriverManager 
+                drivers={drivers} 
+                onDriverAdded={handleDriverAdded} 
+                onDriverUpdated={handleDriverAdded} 
               />
-              <DriverManager drivers={drivers} onDriverAdded={handleDriverAdded} onDriverUpdated={handleDriverAdded} />
             </div>
-            {!driverId && (
-              <Input
-                id={`driver-manual-${direction}`}
-                value={driverName}
-                onChange={(e) => handleFieldChange(setDriverName, e.target.value)}
-                className="mt-2 bg-white border-gray-300 focus:border-blue-500 focus:ring-blue-500"
-                placeholder="Эсвэл жолоочийн нэрийг гараар оруулах"
-              />
-            )}
-            {errors.driverName && (
-              <p className="mt-1 text-xs text-red-600">{errors.driverName}</p>
+            {errors.driverId && (
+              <p className="mt-1 text-xs text-red-600">{errors.driverId}</p>
             )}
           </div>
 
@@ -663,36 +782,7 @@ export function TruckSection({ direction, onSave, onSend }: TruckSectionProps) {
             </div>
           )}
 
-          {/* 10. Transport type dropdown */}
-          <div>
-            <Label htmlFor={`transport-type-${direction}`} className="text-sm font-medium text-gray-700">
-              Тээврийн төрөл
-            </Label>
-            <Select
-              value={transportType}
-              onValueChange={(value) => {
-                const transportTypeValue = value as TransportType
-                setTransportType(transportTypeValue)
-                if (savedLogId) {
-                  setSavedLogId(null)
-                }
-              }}
-            >
-              <SelectTrigger className="mt-1 bg-white border-gray-300 focus:border-blue-500 focus:ring-blue-500">
-                <SelectValue placeholder="Тээврийн төрөл сонгох" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="truck">Truck</SelectItem>
-                <SelectItem value="container">Container</SelectItem>
-                <SelectItem value="tanker">Tanker</SelectItem>
-                <SelectItem value="flatbed">Flatbed</SelectItem>
-                <SelectItem value="refrigerated">Refrigerated</SelectItem>
-                <SelectItem value="other">Other</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          {/* 11. Chirguultei checkbox (show/hide trailer fields) */}
+          {/* 10. Chirguultei checkbox (show/hide trailer fields) */}
           <div className="flex items-center space-x-2">
             <Checkbox
               id={`has-trailer-${direction}`}
@@ -779,8 +869,11 @@ export function TruckSection({ direction, onSave, onSend }: TruckSectionProps) {
             )}
           </Button>
         </div>
-      </CardContent>
-    </Card>
+            </div>
+          </ScrollArea>
+        </DialogContent>
+      </Dialog>
+    </>
   )
 }
 

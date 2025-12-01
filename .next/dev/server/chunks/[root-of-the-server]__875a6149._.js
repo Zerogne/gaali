@@ -553,7 +553,7 @@ async function POST(request) {
         const companyId = session.companyId;
         const driversCollection = await (0, __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$db$2f$companyDb$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["getCompanyCollection"])(companyId, "drivers");
         const body = await request.json();
-        const { name, licenseNumber, licenseExpiry, registrationNumber, registrationYear } = body;
+        const { name, phone, registrationNumber, additionalInfo } = body;
         if (!name || typeof name !== "string" || !name.trim()) {
             return __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$server$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["NextResponse"].json({
                 error: "Driver name is required"
@@ -564,10 +564,9 @@ async function POST(request) {
         const newDriver = {
             id: `drv_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
             name: name.trim(),
-            licenseNumber: licenseNumber?.trim() || undefined,
-            licenseExpiry: licenseExpiry?.trim() || undefined,
+            phone: phone?.trim() || undefined,
             registrationNumber: registrationNumber?.trim() || undefined,
-            registrationYear: registrationYear?.trim() || undefined,
+            additionalInfo: additionalInfo?.trim() || undefined,
             createdAt: new Date().toISOString()
         };
         await driversCollection.insertOne(newDriver);

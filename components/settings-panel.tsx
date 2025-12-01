@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -9,7 +9,6 @@ import { Switch } from "@/components/ui/switch"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Users, Camera, Bell, Save } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
-
 export function SettingsPanel() {
   const [emailNotifs, setEmailNotifs] = useState(true)
   const [alertNotifs, setAlertNotifs] = useState(true)
@@ -17,7 +16,7 @@ export function SettingsPanel() {
 
   return (
     <Tabs defaultValue="users" className="space-y-6">
-      <TabsList className="grid w-full grid-cols-3 lg:w-[400px]">
+      <TabsList className="grid w-full grid-cols-3 lg:w-[600px]">
         <TabsTrigger value="users" className="gap-2">
           <Users className="w-4 h-4" />
           Users

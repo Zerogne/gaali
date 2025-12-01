@@ -91,6 +91,9 @@ export function OrganizationManager({
       setOrgName("")
       setEditingOrg(null)
 
+      // Dispatch custom event to refresh all sections
+      window.dispatchEvent(new CustomEvent("refreshDropdownData"))
+
       if (editingOrg) {
         onOrganizationUpdated()
       } else {
@@ -125,6 +128,9 @@ export function OrganizationManager({
         title: "Success",
         description: "Organization deleted successfully",
       })
+
+      // Dispatch custom event to refresh all sections
+      window.dispatchEvent(new CustomEvent("refreshDropdownData"))
 
       onOrganizationUpdated()
     } catch (error) {

@@ -1,0 +1,20 @@
+{
+  "node": {
+    "00db69d86cc3b8562947f5f5012a7dc7936b0621ed": {
+      "workers": {
+        "app/products/page": {
+          "moduleId": "[project]/.next-internal/server/app/products/page/actions.js { ACTIONS_MODULE0 => \"[project]/lib/auth/authServer.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false,
+          "exportedName": "logout",
+          "filename": "lib/auth/authServer.ts"
+        }
+      },
+      "layer": {
+        "app/products/page": "action-browser"
+      },
+      "exportedName": "logout",
+      "filename": "lib/auth/authServer.ts"
+    }
+  },
+  "edge": {}
+}

@@ -2169,6 +2169,8 @@ function ProductManager({ products, onProductAdded }) {
                 description: "Product added successfully"
             });
             setNewProductLabel("");
+            // Dispatch custom event to refresh all sections
+            window.dispatchEvent(new CustomEvent("refreshDropdownData"));
             onProductAdded();
         } catch (error) {
             toast({
@@ -2196,6 +2198,8 @@ function ProductManager({ products, onProductAdded }) {
                 title: "Success",
                 description: "Product deleted successfully"
             });
+            // Dispatch custom event to refresh all sections
+            window.dispatchEvent(new CustomEvent("refreshDropdownData"));
             onProductAdded();
         } catch (error) {
             toast({
@@ -2222,19 +2226,19 @@ function ProductManager({ products, onProductAdded }) {
                             className: "w-4 h-4"
                         }, void 0, false, {
                             fileName: "[project]/components/products/ProductManager.tsx",
-                            lineNumber: 113,
+                            lineNumber: 120,
                             columnNumber: 11
                         }, this),
                         "Нэмэх"
                     ]
                 }, void 0, true, {
                     fileName: "[project]/components/products/ProductManager.tsx",
-                    lineNumber: 108,
+                    lineNumber: 115,
                     columnNumber: 9
                 }, this)
             }, void 0, false, {
                 fileName: "[project]/components/products/ProductManager.tsx",
-                lineNumber: 107,
+                lineNumber: 114,
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$dialog$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["DialogContent"], {
@@ -2246,20 +2250,20 @@ function ProductManager({ products, onProductAdded }) {
                                 children: "Manage Products"
                             }, void 0, false, {
                                 fileName: "[project]/components/products/ProductManager.tsx",
-                                lineNumber: 119,
+                                lineNumber: 126,
                                 columnNumber: 11
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$dialog$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["DialogDescription"], {
                                 children: "Add or remove custom product types for cargo selection."
                             }, void 0, false, {
                                 fileName: "[project]/components/products/ProductManager.tsx",
-                                lineNumber: 120,
+                                lineNumber: 127,
                                 columnNumber: 11
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/components/products/ProductManager.tsx",
-                        lineNumber: 118,
+                        lineNumber: 125,
                         columnNumber: 9
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -2273,7 +2277,7 @@ function ProductManager({ products, onProductAdded }) {
                                         children: "Add New Product"
                                     }, void 0, false, {
                                         fileName: "[project]/components/products/ProductManager.tsx",
-                                        lineNumber: 128,
+                                        lineNumber: 135,
                                         columnNumber: 13
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -2291,7 +2295,7 @@ function ProductManager({ products, onProductAdded }) {
                                                 }
                                             }, void 0, false, {
                                                 fileName: "[project]/components/products/ProductManager.tsx",
-                                                lineNumber: 130,
+                                                lineNumber: 137,
                                                 columnNumber: 15
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$button$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Button"], {
@@ -2302,30 +2306,30 @@ function ProductManager({ products, onProductAdded }) {
                                                     className: "w-4 h-4 animate-spin"
                                                 }, void 0, false, {
                                                     fileName: "[project]/components/products/ProductManager.tsx",
-                                                    lineNumber: 147,
+                                                    lineNumber: 154,
                                                     columnNumber: 19
                                                 }, this) : /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$plus$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__Plus$3e$__["Plus"], {
                                                     className: "w-4 h-4"
                                                 }, void 0, false, {
                                                     fileName: "[project]/components/products/ProductManager.tsx",
-                                                    lineNumber: 149,
+                                                    lineNumber: 156,
                                                     columnNumber: 19
                                                 }, this)
                                             }, void 0, false, {
                                                 fileName: "[project]/components/products/ProductManager.tsx",
-                                                lineNumber: 141,
+                                                lineNumber: 148,
                                                 columnNumber: 15
                                             }, this)
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/components/products/ProductManager.tsx",
-                                        lineNumber: 129,
+                                        lineNumber: 136,
                                         columnNumber: 13
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/components/products/ProductManager.tsx",
-                                lineNumber: 127,
+                                lineNumber: 134,
                                 columnNumber: 11
                             }, this),
                             customProducts.length > 0 && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -2335,7 +2339,7 @@ function ProductManager({ products, onProductAdded }) {
                                         children: "Custom Products"
                                     }, void 0, false, {
                                         fileName: "[project]/components/products/ProductManager.tsx",
-                                        lineNumber: 158,
+                                        lineNumber: 165,
                                         columnNumber: 15
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -2348,7 +2352,7 @@ function ProductManager({ products, onProductAdded }) {
                                                         children: product.label
                                                     }, void 0, false, {
                                                         fileName: "[project]/components/products/ProductManager.tsx",
-                                                        lineNumber: 165,
+                                                        lineNumber: 172,
                                                         columnNumber: 21
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$button$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Button"], {
@@ -2361,35 +2365,35 @@ function ProductManager({ products, onProductAdded }) {
                                                             className: "w-4 h-4 animate-spin"
                                                         }, void 0, false, {
                                                             fileName: "[project]/components/products/ProductManager.tsx",
-                                                            lineNumber: 174,
+                                                            lineNumber: 181,
                                                             columnNumber: 25
                                                         }, this) : /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$x$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__X$3e$__["X"], {
                                                             className: "w-4 h-4"
                                                         }, void 0, false, {
                                                             fileName: "[project]/components/products/ProductManager.tsx",
-                                                            lineNumber: 176,
+                                                            lineNumber: 183,
                                                             columnNumber: 25
                                                         }, this)
                                                     }, void 0, false, {
                                                         fileName: "[project]/components/products/ProductManager.tsx",
-                                                        lineNumber: 166,
+                                                        lineNumber: 173,
                                                         columnNumber: 21
                                                     }, this)
                                                 ]
                                             }, product.id, true, {
                                                 fileName: "[project]/components/products/ProductManager.tsx",
-                                                lineNumber: 161,
+                                                lineNumber: 168,
                                                 columnNumber: 19
                                             }, this))
                                     }, void 0, false, {
                                         fileName: "[project]/components/products/ProductManager.tsx",
-                                        lineNumber: 159,
+                                        lineNumber: 166,
                                         columnNumber: 15
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/components/products/ProductManager.tsx",
-                                lineNumber: 157,
+                                lineNumber: 164,
                                 columnNumber: 13
                             }, this),
                             customProducts.length === 0 && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -2397,25 +2401,25 @@ function ProductManager({ products, onProductAdded }) {
                                 children: "No custom products yet. Add one above to get started."
                             }, void 0, false, {
                                 fileName: "[project]/components/products/ProductManager.tsx",
-                                lineNumber: 186,
+                                lineNumber: 193,
                                 columnNumber: 13
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/components/products/ProductManager.tsx",
-                        lineNumber: 125,
+                        lineNumber: 132,
                         columnNumber: 9
                     }, this)
                 ]
             }, void 0, true, {
                 fileName: "[project]/components/products/ProductManager.tsx",
-                lineNumber: 117,
+                lineNumber: 124,
                 columnNumber: 7
             }, this)
         ]
     }, void 0, true, {
         fileName: "[project]/components/products/ProductManager.tsx",
-        lineNumber: 106,
+        lineNumber: 113,
         columnNumber: 5
     }, this);
 }
@@ -2445,6 +2449,8 @@ var __TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$input$2e
 var __TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$label$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/components/ui/label.tsx [app-client] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$dialog$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/components/ui/dialog.tsx [app-client] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$plus$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__Plus$3e$__ = __turbopack_context__.i("[project]/node_modules/lucide-react/dist/esm/icons/plus.js [app-client] (ecmascript) <export default as Plus>");
+var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$square$2d$pen$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__Edit$3e$__ = __turbopack_context__.i("[project]/node_modules/lucide-react/dist/esm/icons/square-pen.js [app-client] (ecmascript) <export default as Edit>");
+var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$trash$2d$2$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__Trash2$3e$__ = __turbopack_context__.i("[project]/node_modules/lucide-react/dist/esm/icons/trash-2.js [app-client] (ecmascript) <export default as Trash2>");
 var __TURBOPACK__imported__module__$5b$project$5d2f$hooks$2f$use$2d$toast$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/hooks/use-toast.ts [app-client] (ecmascript)");
 ;
 var _s = __turbopack_context__.k.signature();
@@ -2456,14 +2462,22 @@ var _s = __turbopack_context__.k.signature();
 ;
 ;
 ;
-function TransportCompanyManager({ companies, onCompanyAdded }) {
+function TransportCompanyManager({ companies, onCompanyAdded, onCompanyUpdated }) {
     _s();
     const { toast } = (0, __TURBOPACK__imported__module__$5b$project$5d2f$hooks$2f$use$2d$toast$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useToast"])();
     const [isDialogOpen, setIsDialogOpen] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])(false);
+    const [editingCompany, setEditingCompany] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])(null);
     const [companyName, setCompanyName] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])("");
     const [isSaving, setIsSaving] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])(false);
+    const [isDeleting, setIsDeleting] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])(null);
     const handleAdd = ()=>{
+        setEditingCompany(null);
         setCompanyName("");
+        setIsDialogOpen(true);
+    };
+    const handleEdit = (company)=>{
+        setEditingCompany(company);
+        setCompanyName(company.name);
         setIsDialogOpen(true);
     };
     const handleSave = async ()=>{
@@ -2477,8 +2491,10 @@ function TransportCompanyManager({ companies, onCompanyAdded }) {
         }
         setIsSaving(true);
         try {
-            const response = await fetch("/api/transport-companies", {
-                method: "POST",
+            const url = editingCompany ? `/api/transport-companies/${editingCompany.id}` : "/api/transport-companies";
+            const method = editingCompany ? "PUT" : "POST";
+            const response = await fetch(url, {
+                method,
                 headers: {
                     "Content-Type": "application/json"
                 },
@@ -2487,23 +2503,63 @@ function TransportCompanyManager({ companies, onCompanyAdded }) {
                 })
             });
             if (!response.ok) {
-                throw new Error("Failed to add transport company");
+                throw new Error("Failed to save transport company");
             }
             toast({
                 title: "Success",
-                description: "Transport company added successfully"
+                description: editingCompany ? "Transport company updated successfully" : "Transport company added successfully"
             });
             setIsDialogOpen(false);
             setCompanyName("");
-            onCompanyAdded();
+            setEditingCompany(null);
+            // Dispatch custom event to refresh all sections
+            window.dispatchEvent(new CustomEvent("refreshDropdownData"));
+            if (editingCompany && onCompanyUpdated) {
+                onCompanyUpdated();
+            } else {
+                onCompanyAdded();
+            }
         } catch (error) {
             toast({
                 title: "Error",
-                description: "Failed to add transport company",
+                description: "Failed to save transport company",
                 variant: "destructive"
             });
         } finally{
             setIsSaving(false);
+        }
+    };
+    const handleDelete = async (companyId)=>{
+        if (!confirm("Are you sure you want to delete this transport company?")) {
+            return;
+        }
+        setIsDeleting(companyId);
+        try {
+            const response = await fetch(`/api/transport-companies/${companyId}`, {
+                method: "DELETE"
+            });
+            if (!response.ok) {
+                throw new Error("Failed to delete transport company");
+            }
+            toast({
+                title: "Success",
+                description: "Transport company deleted successfully"
+            });
+            // Dispatch custom event to refresh all sections
+            window.dispatchEvent(new CustomEvent("refreshDropdownData"));
+            if (onCompanyUpdated) {
+                onCompanyUpdated();
+            } else {
+                onCompanyAdded();
+            }
+        } catch (error) {
+            toast({
+                title: "Error",
+                description: "Failed to delete transport company",
+                variant: "destructive"
+            });
+        } finally{
+            setIsDeleting(null);
         }
     };
     return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Fragment"], {
@@ -2519,14 +2575,14 @@ function TransportCompanyManager({ companies, onCompanyAdded }) {
                         className: "w-3.5 h-3.5"
                     }, void 0, false, {
                         fileName: "[project]/components/transport/TransportCompanyManager.tsx",
-                        lineNumber: 94,
+                        lineNumber: 160,
                         columnNumber: 9
                     }, this),
                     "Нэмэх"
                 ]
             }, void 0, true, {
                 fileName: "[project]/components/transport/TransportCompanyManager.tsx",
-                lineNumber: 87,
+                lineNumber: 153,
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$dialog$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Dialog"], {
@@ -2537,57 +2593,152 @@ function TransportCompanyManager({ companies, onCompanyAdded }) {
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$dialog$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["DialogHeader"], {
                             children: [
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$dialog$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["DialogTitle"], {
-                                    children: "Add New Transport Company"
+                                    children: editingCompany ? "Edit Transport Company" : "Add New Transport Company"
                                 }, void 0, false, {
                                     fileName: "[project]/components/transport/TransportCompanyManager.tsx",
-                                    lineNumber: 101,
+                                    lineNumber: 167,
                                     columnNumber: 13
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$dialog$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["DialogDescription"], {
-                                    children: "Enter a new transport company name."
+                                    children: editingCompany ? "Update the transport company name below." : "Enter a new transport company name."
                                 }, void 0, false, {
                                     fileName: "[project]/components/transport/TransportCompanyManager.tsx",
-                                    lineNumber: 102,
+                                    lineNumber: 170,
                                     columnNumber: 13
                                 }, this)
                             ]
                         }, void 0, true, {
                             fileName: "[project]/components/transport/TransportCompanyManager.tsx",
-                            lineNumber: 100,
+                            lineNumber: 166,
                             columnNumber: 11
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                             className: "space-y-4",
-                            children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                children: [
-                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$label$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Label"], {
-                                        htmlFor: "company-name",
-                                        children: "Company Name"
-                                    }, void 0, false, {
-                                        fileName: "[project]/components/transport/TransportCompanyManager.tsx",
-                                        lineNumber: 109,
-                                        columnNumber: 15
-                                    }, this),
-                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$input$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Input"], {
-                                        id: "company-name",
-                                        value: companyName,
-                                        onChange: (e)=>setCompanyName(e.target.value),
-                                        placeholder: "Enter company name",
-                                        autoFocus: true
-                                    }, void 0, false, {
-                                        fileName: "[project]/components/transport/TransportCompanyManager.tsx",
-                                        lineNumber: 110,
-                                        columnNumber: 15
-                                    }, this)
-                                ]
-                            }, void 0, true, {
-                                fileName: "[project]/components/transport/TransportCompanyManager.tsx",
-                                lineNumber: 108,
-                                columnNumber: 13
-                            }, this)
-                        }, void 0, false, {
+                            children: [
+                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                    children: [
+                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$label$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Label"], {
+                                            htmlFor: "company-name",
+                                            children: "Company Name"
+                                        }, void 0, false, {
+                                            fileName: "[project]/components/transport/TransportCompanyManager.tsx",
+                                            lineNumber: 179,
+                                            columnNumber: 15
+                                        }, this),
+                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$input$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Input"], {
+                                            id: "company-name",
+                                            value: companyName,
+                                            onChange: (e)=>setCompanyName(e.target.value),
+                                            placeholder: "Enter company name",
+                                            autoFocus: true
+                                        }, void 0, false, {
+                                            fileName: "[project]/components/transport/TransportCompanyManager.tsx",
+                                            lineNumber: 180,
+                                            columnNumber: 15
+                                        }, this)
+                                    ]
+                                }, void 0, true, {
+                                    fileName: "[project]/components/transport/TransportCompanyManager.tsx",
+                                    lineNumber: 178,
+                                    columnNumber: 13
+                                }, this),
+                                companies.length > 0 && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                    children: [
+                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$label$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Label"], {
+                                            className: "mb-2 block",
+                                            children: "Existing Companies"
+                                        }, void 0, false, {
+                                            fileName: "[project]/components/transport/TransportCompanyManager.tsx",
+                                            lineNumber: 191,
+                                            columnNumber: 17
+                                        }, this),
+                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                            className: "space-y-2 max-h-40 overflow-y-auto",
+                                            children: companies.map((company)=>/*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                                    className: "flex items-center justify-between p-2 bg-gray-50 rounded border border-gray-200",
+                                                    children: [
+                                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                                            className: "text-sm text-gray-700",
+                                                            children: company.name
+                                                        }, void 0, false, {
+                                                            fileName: "[project]/components/transport/TransportCompanyManager.tsx",
+                                                            lineNumber: 198,
+                                                            columnNumber: 23
+                                                        }, this),
+                                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                                            className: "flex items-center gap-1",
+                                                            children: [
+                                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$button$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Button"], {
+                                                                    type: "button",
+                                                                    size: "sm",
+                                                                    variant: "ghost",
+                                                                    onClick: ()=>handleEdit(company),
+                                                                    className: "h-7 w-7 p-0",
+                                                                    children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$square$2d$pen$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__Edit$3e$__["Edit"], {
+                                                                        className: "w-3.5 h-3.5"
+                                                                    }, void 0, false, {
+                                                                        fileName: "[project]/components/transport/TransportCompanyManager.tsx",
+                                                                        lineNumber: 207,
+                                                                        columnNumber: 27
+                                                                    }, this)
+                                                                }, void 0, false, {
+                                                                    fileName: "[project]/components/transport/TransportCompanyManager.tsx",
+                                                                    lineNumber: 200,
+                                                                    columnNumber: 25
+                                                                }, this),
+                                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$button$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Button"], {
+                                                                    type: "button",
+                                                                    size: "sm",
+                                                                    variant: "ghost",
+                                                                    onClick: ()=>handleDelete(company.id),
+                                                                    disabled: isDeleting === company.id,
+                                                                    className: "h-7 w-7 p-0 text-red-600 hover:text-red-700",
+                                                                    children: isDeleting === company.id ? /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                                                        className: "text-xs",
+                                                                        children: "..."
+                                                                    }, void 0, false, {
+                                                                        fileName: "[project]/components/transport/TransportCompanyManager.tsx",
+                                                                        lineNumber: 218,
+                                                                        columnNumber: 29
+                                                                    }, this) : /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$trash$2d$2$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__Trash2$3e$__["Trash2"], {
+                                                                        className: "w-3.5 h-3.5"
+                                                                    }, void 0, false, {
+                                                                        fileName: "[project]/components/transport/TransportCompanyManager.tsx",
+                                                                        lineNumber: 220,
+                                                                        columnNumber: 29
+                                                                    }, this)
+                                                                }, void 0, false, {
+                                                                    fileName: "[project]/components/transport/TransportCompanyManager.tsx",
+                                                                    lineNumber: 209,
+                                                                    columnNumber: 25
+                                                                }, this)
+                                                            ]
+                                                        }, void 0, true, {
+                                                            fileName: "[project]/components/transport/TransportCompanyManager.tsx",
+                                                            lineNumber: 199,
+                                                            columnNumber: 23
+                                                        }, this)
+                                                    ]
+                                                }, company.id, true, {
+                                                    fileName: "[project]/components/transport/TransportCompanyManager.tsx",
+                                                    lineNumber: 194,
+                                                    columnNumber: 21
+                                                }, this))
+                                        }, void 0, false, {
+                                            fileName: "[project]/components/transport/TransportCompanyManager.tsx",
+                                            lineNumber: 192,
+                                            columnNumber: 17
+                                        }, this)
+                                    ]
+                                }, void 0, true, {
+                                    fileName: "[project]/components/transport/TransportCompanyManager.tsx",
+                                    lineNumber: 190,
+                                    columnNumber: 15
+                                }, this)
+                            ]
+                        }, void 0, true, {
                             fileName: "[project]/components/transport/TransportCompanyManager.tsx",
-                            lineNumber: 107,
+                            lineNumber: 177,
                             columnNumber: 11
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$dialog$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["DialogFooter"], {
@@ -2600,39 +2751,39 @@ function TransportCompanyManager({ companies, onCompanyAdded }) {
                                     children: "Cancel"
                                 }, void 0, false, {
                                     fileName: "[project]/components/transport/TransportCompanyManager.tsx",
-                                    lineNumber: 121,
+                                    lineNumber: 232,
                                     columnNumber: 13
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$button$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Button"], {
                                     onClick: handleSave,
                                     disabled: isSaving,
-                                    children: isSaving ? "Saving..." : "Add"
+                                    children: isSaving ? "Saving..." : editingCompany ? "Update" : "Add"
                                 }, void 0, false, {
                                     fileName: "[project]/components/transport/TransportCompanyManager.tsx",
-                                    lineNumber: 129,
+                                    lineNumber: 240,
                                     columnNumber: 13
                                 }, this)
                             ]
                         }, void 0, true, {
                             fileName: "[project]/components/transport/TransportCompanyManager.tsx",
-                            lineNumber: 120,
+                            lineNumber: 231,
                             columnNumber: 11
                         }, this)
                     ]
                 }, void 0, true, {
                     fileName: "[project]/components/transport/TransportCompanyManager.tsx",
-                    lineNumber: 99,
+                    lineNumber: 165,
                     columnNumber: 9
                 }, this)
             }, void 0, false, {
                 fileName: "[project]/components/transport/TransportCompanyManager.tsx",
-                lineNumber: 98,
+                lineNumber: 164,
                 columnNumber: 7
             }, this)
         ]
     }, void 0, true);
 }
-_s(TransportCompanyManager, "ur4/hsg679pVwhADU3eBlvC9IjA=", false, function() {
+_s(TransportCompanyManager, "kolFkNcWKSADqH1c0fctyabbcNw=", false, function() {
     return [
         __TURBOPACK__imported__module__$5b$project$5d2f$hooks$2f$use$2d$toast$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useToast"]
     ];
@@ -2658,10 +2809,14 @@ var __TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$input$2e
 var __TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$label$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/components/ui/label.tsx [app-client] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$dialog$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/components/ui/dialog.tsx [app-client] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$plus$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__Plus$3e$__ = __turbopack_context__.i("[project]/node_modules/lucide-react/dist/esm/icons/plus.js [app-client] (ecmascript) <export default as Plus>");
+var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$square$2d$pen$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__Edit$3e$__ = __turbopack_context__.i("[project]/node_modules/lucide-react/dist/esm/icons/square-pen.js [app-client] (ecmascript) <export default as Edit>");
+var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$trash$2d$2$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__Trash2$3e$__ = __turbopack_context__.i("[project]/node_modules/lucide-react/dist/esm/icons/trash-2.js [app-client] (ecmascript) <export default as Trash2>");
 var __TURBOPACK__imported__module__$5b$project$5d2f$hooks$2f$use$2d$toast$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/hooks/use-toast.ts [app-client] (ecmascript)");
+var __TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$textarea$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/components/ui/textarea.tsx [app-client] (ecmascript)");
 ;
 var _s = __turbopack_context__.k.signature();
 "use client";
+;
 ;
 ;
 ;
@@ -2676,20 +2831,17 @@ function DriverManager({ drivers, onDriverAdded, onDriverUpdated }) {
     const [editingDriver, setEditingDriver] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])(null);
     const [driverData, setDriverData] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])({
         name: "",
-        licenseNumber: "",
-        licenseExpiry: "",
-        registrationNumber: "",
-        registrationYear: ""
+        phone: "",
+        additionalInfo: ""
     });
     const [isSaving, setIsSaving] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])(false);
+    const [isDeleting, setIsDeleting] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])(null);
     const handleAdd = ()=>{
         setEditingDriver(null);
         setDriverData({
             name: "",
-            licenseNumber: "",
-            licenseExpiry: "",
-            registrationNumber: "",
-            registrationYear: ""
+            phone: "",
+            additionalInfo: ""
         });
         setIsDialogOpen(true);
     };
@@ -2697,18 +2849,16 @@ function DriverManager({ drivers, onDriverAdded, onDriverUpdated }) {
         setEditingDriver(driver);
         setDriverData({
             name: driver.name,
-            licenseNumber: driver.licenseNumber || "",
-            licenseExpiry: driver.licenseExpiry || "",
-            registrationNumber: driver.registrationNumber || "",
-            registrationYear: driver.registrationYear || ""
+            phone: driver.phone || "",
+            additionalInfo: driver.additionalInfo || ""
         });
         setIsDialogOpen(true);
     };
     const handleSave = async ()=>{
         if (!driverData.name.trim()) {
             toast({
-                title: "Error",
-                description: "Driver name is required",
+                title: "Алдаа",
+                description: "Бүтэн нэр заавал оруулна",
                 variant: "destructive"
             });
             return;
@@ -2724,21 +2874,21 @@ function DriverManager({ drivers, onDriverAdded, onDriverUpdated }) {
                 },
                 body: JSON.stringify({
                     name: driverData.name.trim(),
-                    licenseNumber: driverData.licenseNumber.trim() || undefined,
-                    licenseExpiry: driverData.licenseExpiry.trim() || undefined,
-                    registrationNumber: driverData.registrationNumber.trim() || undefined,
-                    registrationYear: driverData.registrationYear.trim() || undefined
+                    phone: driverData.phone.trim() || undefined,
+                    additionalInfo: driverData.additionalInfo.trim() || undefined
                 })
             });
             if (!response.ok) {
                 throw new Error("Failed to save driver");
             }
             toast({
-                title: "Success",
-                description: editingDriver ? "Driver updated successfully" : "Driver added successfully"
+                title: "Амжилттай",
+                description: editingDriver ? "Жолооч амжилттай засагдлаа" : "Жолооч амжилттай нэмэгдлээ"
             });
             setIsDialogOpen(false);
             setEditingDriver(null);
+            // Dispatch custom event to refresh all sections
+            window.dispatchEvent(new CustomEvent("refreshDropdownData"));
             if (editingDriver) {
                 onDriverUpdated();
             } else {
@@ -2746,12 +2896,41 @@ function DriverManager({ drivers, onDriverAdded, onDriverUpdated }) {
             }
         } catch (error) {
             toast({
-                title: "Error",
-                description: "Failed to save driver",
+                title: "Алдаа",
+                description: "Жолооч хадгалахад алдаа гарлаа",
                 variant: "destructive"
             });
         } finally{
             setIsSaving(false);
+        }
+    };
+    const handleDelete = async (driverId)=>{
+        if (!confirm("Та энэ жолоочийг устгахдаа итгэлтэй байна уу?")) {
+            return;
+        }
+        setIsDeleting(driverId);
+        try {
+            const response = await fetch(`/api/drivers/${driverId}`, {
+                method: "DELETE"
+            });
+            if (!response.ok) {
+                throw new Error("Failed to delete driver");
+            }
+            toast({
+                title: "Амжилттай",
+                description: "Жолооч амжилттай устгагдлаа"
+            });
+            // Dispatch custom event to refresh all sections
+            window.dispatchEvent(new CustomEvent("refreshDropdownData"));
+            onDriverUpdated();
+        } catch (error) {
+            toast({
+                title: "Алдаа",
+                description: "Жолооч устгахад алдаа гарлаа",
+                variant: "destructive"
+            });
+        } finally{
+            setIsDeleting(null);
         }
     };
     return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Fragment"], {
@@ -2767,14 +2946,14 @@ function DriverManager({ drivers, onDriverAdded, onDriverUpdated }) {
                         className: "w-3.5 h-3.5"
                     }, void 0, false, {
                         fileName: "[project]/components/drivers/DriverManager.tsx",
-                        lineNumber: 136,
+                        lineNumber: 168,
                         columnNumber: 9
                     }, this),
                     "Нэмэх"
                 ]
             }, void 0, true, {
                 fileName: "[project]/components/drivers/DriverManager.tsx",
-                lineNumber: 129,
+                lineNumber: 161,
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$dialog$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Dialog"], {
@@ -2786,23 +2965,23 @@ function DriverManager({ drivers, onDriverAdded, onDriverUpdated }) {
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$dialog$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["DialogHeader"], {
                             children: [
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$dialog$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["DialogTitle"], {
-                                    children: editingDriver ? "Edit Driver" : "Add New Driver"
+                                    children: editingDriver ? "Жолооч засах" : "Жолооч нэмэх"
                                 }, void 0, false, {
                                     fileName: "[project]/components/drivers/DriverManager.tsx",
-                                    lineNumber: 143,
+                                    lineNumber: 175,
                                     columnNumber: 13
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$dialog$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["DialogDescription"], {
-                                    children: editingDriver ? "Update the driver information below." : "Enter driver information."
+                                    children: editingDriver ? "Жолоочийн мэдээллийг засах." : "Жолоочийн мэдээлэл оруулах."
                                 }, void 0, false, {
                                     fileName: "[project]/components/drivers/DriverManager.tsx",
-                                    lineNumber: 146,
+                                    lineNumber: 178,
                                     columnNumber: 13
                                 }, this)
                             ]
                         }, void 0, true, {
                             fileName: "[project]/components/drivers/DriverManager.tsx",
-                            lineNumber: 142,
+                            lineNumber: 174,
                             columnNumber: 11
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -2812,10 +2991,10 @@ function DriverManager({ drivers, onDriverAdded, onDriverUpdated }) {
                                     children: [
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$label$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Label"], {
                                             htmlFor: "driver-name",
-                                            children: "Driver Name *"
+                                            children: "Бүтэн нэр *"
                                         }, void 0, false, {
                                             fileName: "[project]/components/drivers/DriverManager.tsx",
-                                            lineNumber: 155,
+                                            lineNumber: 187,
                                             columnNumber: 15
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$input$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Input"], {
@@ -2825,152 +3004,198 @@ function DriverManager({ drivers, onDriverAdded, onDriverUpdated }) {
                                                     ...driverData,
                                                     name: e.target.value
                                                 }),
-                                            placeholder: "Enter driver name",
+                                            placeholder: "Жолоочийн бүтэн нэр оруулах",
                                             autoFocus: true,
                                             required: true
                                         }, void 0, false, {
                                             fileName: "[project]/components/drivers/DriverManager.tsx",
-                                            lineNumber: 156,
+                                            lineNumber: 188,
                                             columnNumber: 15
                                         }, this)
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/components/drivers/DriverManager.tsx",
-                                    lineNumber: 154,
+                                    lineNumber: 186,
                                     columnNumber: 13
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                                     children: [
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$label$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Label"], {
-                                            htmlFor: "license-number",
-                                            children: "License Number"
+                                            htmlFor: "driver-phone",
+                                            children: "Утасны дугаар"
                                         }, void 0, false, {
                                             fileName: "[project]/components/drivers/DriverManager.tsx",
-                                            lineNumber: 169,
+                                            lineNumber: 201,
                                             columnNumber: 15
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$input$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Input"], {
-                                            id: "license-number",
-                                            value: driverData.licenseNumber,
+                                            id: "driver-phone",
+                                            type: "tel",
+                                            value: driverData.phone,
                                             onChange: (e)=>setDriverData({
                                                     ...driverData,
-                                                    licenseNumber: e.target.value
+                                                    phone: e.target.value
                                                 }),
-                                            placeholder: "Enter license number"
+                                            placeholder: "Утасны дугаар оруулах"
                                         }, void 0, false, {
                                             fileName: "[project]/components/drivers/DriverManager.tsx",
-                                            lineNumber: 170,
+                                            lineNumber: 202,
                                             columnNumber: 15
                                         }, this)
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/components/drivers/DriverManager.tsx",
-                                    lineNumber: 168,
+                                    lineNumber: 200,
                                     columnNumber: 13
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                                     children: [
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$label$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Label"], {
-                                            htmlFor: "license-expiry",
-                                            children: "License Expiry"
+                                            htmlFor: "driver-additional-info",
+                                            children: "Нэмэлт мэдээлэл"
                                         }, void 0, false, {
                                             fileName: "[project]/components/drivers/DriverManager.tsx",
-                                            lineNumber: 181,
+                                            lineNumber: 214,
                                             columnNumber: 15
                                         }, this),
-                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$input$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Input"], {
-                                            id: "license-expiry",
-                                            type: "date",
-                                            value: driverData.licenseExpiry,
+                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$textarea$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Textarea"], {
+                                            id: "driver-additional-info",
+                                            value: driverData.additionalInfo,
                                             onChange: (e)=>setDriverData({
                                                     ...driverData,
-                                                    licenseExpiry: e.target.value
-                                                })
+                                                    additionalInfo: e.target.value
+                                                }),
+                                            placeholder: "Нэмэлт мэдээлэл оруулах",
+                                            rows: 3
                                         }, void 0, false, {
                                             fileName: "[project]/components/drivers/DriverManager.tsx",
-                                            lineNumber: 182,
+                                            lineNumber: 215,
                                             columnNumber: 15
                                         }, this)
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/components/drivers/DriverManager.tsx",
-                                    lineNumber: 180,
+                                    lineNumber: 213,
                                     columnNumber: 13
                                 }, this),
-                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                    className: "grid grid-cols-2 gap-4",
+                                drivers.length > 0 && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                                     children: [
-                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                            children: [
-                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$label$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Label"], {
-                                                    htmlFor: "reg-number",
-                                                    children: "Тээврийн хэрэгслийн улсын дугаар"
-                                                }, void 0, false, {
-                                                    fileName: "[project]/components/drivers/DriverManager.tsx",
-                                                    lineNumber: 194,
-                                                    columnNumber: 17
-                                                }, this),
-                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$input$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Input"], {
-                                                    id: "reg-number",
-                                                    value: driverData.registrationNumber,
-                                                    onChange: (e)=>setDriverData({
-                                                            ...driverData,
-                                                            registrationNumber: e.target.value
-                                                        }),
-                                                    placeholder: "Улсын дугаар"
-                                                }, void 0, false, {
-                                                    fileName: "[project]/components/drivers/DriverManager.tsx",
-                                                    lineNumber: 197,
-                                                    columnNumber: 17
-                                                }, this)
-                                            ]
-                                        }, void 0, true, {
+                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$label$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Label"], {
+                                            className: "mb-2 block",
+                                            children: "Одоогийн жолооч нар"
+                                        }, void 0, false, {
                                             fileName: "[project]/components/drivers/DriverManager.tsx",
-                                            lineNumber: 193,
-                                            columnNumber: 15
+                                            lineNumber: 228,
+                                            columnNumber: 17
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                            children: [
-                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$label$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Label"], {
-                                                    htmlFor: "reg-year",
-                                                    children: "Тээврийн хэрэгслийн жил"
-                                                }, void 0, false, {
+                                            className: "space-y-2 max-h-40 overflow-y-auto",
+                                            children: drivers.map((driver)=>/*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                                    className: "flex items-center justify-between p-2 bg-gray-50 rounded border border-gray-200",
+                                                    children: [
+                                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                                            className: "flex-1",
+                                                            children: [
+                                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                                                    className: "text-sm text-gray-700 font-medium",
+                                                                    children: driver.name
+                                                                }, void 0, false, {
+                                                                    fileName: "[project]/components/drivers/DriverManager.tsx",
+                                                                    lineNumber: 236,
+                                                                    columnNumber: 25
+                                                                }, this),
+                                                                driver.phone && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                                                    className: "text-xs text-gray-500 ml-2",
+                                                                    children: [
+                                                                        "(",
+                                                                        driver.phone,
+                                                                        ")"
+                                                                    ]
+                                                                }, void 0, true, {
+                                                                    fileName: "[project]/components/drivers/DriverManager.tsx",
+                                                                    lineNumber: 238,
+                                                                    columnNumber: 27
+                                                                }, this)
+                                                            ]
+                                                        }, void 0, true, {
+                                                            fileName: "[project]/components/drivers/DriverManager.tsx",
+                                                            lineNumber: 235,
+                                                            columnNumber: 23
+                                                        }, this),
+                                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                                            className: "flex items-center gap-1",
+                                                            children: [
+                                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$button$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Button"], {
+                                                                    type: "button",
+                                                                    size: "sm",
+                                                                    variant: "ghost",
+                                                                    onClick: ()=>handleEdit(driver),
+                                                                    className: "h-7 w-7 p-0",
+                                                                    children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$square$2d$pen$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__Edit$3e$__["Edit"], {
+                                                                        className: "w-3.5 h-3.5"
+                                                                    }, void 0, false, {
+                                                                        fileName: "[project]/components/drivers/DriverManager.tsx",
+                                                                        lineNumber: 249,
+                                                                        columnNumber: 27
+                                                                    }, this)
+                                                                }, void 0, false, {
+                                                                    fileName: "[project]/components/drivers/DriverManager.tsx",
+                                                                    lineNumber: 242,
+                                                                    columnNumber: 25
+                                                                }, this),
+                                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$button$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Button"], {
+                                                                    type: "button",
+                                                                    size: "sm",
+                                                                    variant: "ghost",
+                                                                    onClick: ()=>handleDelete(driver.id),
+                                                                    disabled: isDeleting === driver.id,
+                                                                    className: "h-7 w-7 p-0 text-red-600 hover:text-red-700",
+                                                                    children: isDeleting === driver.id ? /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                                                        className: "text-xs",
+                                                                        children: "..."
+                                                                    }, void 0, false, {
+                                                                        fileName: "[project]/components/drivers/DriverManager.tsx",
+                                                                        lineNumber: 260,
+                                                                        columnNumber: 29
+                                                                    }, this) : /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$trash$2d$2$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__Trash2$3e$__["Trash2"], {
+                                                                        className: "w-3.5 h-3.5"
+                                                                    }, void 0, false, {
+                                                                        fileName: "[project]/components/drivers/DriverManager.tsx",
+                                                                        lineNumber: 262,
+                                                                        columnNumber: 29
+                                                                    }, this)
+                                                                }, void 0, false, {
+                                                                    fileName: "[project]/components/drivers/DriverManager.tsx",
+                                                                    lineNumber: 251,
+                                                                    columnNumber: 25
+                                                                }, this)
+                                                            ]
+                                                        }, void 0, true, {
+                                                            fileName: "[project]/components/drivers/DriverManager.tsx",
+                                                            lineNumber: 241,
+                                                            columnNumber: 23
+                                                        }, this)
+                                                    ]
+                                                }, driver.id, true, {
                                                     fileName: "[project]/components/drivers/DriverManager.tsx",
-                                                    lineNumber: 210,
-                                                    columnNumber: 17
-                                                }, this),
-                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$input$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Input"], {
-                                                    id: "reg-year",
-                                                    type: "number",
-                                                    value: driverData.registrationYear,
-                                                    onChange: (e)=>setDriverData({
-                                                            ...driverData,
-                                                            registrationYear: e.target.value
-                                                        }),
-                                                    placeholder: "Жил",
-                                                    min: "1900",
-                                                    max: new Date().getFullYear()
-                                                }, void 0, false, {
-                                                    fileName: "[project]/components/drivers/DriverManager.tsx",
-                                                    lineNumber: 211,
-                                                    columnNumber: 17
-                                                }, this)
-                                            ]
-                                        }, void 0, true, {
+                                                    lineNumber: 231,
+                                                    columnNumber: 21
+                                                }, this))
+                                        }, void 0, false, {
                                             fileName: "[project]/components/drivers/DriverManager.tsx",
-                                            lineNumber: 209,
-                                            columnNumber: 15
+                                            lineNumber: 229,
+                                            columnNumber: 17
                                         }, this)
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/components/drivers/DriverManager.tsx",
-                                    lineNumber: 192,
-                                    columnNumber: 13
+                                    lineNumber: 227,
+                                    columnNumber: 15
                                 }, this)
                             ]
                         }, void 0, true, {
                             fileName: "[project]/components/drivers/DriverManager.tsx",
-                            lineNumber: 153,
+                            lineNumber: 185,
                             columnNumber: 11
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$dialog$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["DialogFooter"], {
@@ -2980,42 +3205,42 @@ function DriverManager({ drivers, onDriverAdded, onDriverUpdated }) {
                                     variant: "outline",
                                     onClick: ()=>setIsDialogOpen(false),
                                     disabled: isSaving,
-                                    children: "Cancel"
+                                    children: "Цуцлах"
                                 }, void 0, false, {
                                     fileName: "[project]/components/drivers/DriverManager.tsx",
-                                    lineNumber: 230,
+                                    lineNumber: 274,
                                     columnNumber: 13
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$button$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Button"], {
                                     onClick: handleSave,
                                     disabled: isSaving,
-                                    children: isSaving ? "Saving..." : editingDriver ? "Update" : "Add"
+                                    children: isSaving ? "Хадгалж байна..." : editingDriver ? "Засах" : "Нэмэх"
                                 }, void 0, false, {
                                     fileName: "[project]/components/drivers/DriverManager.tsx",
-                                    lineNumber: 238,
+                                    lineNumber: 282,
                                     columnNumber: 13
                                 }, this)
                             ]
                         }, void 0, true, {
                             fileName: "[project]/components/drivers/DriverManager.tsx",
-                            lineNumber: 229,
+                            lineNumber: 273,
                             columnNumber: 11
                         }, this)
                     ]
                 }, void 0, true, {
                     fileName: "[project]/components/drivers/DriverManager.tsx",
-                    lineNumber: 141,
+                    lineNumber: 173,
                     columnNumber: 9
                 }, this)
             }, void 0, false, {
                 fileName: "[project]/components/drivers/DriverManager.tsx",
-                lineNumber: 140,
+                lineNumber: 172,
                 columnNumber: 7
             }, this)
         ]
     }, void 0, true);
 }
-_s(DriverManager, "o8Q4IGgkG7xaO9lJfUFngwqsbQg=", false, function() {
+_s(DriverManager, "XJB3+9+6gdg/EnZlVvVtoZPAIN4=", false, function() {
     return [
         __TURBOPACK__imported__module__$5b$project$5d2f$hooks$2f$use$2d$toast$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useToast"]
     ];
@@ -3106,6 +3331,8 @@ function OrganizationManager({ organizations, type, onOrganizationAdded, onOrgan
             setIsDialogOpen(false);
             setOrgName("");
             setEditingOrg(null);
+            // Dispatch custom event to refresh all sections
+            window.dispatchEvent(new CustomEvent("refreshDropdownData"));
             if (editingOrg) {
                 onOrganizationUpdated();
             } else {
@@ -3136,6 +3363,8 @@ function OrganizationManager({ organizations, type, onOrganizationAdded, onOrgan
                 title: "Success",
                 description: "Organization deleted successfully"
             });
+            // Dispatch custom event to refresh all sections
+            window.dispatchEvent(new CustomEvent("refreshDropdownData"));
             onOrganizationUpdated();
         } catch (error) {
             toast({
@@ -3158,14 +3387,14 @@ function OrganizationManager({ organizations, type, onOrganizationAdded, onOrgan
                         className: "w-3.5 h-3.5"
                     }, void 0, false, {
                         fileName: "[project]/components/organizations/OrganizationManager.tsx",
-                        lineNumber: 148,
+                        lineNumber: 154,
                         columnNumber: 9
                     }, this),
                     "Нэмэх"
                 ]
             }, void 0, true, {
                 fileName: "[project]/components/organizations/OrganizationManager.tsx",
-                lineNumber: 141,
+                lineNumber: 147,
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$dialog$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Dialog"], {
@@ -3179,20 +3408,20 @@ function OrganizationManager({ organizations, type, onOrganizationAdded, onOrgan
                                     children: editingOrg ? `Edit ${type === "sender" ? "Sender" : "Receiver"} Organization` : `Add New ${type === "sender" ? "Sender" : "Receiver"} Organization`
                                 }, void 0, false, {
                                     fileName: "[project]/components/organizations/OrganizationManager.tsx",
-                                    lineNumber: 155,
+                                    lineNumber: 161,
                                     columnNumber: 13
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$dialog$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["DialogDescription"], {
                                     children: editingOrg ? `Update the ${type === "sender" ? "sender" : "receiver"} organization name below.` : `Enter a new ${type === "sender" ? "sender" : "receiver"} organization name.`
                                 }, void 0, false, {
                                     fileName: "[project]/components/organizations/OrganizationManager.tsx",
-                                    lineNumber: 160,
+                                    lineNumber: 166,
                                     columnNumber: 13
                                 }, this)
                             ]
                         }, void 0, true, {
                             fileName: "[project]/components/organizations/OrganizationManager.tsx",
-                            lineNumber: 154,
+                            lineNumber: 160,
                             columnNumber: 11
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -3205,7 +3434,7 @@ function OrganizationManager({ organizations, type, onOrganizationAdded, onOrgan
                                             children: "Organization Name"
                                         }, void 0, false, {
                                             fileName: "[project]/components/organizations/OrganizationManager.tsx",
-                                            lineNumber: 169,
+                                            lineNumber: 175,
                                             columnNumber: 15
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$input$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Input"], {
@@ -3216,13 +3445,13 @@ function OrganizationManager({ organizations, type, onOrganizationAdded, onOrgan
                                             autoFocus: true
                                         }, void 0, false, {
                                             fileName: "[project]/components/organizations/OrganizationManager.tsx",
-                                            lineNumber: 170,
+                                            lineNumber: 176,
                                             columnNumber: 15
                                         }, this)
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/components/organizations/OrganizationManager.tsx",
-                                    lineNumber: 168,
+                                    lineNumber: 174,
                                     columnNumber: 13
                                 }, this),
                                 organizations.length > 0 && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -3232,7 +3461,7 @@ function OrganizationManager({ organizations, type, onOrganizationAdded, onOrgan
                                             children: "Existing Organizations"
                                         }, void 0, false, {
                                             fileName: "[project]/components/organizations/OrganizationManager.tsx",
-                                            lineNumber: 181,
+                                            lineNumber: 187,
                                             columnNumber: 17
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -3245,7 +3474,7 @@ function OrganizationManager({ organizations, type, onOrganizationAdded, onOrgan
                                                             children: org.name
                                                         }, void 0, false, {
                                                             fileName: "[project]/components/organizations/OrganizationManager.tsx",
-                                                            lineNumber: 188,
+                                                            lineNumber: 194,
                                                             columnNumber: 23
                                                         }, this),
                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -3261,12 +3490,12 @@ function OrganizationManager({ organizations, type, onOrganizationAdded, onOrgan
                                                                         className: "w-3.5 h-3.5"
                                                                     }, void 0, false, {
                                                                         fileName: "[project]/components/organizations/OrganizationManager.tsx",
-                                                                        lineNumber: 197,
+                                                                        lineNumber: 203,
                                                                         columnNumber: 27
                                                                     }, this)
                                                                 }, void 0, false, {
                                                                     fileName: "[project]/components/organizations/OrganizationManager.tsx",
-                                                                    lineNumber: 190,
+                                                                    lineNumber: 196,
                                                                     columnNumber: 25
                                                                 }, this),
                                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$button$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Button"], {
@@ -3279,41 +3508,41 @@ function OrganizationManager({ organizations, type, onOrganizationAdded, onOrgan
                                                                         className: "w-3.5 h-3.5"
                                                                     }, void 0, false, {
                                                                         fileName: "[project]/components/organizations/OrganizationManager.tsx",
-                                                                        lineNumber: 206,
+                                                                        lineNumber: 212,
                                                                         columnNumber: 27
                                                                     }, this)
                                                                 }, void 0, false, {
                                                                     fileName: "[project]/components/organizations/OrganizationManager.tsx",
-                                                                    lineNumber: 199,
+                                                                    lineNumber: 205,
                                                                     columnNumber: 25
                                                                 }, this)
                                                             ]
                                                         }, void 0, true, {
                                                             fileName: "[project]/components/organizations/OrganizationManager.tsx",
-                                                            lineNumber: 189,
+                                                            lineNumber: 195,
                                                             columnNumber: 23
                                                         }, this)
                                                     ]
                                                 }, org.id, true, {
                                                     fileName: "[project]/components/organizations/OrganizationManager.tsx",
-                                                    lineNumber: 184,
+                                                    lineNumber: 190,
                                                     columnNumber: 21
                                                 }, this))
                                         }, void 0, false, {
                                             fileName: "[project]/components/organizations/OrganizationManager.tsx",
-                                            lineNumber: 182,
+                                            lineNumber: 188,
                                             columnNumber: 17
                                         }, this)
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/components/organizations/OrganizationManager.tsx",
-                                    lineNumber: 180,
+                                    lineNumber: 186,
                                     columnNumber: 15
                                 }, this)
                             ]
                         }, void 0, true, {
                             fileName: "[project]/components/organizations/OrganizationManager.tsx",
-                            lineNumber: 167,
+                            lineNumber: 173,
                             columnNumber: 11
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$dialog$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["DialogFooter"], {
@@ -3326,7 +3555,7 @@ function OrganizationManager({ organizations, type, onOrganizationAdded, onOrgan
                                     children: "Cancel"
                                 }, void 0, false, {
                                     fileName: "[project]/components/organizations/OrganizationManager.tsx",
-                                    lineNumber: 217,
+                                    lineNumber: 223,
                                     columnNumber: 13
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$button$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Button"], {
@@ -3335,24 +3564,24 @@ function OrganizationManager({ organizations, type, onOrganizationAdded, onOrgan
                                     children: isSaving ? "Saving..." : editingOrg ? "Update" : "Add"
                                 }, void 0, false, {
                                     fileName: "[project]/components/organizations/OrganizationManager.tsx",
-                                    lineNumber: 225,
+                                    lineNumber: 231,
                                     columnNumber: 13
                                 }, this)
                             ]
                         }, void 0, true, {
                             fileName: "[project]/components/organizations/OrganizationManager.tsx",
-                            lineNumber: 216,
+                            lineNumber: 222,
                             columnNumber: 11
                         }, this)
                     ]
                 }, void 0, true, {
                     fileName: "[project]/components/organizations/OrganizationManager.tsx",
-                    lineNumber: 153,
+                    lineNumber: 159,
                     columnNumber: 9
                 }, this)
             }, void 0, false, {
                 fileName: "[project]/components/organizations/OrganizationManager.tsx",
-                lineNumber: 152,
+                lineNumber: 158,
                 columnNumber: 7
             }, this)
         ]
@@ -3503,74 +3732,91 @@ function TruckSection({ direction, onSave, onSend }) {
     const [sealNumber, setSealNumber] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])("");
     const [hasTrailer, setHasTrailer] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])(false);
     const [trailerPlate, setTrailerPlate] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])("");
+    // Function to load all data
+    const loadAllData = async ()=>{
+        // Load products
+        try {
+            setIsLoadingProducts(true);
+            const response = await fetch("/api/products");
+            if (response.ok) {
+                const data = await response.json();
+                setProducts(data);
+            }
+        } catch (error) {
+            console.error("Error loading products:", error);
+        } finally{
+            setIsLoadingProducts(false);
+        }
+        // Load transport companies
+        try {
+            setIsLoadingCompanies(true);
+            const response = await fetch("/api/transport-companies");
+            if (response.ok) {
+                const data = await response.json();
+                setTransportCompanies(data);
+            }
+        } catch (error) {
+            console.error("Error loading transport companies:", error);
+        } finally{
+            setIsLoadingCompanies(false);
+        }
+        // Load drivers
+        try {
+            setIsLoadingDrivers(true);
+            const response = await fetch("/api/drivers");
+            if (response.ok) {
+                const data = await response.json();
+                setDrivers(data);
+            }
+        } catch (error) {
+            console.error("Error loading drivers:", error);
+        } finally{
+            setIsLoadingDrivers(false);
+        }
+        // Load sender organizations
+        try {
+            setIsLoadingOrganizations(true);
+            const senderResponse = await fetch("/api/organizations?type=sender");
+            if (senderResponse.ok) {
+                const senderData = await senderResponse.json();
+                setSenderOrganizations(senderData);
+            }
+        } catch (error) {
+            console.error("Error loading sender organizations:", error);
+        }
+        // Load receiver organizations
+        try {
+            const receiverResponse = await fetch("/api/organizations?type=receiver");
+            if (receiverResponse.ok) {
+                const receiverData = await receiverResponse.json();
+                setReceiverOrganizations(receiverData);
+            }
+        } catch (error) {
+            console.error("Error loading receiver organizations:", error);
+        } finally{
+            setIsLoadingOrganizations(false);
+        }
+    };
     // Load all data on mount
     (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useEffect"])({
         "TruckSection.useEffect": ()=>{
-            async function loadData() {
-                // Load products
-                try {
-                    setIsLoadingProducts(true);
-                    const response = await fetch("/api/products");
-                    if (response.ok) {
-                        const data = await response.json();
-                        setProducts(data);
-                    }
-                } catch (error) {
-                    console.error("Error loading products:", error);
-                } finally{
-                    setIsLoadingProducts(false);
+            loadAllData();
+        }
+    }["TruckSection.useEffect"], []);
+    // Listen for refresh events from other sections
+    (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useEffect"])({
+        "TruckSection.useEffect": ()=>{
+            const handleRefresh = {
+                "TruckSection.useEffect.handleRefresh": ()=>{
+                    loadAllData();
                 }
-                // Load transport companies
-                try {
-                    setIsLoadingCompanies(true);
-                    const response = await fetch("/api/transport-companies");
-                    if (response.ok) {
-                        const data = await response.json();
-                        setTransportCompanies(data);
-                    }
-                } catch (error) {
-                    console.error("Error loading transport companies:", error);
-                } finally{
-                    setIsLoadingCompanies(false);
+            }["TruckSection.useEffect.handleRefresh"];
+            window.addEventListener("refreshDropdownData", handleRefresh);
+            return ({
+                "TruckSection.useEffect": ()=>{
+                    window.removeEventListener("refreshDropdownData", handleRefresh);
                 }
-                // Load drivers
-                try {
-                    setIsLoadingDrivers(true);
-                    const response = await fetch("/api/drivers");
-                    if (response.ok) {
-                        const data = await response.json();
-                        setDrivers(data);
-                    }
-                } catch (error) {
-                    console.error("Error loading drivers:", error);
-                } finally{
-                    setIsLoadingDrivers(false);
-                }
-                // Load sender organizations
-                try {
-                    setIsLoadingOrganizations(true);
-                    const senderResponse = await fetch("/api/organizations?type=sender");
-                    if (senderResponse.ok) {
-                        const senderData = await senderResponse.json();
-                        setSenderOrganizations(senderData);
-                    }
-                } catch (error) {
-                    console.error("Error loading sender organizations:", error);
-                }
-                // Load receiver organizations
-                try {
-                    const receiverResponse = await fetch("/api/organizations?type=receiver");
-                    if (receiverResponse.ok) {
-                        const receiverData = await receiverResponse.json();
-                        setReceiverOrganizations(receiverData);
-                    }
-                } catch (error) {
-                    console.error("Error loading receiver organizations:", error);
-                } finally{
-                    setIsLoadingOrganizations(false);
-                }
-            }
-            loadData();
+            })["TruckSection.useEffect"];
         }
     }["TruckSection.useEffect"], []);
     const handleProductAdded = ()=>{
@@ -3657,8 +3903,8 @@ function TruckSection({ direction, onSave, onSend }) {
         if (!plate.trim()) {
             newErrors.plate = "Plate number is required";
         }
-        if (!driverName.trim()) {
-            newErrors.driverName = "Driver name is required";
+        if (!driverId) {
+            newErrors.driverId = "Driver selection is required";
         }
         if (!cargoType.trim()) {
             newErrors.cargoType = "Cargo type is required";
@@ -3681,14 +3927,22 @@ function TruckSection({ direction, onSave, onSend }) {
         }
         setIsSaving(true);
         try {
-            // Get driver name from selected driver or use manual entry
-            const selectedDriver = driverId ? drivers.find((d)=>d.id === driverId) : null;
-            const finalDriverName = selectedDriver?.name || driverName.trim();
+            // Get driver name from selected driver
+            const selectedDriver = drivers.find((d)=>d.id === driverId);
+            if (!selectedDriver) {
+                toast({
+                    title: "Error",
+                    description: "Please select a driver",
+                    variant: "destructive"
+                });
+                setIsSaving(false);
+                return;
+            }
             const log = await (0, __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$data$3a$7f821e__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$text$2f$javascript$3e$__["saveTruckLog"])({
                 direction,
                 plate: plate.trim(),
-                driverId: driverId || undefined,
-                driverName: finalDriverName,
+                driverId: driverId,
+                driverName: selectedDriver.name,
                 cargoType: cargoType.trim(),
                 weightKg: Number(weight),
                 comments: comments.trim() || undefined,
@@ -3800,19 +4054,19 @@ function TruckSection({ direction, onSave, onSend }) {
                                         className: "w-5 h-5 text-blue-600"
                                     }, void 0, false, {
                                         fileName: "[project]/components/trucks/TruckSection.tsx",
-                                        lineNumber: 381,
+                                        lineNumber: 402,
                                         columnNumber: 15
                                     }, this)
                                 }, void 0, false, {
                                     fileName: "[project]/components/trucks/TruckSection.tsx",
-                                    lineNumber: 380,
+                                    lineNumber: 401,
                                     columnNumber: 13
                                 }, this),
                                 title
                             ]
                         }, void 0, true, {
                             fileName: "[project]/components/trucks/TruckSection.tsx",
-                            lineNumber: 379,
+                            lineNumber: 400,
                             columnNumber: 11
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$badge$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Badge"], {
@@ -3822,25 +4076,25 @@ function TruckSection({ direction, onSave, onSend }) {
                                     className: "w-3.5 h-3.5 mr-1.5"
                                 }, void 0, false, {
                                     fileName: "[project]/components/trucks/TruckSection.tsx",
-                                    lineNumber: 386,
+                                    lineNumber: 407,
                                     columnNumber: 13
                                 }, this),
                                 "Танигдсан"
                             ]
                         }, void 0, true, {
                             fileName: "[project]/components/trucks/TruckSection.tsx",
-                            lineNumber: 385,
+                            lineNumber: 406,
                             columnNumber: 11
                         }, this)
                     ]
                 }, void 0, true, {
                     fileName: "[project]/components/trucks/TruckSection.tsx",
-                    lineNumber: 378,
+                    lineNumber: 399,
                     columnNumber: 9
                 }, this)
             }, void 0, false, {
                 fileName: "[project]/components/trucks/TruckSection.tsx",
-                lineNumber: 377,
+                lineNumber: 398,
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$card$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["CardContent"], {
@@ -3856,14 +4110,14 @@ function TruckSection({ direction, onSave, onSend }) {
                                         className: "w-4 h-4 text-blue-600"
                                     }, void 0, false, {
                                         fileName: "[project]/components/trucks/TruckSection.tsx",
-                                        lineNumber: 395,
+                                        lineNumber: 416,
                                         columnNumber: 13
                                     }, this),
                                     "Улсын дугаарыг бодит цагт таних"
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/components/trucks/TruckSection.tsx",
-                                lineNumber: 394,
+                                lineNumber: 415,
                                 columnNumber: 11
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -3875,7 +4129,7 @@ function TruckSection({ direction, onSave, onSend }) {
                                         className: "w-full h-full object-cover"
                                     }, void 0, false, {
                                         fileName: "[project]/components/trucks/TruckSection.tsx",
-                                        lineNumber: 400,
+                                        lineNumber: 421,
                                         columnNumber: 13
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -3890,7 +4144,7 @@ function TruckSection({ direction, onSave, onSend }) {
                                                             children: "Танигдсан дугаар"
                                                         }, void 0, false, {
                                                             fileName: "[project]/components/trucks/TruckSection.tsx",
-                                                            lineNumber: 408,
+                                                            lineNumber: 429,
                                                             columnNumber: 19
                                                         }, this),
                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -3898,13 +4152,13 @@ function TruckSection({ direction, onSave, onSend }) {
                                                             children: plate
                                                         }, void 0, false, {
                                                             fileName: "[project]/components/trucks/TruckSection.tsx",
-                                                            lineNumber: 409,
+                                                            lineNumber: 430,
                                                             columnNumber: 19
                                                         }, this)
                                                     ]
                                                 }, void 0, true, {
                                                     fileName: "[project]/components/trucks/TruckSection.tsx",
-                                                    lineNumber: 407,
+                                                    lineNumber: 428,
                                                     columnNumber: 17
                                                 }, this),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -3915,7 +4169,7 @@ function TruckSection({ direction, onSave, onSend }) {
                                                             children: "Найдвартай байдал"
                                                         }, void 0, false, {
                                                             fileName: "[project]/components/trucks/TruckSection.tsx",
-                                                            lineNumber: 412,
+                                                            lineNumber: 433,
                                                             columnNumber: 19
                                                         }, this),
                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -3925,7 +4179,7 @@ function TruckSection({ direction, onSave, onSend }) {
                                                                     className: "w-4 h-4 text-green-600"
                                                                 }, void 0, false, {
                                                                     fileName: "[project]/components/trucks/TruckSection.tsx",
-                                                                    lineNumber: 414,
+                                                                    lineNumber: 435,
                                                                     columnNumber: 21
                                                                 }, this),
                                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -3936,36 +4190,36 @@ function TruckSection({ direction, onSave, onSend }) {
                                                                     ]
                                                                 }, void 0, true, {
                                                                     fileName: "[project]/components/trucks/TruckSection.tsx",
-                                                                    lineNumber: 415,
+                                                                    lineNumber: 436,
                                                                     columnNumber: 21
                                                                 }, this)
                                                             ]
                                                         }, void 0, true, {
                                                             fileName: "[project]/components/trucks/TruckSection.tsx",
-                                                            lineNumber: 413,
+                                                            lineNumber: 434,
                                                             columnNumber: 19
                                                         }, this)
                                                     ]
                                                 }, void 0, true, {
                                                     fileName: "[project]/components/trucks/TruckSection.tsx",
-                                                    lineNumber: 411,
+                                                    lineNumber: 432,
                                                     columnNumber: 17
                                                 }, this)
                                             ]
                                         }, void 0, true, {
                                             fileName: "[project]/components/trucks/TruckSection.tsx",
-                                            lineNumber: 406,
+                                            lineNumber: 427,
                                             columnNumber: 15
                                         }, this)
                                     }, void 0, false, {
                                         fileName: "[project]/components/trucks/TruckSection.tsx",
-                                        lineNumber: 405,
+                                        lineNumber: 426,
                                         columnNumber: 13
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/components/trucks/TruckSection.tsx",
-                                lineNumber: 399,
+                                lineNumber: 420,
                                 columnNumber: 11
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -3981,7 +4235,7 @@ function TruckSection({ direction, onSave, onSend }) {
                                                         className: "w-4 h-4"
                                                     }, void 0, false, {
                                                         fileName: "[project]/components/trucks/TruckSection.tsx",
-                                                        lineNumber: 425,
+                                                        lineNumber: 446,
                                                         columnNumber: 17
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -3989,13 +4243,13 @@ function TruckSection({ direction, onSave, onSend }) {
                                                         children: "Авагдсан"
                                                     }, void 0, false, {
                                                         fileName: "[project]/components/trucks/TruckSection.tsx",
-                                                        lineNumber: 426,
+                                                        lineNumber: 447,
                                                         columnNumber: 17
                                                     }, this)
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/components/trucks/TruckSection.tsx",
-                                                lineNumber: 424,
+                                                lineNumber: 445,
                                                 columnNumber: 15
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -4003,13 +4257,13 @@ function TruckSection({ direction, onSave, onSend }) {
                                                 children: timestamp
                                             }, void 0, false, {
                                                 fileName: "[project]/components/trucks/TruckSection.tsx",
-                                                lineNumber: 428,
+                                                lineNumber: 449,
                                                 columnNumber: 15
                                             }, this)
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/components/trucks/TruckSection.tsx",
-                                        lineNumber: 423,
+                                        lineNumber: 444,
                                         columnNumber: 13
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -4020,7 +4274,7 @@ function TruckSection({ direction, onSave, onSend }) {
                                                 children: "Боловсруулах хугацаа"
                                             }, void 0, false, {
                                                 fileName: "[project]/components/trucks/TruckSection.tsx",
-                                                lineNumber: 431,
+                                                lineNumber: 452,
                                                 columnNumber: 15
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -4028,25 +4282,25 @@ function TruckSection({ direction, onSave, onSend }) {
                                                 children: "0.82s"
                                             }, void 0, false, {
                                                 fileName: "[project]/components/trucks/TruckSection.tsx",
-                                                lineNumber: 432,
+                                                lineNumber: 453,
                                                 columnNumber: 15
                                             }, this)
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/components/trucks/TruckSection.tsx",
-                                        lineNumber: 430,
+                                        lineNumber: 451,
                                         columnNumber: 13
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/components/trucks/TruckSection.tsx",
-                                lineNumber: 422,
+                                lineNumber: 443,
                                 columnNumber: 11
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/components/trucks/TruckSection.tsx",
-                        lineNumber: 393,
+                        lineNumber: 414,
                         columnNumber: 9
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -4060,7 +4314,7 @@ function TruckSection({ direction, onSave, onSend }) {
                                         children: "Улсын дугаар"
                                     }, void 0, false, {
                                         fileName: "[project]/components/trucks/TruckSection.tsx",
-                                        lineNumber: 440,
+                                        lineNumber: 461,
                                         columnNumber: 13
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$input$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Input"], {
@@ -4071,7 +4325,7 @@ function TruckSection({ direction, onSave, onSend }) {
                                         placeholder: "Улсын дугаар оруулах"
                                     }, void 0, false, {
                                         fileName: "[project]/components/trucks/TruckSection.tsx",
-                                        lineNumber: 443,
+                                        lineNumber: 464,
                                         columnNumber: 13
                                     }, this),
                                     errors.plate && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -4079,13 +4333,13 @@ function TruckSection({ direction, onSave, onSend }) {
                                         children: errors.plate
                                     }, void 0, false, {
                                         fileName: "[project]/components/trucks/TruckSection.tsx",
-                                        lineNumber: 451,
+                                        lineNumber: 472,
                                         columnNumber: 15
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/components/trucks/TruckSection.tsx",
-                                lineNumber: 439,
+                                lineNumber: 460,
                                 columnNumber: 11
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -4096,7 +4350,7 @@ function TruckSection({ direction, onSave, onSend }) {
                                         children: weightLabel
                                     }, void 0, false, {
                                         fileName: "[project]/components/trucks/TruckSection.tsx",
-                                        lineNumber: 457,
+                                        lineNumber: 478,
                                         columnNumber: 13
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$input$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Input"], {
@@ -4108,7 +4362,7 @@ function TruckSection({ direction, onSave, onSend }) {
                                         placeholder: "Жин (кг) оруулах"
                                     }, void 0, false, {
                                         fileName: "[project]/components/trucks/TruckSection.tsx",
-                                        lineNumber: 460,
+                                        lineNumber: 481,
                                         columnNumber: 13
                                     }, this),
                                     errors.weight && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -4116,13 +4370,13 @@ function TruckSection({ direction, onSave, onSend }) {
                                         children: errors.weight
                                     }, void 0, false, {
                                         fileName: "[project]/components/trucks/TruckSection.tsx",
-                                        lineNumber: 469,
+                                        lineNumber: 490,
                                         columnNumber: 15
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/components/trucks/TruckSection.tsx",
-                                lineNumber: 456,
+                                lineNumber: 477,
                                 columnNumber: 11
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -4133,7 +4387,7 @@ function TruckSection({ direction, onSave, onSend }) {
                                         children: "Тээврийн компани"
                                     }, void 0, false, {
                                         fileName: "[project]/components/trucks/TruckSection.tsx",
-                                        lineNumber: 475,
+                                        lineNumber: 496,
                                         columnNumber: 13
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -4155,27 +4409,28 @@ function TruckSection({ direction, onSave, onSend }) {
                                                 className: "flex-1"
                                             }, void 0, false, {
                                                 fileName: "[project]/components/trucks/TruckSection.tsx",
-                                                lineNumber: 479,
+                                                lineNumber: 500,
                                                 columnNumber: 15
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$transport$2f$TransportCompanyManager$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["TransportCompanyManager"], {
                                                 companies: transportCompanies,
-                                                onCompanyAdded: handleCompanyAdded
+                                                onCompanyAdded: handleCompanyAdded,
+                                                onCompanyUpdated: handleCompanyAdded
                                             }, void 0, false, {
                                                 fileName: "[project]/components/trucks/TruckSection.tsx",
-                                                lineNumber: 494,
+                                                lineNumber: 515,
                                                 columnNumber: 15
                                             }, this)
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/components/trucks/TruckSection.tsx",
-                                        lineNumber: 478,
+                                        lineNumber: 499,
                                         columnNumber: 13
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/components/trucks/TruckSection.tsx",
-                                lineNumber: 474,
+                                lineNumber: 495,
                                 columnNumber: 11
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -4189,7 +4444,7 @@ function TruckSection({ direction, onSave, onSend }) {
                                                 children: "Хаанаас"
                                             }, void 0, false, {
                                                 fileName: "[project]/components/trucks/TruckSection.tsx",
-                                                lineNumber: 501,
+                                                lineNumber: 526,
                                                 columnNumber: 15
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$input$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Input"], {
@@ -4200,13 +4455,13 @@ function TruckSection({ direction, onSave, onSend }) {
                                                 placeholder: "Гарах газар"
                                             }, void 0, false, {
                                                 fileName: "[project]/components/trucks/TruckSection.tsx",
-                                                lineNumber: 504,
+                                                lineNumber: 529,
                                                 columnNumber: 15
                                             }, this)
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/components/trucks/TruckSection.tsx",
-                                        lineNumber: 500,
+                                        lineNumber: 525,
                                         columnNumber: 13
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -4217,7 +4472,7 @@ function TruckSection({ direction, onSave, onSend }) {
                                                 children: "Хаашаа"
                                             }, void 0, false, {
                                                 fileName: "[project]/components/trucks/TruckSection.tsx",
-                                                lineNumber: 513,
+                                                lineNumber: 538,
                                                 columnNumber: 15
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$input$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Input"], {
@@ -4228,19 +4483,19 @@ function TruckSection({ direction, onSave, onSend }) {
                                                 placeholder: "Очих газар"
                                             }, void 0, false, {
                                                 fileName: "[project]/components/trucks/TruckSection.tsx",
-                                                lineNumber: 516,
+                                                lineNumber: 541,
                                                 columnNumber: 15
                                             }, this)
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/components/trucks/TruckSection.tsx",
-                                        lineNumber: 512,
+                                        lineNumber: 537,
                                         columnNumber: 13
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/components/trucks/TruckSection.tsx",
-                                lineNumber: 499,
+                                lineNumber: 524,
                                 columnNumber: 11
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -4251,7 +4506,7 @@ function TruckSection({ direction, onSave, onSend }) {
                                         children: "Бүтээгдэхүүн"
                                     }, void 0, false, {
                                         fileName: "[project]/components/trucks/TruckSection.tsx",
-                                        lineNumber: 528,
+                                        lineNumber: 553,
                                         columnNumber: 13
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -4270,7 +4525,7 @@ function TruckSection({ direction, onSave, onSend }) {
                                                 className: "flex-1"
                                             }, void 0, false, {
                                                 fileName: "[project]/components/trucks/TruckSection.tsx",
-                                                lineNumber: 532,
+                                                lineNumber: 557,
                                                 columnNumber: 15
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$products$2f$ProductManager$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["ProductManager"], {
@@ -4278,13 +4533,13 @@ function TruckSection({ direction, onSave, onSend }) {
                                                 onProductAdded: handleProductAdded
                                             }, void 0, false, {
                                                 fileName: "[project]/components/trucks/TruckSection.tsx",
-                                                lineNumber: 544,
+                                                lineNumber: 569,
                                                 columnNumber: 15
                                             }, this)
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/components/trucks/TruckSection.tsx",
-                                        lineNumber: 531,
+                                        lineNumber: 556,
                                         columnNumber: 13
                                     }, this),
                                     errors.cargoType && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -4292,13 +4547,13 @@ function TruckSection({ direction, onSave, onSend }) {
                                         children: errors.cargoType
                                     }, void 0, false, {
                                         fileName: "[project]/components/trucks/TruckSection.tsx",
-                                        lineNumber: 547,
+                                        lineNumber: 572,
                                         columnNumber: 15
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/components/trucks/TruckSection.tsx",
-                                lineNumber: 527,
+                                lineNumber: 552,
                                 columnNumber: 11
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -4312,7 +4567,7 @@ function TruckSection({ direction, onSave, onSend }) {
                                                 children: "Илгээч байгууллага"
                                             }, void 0, false, {
                                                 fileName: "[project]/components/trucks/TruckSection.tsx",
-                                                lineNumber: 554,
+                                                lineNumber: 579,
                                                 columnNumber: 15
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -4334,7 +4589,7 @@ function TruckSection({ direction, onSave, onSend }) {
                                                         className: "flex-1"
                                                     }, void 0, false, {
                                                         fileName: "[project]/components/trucks/TruckSection.tsx",
-                                                        lineNumber: 558,
+                                                        lineNumber: 583,
                                                         columnNumber: 17
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$organizations$2f$OrganizationManager$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["OrganizationManager"], {
@@ -4344,19 +4599,19 @@ function TruckSection({ direction, onSave, onSend }) {
                                                         onOrganizationUpdated: handleSenderOrganizationAdded
                                                     }, void 0, false, {
                                                         fileName: "[project]/components/trucks/TruckSection.tsx",
-                                                        lineNumber: 573,
+                                                        lineNumber: 598,
                                                         columnNumber: 17
                                                     }, this)
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/components/trucks/TruckSection.tsx",
-                                                lineNumber: 557,
+                                                lineNumber: 582,
                                                 columnNumber: 15
                                             }, this)
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/components/trucks/TruckSection.tsx",
-                                        lineNumber: 553,
+                                        lineNumber: 578,
                                         columnNumber: 13
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -4367,7 +4622,7 @@ function TruckSection({ direction, onSave, onSend }) {
                                                 children: "Хүлээн авагч байгууллага"
                                             }, void 0, false, {
                                                 fileName: "[project]/components/trucks/TruckSection.tsx",
-                                                lineNumber: 582,
+                                                lineNumber: 607,
                                                 columnNumber: 15
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -4389,7 +4644,7 @@ function TruckSection({ direction, onSave, onSend }) {
                                                         className: "flex-1"
                                                     }, void 0, false, {
                                                         fileName: "[project]/components/trucks/TruckSection.tsx",
-                                                        lineNumber: 586,
+                                                        lineNumber: 611,
                                                         columnNumber: 17
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$organizations$2f$OrganizationManager$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["OrganizationManager"], {
@@ -4399,25 +4654,25 @@ function TruckSection({ direction, onSave, onSend }) {
                                                         onOrganizationUpdated: handleReceiverOrganizationAdded
                                                     }, void 0, false, {
                                                         fileName: "[project]/components/trucks/TruckSection.tsx",
-                                                        lineNumber: 601,
+                                                        lineNumber: 626,
                                                         columnNumber: 17
                                                     }, this)
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/components/trucks/TruckSection.tsx",
-                                                lineNumber: 585,
+                                                lineNumber: 610,
                                                 columnNumber: 15
                                             }, this)
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/components/trucks/TruckSection.tsx",
-                                        lineNumber: 581,
+                                        lineNumber: 606,
                                         columnNumber: 13
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/components/trucks/TruckSection.tsx",
-                                lineNumber: 552,
+                                lineNumber: 577,
                                 columnNumber: 11
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -4428,7 +4683,7 @@ function TruckSection({ direction, onSave, onSend }) {
                                         children: "Жолооч"
                                     }, void 0, false, {
                                         fileName: "[project]/components/trucks/TruckSection.tsx",
-                                        lineNumber: 613,
+                                        lineNumber: 638,
                                         columnNumber: 13
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -4437,22 +4692,22 @@ function TruckSection({ direction, onSave, onSend }) {
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$filterable$2d$select$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["FilterableSelect"], {
                                                 options: drivers.map((driver)=>({
                                                         value: driver.id,
-                                                        label: `${driver.name}${driver.licenseNumber ? ` (${driver.licenseNumber})` : ""}`
+                                                        label: `${driver.name}${driver.phone ? ` (${driver.phone})` : ""}`
                                                     })),
                                                 value: driverId,
                                                 onValueChange: (value)=>{
-                                                    const selectedDriver = drivers.find((d)=>d.id === value);
                                                     setDriverId(value);
+                                                    const selectedDriver = drivers.find((d)=>d.id === value);
                                                     setDriverName(selectedDriver?.name || "");
                                                     handleFieldChange(()=>{}, value);
                                                 },
                                                 disabled: isLoadingDrivers,
-                                                placeholder: isLoadingDrivers ? "Уншиж байна..." : driverName || "Жолооч сонгох",
+                                                placeholder: isLoadingDrivers ? "Уншиж байна..." : "Жолооч сонгох",
                                                 searchPlaceholder: "Жолооч хайх...",
                                                 className: "flex-1"
                                             }, void 0, false, {
                                                 fileName: "[project]/components/trucks/TruckSection.tsx",
-                                                lineNumber: 617,
+                                                lineNumber: 642,
                                                 columnNumber: 15
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$drivers$2f$DriverManager$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["DriverManager"], {
@@ -4461,38 +4716,27 @@ function TruckSection({ direction, onSave, onSend }) {
                                                 onDriverUpdated: handleDriverAdded
                                             }, void 0, false, {
                                                 fileName: "[project]/components/trucks/TruckSection.tsx",
-                                                lineNumber: 634,
+                                                lineNumber: 659,
                                                 columnNumber: 15
                                             }, this)
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/components/trucks/TruckSection.tsx",
-                                        lineNumber: 616,
+                                        lineNumber: 641,
                                         columnNumber: 13
                                     }, this),
-                                    !driverId && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$input$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Input"], {
-                                        id: `driver-manual-${direction}`,
-                                        value: driverName,
-                                        onChange: (e)=>handleFieldChange(setDriverName, e.target.value),
-                                        className: "mt-2 bg-white border-gray-300 focus:border-blue-500 focus:ring-blue-500",
-                                        placeholder: "Эсвэл жолоочийн нэрийг гараар оруулах"
-                                    }, void 0, false, {
-                                        fileName: "[project]/components/trucks/TruckSection.tsx",
-                                        lineNumber: 637,
-                                        columnNumber: 15
-                                    }, this),
-                                    errors.driverName && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
+                                    errors.driverId && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
                                         className: "mt-1 text-xs text-red-600",
-                                        children: errors.driverName
+                                        children: errors.driverId
                                     }, void 0, false, {
                                         fileName: "[project]/components/trucks/TruckSection.tsx",
-                                        lineNumber: 646,
+                                        lineNumber: 662,
                                         columnNumber: 15
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/components/trucks/TruckSection.tsx",
-                                lineNumber: 612,
+                                lineNumber: 637,
                                 columnNumber: 11
                             }, this),
                             direction === "OUT" && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -4503,7 +4747,7 @@ function TruckSection({ direction, onSave, onSend }) {
                                         children: "Лацны дугаар"
                                     }, void 0, false, {
                                         fileName: "[project]/components/trucks/TruckSection.tsx",
-                                        lineNumber: 653,
+                                        lineNumber: 669,
                                         columnNumber: 15
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$input$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Input"], {
@@ -4514,13 +4758,13 @@ function TruckSection({ direction, onSave, onSend }) {
                                         placeholder: "Лацны дугаар оруулах"
                                     }, void 0, false, {
                                         fileName: "[project]/components/trucks/TruckSection.tsx",
-                                        lineNumber: 656,
+                                        lineNumber: 672,
                                         columnNumber: 15
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/components/trucks/TruckSection.tsx",
-                                lineNumber: 652,
+                                lineNumber: 668,
                                 columnNumber: 13
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -4531,7 +4775,7 @@ function TruckSection({ direction, onSave, onSend }) {
                                         children: "Тээврийн төрөл"
                                     }, void 0, false, {
                                         fileName: "[project]/components/trucks/TruckSection.tsx",
-                                        lineNumber: 668,
+                                        lineNumber: 684,
                                         columnNumber: 13
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$select$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Select"], {
@@ -4550,12 +4794,12 @@ function TruckSection({ direction, onSave, onSend }) {
                                                     placeholder: "Тээврийн төрөл сонгох"
                                                 }, void 0, false, {
                                                     fileName: "[project]/components/trucks/TruckSection.tsx",
-                                                    lineNumber: 682,
+                                                    lineNumber: 698,
                                                     columnNumber: 17
                                                 }, this)
                                             }, void 0, false, {
                                                 fileName: "[project]/components/trucks/TruckSection.tsx",
-                                                lineNumber: 681,
+                                                lineNumber: 697,
                                                 columnNumber: 15
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$select$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["SelectContent"], {
@@ -4565,7 +4809,7 @@ function TruckSection({ direction, onSave, onSend }) {
                                                         children: "Truck"
                                                     }, void 0, false, {
                                                         fileName: "[project]/components/trucks/TruckSection.tsx",
-                                                        lineNumber: 685,
+                                                        lineNumber: 701,
                                                         columnNumber: 17
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$select$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["SelectItem"], {
@@ -4573,7 +4817,7 @@ function TruckSection({ direction, onSave, onSend }) {
                                                         children: "Container"
                                                     }, void 0, false, {
                                                         fileName: "[project]/components/trucks/TruckSection.tsx",
-                                                        lineNumber: 686,
+                                                        lineNumber: 702,
                                                         columnNumber: 17
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$select$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["SelectItem"], {
@@ -4581,7 +4825,7 @@ function TruckSection({ direction, onSave, onSend }) {
                                                         children: "Tanker"
                                                     }, void 0, false, {
                                                         fileName: "[project]/components/trucks/TruckSection.tsx",
-                                                        lineNumber: 687,
+                                                        lineNumber: 703,
                                                         columnNumber: 17
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$select$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["SelectItem"], {
@@ -4589,7 +4833,7 @@ function TruckSection({ direction, onSave, onSend }) {
                                                         children: "Flatbed"
                                                     }, void 0, false, {
                                                         fileName: "[project]/components/trucks/TruckSection.tsx",
-                                                        lineNumber: 688,
+                                                        lineNumber: 704,
                                                         columnNumber: 17
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$select$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["SelectItem"], {
@@ -4597,7 +4841,7 @@ function TruckSection({ direction, onSave, onSend }) {
                                                         children: "Refrigerated"
                                                     }, void 0, false, {
                                                         fileName: "[project]/components/trucks/TruckSection.tsx",
-                                                        lineNumber: 689,
+                                                        lineNumber: 705,
                                                         columnNumber: 17
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$select$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["SelectItem"], {
@@ -4605,25 +4849,25 @@ function TruckSection({ direction, onSave, onSend }) {
                                                         children: "Other"
                                                     }, void 0, false, {
                                                         fileName: "[project]/components/trucks/TruckSection.tsx",
-                                                        lineNumber: 690,
+                                                        lineNumber: 706,
                                                         columnNumber: 17
                                                     }, this)
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/components/trucks/TruckSection.tsx",
-                                                lineNumber: 684,
+                                                lineNumber: 700,
                                                 columnNumber: 15
                                             }, this)
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/components/trucks/TruckSection.tsx",
-                                        lineNumber: 671,
+                                        lineNumber: 687,
                                         columnNumber: 13
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/components/trucks/TruckSection.tsx",
-                                lineNumber: 667,
+                                lineNumber: 683,
                                 columnNumber: 11
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -4640,7 +4884,7 @@ function TruckSection({ direction, onSave, onSend }) {
                                         }
                                     }, void 0, false, {
                                         fileName: "[project]/components/trucks/TruckSection.tsx",
-                                        lineNumber: 697,
+                                        lineNumber: 713,
                                         columnNumber: 13
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$label$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Label"], {
@@ -4649,13 +4893,13 @@ function TruckSection({ direction, onSave, onSend }) {
                                         children: "Чиргүүлтэй"
                                     }, void 0, false, {
                                         fileName: "[project]/components/trucks/TruckSection.tsx",
-                                        lineNumber: 707,
+                                        lineNumber: 723,
                                         columnNumber: 13
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/components/trucks/TruckSection.tsx",
-                                lineNumber: 696,
+                                lineNumber: 712,
                                 columnNumber: 11
                             }, this),
                             hasTrailer && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -4666,7 +4910,7 @@ function TruckSection({ direction, onSave, onSend }) {
                                         children: "Чиргүүлийн улсын дугаар"
                                     }, void 0, false, {
                                         fileName: "[project]/components/trucks/TruckSection.tsx",
-                                        lineNumber: 718,
+                                        lineNumber: 734,
                                         columnNumber: 15
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$input$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Input"], {
@@ -4677,13 +4921,13 @@ function TruckSection({ direction, onSave, onSend }) {
                                         placeholder: "Чиргүүлийн улсын дугаар"
                                     }, void 0, false, {
                                         fileName: "[project]/components/trucks/TruckSection.tsx",
-                                        lineNumber: 721,
+                                        lineNumber: 737,
                                         columnNumber: 15
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/components/trucks/TruckSection.tsx",
-                                lineNumber: 717,
+                                lineNumber: 733,
                                 columnNumber: 13
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -4694,7 +4938,7 @@ function TruckSection({ direction, onSave, onSend }) {
                                         children: "Нэмэлт"
                                     }, void 0, false, {
                                         fileName: "[project]/components/trucks/TruckSection.tsx",
-                                        lineNumber: 733,
+                                        lineNumber: 749,
                                         columnNumber: 13
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$textarea$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Textarea"], {
@@ -4706,19 +4950,19 @@ function TruckSection({ direction, onSave, onSend }) {
                                         rows: 3
                                     }, void 0, false, {
                                         fileName: "[project]/components/trucks/TruckSection.tsx",
-                                        lineNumber: 736,
+                                        lineNumber: 752,
                                         columnNumber: 13
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/components/trucks/TruckSection.tsx",
-                                lineNumber: 732,
+                                lineNumber: 748,
                                 columnNumber: 11
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/components/trucks/TruckSection.tsx",
-                        lineNumber: 438,
+                        lineNumber: 459,
                         columnNumber: 9
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -4735,7 +4979,7 @@ function TruckSection({ direction, onSave, onSend }) {
                                             className: "w-4 h-4 mr-2 animate-spin"
                                         }, void 0, false, {
                                             fileName: "[project]/components/trucks/TruckSection.tsx",
-                                            lineNumber: 760,
+                                            lineNumber: 776,
                                             columnNumber: 17
                                         }, this),
                                         "Хадгалж байна..."
@@ -4743,7 +4987,7 @@ function TruckSection({ direction, onSave, onSend }) {
                                 }, void 0, true) : "Хадгалах"
                             }, void 0, false, {
                                 fileName: "[project]/components/trucks/TruckSection.tsx",
-                                lineNumber: 752,
+                                lineNumber: 768,
                                 columnNumber: 11
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$button$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Button"], {
@@ -4756,7 +5000,7 @@ function TruckSection({ direction, onSave, onSend }) {
                                             className: "w-4 h-4 mr-2 animate-spin"
                                         }, void 0, false, {
                                             fileName: "[project]/components/trucks/TruckSection.tsx",
-                                            lineNumber: 774,
+                                            lineNumber: 790,
                                             columnNumber: 17
                                         }, this),
                                         "Илгээж байна..."
@@ -4764,29 +5008,29 @@ function TruckSection({ direction, onSave, onSend }) {
                                 }, void 0, true) : "Гаалид илгээх"
                             }, void 0, false, {
                                 fileName: "[project]/components/trucks/TruckSection.tsx",
-                                lineNumber: 767,
+                                lineNumber: 783,
                                 columnNumber: 11
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/components/trucks/TruckSection.tsx",
-                        lineNumber: 751,
+                        lineNumber: 767,
                         columnNumber: 9
                     }, this)
                 ]
             }, void 0, true, {
                 fileName: "[project]/components/trucks/TruckSection.tsx",
-                lineNumber: 391,
+                lineNumber: 412,
                 columnNumber: 7
             }, this)
         ]
     }, void 0, true, {
         fileName: "[project]/components/trucks/TruckSection.tsx",
-        lineNumber: 376,
+        lineNumber: 397,
         columnNumber: 5
     }, this);
 }
-_s(TruckSection, "lX7GfRGDmslGafEY4hOLcRW7llY=", false, function() {
+_s(TruckSection, "nR5UTtg4sVnvNgX2JdENLtzNf5k=", false, function() {
     return [
         __TURBOPACK__imported__module__$5b$project$5d2f$hooks$2f$use$2d$toast$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useToast"]
     ];
@@ -5193,8 +5437,8 @@ function EditLogDialog({ log, open, onOpenChange, onSuccess }) {
         if (!plate.trim()) {
             newErrors.plate = "Улсын дугаар заавал оруулна.";
         }
-        if (!driverId && !driverName.trim()) {
-            newErrors.driverName = "Жолоочийн нэр эсвэл жолооч сонгох заавал оруулна.";
+        if (!driverId) {
+            newErrors.driverId = "Жолооч сонгох заавал оруулна.";
         }
         if (!cargoType.trim()) {
             newErrors.cargoType = "Бүтээгдэхүүний төрөл заавал оруулна.";
@@ -5215,6 +5459,17 @@ function EditLogDialog({ log, open, onOpenChange, onSuccess }) {
         }
         setIsSaving(true);
         try {
+            // Get driver name from selected driver
+            const selectedDriver = drivers.find((d)=>d.id === driverId);
+            if (!selectedDriver) {
+                toast({
+                    title: "Error",
+                    description: "Please select a driver",
+                    variant: "destructive"
+                });
+                setIsSaving(false);
+                return;
+            }
             const response = await fetch(`/api/logs/${log.id}`, {
                 method: "PUT",
                 headers: {
@@ -5223,8 +5478,8 @@ function EditLogDialog({ log, open, onOpenChange, onSuccess }) {
                 body: JSON.stringify({
                     direction,
                     plate: plate.trim(),
-                    driverId: driverId || undefined,
-                    driverName: driverName.trim(),
+                    driverId: driverId,
+                    driverName: selectedDriver.name,
                     cargoType: cargoType.trim(),
                     weightKg: Number(weight),
                     comments: comments.trim() || undefined,
@@ -5283,7 +5538,7 @@ function EditLogDialog({ log, open, onOpenChange, onSuccess }) {
                     children: "Edit Truck Log"
                 }, void 0, false, {
                     fileName: "[project]/components/history/EditLogDialog.tsx",
-                    lineNumber: 350,
+                    lineNumber: 362,
                     columnNumber: 9
                 }, this),
                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$dialog$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["DialogDescription"], {
@@ -5291,7 +5546,7 @@ function EditLogDialog({ log, open, onOpenChange, onSuccess }) {
                     children: "Update the truck log information below."
                 }, void 0, false, {
                     fileName: "[project]/components/history/EditLogDialog.tsx",
-                    lineNumber: 351,
+                    lineNumber: 363,
                     columnNumber: 9
                 }, this),
                 isSentToCustoms ? /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -5301,12 +5556,12 @@ function EditLogDialog({ log, open, onOpenChange, onSuccess }) {
                         children: "Энэ бүртгэл гаалид илгээгдсэн тул засварлах боломжгүй."
                     }, void 0, false, {
                         fileName: "[project]/components/history/EditLogDialog.tsx",
-                        lineNumber: 356,
+                        lineNumber: 368,
                         columnNumber: 13
                     }, this)
                 }, void 0, false, {
                     fileName: "[project]/components/history/EditLogDialog.tsx",
-                    lineNumber: 355,
+                    lineNumber: 367,
                     columnNumber: 11
                 }, this) : /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$card$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Card"], {
                     className: "border-gray-200 bg-white",
@@ -5325,12 +5580,12 @@ function EditLogDialog({ log, open, onOpenChange, onSuccess }) {
                                                     className: "w-5 h-5 text-blue-600"
                                                 }, void 0, false, {
                                                     fileName: "[project]/components/history/EditLogDialog.tsx",
-                                                    lineNumber: 366,
+                                                    lineNumber: 378,
                                                     columnNumber: 21
                                                 }, this)
                                             }, void 0, false, {
                                                 fileName: "[project]/components/history/EditLogDialog.tsx",
-                                                lineNumber: 365,
+                                                lineNumber: 377,
                                                 columnNumber: 19
                                             }, this),
                                             "Засах: ",
@@ -5338,7 +5593,7 @@ function EditLogDialog({ log, open, onOpenChange, onSuccess }) {
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/components/history/EditLogDialog.tsx",
-                                        lineNumber: 364,
+                                        lineNumber: 376,
                                         columnNumber: 17
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$badge$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Badge"], {
@@ -5348,25 +5603,25 @@ function EditLogDialog({ log, open, onOpenChange, onSuccess }) {
                                                 className: "w-3.5 h-3.5 mr-1.5"
                                             }, void 0, false, {
                                                 fileName: "[project]/components/history/EditLogDialog.tsx",
-                                                lineNumber: 371,
+                                                lineNumber: 383,
                                                 columnNumber: 19
                                             }, this),
                                             "Танигдсан"
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/components/history/EditLogDialog.tsx",
-                                        lineNumber: 370,
+                                        lineNumber: 382,
                                         columnNumber: 17
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/components/history/EditLogDialog.tsx",
-                                lineNumber: 363,
+                                lineNumber: 375,
                                 columnNumber: 15
                             }, this)
                         }, void 0, false, {
                             fileName: "[project]/components/history/EditLogDialog.tsx",
-                            lineNumber: 362,
+                            lineNumber: 374,
                             columnNumber: 13
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$card$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["CardContent"], {
@@ -5385,14 +5640,14 @@ function EditLogDialog({ log, open, onOpenChange, onSuccess }) {
                                                         className: "w-4 h-4 text-blue-600"
                                                     }, void 0, false, {
                                                         fileName: "[project]/components/history/EditLogDialog.tsx",
-                                                        lineNumber: 381,
+                                                        lineNumber: 393,
                                                         columnNumber: 21
                                                     }, this),
                                                     "Улсын дугаарыг бодит цагт таних"
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/components/history/EditLogDialog.tsx",
-                                                lineNumber: 380,
+                                                lineNumber: 392,
                                                 columnNumber: 19
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -5404,7 +5659,7 @@ function EditLogDialog({ log, open, onOpenChange, onSuccess }) {
                                                         className: "w-full h-full object-cover"
                                                     }, void 0, false, {
                                                         fileName: "[project]/components/history/EditLogDialog.tsx",
-                                                        lineNumber: 386,
+                                                        lineNumber: 398,
                                                         columnNumber: 21
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -5419,7 +5674,7 @@ function EditLogDialog({ log, open, onOpenChange, onSuccess }) {
                                                                             children: "Танигдсан дугаар"
                                                                         }, void 0, false, {
                                                                             fileName: "[project]/components/history/EditLogDialog.tsx",
-                                                                            lineNumber: 394,
+                                                                            lineNumber: 406,
                                                                             columnNumber: 27
                                                                         }, this),
                                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -5427,13 +5682,13 @@ function EditLogDialog({ log, open, onOpenChange, onSuccess }) {
                                                                             children: plate
                                                                         }, void 0, false, {
                                                                             fileName: "[project]/components/history/EditLogDialog.tsx",
-                                                                            lineNumber: 395,
+                                                                            lineNumber: 407,
                                                                             columnNumber: 27
                                                                         }, this)
                                                                     ]
                                                                 }, void 0, true, {
                                                                     fileName: "[project]/components/history/EditLogDialog.tsx",
-                                                                    lineNumber: 393,
+                                                                    lineNumber: 405,
                                                                     columnNumber: 25
                                                                 }, this),
                                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -5444,7 +5699,7 @@ function EditLogDialog({ log, open, onOpenChange, onSuccess }) {
                                                                             children: "Найдвартай байдал"
                                                                         }, void 0, false, {
                                                                             fileName: "[project]/components/history/EditLogDialog.tsx",
-                                                                            lineNumber: 398,
+                                                                            lineNumber: 410,
                                                                             columnNumber: 27
                                                                         }, this),
                                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -5454,7 +5709,7 @@ function EditLogDialog({ log, open, onOpenChange, onSuccess }) {
                                                                                     className: "w-4 h-4 text-green-600"
                                                                                 }, void 0, false, {
                                                                                     fileName: "[project]/components/history/EditLogDialog.tsx",
-                                                                                    lineNumber: 400,
+                                                                                    lineNumber: 412,
                                                                                     columnNumber: 29
                                                                                 }, this),
                                                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -5465,36 +5720,36 @@ function EditLogDialog({ log, open, onOpenChange, onSuccess }) {
                                                                                     ]
                                                                                 }, void 0, true, {
                                                                                     fileName: "[project]/components/history/EditLogDialog.tsx",
-                                                                                    lineNumber: 401,
+                                                                                    lineNumber: 413,
                                                                                     columnNumber: 29
                                                                                 }, this)
                                                                             ]
                                                                         }, void 0, true, {
                                                                             fileName: "[project]/components/history/EditLogDialog.tsx",
-                                                                            lineNumber: 399,
+                                                                            lineNumber: 411,
                                                                             columnNumber: 27
                                                                         }, this)
                                                                     ]
                                                                 }, void 0, true, {
                                                                     fileName: "[project]/components/history/EditLogDialog.tsx",
-                                                                    lineNumber: 397,
+                                                                    lineNumber: 409,
                                                                     columnNumber: 25
                                                                 }, this)
                                                             ]
                                                         }, void 0, true, {
                                                             fileName: "[project]/components/history/EditLogDialog.tsx",
-                                                            lineNumber: 392,
+                                                            lineNumber: 404,
                                                             columnNumber: 23
                                                         }, this)
                                                     }, void 0, false, {
                                                         fileName: "[project]/components/history/EditLogDialog.tsx",
-                                                        lineNumber: 391,
+                                                        lineNumber: 403,
                                                         columnNumber: 21
                                                     }, this)
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/components/history/EditLogDialog.tsx",
-                                                lineNumber: 385,
+                                                lineNumber: 397,
                                                 columnNumber: 19
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -5510,7 +5765,7 @@ function EditLogDialog({ log, open, onOpenChange, onSuccess }) {
                                                                         className: "w-4 h-4"
                                                                     }, void 0, false, {
                                                                         fileName: "[project]/components/history/EditLogDialog.tsx",
-                                                                        lineNumber: 411,
+                                                                        lineNumber: 423,
                                                                         columnNumber: 25
                                                                     }, this),
                                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -5518,13 +5773,13 @@ function EditLogDialog({ log, open, onOpenChange, onSuccess }) {
                                                                         children: "Авагдсан"
                                                                     }, void 0, false, {
                                                                         fileName: "[project]/components/history/EditLogDialog.tsx",
-                                                                        lineNumber: 412,
+                                                                        lineNumber: 424,
                                                                         columnNumber: 25
                                                                     }, this)
                                                                 ]
                                                             }, void 0, true, {
                                                                 fileName: "[project]/components/history/EditLogDialog.tsx",
-                                                                lineNumber: 410,
+                                                                lineNumber: 422,
                                                                 columnNumber: 23
                                                             }, this),
                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -5532,13 +5787,13 @@ function EditLogDialog({ log, open, onOpenChange, onSuccess }) {
                                                                 children: timestamp
                                                             }, void 0, false, {
                                                                 fileName: "[project]/components/history/EditLogDialog.tsx",
-                                                                lineNumber: 414,
+                                                                lineNumber: 426,
                                                                 columnNumber: 23
                                                             }, this)
                                                         ]
                                                     }, void 0, true, {
                                                         fileName: "[project]/components/history/EditLogDialog.tsx",
-                                                        lineNumber: 409,
+                                                        lineNumber: 421,
                                                         columnNumber: 21
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -5549,7 +5804,7 @@ function EditLogDialog({ log, open, onOpenChange, onSuccess }) {
                                                                 children: "Боловсруулах хугацаа"
                                                             }, void 0, false, {
                                                                 fileName: "[project]/components/history/EditLogDialog.tsx",
-                                                                lineNumber: 417,
+                                                                lineNumber: 429,
                                                                 columnNumber: 23
                                                             }, this),
                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -5557,25 +5812,25 @@ function EditLogDialog({ log, open, onOpenChange, onSuccess }) {
                                                                 children: "0.82s"
                                                             }, void 0, false, {
                                                                 fileName: "[project]/components/history/EditLogDialog.tsx",
-                                                                lineNumber: 418,
+                                                                lineNumber: 430,
                                                                 columnNumber: 23
                                                             }, this)
                                                         ]
                                                     }, void 0, true, {
                                                         fileName: "[project]/components/history/EditLogDialog.tsx",
-                                                        lineNumber: 416,
+                                                        lineNumber: 428,
                                                         columnNumber: 21
                                                     }, this)
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/components/history/EditLogDialog.tsx",
-                                                lineNumber: 408,
+                                                lineNumber: 420,
                                                 columnNumber: 19
                                             }, this)
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/components/history/EditLogDialog.tsx",
-                                        lineNumber: 379,
+                                        lineNumber: 391,
                                         columnNumber: 17
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -5589,7 +5844,7 @@ function EditLogDialog({ log, open, onOpenChange, onSuccess }) {
                                                         children: "Улсын дугаар"
                                                     }, void 0, false, {
                                                         fileName: "[project]/components/history/EditLogDialog.tsx",
-                                                        lineNumber: 427,
+                                                        lineNumber: 439,
                                                         columnNumber: 21
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$input$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Input"], {
@@ -5600,7 +5855,7 @@ function EditLogDialog({ log, open, onOpenChange, onSuccess }) {
                                                         placeholder: "Улсын дугаар оруулах"
                                                     }, void 0, false, {
                                                         fileName: "[project]/components/history/EditLogDialog.tsx",
-                                                        lineNumber: 430,
+                                                        lineNumber: 442,
                                                         columnNumber: 21
                                                     }, this),
                                                     errors.plate && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -5608,13 +5863,13 @@ function EditLogDialog({ log, open, onOpenChange, onSuccess }) {
                                                         children: errors.plate
                                                     }, void 0, false, {
                                                         fileName: "[project]/components/history/EditLogDialog.tsx",
-                                                        lineNumber: 438,
+                                                        lineNumber: 450,
                                                         columnNumber: 23
                                                     }, this)
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/components/history/EditLogDialog.tsx",
-                                                lineNumber: 426,
+                                                lineNumber: 438,
                                                 columnNumber: 19
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -5625,7 +5880,7 @@ function EditLogDialog({ log, open, onOpenChange, onSuccess }) {
                                                         children: weightLabel
                                                     }, void 0, false, {
                                                         fileName: "[project]/components/history/EditLogDialog.tsx",
-                                                        lineNumber: 444,
+                                                        lineNumber: 456,
                                                         columnNumber: 21
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$input$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Input"], {
@@ -5637,7 +5892,7 @@ function EditLogDialog({ log, open, onOpenChange, onSuccess }) {
                                                         placeholder: "Жин (кг) оруулах"
                                                     }, void 0, false, {
                                                         fileName: "[project]/components/history/EditLogDialog.tsx",
-                                                        lineNumber: 447,
+                                                        lineNumber: 459,
                                                         columnNumber: 21
                                                     }, this),
                                                     errors.weight && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -5645,13 +5900,13 @@ function EditLogDialog({ log, open, onOpenChange, onSuccess }) {
                                                         children: errors.weight
                                                     }, void 0, false, {
                                                         fileName: "[project]/components/history/EditLogDialog.tsx",
-                                                        lineNumber: 456,
+                                                        lineNumber: 468,
                                                         columnNumber: 23
                                                     }, this)
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/components/history/EditLogDialog.tsx",
-                                                lineNumber: 443,
+                                                lineNumber: 455,
                                                 columnNumber: 19
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -5662,7 +5917,7 @@ function EditLogDialog({ log, open, onOpenChange, onSuccess }) {
                                                         children: "Чиглэл"
                                                     }, void 0, false, {
                                                         fileName: "[project]/components/history/EditLogDialog.tsx",
-                                                        lineNumber: 462,
+                                                        lineNumber: 474,
                                                         columnNumber: 21
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$select$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Select"], {
@@ -5676,12 +5931,12 @@ function EditLogDialog({ log, open, onOpenChange, onSuccess }) {
                                                                     placeholder: "Чиглэл сонгох"
                                                                 }, void 0, false, {
                                                                     fileName: "[project]/components/history/EditLogDialog.tsx",
-                                                                    lineNumber: 470,
+                                                                    lineNumber: 482,
                                                                     columnNumber: 25
                                                                 }, this)
                                                             }, void 0, false, {
                                                                 fileName: "[project]/components/history/EditLogDialog.tsx",
-                                                                lineNumber: 469,
+                                                                lineNumber: 481,
                                                                 columnNumber: 23
                                                             }, this),
                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$select$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["SelectContent"], {
@@ -5691,7 +5946,7 @@ function EditLogDialog({ log, open, onOpenChange, onSuccess }) {
                                                                         children: "ОРОХ"
                                                                     }, void 0, false, {
                                                                         fileName: "[project]/components/history/EditLogDialog.tsx",
-                                                                        lineNumber: 473,
+                                                                        lineNumber: 485,
                                                                         columnNumber: 25
                                                                     }, this),
                                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$select$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["SelectItem"], {
@@ -5699,25 +5954,25 @@ function EditLogDialog({ log, open, onOpenChange, onSuccess }) {
                                                                         children: "ГАРАХ"
                                                                     }, void 0, false, {
                                                                         fileName: "[project]/components/history/EditLogDialog.tsx",
-                                                                        lineNumber: 474,
+                                                                        lineNumber: 486,
                                                                         columnNumber: 25
                                                                     }, this)
                                                                 ]
                                                             }, void 0, true, {
                                                                 fileName: "[project]/components/history/EditLogDialog.tsx",
-                                                                lineNumber: 472,
+                                                                lineNumber: 484,
                                                                 columnNumber: 23
                                                             }, this)
                                                         ]
                                                     }, void 0, true, {
                                                         fileName: "[project]/components/history/EditLogDialog.tsx",
-                                                        lineNumber: 465,
+                                                        lineNumber: 477,
                                                         columnNumber: 21
                                                     }, this)
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/components/history/EditLogDialog.tsx",
-                                                lineNumber: 461,
+                                                lineNumber: 473,
                                                 columnNumber: 19
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -5731,7 +5986,7 @@ function EditLogDialog({ log, open, onOpenChange, onSuccess }) {
                                                                 children: "Тээврийн компани"
                                                             }, void 0, false, {
                                                                 fileName: "[project]/components/history/EditLogDialog.tsx",
-                                                                lineNumber: 482,
+                                                                lineNumber: 494,
                                                                 columnNumber: 23
                                                             }, this),
                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$transport$2f$TransportCompanyManager$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["TransportCompanyManager"], {
@@ -5739,13 +5994,13 @@ function EditLogDialog({ log, open, onOpenChange, onSuccess }) {
                                                                 onCompanyAdded: handleCompanyAdded
                                                             }, void 0, false, {
                                                                 fileName: "[project]/components/history/EditLogDialog.tsx",
-                                                                lineNumber: 485,
+                                                                lineNumber: 497,
                                                                 columnNumber: 23
                                                             }, this)
                                                         ]
                                                     }, void 0, true, {
                                                         fileName: "[project]/components/history/EditLogDialog.tsx",
-                                                        lineNumber: 481,
+                                                        lineNumber: 493,
                                                         columnNumber: 21
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$filterable$2d$select$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["FilterableSelect"], {
@@ -5761,13 +6016,13 @@ function EditLogDialog({ log, open, onOpenChange, onSuccess }) {
                                                         className: "mt-1"
                                                     }, void 0, false, {
                                                         fileName: "[project]/components/history/EditLogDialog.tsx",
-                                                        lineNumber: 487,
+                                                        lineNumber: 499,
                                                         columnNumber: 21
                                                     }, this)
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/components/history/EditLogDialog.tsx",
-                                                lineNumber: 480,
+                                                lineNumber: 492,
                                                 columnNumber: 19
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -5781,7 +6036,7 @@ function EditLogDialog({ log, open, onOpenChange, onSuccess }) {
                                                                 children: "Хаанаас"
                                                             }, void 0, false, {
                                                                 fileName: "[project]/components/history/EditLogDialog.tsx",
-                                                                lineNumber: 504,
+                                                                lineNumber: 516,
                                                                 columnNumber: 23
                                                             }, this),
                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$input$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Input"], {
@@ -5792,13 +6047,13 @@ function EditLogDialog({ log, open, onOpenChange, onSuccess }) {
                                                                 placeholder: "Гарах газар"
                                                             }, void 0, false, {
                                                                 fileName: "[project]/components/history/EditLogDialog.tsx",
-                                                                lineNumber: 507,
+                                                                lineNumber: 519,
                                                                 columnNumber: 23
                                                             }, this)
                                                         ]
                                                     }, void 0, true, {
                                                         fileName: "[project]/components/history/EditLogDialog.tsx",
-                                                        lineNumber: 503,
+                                                        lineNumber: 515,
                                                         columnNumber: 21
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -5809,7 +6064,7 @@ function EditLogDialog({ log, open, onOpenChange, onSuccess }) {
                                                                 children: "Хаашаа"
                                                             }, void 0, false, {
                                                                 fileName: "[project]/components/history/EditLogDialog.tsx",
-                                                                lineNumber: 516,
+                                                                lineNumber: 528,
                                                                 columnNumber: 23
                                                             }, this),
                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$input$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Input"], {
@@ -5820,19 +6075,19 @@ function EditLogDialog({ log, open, onOpenChange, onSuccess }) {
                                                                 placeholder: "Очих газар"
                                                             }, void 0, false, {
                                                                 fileName: "[project]/components/history/EditLogDialog.tsx",
-                                                                lineNumber: 519,
+                                                                lineNumber: 531,
                                                                 columnNumber: 23
                                                             }, this)
                                                         ]
                                                     }, void 0, true, {
                                                         fileName: "[project]/components/history/EditLogDialog.tsx",
-                                                        lineNumber: 515,
+                                                        lineNumber: 527,
                                                         columnNumber: 21
                                                     }, this)
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/components/history/EditLogDialog.tsx",
-                                                lineNumber: 502,
+                                                lineNumber: 514,
                                                 columnNumber: 19
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -5846,7 +6101,7 @@ function EditLogDialog({ log, open, onOpenChange, onSuccess }) {
                                                                 children: "Бүтээгдэхүүн (Cargo)"
                                                             }, void 0, false, {
                                                                 fileName: "[project]/components/history/EditLogDialog.tsx",
-                                                                lineNumber: 531,
+                                                                lineNumber: 543,
                                                                 columnNumber: 23
                                                             }, this),
                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$products$2f$ProductManager$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["ProductManager"], {
@@ -5854,13 +6109,13 @@ function EditLogDialog({ log, open, onOpenChange, onSuccess }) {
                                                                 onProductAdded: handleProductAdded
                                                             }, void 0, false, {
                                                                 fileName: "[project]/components/history/EditLogDialog.tsx",
-                                                                lineNumber: 534,
+                                                                lineNumber: 546,
                                                                 columnNumber: 23
                                                             }, this)
                                                         ]
                                                     }, void 0, true, {
                                                         fileName: "[project]/components/history/EditLogDialog.tsx",
-                                                        lineNumber: 530,
+                                                        lineNumber: 542,
                                                         columnNumber: 21
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$filterable$2d$select$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["FilterableSelect"], {
@@ -5876,7 +6131,7 @@ function EditLogDialog({ log, open, onOpenChange, onSuccess }) {
                                                         className: "mt-1"
                                                     }, void 0, false, {
                                                         fileName: "[project]/components/history/EditLogDialog.tsx",
-                                                        lineNumber: 536,
+                                                        lineNumber: 548,
                                                         columnNumber: 21
                                                     }, this),
                                                     errors.cargoType && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -5884,13 +6139,13 @@ function EditLogDialog({ log, open, onOpenChange, onSuccess }) {
                                                         children: errors.cargoType
                                                     }, void 0, false, {
                                                         fileName: "[project]/components/history/EditLogDialog.tsx",
-                                                        lineNumber: 549,
+                                                        lineNumber: 561,
                                                         columnNumber: 23
                                                     }, this)
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/components/history/EditLogDialog.tsx",
-                                                lineNumber: 529,
+                                                lineNumber: 541,
                                                 columnNumber: 19
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -5907,7 +6162,7 @@ function EditLogDialog({ log, open, onOpenChange, onSuccess }) {
                                                                         children: "Илгээч байгууллага"
                                                                     }, void 0, false, {
                                                                         fileName: "[project]/components/history/EditLogDialog.tsx",
-                                                                        lineNumber: 557,
+                                                                        lineNumber: 569,
                                                                         columnNumber: 25
                                                                     }, this),
                                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$organizations$2f$OrganizationManager$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["OrganizationManager"], {
@@ -5917,13 +6172,13 @@ function EditLogDialog({ log, open, onOpenChange, onSuccess }) {
                                                                         onOrganizationUpdated: handleSenderOrganizationAdded
                                                                     }, void 0, false, {
                                                                         fileName: "[project]/components/history/EditLogDialog.tsx",
-                                                                        lineNumber: 560,
+                                                                        lineNumber: 572,
                                                                         columnNumber: 25
                                                                     }, this)
                                                                 ]
                                                             }, void 0, true, {
                                                                 fileName: "[project]/components/history/EditLogDialog.tsx",
-                                                                lineNumber: 556,
+                                                                lineNumber: 568,
                                                                 columnNumber: 23
                                                             }, this),
                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$filterable$2d$select$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["FilterableSelect"], {
@@ -5939,13 +6194,13 @@ function EditLogDialog({ log, open, onOpenChange, onSuccess }) {
                                                                 className: "mt-1"
                                                             }, void 0, false, {
                                                                 fileName: "[project]/components/history/EditLogDialog.tsx",
-                                                                lineNumber: 567,
+                                                                lineNumber: 579,
                                                                 columnNumber: 23
                                                             }, this)
                                                         ]
                                                     }, void 0, true, {
                                                         fileName: "[project]/components/history/EditLogDialog.tsx",
-                                                        lineNumber: 555,
+                                                        lineNumber: 567,
                                                         columnNumber: 21
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -5959,7 +6214,7 @@ function EditLogDialog({ log, open, onOpenChange, onSuccess }) {
                                                                         children: "Хүлээн авагч байгууллага"
                                                                     }, void 0, false, {
                                                                         fileName: "[project]/components/history/EditLogDialog.tsx",
-                                                                        lineNumber: 582,
+                                                                        lineNumber: 594,
                                                                         columnNumber: 25
                                                                     }, this),
                                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$organizations$2f$OrganizationManager$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["OrganizationManager"], {
@@ -5969,13 +6224,13 @@ function EditLogDialog({ log, open, onOpenChange, onSuccess }) {
                                                                         onOrganizationUpdated: handleReceiverOrganizationAdded
                                                                     }, void 0, false, {
                                                                         fileName: "[project]/components/history/EditLogDialog.tsx",
-                                                                        lineNumber: 585,
+                                                                        lineNumber: 597,
                                                                         columnNumber: 25
                                                                     }, this)
                                                                 ]
                                                             }, void 0, true, {
                                                                 fileName: "[project]/components/history/EditLogDialog.tsx",
-                                                                lineNumber: 581,
+                                                                lineNumber: 593,
                                                                 columnNumber: 23
                                                             }, this),
                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$filterable$2d$select$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["FilterableSelect"], {
@@ -5991,19 +6246,19 @@ function EditLogDialog({ log, open, onOpenChange, onSuccess }) {
                                                                 className: "mt-1"
                                                             }, void 0, false, {
                                                                 fileName: "[project]/components/history/EditLogDialog.tsx",
-                                                                lineNumber: 592,
+                                                                lineNumber: 604,
                                                                 columnNumber: 23
                                                             }, this)
                                                         ]
                                                     }, void 0, true, {
                                                         fileName: "[project]/components/history/EditLogDialog.tsx",
-                                                        lineNumber: 580,
+                                                        lineNumber: 592,
                                                         columnNumber: 21
                                                     }, this)
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/components/history/EditLogDialog.tsx",
-                                                lineNumber: 554,
+                                                lineNumber: 566,
                                                 columnNumber: 19
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -6017,7 +6272,7 @@ function EditLogDialog({ log, open, onOpenChange, onSuccess }) {
                                                                 children: "Жолооч"
                                                             }, void 0, false, {
                                                                 fileName: "[project]/components/history/EditLogDialog.tsx",
-                                                                lineNumber: 610,
+                                                                lineNumber: 622,
                                                                 columnNumber: 23
                                                             }, this),
                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$drivers$2f$DriverManager$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["DriverManager"], {
@@ -6026,19 +6281,19 @@ function EditLogDialog({ log, open, onOpenChange, onSuccess }) {
                                                                 onDriverUpdated: handleDriverAdded
                                                             }, void 0, false, {
                                                                 fileName: "[project]/components/history/EditLogDialog.tsx",
-                                                                lineNumber: 613,
+                                                                lineNumber: 625,
                                                                 columnNumber: 23
                                                             }, this)
                                                         ]
                                                     }, void 0, true, {
                                                         fileName: "[project]/components/history/EditLogDialog.tsx",
-                                                        lineNumber: 609,
+                                                        lineNumber: 621,
                                                         columnNumber: 21
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$filterable$2d$select$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["FilterableSelect"], {
                                                         options: drivers.map((driver)=>({
                                                                 value: driver.id,
-                                                                label: `${driver.name}${driver.licenseNumber ? ` (${driver.licenseNumber})` : ""}`
+                                                                label: `${driver.name}${driver.phone ? ` (${driver.phone})` : ""}`
                                                             })),
                                                         value: driverId,
                                                         onValueChange: (value)=>{
@@ -6047,37 +6302,26 @@ function EditLogDialog({ log, open, onOpenChange, onSuccess }) {
                                                             setDriverName(selectedDriver?.name || "");
                                                         },
                                                         disabled: isLoadingDrivers,
-                                                        placeholder: isLoadingDrivers ? "Уншиж байна..." : driverName || "Жолооч сонгох",
+                                                        placeholder: isLoadingDrivers ? "Уншиж байна..." : "Жолооч сонгох",
                                                         searchPlaceholder: "Жолооч хайх...",
                                                         className: "mt-1"
                                                     }, void 0, false, {
                                                         fileName: "[project]/components/history/EditLogDialog.tsx",
-                                                        lineNumber: 615,
+                                                        lineNumber: 627,
                                                         columnNumber: 21
                                                     }, this),
-                                                    !driverId && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$input$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Input"], {
-                                                        id: "edit-driver-manual",
-                                                        value: driverName,
-                                                        onChange: (e)=>setDriverName(e.target.value),
-                                                        className: "mt-2 bg-white border-gray-300 focus:border-blue-500 focus:ring-blue-500",
-                                                        placeholder: "Эсвэл жолоочийн нэрийг гараар оруулах"
-                                                    }, void 0, false, {
-                                                        fileName: "[project]/components/history/EditLogDialog.tsx",
-                                                        lineNumber: 632,
-                                                        columnNumber: 23
-                                                    }, this),
-                                                    errors.driverName && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
+                                                    errors.driverId && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
                                                         className: "mt-1 text-xs text-red-600",
-                                                        children: errors.driverName
+                                                        children: errors.driverId
                                                     }, void 0, false, {
                                                         fileName: "[project]/components/history/EditLogDialog.tsx",
-                                                        lineNumber: 641,
+                                                        lineNumber: 644,
                                                         columnNumber: 23
                                                     }, this)
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/components/history/EditLogDialog.tsx",
-                                                lineNumber: 608,
+                                                lineNumber: 620,
                                                 columnNumber: 19
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -6088,7 +6332,7 @@ function EditLogDialog({ log, open, onOpenChange, onSuccess }) {
                                                         children: "Тамганы дугаар"
                                                     }, void 0, false, {
                                                         fileName: "[project]/components/history/EditLogDialog.tsx",
-                                                        lineNumber: 647,
+                                                        lineNumber: 650,
                                                         columnNumber: 21
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$input$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Input"], {
@@ -6099,13 +6343,13 @@ function EditLogDialog({ log, open, onOpenChange, onSuccess }) {
                                                         placeholder: "Тамганы дугаар оруулах"
                                                     }, void 0, false, {
                                                         fileName: "[project]/components/history/EditLogDialog.tsx",
-                                                        lineNumber: 650,
+                                                        lineNumber: 653,
                                                         columnNumber: 21
                                                     }, this)
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/components/history/EditLogDialog.tsx",
-                                                lineNumber: 646,
+                                                lineNumber: 649,
                                                 columnNumber: 19
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -6116,7 +6360,7 @@ function EditLogDialog({ log, open, onOpenChange, onSuccess }) {
                                                         children: "Тээврийн төрөл"
                                                     }, void 0, false, {
                                                         fileName: "[project]/components/history/EditLogDialog.tsx",
-                                                        lineNumber: 661,
+                                                        lineNumber: 664,
                                                         columnNumber: 21
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$select$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Select"], {
@@ -6130,12 +6374,12 @@ function EditLogDialog({ log, open, onOpenChange, onSuccess }) {
                                                                     placeholder: "Тээврийн төрөл сонгох"
                                                                 }, void 0, false, {
                                                                     fileName: "[project]/components/history/EditLogDialog.tsx",
-                                                                    lineNumber: 669,
+                                                                    lineNumber: 672,
                                                                     columnNumber: 25
                                                                 }, this)
                                                             }, void 0, false, {
                                                                 fileName: "[project]/components/history/EditLogDialog.tsx",
-                                                                lineNumber: 668,
+                                                                lineNumber: 671,
                                                                 columnNumber: 23
                                                             }, this),
                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$select$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["SelectContent"], {
@@ -6145,7 +6389,7 @@ function EditLogDialog({ log, open, onOpenChange, onSuccess }) {
                                                                         children: "Ачааны машин"
                                                                     }, void 0, false, {
                                                                         fileName: "[project]/components/history/EditLogDialog.tsx",
-                                                                        lineNumber: 672,
+                                                                        lineNumber: 675,
                                                                         columnNumber: 25
                                                                     }, this),
                                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$select$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["SelectItem"], {
@@ -6153,7 +6397,7 @@ function EditLogDialog({ log, open, onOpenChange, onSuccess }) {
                                                                         children: "Контейнер"
                                                                     }, void 0, false, {
                                                                         fileName: "[project]/components/history/EditLogDialog.tsx",
-                                                                        lineNumber: 673,
+                                                                        lineNumber: 676,
                                                                         columnNumber: 25
                                                                     }, this),
                                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$select$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["SelectItem"], {
@@ -6161,7 +6405,7 @@ function EditLogDialog({ log, open, onOpenChange, onSuccess }) {
                                                                         children: "Тусгай зориулалтын машин"
                                                                     }, void 0, false, {
                                                                         fileName: "[project]/components/history/EditLogDialog.tsx",
-                                                                        lineNumber: 674,
+                                                                        lineNumber: 677,
                                                                         columnNumber: 25
                                                                     }, this),
                                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$select$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["SelectItem"], {
@@ -6169,7 +6413,7 @@ function EditLogDialog({ log, open, onOpenChange, onSuccess }) {
                                                                         children: "Хавтгай тавцант машин"
                                                                     }, void 0, false, {
                                                                         fileName: "[project]/components/history/EditLogDialog.tsx",
-                                                                        lineNumber: 675,
+                                                                        lineNumber: 678,
                                                                         columnNumber: 25
                                                                     }, this),
                                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$select$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["SelectItem"], {
@@ -6177,7 +6421,7 @@ function EditLogDialog({ log, open, onOpenChange, onSuccess }) {
                                                                         children: "Хөргүүртэй машин"
                                                                     }, void 0, false, {
                                                                         fileName: "[project]/components/history/EditLogDialog.tsx",
-                                                                        lineNumber: 676,
+                                                                        lineNumber: 679,
                                                                         columnNumber: 25
                                                                     }, this),
                                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$select$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["SelectItem"], {
@@ -6185,25 +6429,25 @@ function EditLogDialog({ log, open, onOpenChange, onSuccess }) {
                                                                         children: "Бусад"
                                                                     }, void 0, false, {
                                                                         fileName: "[project]/components/history/EditLogDialog.tsx",
-                                                                        lineNumber: 677,
+                                                                        lineNumber: 680,
                                                                         columnNumber: 25
                                                                     }, this)
                                                                 ]
                                                             }, void 0, true, {
                                                                 fileName: "[project]/components/history/EditLogDialog.tsx",
-                                                                lineNumber: 671,
+                                                                lineNumber: 674,
                                                                 columnNumber: 23
                                                             }, this)
                                                         ]
                                                     }, void 0, true, {
                                                         fileName: "[project]/components/history/EditLogDialog.tsx",
-                                                        lineNumber: 664,
+                                                        lineNumber: 667,
                                                         columnNumber: 21
                                                     }, this)
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/components/history/EditLogDialog.tsx",
-                                                lineNumber: 660,
+                                                lineNumber: 663,
                                                 columnNumber: 19
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -6220,7 +6464,7 @@ function EditLogDialog({ log, open, onOpenChange, onSuccess }) {
                                                         }
                                                     }, void 0, false, {
                                                         fileName: "[project]/components/history/EditLogDialog.tsx",
-                                                        lineNumber: 684,
+                                                        lineNumber: 687,
                                                         columnNumber: 21
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$label$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Label"], {
@@ -6229,13 +6473,13 @@ function EditLogDialog({ log, open, onOpenChange, onSuccess }) {
                                                         children: "Чиргүүлтэй"
                                                     }, void 0, false, {
                                                         fileName: "[project]/components/history/EditLogDialog.tsx",
-                                                        lineNumber: 694,
+                                                        lineNumber: 697,
                                                         columnNumber: 21
                                                     }, this)
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/components/history/EditLogDialog.tsx",
-                                                lineNumber: 683,
+                                                lineNumber: 686,
                                                 columnNumber: 19
                                             }, this),
                                             hasTrailer && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -6246,7 +6490,7 @@ function EditLogDialog({ log, open, onOpenChange, onSuccess }) {
                                                         children: "Чиргүүлийн улсын дугаар"
                                                     }, void 0, false, {
                                                         fileName: "[project]/components/history/EditLogDialog.tsx",
-                                                        lineNumber: 705,
+                                                        lineNumber: 708,
                                                         columnNumber: 23
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$input$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Input"], {
@@ -6257,13 +6501,13 @@ function EditLogDialog({ log, open, onOpenChange, onSuccess }) {
                                                         placeholder: "Чиргүүлийн улсын дугаар оруулах"
                                                     }, void 0, false, {
                                                         fileName: "[project]/components/history/EditLogDialog.tsx",
-                                                        lineNumber: 708,
+                                                        lineNumber: 711,
                                                         columnNumber: 23
                                                     }, this)
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/components/history/EditLogDialog.tsx",
-                                                lineNumber: 704,
+                                                lineNumber: 707,
                                                 columnNumber: 21
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -6274,7 +6518,7 @@ function EditLogDialog({ log, open, onOpenChange, onSuccess }) {
                                                         children: "Нэмэлт"
                                                     }, void 0, false, {
                                                         fileName: "[project]/components/history/EditLogDialog.tsx",
-                                                        lineNumber: 720,
+                                                        lineNumber: 723,
                                                         columnNumber: 21
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$textarea$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Textarea"], {
@@ -6286,13 +6530,13 @@ function EditLogDialog({ log, open, onOpenChange, onSuccess }) {
                                                         rows: 3
                                                     }, void 0, false, {
                                                         fileName: "[project]/components/history/EditLogDialog.tsx",
-                                                        lineNumber: 723,
+                                                        lineNumber: 726,
                                                         columnNumber: 21
                                                     }, this)
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/components/history/EditLogDialog.tsx",
-                                                lineNumber: 719,
+                                                lineNumber: 722,
                                                 columnNumber: 19
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -6303,7 +6547,7 @@ function EditLogDialog({ log, open, onOpenChange, onSuccess }) {
                                                         children: "Нэмэлт (Additional Notes)"
                                                     }, void 0, false, {
                                                         fileName: "[project]/components/history/EditLogDialog.tsx",
-                                                        lineNumber: 734,
+                                                        lineNumber: 737,
                                                         columnNumber: 21
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$textarea$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Textarea"], {
@@ -6315,19 +6559,19 @@ function EditLogDialog({ log, open, onOpenChange, onSuccess }) {
                                                         rows: 3
                                                     }, void 0, false, {
                                                         fileName: "[project]/components/history/EditLogDialog.tsx",
-                                                        lineNumber: 737,
+                                                        lineNumber: 740,
                                                         columnNumber: 21
                                                     }, this)
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/components/history/EditLogDialog.tsx",
-                                                lineNumber: 733,
+                                                lineNumber: 736,
                                                 columnNumber: 19
                                             }, this)
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/components/history/EditLogDialog.tsx",
-                                        lineNumber: 424,
+                                        lineNumber: 436,
                                         columnNumber: 17
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -6342,7 +6586,7 @@ function EditLogDialog({ log, open, onOpenChange, onSuccess }) {
                                                 children: "Cancel"
                                             }, void 0, false, {
                                                 fileName: "[project]/components/history/EditLogDialog.tsx",
-                                                lineNumber: 750,
+                                                lineNumber: 753,
                                                 columnNumber: 19
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$button$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Button"], {
@@ -6355,7 +6599,7 @@ function EditLogDialog({ log, open, onOpenChange, onSuccess }) {
                                                             className: "w-4 h-4 mr-2 animate-spin"
                                                         }, void 0, false, {
                                                             fileName: "[project]/components/history/EditLogDialog.tsx",
-                                                            lineNumber: 766,
+                                                            lineNumber: 769,
                                                             columnNumber: 25
                                                         }, this),
                                                         "Saving..."
@@ -6363,41 +6607,41 @@ function EditLogDialog({ log, open, onOpenChange, onSuccess }) {
                                                 }, void 0, true) : "Save Changes"
                                             }, void 0, false, {
                                                 fileName: "[project]/components/history/EditLogDialog.tsx",
-                                                lineNumber: 759,
+                                                lineNumber: 762,
                                                 columnNumber: 19
                                             }, this)
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/components/history/EditLogDialog.tsx",
-                                        lineNumber: 749,
+                                        lineNumber: 752,
                                         columnNumber: 17
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/components/history/EditLogDialog.tsx",
-                                lineNumber: 377,
+                                lineNumber: 389,
                                 columnNumber: 15
                             }, this)
                         }, void 0, false, {
                             fileName: "[project]/components/history/EditLogDialog.tsx",
-                            lineNumber: 376,
+                            lineNumber: 388,
                             columnNumber: 13
                         }, this)
                     ]
                 }, void 0, true, {
                     fileName: "[project]/components/history/EditLogDialog.tsx",
-                    lineNumber: 361,
+                    lineNumber: 373,
                     columnNumber: 11
                 }, this)
             ]
         }, void 0, true, {
             fileName: "[project]/components/history/EditLogDialog.tsx",
-            lineNumber: 349,
+            lineNumber: 361,
             columnNumber: 7
         }, this)
     }, void 0, false, {
         fileName: "[project]/components/history/EditLogDialog.tsx",
-        lineNumber: 348,
+        lineNumber: 360,
         columnNumber: 5
     }, this);
 }

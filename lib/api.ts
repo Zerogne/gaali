@@ -45,7 +45,34 @@ export async function saveTruckLog(
     // Insert into company's collection
     await logsCollection.insertOne(logDoc)
 
-    return logDoc
+    // Serialize MongoDB document to plain object (remove _id, ensure all values are serializable)
+    // Create a clean copy to avoid any MongoDB-specific properties
+    const serializedLog: TruckLog = {
+      id: logDoc.id,
+      direction: logDoc.direction,
+      plate: logDoc.plate,
+      driverId: logDoc.driverId,
+      driverName: logDoc.driverName,
+      cargoType: logDoc.cargoType,
+      weightKg: logDoc.weightKg,
+      netWeightKg: logDoc.netWeightKg,
+      comments: logDoc.comments,
+      origin: logDoc.origin,
+      destination: logDoc.destination,
+      senderOrganizationId: logDoc.senderOrganizationId,
+      senderOrganization: logDoc.senderOrganization,
+      receiverOrganizationId: logDoc.receiverOrganizationId,
+      receiverOrganization: logDoc.receiverOrganization,
+      transportCompanyId: logDoc.transportCompanyId,
+      transportType: logDoc.transportType,
+      sealNumber: logDoc.sealNumber,
+      hasTrailer: logDoc.hasTrailer,
+      trailerPlate: logDoc.trailerPlate,
+      createdAt: logDoc.createdAt,
+      sentToCustoms: logDoc.sentToCustoms,
+    }
+
+    return serializedLog
   } catch (error) {
     const handled = handleError(error)
     throw new Error(handled.message)

@@ -60,6 +60,7 @@ export const truckLogSchema = z.object({
     .min(1, 'Plate number is required')
     .max(20, 'Plate number is too long')
     .regex(/^[А-ЯЁA-Z0-9\s-]+$/i, 'Plate number contains invalid characters'),
+  driverId: z.string().max(100).optional(),
   driverName: z
     .string()
     .min(1, 'Driver name is required')
@@ -71,14 +72,27 @@ export const truckLogSchema = z.object({
   weightKg: z
     .number()
     .positive('Weight must be positive')
-    .max(1000000, 'Weight is too large'),
+    .max(1000000, 'Weight is too large')
+    .optional(),
+  netWeightKg: z
+    .number()
+    .positive('Net weight must be positive')
+    .max(1000000, 'Net weight is too large')
+    .optional(),
   comments: z.string().max(1000, 'Comments are too long').optional(),
   vehicleRegistrationNumber: z.string().max(50).optional(),
   vehicleRegistrationYear: z.string().max(4).optional(),
   origin: z.string().max(200).optional(),
   destination: z.string().max(200).optional(),
+  senderOrganizationId: z.string().max(100).optional(),
   senderOrganization: z.string().max(200).optional(),
+  receiverOrganizationId: z.string().max(100).optional(),
   receiverOrganization: z.string().max(200).optional(),
+  transportCompanyId: z.string().max(100).optional(),
+  transportType: z.enum(['truck', 'container', 'tanker', 'flatbed', 'refrigerated', 'other']).optional(),
+  sealNumber: z.string().max(100).optional(),
+  hasTrailer: z.boolean().optional(),
+  trailerPlate: z.string().max(20).optional(),
 })
 
 export type TruckLogInput = z.infer<typeof truckLogSchema>

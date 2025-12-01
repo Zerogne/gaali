@@ -58,6 +58,10 @@ export function ProductManager({ products, onProductAdded }: ProductManagerProps
       })
 
       setNewProductLabel("")
+      
+      // Dispatch custom event to refresh all sections
+      window.dispatchEvent(new CustomEvent("refreshDropdownData"))
+      
       onProductAdded()
     } catch (error) {
       toast({
@@ -89,6 +93,9 @@ export function ProductManager({ products, onProductAdded }: ProductManagerProps
         title: "Success",
         description: "Product deleted successfully",
       })
+
+      // Dispatch custom event to refresh all sections
+      window.dispatchEvent(new CustomEvent("refreshDropdownData"))
 
       onProductAdded()
     } catch (error) {
