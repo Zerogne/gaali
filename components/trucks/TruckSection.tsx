@@ -276,6 +276,62 @@ export function TruckSection({ direction, onSave, onSend }: TruckSectionProps) {
     reloadReceiverOrganizations()
   }
 
+  // Handle creating a new receiver organization
+  const handleCreateReceiverOrganization = async (name: string): Promise<string | null> => {
+    try {
+      const response = await fetch("/api/organizations", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          name: name.trim(),
+          type: "receiver",
+        }),
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json()
+        if (response.status === 409) {
+          // Organization already exists, try to find it
+          const existingResponse = await fetch("/api/organizations?type=receiver")
+          if (existingResponse.ok) {
+            const orgs = await existingResponse.json()
+            const existing = orgs.find((org: Organization) => 
+              org.name.toLowerCase() === name.trim().toLowerCase()
+            )
+            if (existing) {
+              handleReceiverOrganizationAdded()
+              return existing.id
+            }
+          }
+        }
+        toast({
+          title: "Алдаа",
+          description: errorData.error || "Байгууллага нэмэхэд алдаа гарлаа",
+          variant: "destructive",
+        })
+        return null
+      }
+
+      const newOrg = await response.json()
+      handleReceiverOrganizationAdded()
+      toast({
+        title: "Амжилттай",
+        description: `"${newOrg.name}" байгууллага нэмэгдлээ`,
+      })
+      return newOrg.id
+    } catch (error) {
+      console.error("Error creating receiver organization:", error)
+      toast({
+        title: "Алдаа",
+        description: "Байгууллага нэмэхэд алдаа гарлаа",
+        variant: "destructive",
+      })
+      return null
+    }
+  }
+
   // Mock plate recognition data
   const confidence = 98.5
   const timestamp = new Date().toLocaleString("en-US", {
@@ -725,8 +781,10 @@ export function TruckSection({ direction, onSave, onSend }: TruckSectionProps) {
                   setReceiverOrganizationId(value)
                 }}
                 disabled={isLoadingOrganizations}
-                placeholder={isLoadingOrganizations ? "Уншиж байна..." : "Хүлээн авагч байгууллага сонгох"}
-                searchPlaceholder="Хүлээн авагч байгууллага хайх..."
+                placeholder={isLoadingOrganizations ? "Уншиж байна..." : "Хүлээн авагч байгууллага сонгох эсвэл бичих"}
+                searchPlaceholder="Хүлээн авагч байгууллага хайх эсвэл бичих..."
+                onCreateNew={handleCreateReceiverOrganization}
+                createNewLabel="нэмэх"
               />
             </div>
           </div>
@@ -876,4 +934,3 @@ export function TruckSection({ direction, onSave, onSend }: TruckSectionProps) {
     </>
   )
 }
-

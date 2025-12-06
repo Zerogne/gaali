@@ -3068,6 +3068,10 @@
     white-space: nowrap;
   }
 
+  .whitespace-pre-wrap {
+    white-space: pre-wrap;
+  }
+
   .text-accent-foreground {
     color: var(--accent-foreground);
   }

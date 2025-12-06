@@ -21,6 +21,7 @@ export class ErrorBoundary extends Component<Props, State> {
   }
 
   static getDerivedStateFromError(error: Error): State {
+    // Return new state to indicate error occurred
     return { hasError: true, error }
   }
 
@@ -35,6 +36,7 @@ export class ErrorBoundary extends Component<Props, State> {
   }
 
   handleReset = () => {
+    // Reset state - this will cause a re-render
     this.setState({ hasError: false, error: null })
   }
 
@@ -60,9 +62,17 @@ export class ErrorBoundary extends Component<Props, State> {
 
             {process.env.NODE_ENV === 'development' && this.state.error && (
               <div className="mb-6 rounded bg-gray-100 p-4">
-                <p className="text-sm font-mono text-gray-800">
+                <p className="text-sm font-mono text-gray-800 break-words">
                   {this.state.error.message}
                 </p>
+                {this.state.error.stack && (
+                  <details className="mt-2">
+                    <summary className="text-xs text-gray-600 cursor-pointer">Stack trace</summary>
+                    <pre className="text-xs text-gray-700 mt-2 whitespace-pre-wrap">
+                      {this.state.error.stack}
+                    </pre>
+                  </details>
+                )}
               </div>
             )}
 
@@ -89,4 +99,3 @@ export class ErrorBoundary extends Component<Props, State> {
     return this.props.children
   }
 }
-
