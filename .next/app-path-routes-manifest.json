@@ -8,6 +8,7 @@
   "/api/drivers/[id]/route": "/api/drivers/[id]",
   "/api/drivers/route": "/api/drivers",
   "/api/logs/[id]/route": "/api/logs/[id]",
+  "/api/logs/route": "/api/logs",
   "/api/migrate-organizations/route": "/api/migrate-organizations",
   "/api/organizations/[id]/route": "/api/organizations/[id]",
   "/api/organizations/route": "/api/organizations",
@@ -15,10 +16,13 @@
   "/api/products/route": "/api/products",
   "/api/reset-passwords/route": "/api/reset-passwords",
   "/api/seed/route": "/api/seed",
+  "/api/transport-companies/[id]/route": "/api/transport-companies/[id]",
   "/api/transport-companies/route": "/api/transport-companies",
   "/api/user/route": "/api/user",
-  "/history/page": "/history",
+  "/companies/page": "/companies",
+  "/drivers/page": "/drivers",
+  "/organizations/page": "/organizations",
   "/page": "/",
-  "/reports/page": "/reports",
+  "/products/page": "/products",
   "/settings/page": "/settings"
 }

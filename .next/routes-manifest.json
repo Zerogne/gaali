@@ -59,6 +59,14 @@
         "nxtPid": "nxtPid"
       },
       "namedRegex": "^/api/products/(?<nxtPid>[^/]+?)(?:/)?$"
+    },
+    {
+      "page": "/api/transport-companies/[id]",
+      "regex": "^/api/transport\\-companies/([^/]+?)(?:/)?$",
+      "routeKeys": {
+        "nxtPid": "nxtPid"
+      },
+      "namedRegex": "^/api/transport\\-companies/(?<nxtPid>[^/]+?)(?:/)?$"
     }
   ],
   "staticRoutes": [
@@ -97,6 +105,12 @@
       "regex": "^/api/drivers(?:/)?$",
       "routeKeys": {},
       "namedRegex": "^/api/drivers(?:/)?$"
+    },
+    {
+      "page": "/api/logs",
+      "regex": "^/api/logs(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/api/logs(?:/)?$"
     },
     {
       "page": "/api/migrate-organizations",
@@ -141,10 +155,16 @@
       "namedRegex": "^/api/user(?:/)?$"
     },
     {
-      "page": "/history",
-      "regex": "^/history(?:/)?$",
+      "page": "/companies",
+      "regex": "^/companies(?:/)?$",
       "routeKeys": {},
-      "namedRegex": "^/history(?:/)?$"
+      "namedRegex": "^/companies(?:/)?$"
+    },
+    {
+      "page": "/drivers",
+      "regex": "^/drivers(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/drivers(?:/)?$"
     },
     {
       "page": "/login",
@@ -153,10 +173,16 @@
       "namedRegex": "^/login(?:/)?$"
     },
     {
-      "page": "/reports",
-      "regex": "^/reports(?:/)?$",
+      "page": "/organizations",
+      "regex": "^/organizations(?:/)?$",
       "routeKeys": {},
-      "namedRegex": "^/reports(?:/)?$"
+      "namedRegex": "^/organizations(?:/)?$"
+    },
+    {
+      "page": "/products",
+      "regex": "^/products(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/products(?:/)?$"
     },
     {
       "page": "/settings",

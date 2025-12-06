@@ -10,8 +10,9 @@ const _geist = Geist({ subsets: ["latin"] })
 const _geistMono = Geist_Mono({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
-  title: "MADAR - Truck Weighing & Plate Recognition",
-  description: "Professional logistics dashboard for customs and border control",
+  title: "Truck Scale App",
+  description:
+    "Professional logistics dashboard for customs and border control",
   generator: "v0.app",
   icons: {
     icon: [
@@ -30,7 +31,7 @@ export const metadata: Metadata = {
     ],
     apple: "/apple-icon.png",
   },
-}
+};
 
 export default function RootLayout({
   children,

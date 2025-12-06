@@ -99,7 +99,7 @@
         "transform": "lodash/{{member}}"
       }
     },
-    "outputFileTracingRoot": "/Users/bayarbayasgalanulambayar/Downloads/truck-weighing-dashboard",
+    "outputFileTracingRoot": "/Users/dnii/Documents/gaali",
     "cacheComponents": false,
     "cacheLife": {
       "default": {
@@ -157,7 +157,7 @@
       "proxyPrefetch": "flexible",
       "optimisticClientCache": true,
       "manualClientBasePath": false,
-      "cpus": 9,
+      "cpus": 7,
       "memoryBasedWorkersCount": false,
       "imgOptConcurrency": null,
       "imgOptTimeoutInSeconds": 7,
@@ -289,11 +289,11 @@
     "bundlePagesRouterDependencies": false,
     "configFileName": "next.config.mjs",
     "turbopack": {
-      "root": "/Users/bayarbayasgalanulambayar/Downloads/truck-weighing-dashboard"
+      "root": "/Users/dnii/Documents/gaali"
     },
     "distDirRoot": ".next"
   },
-  "appDir": "/Users/bayarbayasgalanulambayar/Downloads/truck-weighing-dashboard",
+  "appDir": "/Users/dnii/Documents/gaali",
   "relativeAppDir": "",
   "files": [
     ".next/routes-manifest.json",

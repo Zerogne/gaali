@@ -166,9 +166,8 @@ export async function exportLogToPDF(log: TruckLog): Promise<void> {
     }
 
     // Generate filename
-    const date = new Date(log.createdAt || Date.now())
-    const fileDateStr = date.toISOString().split("T")[0]
-    const filename = `truck-log-${log.plate || "unknown"}-${fileDateStr}.pdf`
+    const receiptNumber = generateReceiptNumber(log)
+    const filename = `${receiptNumber}.pdf`
 
     // Save PDF
     pdf.save(filename)
@@ -190,7 +189,17 @@ function escapeHtml(text: string): string {
 }
 
 /**
- * Generate HTML content for the log
+ * Generate receipt number from log
+ */
+function generateReceiptNumber(log: TruckLog): string {
+  const logDate = log.createdAt ? new Date(log.createdAt) : new Date()
+  const dateStr = logDate.toISOString().slice(0, 10).replace(/-/g, "")
+  const timeStr = logDate.toTimeString().slice(0, 8).replace(/:/g, "")
+  return `${dateStr}${timeStr}${log.id.slice(-5)}`
+}
+
+/**
+ * Generate HTML content for the log in receipt format
  */
 function generateLogHTML(
   log: TruckLog,
@@ -202,24 +211,46 @@ function generateLogHTML(
     driverRegistrationNumber?: string
   }
 ): string {
-  const date = log.createdAt
-    ? new Date(log.createdAt).toLocaleString("mn-MN", {
-        year: "numeric",
-        month: "2-digit",
-        day: "2-digit",
-        hour: "2-digit",
-        minute: "2-digit",
-      })
+  // Generate receipt number from log ID and date
+  const receiptNumber = generateReceiptNumber(log)
+
+  // Format dates in YYYY-MM-DD HH:MM format
+  const formatDate = (date: Date): string => {
+    const year = date.getFullYear()
+    const month = String(date.getMonth() + 1).padStart(2, "0")
+    const day = String(date.getDate()).padStart(2, "0")
+    const hours = String(date.getHours()).padStart(2, "0")
+    const minutes = String(date.getMinutes()).padStart(2, "0")
+    return `${year}-${month}-${day} ${hours}:${minutes}`
+  }
+
+  const createdDate = log.createdAt
+    ? formatDate(new Date(log.createdAt))
     : "—"
 
-  const transportTypes: Record<string, string> = {
-    truck: "Ачааны машин",
-    container: "Контейнер",
-    tanker: "Тусгай зориулалтын машин",
-    flatbed: "Хавтгай тавцант машин",
-    refrigerated: "Хөргүүртэй машин",
-    other: "Бусад",
-  }
+  const entryDate = log.direction === "IN" && log.createdAt
+    ? formatDate(new Date(log.createdAt))
+    : "—"
+
+  const exitDate = log.direction === "OUT" && log.createdAt
+    ? formatDate(new Date(log.createdAt))
+    : "—"
+
+  // Calculate unloaded weight (if we have loaded and net weight)
+  const unloadedWeight = log.weightKg && log.netWeightKg 
+    ? log.weightKg - log.netWeightKg 
+    : null
+
+  // Get organization names
+  const senderOrg = log.senderOrganization || relatedData?.senderOrganizationName || "—"
+  const receiverOrg = log.receiverOrganization || relatedData?.receiverOrganizationName || "—"
+  const transportCompany = relatedData?.transportCompanyName || "—"
+
+  // Format driver info
+  const driverInfo = log.driverName || "—"
+  const driverFullInfo = relatedData?.driverPhone && relatedData?.driverRegistrationNumber
+    ? `${driverInfo} ${relatedData.driverPhone} ${relatedData.driverRegistrationNumber}`
+    : driverInfo
 
   return `
     <!DOCTYPE html>
@@ -234,245 +265,164 @@ function generateLogHTML(
         }
         body {
           font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-          font-size: 13px;
-          line-height: 1.7;
-          color: rgb(33, 33, 33);
+          font-size: 12px;
+          line-height: 1.5;
+          color: rgb(0, 0, 0);
           background: rgb(255, 255, 255);
-          padding: 0;
-          width: 210mm;
-          min-height: 100vh;
-        }
-        .header {
-          background: linear-gradient(135deg, rgb(41, 128, 185) 0%, rgb(52, 152, 219) 100%);
-          color: rgb(255, 255, 255);
-          padding: 25px 20px;
-          text-align: center;
-          box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-        }
-        .header h1 {
-          font-size: 26px;
-          font-weight: bold;
-          margin-bottom: 8px;
-          letter-spacing: 0.5px;
-        }
-        .header p {
-          font-size: 15px;
-          opacity: 0.95;
-        }
-        .content {
-          padding: 25px;
-        }
-        .section {
-          margin-bottom: 25px;
-          background: rgb(255, 255, 255);
-          border: 1px solid rgb(230, 230, 230);
-          border-radius: 6px;
           padding: 15px;
+          width: 210mm;
         }
-        .section-title {
-          background: rgb(245, 247, 250);
-          padding: 12px 15px;
-          font-size: 15px;
-          font-weight: bold;
-          margin: -15px -15px 15px -15px;
-          border-left: 5px solid rgb(41, 128, 185);
-          border-radius: 6px 6px 0 0;
-          color: rgb(41, 128, 185);
-        }
-        .info-grid {
-          display: grid;
-          grid-template-columns: 1fr 1fr;
-          gap: 18px;
-          margin-bottom: 10px;
-        }
-        .info-item {
+        .header-row {
           display: flex;
-          flex-direction: column;
-          padding: 10px;
-          background: rgb(250, 250, 250);
-          border-radius: 4px;
-          border: 1px solid rgb(240, 240, 240);
-        }
-        .info-label {
-          font-weight: 600;
-          color: rgb(100, 100, 100);
-          margin-bottom: 6px;
+          justify-content: space-between;
+          margin-bottom: 15px;
           font-size: 11px;
-          text-transform: uppercase;
-          letter-spacing: 0.3px;
         }
-        .info-value {
-          color: rgb(33, 33, 33);
-          font-size: 14px;
-          font-weight: 500;
-          word-break: break-word;
+        .header-left {
+          text-align: left;
         }
-        .status-badge {
-          display: inline-block;
-          padding: 10px 20px;
-          border-radius: 6px;
+        .header-center {
+          text-align: center;
           font-weight: bold;
           font-size: 13px;
-          margin-top: 25px;
-          box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
-        .status-sent {
-          background: rgb(46, 204, 113);
-          color: rgb(255, 255, 255);
+        .header-right {
+          text-align: right;
         }
-        .status-saved {
-          background: rgb(241, 196, 15);
-          color: rgb(51, 51, 51);
-        }
-        .footer {
-          margin-top: 40px;
-          padding-top: 20px;
-          border-top: 2px solid rgb(230, 230, 230);
+        .main-title {
           text-align: center;
-          font-size: 11px;
-          color: rgb(120, 120, 120);
+          font-size: 16px;
+          font-weight: bold;
+          margin: 15px 0;
         }
-        .full-width {
-          grid-column: 1 / -1;
+        .carrier-info {
+          display: flex;
+          justify-content: space-between;
+          margin-bottom: 15px;
+          font-size: 11px;
+        }
+        .carrier-left {
+          flex: 1;
+        }
+        .carrier-right {
+          text-align: right;
+        }
+        .data-table {
+          width: 100%;
+          border-collapse: collapse;
+          margin-bottom: 15px;
+          font-size: 11px;
+          border: 1px solid rgb(0, 0, 0);
+        }
+        .data-table td {
+          padding: 8px 10px;
+          border: 1px solid rgb(0, 0, 0);
+          vertical-align: top;
+        }
+        .data-table .label-cell {
+          background-color: rgb(255, 255, 255);
+          font-weight: 600;
+          width: 18%;
+        }
+        .data-table .value-cell {
+          width: 15%;
+          text-align: left;
+          background-color: rgb(255, 255, 255);
+        }
+        .data-table .empty-cell {
+          background-color: rgb(255, 255, 255);
+          border: 1px solid rgb(0, 0, 0);
         }
       </style>
     </head>
     <body>
-      <div class="header">
-        <h1>Тээврийн хэрэгслийн бүртгэл</h1>
-        <p>Truck Log Report</p>
-      </div>
-      
-      <div class="content">
-        <!-- Section 1: Cargo/Product and Destination -->
-        <div class="section">
-          <div class="section-title">Ачиж яваа зүйл ба очих газар</div>
-          <div class="info-grid">
-            <div class="info-item">
-              <span class="info-label">Бүтээгдэхүүн:</span>
-              <span class="info-value">${escapeHtml(log.cargoType || "—")}</span>
-            </div>
-            <div class="info-item">
-              <span class="info-label">Жин (кг):</span>
-              <span class="info-value">${log.weightKg ? log.weightKg.toLocaleString() + " кг" : "—"}</span>
-            </div>
-            ${log.direction === "OUT" && log.netWeightKg ? `
-            <div class="info-item">
-              <span class="info-label">Цэвэр жин (кг):</span>
-              <span class="info-value">${log.netWeightKg.toLocaleString() + " кг"}</span>
-            </div>
-            ` : ""}
-            <div class="info-item">
-              <span class="info-label">Хаанаас:</span>
-              <span class="info-value">${escapeHtml(log.origin || "—")}</span>
-            </div>
-            <div class="info-item">
-              <span class="info-label">Хаашаа:</span>
-              <span class="info-value">${escapeHtml(log.destination || "—")}</span>
-            </div>
-            ${log.comments ? `
-            <div class="info-item full-width">
-              <span class="info-label">Нэмэлт тайлбар:</span>
-              <span class="info-value" style="margin-top: 5px; white-space: pre-wrap; color: rgb(33, 33, 33); line-height: 1.6;">${escapeHtml(log.comments)}</span>
-            </div>
-            ` : ""}
-          </div>
+      <!-- Header with three columns -->
+      <div class="header-row">
+        <div class="header-left">
+          Илгээгч байгууллага: ${escapeHtml(senderOrg)}
         </div>
-
-        <!-- Section 2: Companies and Organizations -->
-        <div class="section">
-          <div class="section-title">Байгууллага ба компани</div>
-          <div class="info-grid">
-            <div class="info-item">
-              <span class="info-label">Илгээч байгууллага:</span>
-              <span class="info-value">${escapeHtml(log.senderOrganization || relatedData?.senderOrganizationName || "—")}</span>
-            </div>
-            <div class="info-item">
-              <span class="info-label">Хүлээн авагч байгууллага:</span>
-              <span class="info-value">${escapeHtml(log.receiverOrganization || relatedData?.receiverOrganizationName || "—")}</span>
-            </div>
-            <div class="info-item">
-              <span class="info-label">Тээврийн компани:</span>
-              <span class="info-value">${escapeHtml(relatedData?.transportCompanyName || "—")}</span>
-            </div>
-          </div>
+        <div class="header-center">
+          ${escapeHtml(transportCompany !== "—" ? transportCompany : "ТЭЭВРИЙН КОМПАНИ")}
         </div>
-
-        <!-- Section 3: Driver Information -->
-        <div class="section">
-          <div class="section-title">Жолоочийн мэдээлэл</div>
-          <div class="info-grid">
-            <div class="info-item">
-              <span class="info-label">Бүтэн нэр:</span>
-              <span class="info-value">${escapeHtml(log.driverName || "—")}</span>
-            </div>
-            ${relatedData?.driverPhone ? `
-            <div class="info-item">
-              <span class="info-label">Утасны дугаар:</span>
-              <span class="info-value">${escapeHtml(relatedData.driverPhone)}</span>
-            </div>
-            ` : ""}
-            ${relatedData?.driverRegistrationNumber ? `
-            <div class="info-item">
-              <span class="info-label">Регистэрийн дугаар:</span>
-              <span class="info-value">${escapeHtml(relatedData.driverRegistrationNumber)}</span>
-            </div>
-            ` : ""}
-          </div>
-        </div>
-
-        <!-- Section 4: Vehicle and Additional Info -->
-        <div class="section">
-          <div class="section-title">Тээврийн хэрэгсэл ба нэмэлт мэдээлэл</div>
-          <div class="info-grid">
-            <div class="info-item">
-              <span class="info-label">Улсын дугаар:</span>
-              <span class="info-value">${escapeHtml(log.plate || "—")}</span>
-            </div>
-            <div class="info-item">
-              <span class="info-label">Чиглэл:</span>
-              <span class="info-value">${log.direction === "IN" ? "ОРОХ" : "ГАРАХ"}</span>
-            </div>
-            <div class="info-item">
-              <span class="info-label">Огноо:</span>
-              <span class="info-value">${date}</span>
-            </div>
-            ${log.direction === "OUT" ? `
-            <div class="info-item">
-              <span class="info-label">Лацны дугаар:</span>
-              <span class="info-value">${escapeHtml(log.sealNumber || "—")}</span>
-            </div>
-            ` : ""}
-            ${log.transportType ? `
-            <div class="info-item">
-              <span class="info-label">Тээврийн төрөл:</span>
-              <span class="info-value">${transportTypes[log.transportType] || log.transportType}</span>
-            </div>
-            ` : ""}
-            ${log.hasTrailer ? `
-            <div class="info-item">
-              <span class="info-label">Чиргүүлтэй:</span>
-              <span class="info-value">Тийм</span>
-            </div>
-            ` : ""}
-            ${log.trailerPlate ? `
-            <div class="info-item">
-              <span class="info-label">Чиргүүлийн дугаар:</span>
-              <span class="info-value">${escapeHtml(log.trailerPlate)}</span>
-            </div>
-            ` : ""}
-          </div>
-        </div>
-
-
-        <div class="status-badge ${log.sentToCustoms ? "status-sent" : "status-saved"}">
-          ${log.sentToCustoms ? "✓ Гаалид илгээсэн" : "Хадгалагдсан"}
-        </div>
-
-        <div class="footer">
-          Generated on ${new Date().toLocaleString("mn-MN")}
+        <div class="header-right">
+          Хүлээн авагч: ${escapeHtml(receiverOrg)}
         </div>
       </div>
+
+      <!-- Main title -->
+      <div class="main-title">
+        ПҮҮНИЙ БАРИМТ: ${receiptNumber}
+      </div>
+
+      <!-- Carrier and date info -->
+      <div class="carrier-info">
+        <div class="carrier-left">
+          Тээвэрлэгч байгууллага: ${escapeHtml(transportCompany)}
+        </div>
+        <div class="carrier-right">
+          Үүссэн огноо: ${createdDate}<br>
+          Гэрээ: —
+        </div>
+      </div>
+
+      <!-- Data table -->
+      <table class="data-table">
+        <!-- Row 1: Vehicle and weight info -->
+        <tr>
+          <td class="label-cell">Улсын дугаар:</td>
+          <td class="value-cell">${escapeHtml(log.plate || "—")}</td>
+          <td class="label-cell">Чиргүүлийн дугаар:</td>
+          <td class="value-cell">${escapeHtml(log.trailerPlate || "—")}</td>
+          <td class="label-cell">Гаалийн лац:</td>
+          <td class="value-cell">${escapeHtml(log.sealNumber || "—")}</td>
+        </tr>
+        <tr>
+          <td class="label-cell">Ачаатай жин/кг/:</td>
+          <td class="value-cell">${log.weightKg ? log.weightKg.toLocaleString() : "—"}</td>
+          <td class="label-cell">Ачаагүй жин /кг/:</td>
+          <td class="value-cell">${unloadedWeight ? unloadedWeight.toLocaleString() : "—"}</td>
+          <td class="label-cell">Цэвэр жин/кг/:</td>
+          <td class="value-cell">${log.netWeightKg ? log.netWeightKg.toLocaleString() : "—"}</td>
+        </tr>
+        <!-- Row 2: Product and dates -->
+        <tr>
+          <td class="label-cell">Бүтээгдэхүүн:</td>
+          <td class="value-cell">${escapeHtml(log.cargoType || "—")}</td>
+          <td class="label-cell">Орсон огноо:</td>
+          <td class="value-cell">${entryDate}</td>
+          <td class="label-cell">Гарсан огноо:</td>
+          <td class="value-cell">${exitDate}</td>
+        </tr>
+        <tr>
+          <td class="label-cell">Ачих газрын код:</td>
+          <td class="value-cell">${escapeHtml(log.origin || "—")}</td>
+          <td class="label-cell">Хүрэх газрын код:</td>
+          <td class="value-cell">${escapeHtml(log.destination || "—")}</td>
+          <td class="empty-cell"></td>
+          <td class="empty-cell"></td>
+        </tr>
+        <!-- Row 3: Container and exchange -->
+        <tr>
+          <td class="label-cell">Чингэлэг дугаар:</td>
+          <td class="value-cell">—</td>
+          <td class="label-cell">Бирж дугаар:</td>
+          <td class="value-cell">—</td>
+          <td class="empty-cell"></td>
+          <td class="empty-cell"></td>
+        </tr>
+        <!-- Row 4: Loader, Driver, Approval -->
+        <tr>
+          <td class="label-cell">Пүүлэгч:</td>
+          <td class="value-cell">—</td>
+          <td class="label-cell">Жолооч:</td>
+          <td class="value-cell" colspan="3">${escapeHtml(driverFullInfo)}</td>
+        </tr>
+        <tr>
+          <td class="label-cell">С Зөвшөөрөл:</td>
+          <td class="value-cell">—</td>
+          <td class="empty-cell" colspan="4"></td>
+        </tr>
+      </table>
     </body>
     </html>
   `
