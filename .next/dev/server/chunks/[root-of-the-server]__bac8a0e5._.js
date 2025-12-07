@@ -380,7 +380,7 @@ async function isCompanyAuthenticated() {
 "[project]/lib/products/products.ts [app-route] (ecmascript)", ((__turbopack_context__) => {
 "use strict";
 
-/* __next_internal_action_entry_do_not_use__ [{"005ebce003b6395f45a72dc0b1289e87c1f53c4f09":"getProducts","4012d929aa14781b6eab2dfc40a9eb4a2b9e069ce3":"deleteProduct","409f0e7d0af18076bc397bc86df9601fc62d0f6321":"addProduct","40b690501fdf9a548c6b6f9cab15e3faea9a5e7278":"getAllProductsForCompany"},"",""] */ __turbopack_context__.s([
+/* __next_internal_action_entry_do_not_use__ [{"005ebce003b6395f45a72dc0b1289e87c1f53c4f09":"getProducts","4012d929aa14781b6eab2dfc40a9eb4a2b9e069ce3":"deleteProduct","409f0e7d0af18076bc397bc86df9601fc62d0f6321":"addProduct","40b690501fdf9a548c6b6f9cab15e3faea9a5e7278":"getAllProductsForCompany","6064e558854837ca886f8b0cc10d494b72b0e1e8e3":"updateProduct"},"",""] */ __turbopack_context__.s([
     "addProduct",
     ()=>addProduct,
     "deleteProduct",
@@ -388,7 +388,9 @@ async function isCompanyAuthenticated() {
     "getAllProductsForCompany",
     ()=>getAllProductsForCompany,
     "getProducts",
-    ()=>getProducts
+    ()=>getProducts,
+    "updateProduct",
+    ()=>updateProduct
 ]);
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$build$2f$webpack$2f$loaders$2f$next$2d$flight$2d$loader$2f$server$2d$reference$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/next/dist/build/webpack/loaders/next-flight-loader/server-reference.js [app-route] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$db$2f$companyDb$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/lib/db/companyDb.ts [app-route] (ecmascript)");
@@ -478,14 +480,58 @@ async function addProduct(label) {
     await productsCollection.insertOne(product);
     return product;
 }
+async function updateProduct(productId, label) {
+    const companyId = await (0, __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$auth$2f$session$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["getActiveCompany"])();
+    const productsCollection = await (0, __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$db$2f$companyDb$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["getCompanyCollection"])(companyId, "products");
+    // Generate value from label (lowercase, replace spaces with hyphens)
+    const value = label.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "");
+    // Check if another product with this value already exists (excluding current product)
+    const existing = await productsCollection.findOne({
+        value,
+        id: {
+            $ne: productId
+        }
+    });
+    if (existing) {
+        throw new Error("Product with this name already exists");
+    }
+    const update = {
+        label: label.trim(),
+        value,
+        updatedAt: new Date().toISOString()
+    };
+    const result = await productsCollection.updateOne({
+        id: productId,
+        isCustom: true
+    }, {
+        $set: update
+    });
+    if (result.matchedCount === 0) {
+        throw new Error("Product not found or cannot be updated");
+    }
+    const updatedProduct = await productsCollection.findOne({
+        id: productId
+    });
+    if (!updatedProduct) {
+        throw new Error("Failed to retrieve updated product");
+    }
+    const { _id, ...productData } = updatedProduct;
+    return {
+        ...productData,
+        isCustom: true
+    };
+}
 async function deleteProduct(productId) {
     const companyId = await (0, __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$auth$2f$session$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["getActiveCompany"])();
     const productsCollection = await (0, __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$db$2f$companyDb$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["getCompanyCollection"])(companyId, "products");
     // Only allow deleting custom products
-    await productsCollection.deleteOne({
+    const result = await productsCollection.deleteOne({
         id: productId,
         isCustom: true
     });
+    if (result.deletedCount === 0) {
+        throw new Error("Product not found or cannot be deleted (default products cannot be deleted)");
+    }
 }
 async function getAllProductsForCompany(companyId) {
     const productsCollection = await (0, __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$db$2f$companyDb$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["getCompanyCollection"])(companyId, "products");
@@ -511,11 +557,13 @@ async function getAllProductsForCompany(companyId) {
 (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$build$2f$webpack$2f$loaders$2f$next$2d$flight$2d$loader$2f$action$2d$validate$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["ensureServerEntryExports"])([
     getProducts,
     addProduct,
+    updateProduct,
     deleteProduct,
     getAllProductsForCompany
 ]);
 (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$build$2f$webpack$2f$loaders$2f$next$2d$flight$2d$loader$2f$server$2d$reference$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["registerServerReference"])(getProducts, "005ebce003b6395f45a72dc0b1289e87c1f53c4f09", null);
 (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$build$2f$webpack$2f$loaders$2f$next$2d$flight$2d$loader$2f$server$2d$reference$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["registerServerReference"])(addProduct, "409f0e7d0af18076bc397bc86df9601fc62d0f6321", null);
+(0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$build$2f$webpack$2f$loaders$2f$next$2d$flight$2d$loader$2f$server$2d$reference$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["registerServerReference"])(updateProduct, "6064e558854837ca886f8b0cc10d494b72b0e1e8e3", null);
 (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$build$2f$webpack$2f$loaders$2f$next$2d$flight$2d$loader$2f$server$2d$reference$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["registerServerReference"])(deleteProduct, "4012d929aa14781b6eab2dfc40a9eb4a2b9e069ce3", null);
 (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$build$2f$webpack$2f$loaders$2f$next$2d$flight$2d$loader$2f$server$2d$reference$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["registerServerReference"])(getAllProductsForCompany, "40b690501fdf9a548c6b6f9cab15e3faea9a5e7278", null);
 }),

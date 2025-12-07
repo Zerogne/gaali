@@ -10,8 +10,6 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { handleLogout } from "@/lib/auth/logoutClient"
@@ -137,14 +135,6 @@ export function Sidebar() {
             </button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-56 bg-white">
-            <DropdownMenuLabel>My Account</DropdownMenuLabel>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem className="cursor-pointer">
-              <User className="w-4 h-4 mr-2" />
-              Profile
-            </DropdownMenuItem>
-            <DropdownMenuItem className="cursor-pointer">Settings</DropdownMenuItem>
-            <DropdownMenuSeparator />
             <DropdownMenuItem 
               className="cursor-pointer text-red-600 focus:text-red-600"
               onClick={handleLogoutClick}
@@ -158,4 +148,3 @@ export function Sidebar() {
     </aside>
   )
 }
-

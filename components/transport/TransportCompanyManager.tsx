@@ -12,6 +12,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog"
 import { Plus, Edit, Trash2 } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 
@@ -37,6 +38,8 @@ export function TransportCompanyManager({
   const [companyName, setCompanyName] = useState("")
   const [isSaving, setIsSaving] = useState(false)
   const [isDeleting, setIsDeleting] = useState<string | null>(null)
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
+  const [companyToDelete, setCompanyToDelete] = useState<string | null>(null)
 
   const handleAdd = () => {
     setEditingCompany(null)
@@ -109,14 +112,18 @@ export function TransportCompanyManager({
     }
   }
 
-  const handleDelete = async (companyId: string) => {
-    if (!confirm("Are you sure you want to delete this transport company?")) {
-      return
-    }
+  const handleDeleteClick = (companyId: string) => {
+    setCompanyToDelete(companyId)
+    setDeleteDialogOpen(true)
+  }
 
-    setIsDeleting(companyId)
+  const handleDeleteConfirm = async () => {
+    if (!companyToDelete) return
+
+    setIsDeleting(companyToDelete)
+    setDeleteDialogOpen(false)
     try {
-      const response = await fetch(`/api/transport-companies/${companyId}`, {
+      const response = await fetch(`/api/transport-companies/${companyToDelete}`, {
         method: "DELETE",
       })
 
@@ -145,6 +152,7 @@ export function TransportCompanyManager({
       })
     } finally {
       setIsDeleting(null)
+      setCompanyToDelete(null)
     }
   }
 
@@ -210,7 +218,7 @@ export function TransportCompanyManager({
                           type="button"
                           size="sm"
                           variant="ghost"
-                          onClick={() => handleDelete(company.id)}
+                          onClick={() => handleDeleteClick(company.id)}
                           disabled={isDeleting === company.id}
                           className="h-7 w-7 p-0 text-red-600 hover:text-red-700"
                         >
@@ -243,7 +251,26 @@ export function TransportCompanyManager({
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Transport Company</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete this transport company? This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeleteConfirm}
+              className="bg-red-600 hover:bg-red-700 focus:ring-red-600"
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </>
   )
 }
-

@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useMemo } from "react"
 import {
   Dialog,
   DialogContent,
@@ -49,8 +49,7 @@ export function EditLogDialog({
   const [isLoadingCompanies, setIsLoadingCompanies] = useState(true)
   const [drivers, setDrivers] = useState<Driver[]>([])
   const [isLoadingDrivers, setIsLoadingDrivers] = useState(true)
-  const [senderOrganizations, setSenderOrganizations] = useState<Organization[]>([])
-  const [receiverOrganizations, setReceiverOrganizations] = useState<Organization[]>([])
+  const [organizations, setOrganizations] = useState<Organization[]>([])
   const [isLoadingOrganizations, setIsLoadingOrganizations] = useState(true)
   const [errors, setErrors] = useState<Record<string, string>>({})
   
@@ -117,27 +116,16 @@ export function EditLogDialog({
         setIsLoadingDrivers(false)
       }
 
-      // Load sender organizations
+      // Load organizations (shared pool)
       try {
         setIsLoadingOrganizations(true)
-        const senderResponse = await fetch("/api/organizations?type=sender")
-        if (senderResponse.ok) {
-          const senderData = await senderResponse.json()
-          setSenderOrganizations(senderData)
+        const response = await fetch("/api/organizations")
+        if (response.ok) {
+          const data = await response.json()
+          setOrganizations(data)
         }
       } catch (error) {
-        console.error("Error loading sender organizations:", error)
-      }
-
-      // Load receiver organizations
-      try {
-        const receiverResponse = await fetch("/api/organizations?type=receiver")
-        if (receiverResponse.ok) {
-          const receiverData = await receiverResponse.json()
-          setReceiverOrganizations(receiverData)
-        }
-      } catch (error) {
-        console.error("Error loading receiver organizations:", error)
+        console.error("Error loading organizations:", error)
       } finally {
         setIsLoadingOrganizations(false)
       }
@@ -191,38 +179,23 @@ export function EditLogDialog({
     reloadDrivers()
   }
 
-  const handleSenderOrganizationAdded = () => {
-    async function reloadSenderOrganizations() {
+  const handleOrganizationAdded = () => {
+    async function reloadOrganizations() {
       try {
-        const response = await fetch("/api/organizations?type=sender")
+        const response = await fetch("/api/organizations")
         if (response.ok) {
           const data = await response.json()
-          setSenderOrganizations(data)
+          setOrganizations(data)
         }
       } catch (error) {
-        console.error("Error reloading sender organizations:", error)
+        console.error("Error reloading organizations:", error)
       }
     }
-    reloadSenderOrganizations()
+    reloadOrganizations()
   }
 
-  const handleReceiverOrganizationAdded = () => {
-    async function reloadReceiverOrganizations() {
-      try {
-        const response = await fetch("/api/organizations?type=receiver")
-        if (response.ok) {
-          const data = await response.json()
-          setReceiverOrganizations(data)
-        }
-      } catch (error) {
-        console.error("Error reloading receiver organizations:", error)
-      }
-    }
-    reloadReceiverOrganizations()
-  }
-
-  // Handle creating a new receiver organization
-  const handleCreateReceiverOrganization = async (name: string): Promise<string | null> => {
+  // Handle creating a new organization (shared for both sender and receiver)
+  const handleCreateOrganization = async (name: string): Promise<string | null> => {
     try {
       const response = await fetch("/api/organizations", {
         method: "POST",
@@ -231,7 +204,6 @@ export function EditLogDialog({
         },
         body: JSON.stringify({
           name: name.trim(),
-          type: "receiver",
         }),
       })
 
@@ -239,14 +211,14 @@ export function EditLogDialog({
         const errorData = await response.json()
         if (response.status === 409) {
           // Organization already exists, try to find it
-          const existingResponse = await fetch("/api/organizations?type=receiver")
+          const existingResponse = await fetch("/api/organizations")
           if (existingResponse.ok) {
             const orgs = await existingResponse.json()
             const existing = orgs.find((org: Organization) => 
               org.name.toLowerCase() === name.trim().toLowerCase()
             )
             if (existing) {
-              handleReceiverOrganizationAdded()
+              handleOrganizationAdded()
               return existing.id
             }
           }
@@ -260,14 +232,14 @@ export function EditLogDialog({
       }
 
       const newOrg = await response.json()
-      handleReceiverOrganizationAdded()
+      handleOrganizationAdded()
       toast({
         title: "Амжилттай",
         description: `"${newOrg.name}" байгууллага нэмэгдлээ`,
       })
       return newOrg.id
     } catch (error) {
-      console.error("Error creating receiver organization:", error)
+      console.error("Error creating organization:", error)
       toast({
         title: "Алдаа",
         description: "Байгууллага нэмэхэд алдаа гарлаа",
@@ -377,6 +349,15 @@ export function EditLogDialog({
     setErrors(newErrors)
     return Object.keys(newErrors).length === 0
   }
+
+  // Memoize organization options to prevent infinite re-renders (must be before conditional return)
+  const organizationOptions = useMemo(() => 
+    organizations.map((org) => ({
+      value: org.id,
+      label: org.name,
+    })), 
+    [organizations]
+  );
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -672,10 +653,7 @@ export function EditLogDialog({
                         Илгээч байгууллага
                       </Label>
                       <FilterableSelect
-                        options={senderOrganizations.map((org) => ({
-                          value: org.id,
-                          label: org.name,
-                        }))}
+                        options={organizationOptions}
                         value={senderOrganizationId}
                         onValueChange={(value) => setSenderOrganizationId(value)}
                         disabled={isLoadingOrganizations}
@@ -688,17 +666,12 @@ export function EditLogDialog({
                         Хүлээн авагч байгууллага
                       </Label>
                       <FilterableSelect
-                        options={receiverOrganizations.map((org) => ({
-                          value: org.id,
-                          label: org.name,
-                        }))}
+                        options={organizationOptions}
                         value={receiverOrganizationId}
                         onValueChange={(value) => setReceiverOrganizationId(value)}
                         disabled={isLoadingOrganizations}
-                        placeholder={isLoadingOrganizations ? "Уншиж байна..." : "Хүлээн авагч байгууллага сонгох эсвэл бичих"}
-                        searchPlaceholder="Хүлээн авагч байгууллага хайх эсвэл бичих..."
-                        onCreateNew={handleCreateReceiverOrganization}
-                        createNewLabel="нэмэх"
+                        placeholder={isLoadingOrganizations ? "Уншиж байна..." : "Хүлээн авагч байгууллага сонгох"}
+                        searchPlaceholder="Хүлээн авагч байгууллага хайх..."
                       />
                     </div>
                   </div>

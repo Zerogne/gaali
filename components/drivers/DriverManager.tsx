@@ -12,6 +12,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog"
 import { Plus, Edit, Trash2 } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import { Textarea } from "@/components/ui/textarea"
@@ -39,6 +40,8 @@ export function DriverManager({
   })
   const [isSaving, setIsSaving] = useState(false)
   const [isDeleting, setIsDeleting] = useState<string | null>(null)
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
+  const [driverToDelete, setDriverToDelete] = useState<string | null>(null)
 
   const handleAdd = () => {
     setEditingDriver(null)
@@ -125,14 +128,18 @@ export function DriverManager({
     }
   }
 
-  const handleDelete = async (driverId: string) => {
-    if (!confirm("Та энэ жолоочийг устгахдаа итгэлтэй байна уу?")) {
-      return
-    }
+  const handleDeleteClick = (driverId: string) => {
+    setDriverToDelete(driverId)
+    setDeleteDialogOpen(true)
+  }
 
-    setIsDeleting(driverId)
+  const handleDeleteConfirm = async () => {
+    if (!driverToDelete) return
+
+    setIsDeleting(driverToDelete)
+    setDeleteDialogOpen(false)
     try {
-      const response = await fetch(`/api/drivers/${driverId}`, {
+      const response = await fetch(`/api/drivers/${driverToDelete}`, {
         method: "DELETE",
       })
 
@@ -157,6 +164,7 @@ export function DriverManager({
       })
     } finally {
       setIsDeleting(null)
+      setDriverToDelete(null)
     }
   }
 
@@ -268,7 +276,7 @@ export function DriverManager({
                           type="button"
                           size="sm"
                           variant="ghost"
-                          onClick={() => handleDelete(driver.id)}
+                          onClick={() => handleDeleteClick(driver.id)}
                           disabled={isDeleting === driver.id}
                           className="h-7 w-7 p-0 text-red-600 hover:text-red-700"
                         >
@@ -301,7 +309,26 @@ export function DriverManager({
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Жолооч устгах</AlertDialogTitle>
+            <AlertDialogDescription>
+              Та энэ жолоочийг устгахдаа итгэлтэй байна уу? Энэ үйлдлийг буцаах боломжгүй.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Цуцлах</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeleteConfirm}
+              className="bg-red-600 hover:bg-red-700 focus:ring-red-600"
+            >
+              Устгах
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </>
   )
 }
-

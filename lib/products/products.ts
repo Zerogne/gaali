@@ -85,6 +85,55 @@ export async function addProduct(label: string): Promise<Product> {
 }
 
 /**
+ * Update a custom product's label
+ */
+export async function updateProduct(productId: string, label: string): Promise<Product> {
+  const companyId = await getActiveCompany()
+  const productsCollection = await getCompanyCollection<Product>(companyId, "products")
+
+  // Generate value from label (lowercase, replace spaces with hyphens)
+  const value = label
+    .toLowerCase()
+    .replace(/\s+/g, "-")
+    .replace(/[^a-z0-9-]/g, "")
+
+  // Check if another product with this value already exists (excluding current product)
+  const existing = await productsCollection.findOne({ 
+    value,
+    id: { $ne: productId }
+  })
+  if (existing) {
+    throw new Error("Product with this name already exists")
+  }
+
+  const update = {
+    label: label.trim(),
+    value,
+    updatedAt: new Date().toISOString(),
+  }
+
+  const result = await productsCollection.updateOne(
+    { id: productId, isCustom: true },
+    { $set: update }
+  )
+
+  if (result.matchedCount === 0) {
+    throw new Error("Product not found or cannot be updated")
+  }
+
+  const updatedProduct = await productsCollection.findOne({ id: productId })
+  if (!updatedProduct) {
+    throw new Error("Failed to retrieve updated product")
+  }
+
+  const { _id, ...productData } = updatedProduct as any
+  return {
+    ...productData,
+    isCustom: true,
+  }
+}
+
+/**
  * Delete a custom product (cannot delete default products)
  */
 export async function deleteProduct(productId: string): Promise<void> {
@@ -92,7 +141,11 @@ export async function deleteProduct(productId: string): Promise<void> {
   const productsCollection = await getCompanyCollection<Product>(companyId, "products")
 
   // Only allow deleting custom products
-  await productsCollection.deleteOne({ id: productId, isCustom: true })
+  const result = await productsCollection.deleteOne({ id: productId, isCustom: true })
+  
+  if (result.deletedCount === 0) {
+    throw new Error("Product not found or cannot be deleted (default products cannot be deleted)")
+  }
 }
 
 /**
@@ -119,4 +172,3 @@ export async function getAllProductsForCompany(companyId: string): Promise<Produ
 
   return [...defaultProducts, ...customProductsSerialized]
 }
-

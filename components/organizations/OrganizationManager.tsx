@@ -12,6 +12,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog"
 import { Plus, Edit, Trash2 } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 
@@ -35,6 +36,8 @@ export function OrganizationManager({
   const [editingOrg, setEditingOrg] = useState<Organization | null>(null)
   const [orgName, setOrgName] = useState("")
   const [isSaving, setIsSaving] = useState(false)
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
+  const [orgToDelete, setOrgToDelete] = useState<string | null>(null)
 
   const handleAdd = () => {
     setEditingOrg(null)
@@ -110,13 +113,17 @@ export function OrganizationManager({
     }
   }
 
-  const handleDelete = async (orgId: string) => {
-    if (!confirm("Are you sure you want to delete this organization?")) {
-      return
-    }
+  const handleDeleteClick = (orgId: string) => {
+    setOrgToDelete(orgId)
+    setDeleteDialogOpen(true)
+  }
 
+  const handleDeleteConfirm = async () => {
+    if (!orgToDelete) return
+
+    setDeleteDialogOpen(false)
     try {
-      const response = await fetch(`/api/organizations/${orgId}`, {
+      const response = await fetch(`/api/organizations/${orgToDelete}`, {
         method: "DELETE",
       })
 
@@ -139,6 +146,8 @@ export function OrganizationManager({
         description: "Failed to delete organization",
         variant: "destructive",
       })
+    } finally {
+      setOrgToDelete(null)
     }
   }
 
@@ -206,7 +215,7 @@ export function OrganizationManager({
                           type="button"
                           size="sm"
                           variant="ghost"
-                          onClick={() => handleDelete(org.id)}
+                          onClick={() => handleDeleteClick(org.id)}
                           className="h-7 w-7 p-0 text-red-600 hover:text-red-700"
                         >
                           <Trash2 className="w-3.5 h-3.5" />
@@ -234,7 +243,26 @@ export function OrganizationManager({
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Organization</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete this organization? This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeleteConfirm}
+              className="bg-red-600 hover:bg-red-700 focus:ring-red-600"
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </>
   )
 }
-

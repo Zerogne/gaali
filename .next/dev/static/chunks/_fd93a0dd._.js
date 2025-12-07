@@ -1569,14 +1569,15 @@ __turbopack_context__.s([
     ()=>FilterableSelect
 ]);
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/next/dist/compiled/react/jsx-dev-runtime.js [app-client] (ecmascript)");
-var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/next/dist/compiled/react/index.js [app-client] (ecmascript)");
-var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$check$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__Check$3e$__ = __turbopack_context__.i("[project]/node_modules/lucide-react/dist/esm/icons/check.js [app-client] (ecmascript) <export default as Check>");
-var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$chevrons$2d$up$2d$down$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__ChevronsUpDown$3e$__ = __turbopack_context__.i("[project]/node_modules/lucide-react/dist/esm/icons/chevrons-up-down.js [app-client] (ecmascript) <export default as ChevronsUpDown>");
-var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$search$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__Search$3e$__ = __turbopack_context__.i("[project]/node_modules/lucide-react/dist/esm/icons/search.js [app-client] (ecmascript) <export default as Search>");
-var __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$utils$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/lib/utils.ts [app-client] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$button$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/components/ui/button.tsx [app-client] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$command$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/components/ui/command.tsx [app-client] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$popover$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/components/ui/popover.tsx [app-client] (ecmascript)");
+var __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$utils$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/lib/utils.ts [app-client] (ecmascript)");
+var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$check$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__Check$3e$__ = __turbopack_context__.i("[project]/node_modules/lucide-react/dist/esm/icons/check.js [app-client] (ecmascript) <export default as Check>");
+var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$chevrons$2d$up$2d$down$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__ChevronsUpDown$3e$__ = __turbopack_context__.i("[project]/node_modules/lucide-react/dist/esm/icons/chevrons-up-down.js [app-client] (ecmascript) <export default as ChevronsUpDown>");
+var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$square$2d$pen$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__Edit$3e$__ = __turbopack_context__.i("[project]/node_modules/lucide-react/dist/esm/icons/square-pen.js [app-client] (ecmascript) <export default as Edit>");
+var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$search$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__Search$3e$__ = __turbopack_context__.i("[project]/node_modules/lucide-react/dist/esm/icons/search.js [app-client] (ecmascript) <export default as Search>");
+var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/next/dist/compiled/react/index.js [app-client] (ecmascript)");
 ;
 var _s = __turbopack_context__.k.signature();
 "use client";
@@ -1586,12 +1587,38 @@ var _s = __turbopack_context__.k.signature();
 ;
 ;
 ;
-function FilterableSelect({ options, value, onValueChange, placeholder = "Сонгох...", disabled = false, className, searchPlaceholder = "Хайх...", emptyMessage = "Олдсонгүй", onCreateNew, createNewLabel = "Create new" }) {
+function FilterableSelect({ options, value, onValueChange, placeholder = "Сонгох...", disabled = false, className, searchPlaceholder = "Хайх...", emptyMessage = "Олдсонгүй", onCreateNew, createNewLabel = "Create new", onEdit, editable = true }) {
     _s();
     const [open, setOpen] = __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"](false);
     const [searchQuery, setSearchQuery] = __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"]("");
     const [isCreating, setIsCreating] = __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"](false);
+    const [isEditing, setIsEditing] = __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"](false);
+    const [editingValue, setEditingValue] = __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"](null);
     const isHandlingSelectRef = __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useRef"](false);
+    const onValueChangeRef = __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useRef"](onValueChange);
+    const lastSelectedValueRef = __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useRef"](value);
+    const commandValueRef = __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useRef"](undefined);
+    const preventSelectRef = __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useRef"](false);
+    const isTypingRef = __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useRef"](false);
+    // Keep ref in sync with prop
+    __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useEffect"]({
+        "FilterableSelect.useEffect": ()=>{
+            onValueChangeRef.current = onValueChange;
+        }
+    }["FilterableSelect.useEffect"], [
+        onValueChange
+    ]);
+    // Update last selected value when value prop changes externally
+    // But only if we're not currently handling a selection
+    __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useEffect"]({
+        "FilterableSelect.useEffect": ()=>{
+            if (!isHandlingSelectRef.current && !preventSelectRef.current) {
+                lastSelectedValueRef.current = value;
+            }
+        }
+    }["FilterableSelect.useEffect"], [
+        value
+    ]);
     // Filter and sort options
     const filteredOptions = __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useMemo"]({
         "FilterableSelect.useMemo[filteredOptions]": ()=>{
@@ -1633,6 +1660,39 @@ function FilterableSelect({ options, value, onValueChange, placeholder = "Сон
         options,
         searchQuery
     ]);
+    // Handle editing existing value
+    const handleEdit = __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useCallback"]({
+        "FilterableSelect.useCallback[handleEdit]": async (itemValue, newLabel)=>{
+            if (!onEdit || !newLabel.trim() || isEditing || isHandlingSelectRef.current) {
+                return;
+            }
+            isHandlingSelectRef.current = true;
+            setIsEditing(true);
+            try {
+                const updatedValue = await onEdit(itemValue, newLabel.trim());
+                if (updatedValue) {
+                    // Use ref to prevent dependency issues
+                    onValueChangeRef.current?.(updatedValue);
+                    setOpen(false);
+                    setSearchQuery("");
+                    setEditingValue(null);
+                }
+            } catch (error) {
+                console.error("Error editing value:", error);
+            } finally{
+                setIsEditing(false);
+                // Reset the ref after a short delay to allow state updates to complete
+                setTimeout({
+                    "FilterableSelect.useCallback[handleEdit]": ()=>{
+                        isHandlingSelectRef.current = false;
+                    }
+                }["FilterableSelect.useCallback[handleEdit]"], 100);
+            }
+        }
+    }["FilterableSelect.useCallback[handleEdit]"], [
+        onEdit,
+        isEditing
+    ]);
     // Handle creating new value
     const handleCreateNew = __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useCallback"]({
         "FilterableSelect.useCallback[handleCreateNew]": async ()=>{
@@ -1644,7 +1704,8 @@ function FilterableSelect({ options, value, onValueChange, placeholder = "Сон
             try {
                 const newValue = await onCreateNew(searchQuery.trim());
                 if (newValue) {
-                    onValueChange?.(newValue);
+                    // Use ref to prevent dependency issues
+                    onValueChangeRef.current?.(newValue);
                     setOpen(false);
                     setSearchQuery("");
                 }
@@ -1664,81 +1725,392 @@ function FilterableSelect({ options, value, onValueChange, placeholder = "Сон
         onCreateNew,
         searchQuery,
         hasExactMatch,
-        isCreating,
-        onValueChange
+        isCreating
     ]);
     // Handle Enter key in search input
     const handleKeyDown = __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useCallback"]({
         "FilterableSelect.useCallback[handleKeyDown]": (e)=>{
-            if (e.key === "Enter" && onCreateNew && searchQuery.trim() && !hasExactMatch) {
+            if (e.key === "Enter" && searchQuery.trim()) {
                 e.preventDefault();
-                handleCreateNew();
+                // Check if we're editing an existing item (explicitly clicked edit icon)
+                if (editingValue && onEdit && editable) {
+                    const selectedOption = options.find({
+                        "FilterableSelect.useCallback[handleKeyDown].selectedOption": (opt)=>opt.value === editingValue
+                    }["FilterableSelect.useCallback[handleKeyDown].selectedOption"]);
+                    if (selectedOption && searchQuery.trim() !== selectedOption.label) {
+                        handleEdit(editingValue, searchQuery.trim());
+                        return;
+                    }
+                }
+                // Check if we have a selected value and user typed something different - edit that item
+                if (value && onEdit && editable && !hasExactMatch) {
+                    const selectedOption = options.find({
+                        "FilterableSelect.useCallback[handleKeyDown].selectedOption": (opt)=>opt.value === value
+                    }["FilterableSelect.useCallback[handleKeyDown].selectedOption"]);
+                    if (selectedOption && searchQuery.trim() !== selectedOption.label) {
+                        handleEdit(value, searchQuery.trim());
+                        return;
+                    }
+                }
+                // Otherwise, create new if no exact match
+                if (onCreateNew && !hasExactMatch) {
+                    handleCreateNew();
+                }
             }
         }
     }["FilterableSelect.useCallback[handleKeyDown]"], [
         onCreateNew,
+        onEdit,
         searchQuery,
         hasExactMatch,
-        handleCreateNew
+        handleCreateNew,
+        handleEdit,
+        editingValue,
+        options,
+        editable,
+        value
     ]);
+    // Stable handler reference stored in ref to prevent re-creation
+    const handleOptionSelectRef = __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useRef"](undefined);
     // Single handler for option selection to prevent infinite loops
     const handleOptionSelect = __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useCallback"]({
         "FilterableSelect.useCallback[handleOptionSelect]": (selectedValue)=>{
-            if (isHandlingSelectRef.current) return;
-            // Check if it's a create new option
-            if (selectedValue.startsWith("__create_new")) {
-                if (!isCreating && onCreateNew && searchQuery.trim() && !hasExactMatch) {
-                    handleCreateNew();
-                }
+            // Multiple guards to prevent infinite loops
+            if (isHandlingSelectRef.current || preventSelectRef.current) {
                 return;
             }
-            // Find the option
-            const option = options.find({
-                "FilterableSelect.useCallback[handleOptionSelect].option": (opt)=>opt.value === selectedValue
-            }["FilterableSelect.useCallback[handleOptionSelect].option"]);
-            if (!option) return;
-            const newValue = option.value === value ? "" : option.value;
-            // Only update if value actually changed
-            if (newValue !== value) {
-                isHandlingSelectRef.current = true;
-                // Use requestAnimationFrame to batch state updates
-                requestAnimationFrame({
-                    "FilterableSelect.useCallback[handleOptionSelect]": ()=>{
-                        onValueChange?.(newValue);
-                        setOpen(false);
-                        setSearchQuery("");
-                        // Reset the ref after state updates
+            // Prevent if this is the same value we just processed
+            if (selectedValue === commandValueRef.current) {
+                return;
+            }
+            // Set guard immediately
+            preventSelectRef.current = true;
+            isHandlingSelectRef.current = true;
+            commandValueRef.current = selectedValue;
+            // Use requestAnimationFrame to ensure this runs after any pending renders
+            requestAnimationFrame({
+                "FilterableSelect.useCallback[handleOptionSelect]": ()=>{
+                    try {
+                        // Check if it's a create new option (using stable values)
+                        if (selectedValue === "__create_new" || selectedValue === "__create_new_empty") {
+                            if (!isCreating && onCreateNew && searchQuery.trim() && !hasExactMatch) {
+                                handleCreateNew();
+                            } else {
+                                preventSelectRef.current = false;
+                                isHandlingSelectRef.current = false;
+                                commandValueRef.current = undefined;
+                            }
+                            return;
+                        }
+                        // Find the option
+                        const option = options.find({
+                            "FilterableSelect.useCallback[handleOptionSelect].option": (opt)=>opt.value === selectedValue
+                        }["FilterableSelect.useCallback[handleOptionSelect].option"]);
+                        if (!option) {
+                            preventSelectRef.current = false;
+                            isHandlingSelectRef.current = false;
+                            commandValueRef.current = undefined;
+                            return;
+                        }
+                        const currentValue = value;
+                        const newValue = option.value === currentValue ? "" : option.value;
+                        // Prevent re-selection if this value was just selected
+                        if (newValue === lastSelectedValueRef.current && newValue === currentValue) {
+                            setOpen(false);
+                            setSearchQuery("");
+                            preventSelectRef.current = false;
+                            isHandlingSelectRef.current = false;
+                            commandValueRef.current = undefined;
+                            return;
+                        }
+                        // Only update if value actually changed
+                        if (newValue !== currentValue) {
+                            lastSelectedValueRef.current = newValue;
+                            // Close popover and clear search first
+                            setOpen(false);
+                            setSearchQuery("");
+                            // Use ref to call callback to prevent dependency issues
+                            onValueChangeRef.current?.(newValue);
+                        } else {
+                            // Just close if selecting the same value
+                            setOpen(false);
+                            setSearchQuery("");
+                        }
+                    } finally{
+                        // Reset guards after a delay
                         setTimeout({
                             "FilterableSelect.useCallback[handleOptionSelect]": ()=>{
+                                preventSelectRef.current = false;
                                 isHandlingSelectRef.current = false;
+                                commandValueRef.current = undefined;
                             }
-                        }["FilterableSelect.useCallback[handleOptionSelect]"], 100);
+                        }["FilterableSelect.useCallback[handleOptionSelect]"], 500);
                     }
-                }["FilterableSelect.useCallback[handleOptionSelect]"]);
-            } else {
-                // Just close if selecting the same value
-                setOpen(false);
-                setSearchQuery("");
-            }
+                }
+            }["FilterableSelect.useCallback[handleOptionSelect]"]);
         }
     }["FilterableSelect.useCallback[handleOptionSelect]"], [
         options,
         value,
-        onValueChange,
         isCreating,
         onCreateNew,
         searchQuery,
         hasExactMatch,
         handleCreateNew
     ]);
+    // Store handler in ref for stable reference
+    __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useEffect"]({
+        "FilterableSelect.useEffect": ()=>{
+            handleOptionSelectRef.current = handleOptionSelect;
+        }
+    }["FilterableSelect.useEffect"], [
+        handleOptionSelect
+    ]);
+    // Wrapper that uses ref to prevent re-render issues
+    const stableHandleOptionSelect = __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useCallback"]({
+        "FilterableSelect.useCallback[stableHandleOptionSelect]": (selectedValue)=>{
+            // Additional guard at the wrapper level - prevent during typing
+            if (preventSelectRef.current || isHandlingSelectRef.current || isTypingRef.current) {
+                return;
+            }
+            // Use a microtask to defer execution and prevent render loops
+            Promise.resolve().then({
+                "FilterableSelect.useCallback[stableHandleOptionSelect]": ()=>{
+                    if (!preventSelectRef.current && !isHandlingSelectRef.current && !isTypingRef.current) {
+                        handleOptionSelectRef.current?.(selectedValue);
+                    }
+                }
+            }["FilterableSelect.useCallback[stableHandleOptionSelect]"]);
+        }
+    }["FilterableSelect.useCallback[stableHandleOptionSelect]"], []);
     const selectedOption = options.find((opt)=>opt.value === value);
+    // Memoized click handlers for create-new items to prevent re-creation
+    const handleCreateNewEmptyClick = __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useCallback"]({
+        "FilterableSelect.useCallback[handleCreateNewEmptyClick]": (e)=>{
+            e.preventDefault();
+            e.stopPropagation();
+            if (!preventSelectRef.current && !isHandlingSelectRef.current && !isCreating && !isTypingRef.current) {
+                stableHandleOptionSelect("__create_new_empty");
+            }
+        }
+    }["FilterableSelect.useCallback[handleCreateNewEmptyClick]"], [
+        isCreating,
+        stableHandleOptionSelect
+    ]);
+    const handleCreateNewClick = __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useCallback"]({
+        "FilterableSelect.useCallback[handleCreateNewClick]": (e)=>{
+            e.preventDefault();
+            e.stopPropagation();
+            if (!preventSelectRef.current && !isHandlingSelectRef.current && !isCreating && !isTypingRef.current) {
+                stableHandleOptionSelect("__create_new");
+            }
+        }
+    }["FilterableSelect.useCallback[handleCreateNewClick]"], [
+        isCreating,
+        stableHandleOptionSelect
+    ]);
+    // Click handler for regular options - bypass cmdk's onSelect
+    const handleOptionClick = __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useCallback"]({
+        "FilterableSelect.useCallback[handleOptionClick]": (optionValue)=>({
+                "FilterableSelect.useCallback[handleOptionClick]": (e)=>{
+                    e.preventDefault();
+                    e.stopPropagation();
+                    if (!preventSelectRef.current && !isHandlingSelectRef.current && !isTypingRef.current) {
+                        stableHandleOptionSelect(optionValue);
+                    }
+                }
+            })["FilterableSelect.useCallback[handleOptionClick]"]
+    }["FilterableSelect.useCallback[handleOptionClick]"], [
+        stableHandleOptionSelect
+    ]);
+    // Click handler for edit button
+    const handleEditClick = __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useCallback"]({
+        "FilterableSelect.useCallback[handleEditClick]": (optionValue, optionLabel)=>({
+                "FilterableSelect.useCallback[handleEditClick]": (e)=>{
+                    e.preventDefault();
+                    e.stopPropagation();
+                    if (!isEditing && !isCreating && onEdit && editable) {
+                        setEditingValue(optionValue);
+                        setSearchQuery(optionLabel);
+                        // Focus the input
+                        setTimeout({
+                            "FilterableSelect.useCallback[handleEditClick]": ()=>{
+                                const input = document.querySelector("[cmdk-input]");
+                                if (input) {
+                                    input.focus();
+                                    input.select();
+                                }
+                            }
+                        }["FilterableSelect.useCallback[handleEditClick]"], 100);
+                    }
+                }
+            })["FilterableSelect.useCallback[handleEditClick]"]
+    }["FilterableSelect.useCallback[handleEditClick]"], [
+        isEditing,
+        isCreating,
+        onEdit,
+        editable
+    ]);
+    // Memoize the command list content to prevent cmdk from re-rendering unnecessarily
+    const commandListContent = __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useMemo"]({
+        "FilterableSelect.useMemo[commandListContent]": ()=>{
+            if (filteredOptions.length === 0 && !onCreateNew) {
+                return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$command$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["CommandEmpty"], {
+                    children: emptyMessage
+                }, void 0, false, {
+                    fileName: "[project]/components/ui/filterable-select.tsx",
+                    lineNumber: 436,
+                    columnNumber: 14
+                }, this);
+            }
+            if (filteredOptions.length === 0 && onCreateNew && searchQuery.trim() && !hasExactMatch) {
+                return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$command$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["CommandEmpty"], {
+                    children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                        className: "py-2",
+                        children: [
+                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
+                                className: "text-sm text-muted-foreground mb-2",
+                                children: emptyMessage
+                            }, void 0, false, {
+                                fileName: "[project]/components/ui/filterable-select.tsx",
+                                lineNumber: 448,
+                                columnNumber: 13
+                            }, this),
+                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$command$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["CommandItem"], {
+                                value: "__create_new_empty",
+                                onSelect: undefined,
+                                onClick: handleCreateNewEmptyClick,
+                                disabled: isCreating,
+                                className: "text-primary cursor-pointer",
+                                "data-prevent-select": "true",
+                                children: isCreating ? "Хадгалж байна..." : `"${searchQuery}" ${createNewLabel} (Enter)`
+                            }, void 0, false, {
+                                fileName: "[project]/components/ui/filterable-select.tsx",
+                                lineNumber: 449,
+                                columnNumber: 13
+                            }, this)
+                        ]
+                    }, void 0, true, {
+                        fileName: "[project]/components/ui/filterable-select.tsx",
+                        lineNumber: 447,
+                        columnNumber: 11
+                    }, this)
+                }, void 0, false, {
+                    fileName: "[project]/components/ui/filterable-select.tsx",
+                    lineNumber: 446,
+                    columnNumber: 9
+                }, this);
+            }
+            return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$command$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["CommandGroup"], {
+                children: [
+                    filteredOptions.map({
+                        "FilterableSelect.useMemo[commandListContent]": (option)=>/*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$command$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["CommandItem"], {
+                                value: option.value,
+                                onSelect: undefined,
+                                onClick: handleOptionClick(option.value),
+                                "data-prevent-select": "true",
+                                className: "group",
+                                children: [
+                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$check$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__Check$3e$__["Check"], {
+                                        className: (0, __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$utils$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["cn"])("mr-2 h-4 w-4", value === option.value ? "opacity-100" : "opacity-0")
+                                    }, void 0, false, {
+                                        fileName: "[project]/components/ui/filterable-select.tsx",
+                                        lineNumber: 477,
+                                        columnNumber: 13
+                                    }, this),
+                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                        className: "flex-1",
+                                        children: option.label
+                                    }, void 0, false, {
+                                        fileName: "[project]/components/ui/filterable-select.tsx",
+                                        lineNumber: 483,
+                                        columnNumber: 13
+                                    }, this),
+                                    editable && onEdit && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
+                                        type: "button",
+                                        onClick: handleEditClick(option.value, option.label),
+                                        className: "ml-2 opacity-0 group-hover:opacity-100 transition-opacity p-1 hover:bg-accent rounded",
+                                        title: "Edit",
+                                        onMouseDown: {
+                                            "FilterableSelect.useMemo[commandListContent]": (e)=>e.stopPropagation()
+                                        }["FilterableSelect.useMemo[commandListContent]"],
+                                        children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$square$2d$pen$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__Edit$3e$__["Edit"], {
+                                            className: "h-3.5 w-3.5 text-muted-foreground"
+                                        }, void 0, false, {
+                                            fileName: "[project]/components/ui/filterable-select.tsx",
+                                            lineNumber: 492,
+                                            columnNumber: 17
+                                        }, this)
+                                    }, void 0, false, {
+                                        fileName: "[project]/components/ui/filterable-select.tsx",
+                                        lineNumber: 485,
+                                        columnNumber: 15
+                                    }, this)
+                                ]
+                            }, option.value, true, {
+                                fileName: "[project]/components/ui/filterable-select.tsx",
+                                lineNumber: 469,
+                                columnNumber: 11
+                            }, this)
+                    }["FilterableSelect.useMemo[commandListContent]"]),
+                    onCreateNew && searchQuery.trim() && !hasExactMatch && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$command$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["CommandItem"], {
+                        value: "__create_new",
+                        onSelect: undefined,
+                        onClick: handleCreateNewClick,
+                        disabled: isCreating,
+                        className: "text-primary cursor-pointer border-t",
+                        "data-prevent-select": "true",
+                        children: [
+                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                className: "mr-2",
+                                children: "+"
+                            }, void 0, false, {
+                                fileName: "[project]/components/ui/filterable-select.tsx",
+                                lineNumber: 506,
+                                columnNumber: 13
+                            }, this),
+                            isCreating ? "Хадгалж байна..." : `"${searchQuery}" ${createNewLabel} (Enter)`
+                        ]
+                    }, void 0, true, {
+                        fileName: "[project]/components/ui/filterable-select.tsx",
+                        lineNumber: 498,
+                        columnNumber: 11
+                    }, this)
+                ]
+            }, void 0, true, {
+                fileName: "[project]/components/ui/filterable-select.tsx",
+                lineNumber: 467,
+                columnNumber: 7
+            }, this);
+        }
+    }["FilterableSelect.useMemo[commandListContent]"], [
+        filteredOptions,
+        onCreateNew,
+        searchQuery,
+        hasExactMatch,
+        emptyMessage,
+        createNewLabel,
+        isCreating,
+        value,
+        handleCreateNewEmptyClick,
+        handleCreateNewClick,
+        handleOptionClick,
+        handleEditClick,
+        editable,
+        onEdit,
+        isEditing
+    ]);
     // Reset search query when popover closes
     const handleOpenChange = __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useCallback"]({
         "FilterableSelect.useCallback[handleOpenChange]": (newOpen)=>{
             setOpen(newOpen);
             if (!newOpen) {
                 setSearchQuery("");
+                setEditingValue(null);
                 isHandlingSelectRef.current = false;
+                preventSelectRef.current = false;
+                isTypingRef.current = false;
+                commandValueRef.current = undefined;
             }
         }
     }["FilterableSelect.useCallback[handleOpenChange]"], []);
@@ -1760,29 +2132,32 @@ function FilterableSelect({ options, value, onValueChange, placeholder = "Сон
                             children: selectedOption ? selectedOption.label : placeholder
                         }, void 0, false, {
                             fileName: "[project]/components/ui/filterable-select.tsx",
-                            lineNumber: 180,
+                            lineNumber: 558,
                             columnNumber: 11
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$chevrons$2d$up$2d$down$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__ChevronsUpDown$3e$__["ChevronsUpDown"], {
                             className: "ml-2 h-4 w-4 shrink-0 opacity-50"
                         }, void 0, false, {
                             fileName: "[project]/components/ui/filterable-select.tsx",
-                            lineNumber: 183,
+                            lineNumber: 561,
                             columnNumber: 11
                         }, this)
                     ]
                 }, void 0, true, {
                     fileName: "[project]/components/ui/filterable-select.tsx",
-                    lineNumber: 170,
+                    lineNumber: 548,
                     columnNumber: 9
                 }, this)
             }, void 0, false, {
                 fileName: "[project]/components/ui/filterable-select.tsx",
-                lineNumber: 169,
+                lineNumber: 547,
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$popover$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["PopoverContent"], {
-                className: "w-[var(--radix-popover-trigger-width)] p-0",
+                className: "p-0",
+                style: {
+                    width: "var(--radix-popover-trigger-width)"
+                },
                 align: "start",
                 sideOffset: 4,
                 children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$command$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Command"], {
@@ -1795,141 +2170,63 @@ function FilterableSelect({ options, value, onValueChange, placeholder = "Сон
                                     className: "mr-2 h-4 w-4 shrink-0 opacity-50"
                                 }, void 0, false, {
                                     fileName: "[project]/components/ui/filterable-select.tsx",
-                                    lineNumber: 189,
+                                    lineNumber: 572,
                                     columnNumber: 13
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$command$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["CommandInput"], {
                                     placeholder: searchPlaceholder,
                                     value: searchQuery,
-                                    onValueChange: setSearchQuery,
+                                    onValueChange: (newValue)=>{
+                                        // Set typing flag immediately and prevent selections
+                                        isTypingRef.current = true;
+                                        preventSelectRef.current = true;
+                                        setSearchQuery(newValue);
+                                        // Reset typing flag after user stops typing
+                                        clearTimeout(window.__filterableSelectTypingTimeout);
+                                        window.__filterableSelectTypingTimeout = setTimeout(()=>{
+                                            isTypingRef.current = false;
+                                            preventSelectRef.current = false;
+                                        }, 500);
+                                    },
                                     onKeyDown: handleKeyDown,
                                     className: "border-0 focus:ring-0"
                                 }, void 0, false, {
                                     fileName: "[project]/components/ui/filterable-select.tsx",
-                                    lineNumber: 190,
+                                    lineNumber: 573,
                                     columnNumber: 13
                                 }, this)
                             ]
                         }, void 0, true, {
                             fileName: "[project]/components/ui/filterable-select.tsx",
-                            lineNumber: 188,
+                            lineNumber: 571,
                             columnNumber: 11
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$command$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["CommandList"], {
-                            children: [
-                                filteredOptions.length === 0 && !onCreateNew && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$command$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["CommandEmpty"], {
-                                    children: emptyMessage
-                                }, void 0, false, {
-                                    fileName: "[project]/components/ui/filterable-select.tsx",
-                                    lineNumber: 200,
-                                    columnNumber: 15
-                                }, this),
-                                filteredOptions.length === 0 && onCreateNew && searchQuery.trim() && !hasExactMatch && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$command$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["CommandEmpty"], {
-                                    children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                        className: "py-2",
-                                        children: [
-                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
-                                                className: "text-sm text-muted-foreground mb-2",
-                                                children: emptyMessage
-                                            }, void 0, false, {
-                                                fileName: "[project]/components/ui/filterable-select.tsx",
-                                                lineNumber: 205,
-                                                columnNumber: 19
-                                            }, this),
-                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$command$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["CommandItem"], {
-                                                value: `__create_new_empty_${searchQuery}`,
-                                                onSelect: handleOptionSelect,
-                                                disabled: isCreating,
-                                                className: "text-primary cursor-pointer",
-                                                children: isCreating ? "Хадгалж байна..." : `"${searchQuery}" ${createNewLabel} (Enter)`
-                                            }, void 0, false, {
-                                                fileName: "[project]/components/ui/filterable-select.tsx",
-                                                lineNumber: 206,
-                                                columnNumber: 19
-                                            }, this)
-                                        ]
-                                    }, void 0, true, {
-                                        fileName: "[project]/components/ui/filterable-select.tsx",
-                                        lineNumber: 204,
-                                        columnNumber: 17
-                                    }, this)
-                                }, void 0, false, {
-                                    fileName: "[project]/components/ui/filterable-select.tsx",
-                                    lineNumber: 203,
-                                    columnNumber: 15
-                                }, this),
-                                filteredOptions.length > 0 && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$command$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["CommandGroup"], {
-                                    children: [
-                                        filteredOptions.map((option)=>/*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$command$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["CommandItem"], {
-                                                value: option.value,
-                                                onSelect: handleOptionSelect,
-                                                children: [
-                                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$check$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__Check$3e$__["Check"], {
-                                                        className: (0, __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$utils$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["cn"])("mr-2 h-4 w-4", value === option.value ? "opacity-100" : "opacity-0")
-                                                    }, void 0, false, {
-                                                        fileName: "[project]/components/ui/filterable-select.tsx",
-                                                        lineNumber: 225,
-                                                        columnNumber: 21
-                                                    }, this),
-                                                    option.label
-                                                ]
-                                            }, option.value, true, {
-                                                fileName: "[project]/components/ui/filterable-select.tsx",
-                                                lineNumber: 220,
-                                                columnNumber: 19
-                                            }, this)),
-                                        onCreateNew && searchQuery.trim() && !hasExactMatch && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$command$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["CommandItem"], {
-                                            value: `__create_new_${searchQuery}`,
-                                            onSelect: handleOptionSelect,
-                                            disabled: isCreating,
-                                            className: "text-primary cursor-pointer border-t",
-                                            children: [
-                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
-                                                    className: "mr-2",
-                                                    children: "+"
-                                                }, void 0, false, {
-                                                    fileName: "[project]/components/ui/filterable-select.tsx",
-                                                    lineNumber: 241,
-                                                    columnNumber: 21
-                                                }, this),
-                                                isCreating ? "Хадгалж байна..." : `"${searchQuery}" ${createNewLabel} (Enter)`
-                                            ]
-                                        }, void 0, true, {
-                                            fileName: "[project]/components/ui/filterable-select.tsx",
-                                            lineNumber: 235,
-                                            columnNumber: 19
-                                        }, this)
-                                    ]
-                                }, void 0, true, {
-                                    fileName: "[project]/components/ui/filterable-select.tsx",
-                                    lineNumber: 218,
-                                    columnNumber: 15
-                                }, this)
-                            ]
-                        }, void 0, true, {
+                            children: commandListContent
+                        }, void 0, false, {
                             fileName: "[project]/components/ui/filterable-select.tsx",
-                            lineNumber: 198,
+                            lineNumber: 595,
                             columnNumber: 11
                         }, this)
                     ]
                 }, void 0, true, {
                     fileName: "[project]/components/ui/filterable-select.tsx",
-                    lineNumber: 187,
+                    lineNumber: 570,
                     columnNumber: 9
                 }, this)
             }, void 0, false, {
                 fileName: "[project]/components/ui/filterable-select.tsx",
-                lineNumber: 186,
+                lineNumber: 564,
                 columnNumber: 7
             }, this)
         ]
     }, void 0, true, {
         fileName: "[project]/components/ui/filterable-select.tsx",
-        lineNumber: 168,
+        lineNumber: 546,
         columnNumber: 5
     }, this);
 }
-_s(FilterableSelect, "b30zHOwPHev6PpHs1kHz0qbGLYA=");
+_s(FilterableSelect, "AJD39wSovJkscA1P8Y5rF09kEoc=");
 _c = FilterableSelect;
 var _c;
 __turbopack_context__.k.register(_c, "FilterableSelect");
@@ -2137,6 +2434,8 @@ function DriverManager({ drivers, onDriverAdded, onDriverUpdated }) {
     });
     const [isSaving, setIsSaving] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])(false);
     const [isDeleting, setIsDeleting] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])(null);
+    const [deleteDialogOpen, setDeleteDialogOpen] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])(false);
+    const [driverToDelete, setDriverToDelete] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])(null);
     const handleAdd = ()=>{
         setEditingDriver(null);
         setDriverData({
@@ -2208,13 +2507,16 @@ function DriverManager({ drivers, onDriverAdded, onDriverUpdated }) {
             setIsSaving(false);
         }
     };
-    const handleDelete = async (driverId)=>{
-        if (!confirm("Та энэ жолоочийг устгахдаа итгэлтэй байна уу?")) {
-            return;
-        }
-        setIsDeleting(driverId);
+    const handleDeleteClick = (driverId)=>{
+        setDriverToDelete(driverId);
+        setDeleteDialogOpen(true);
+    };
+    const handleDeleteConfirm = async ()=>{
+        if (!driverToDelete) return;
+        setIsDeleting(driverToDelete);
+        setDeleteDialogOpen(false);
         try {
-            const response = await fetch(`/api/drivers/${driverId}`, {
+            const response = await fetch(`/api/drivers/${driverToDelete}`, {
                 method: "DELETE"
             });
             if (!response.ok) {
@@ -2235,6 +2537,7 @@ function DriverManager({ drivers, onDriverAdded, onDriverUpdated }) {
             });
         } finally{
             setIsDeleting(null);
+            setDriverToDelete(null);
         }
     };
     return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Fragment"], {
@@ -2250,14 +2553,14 @@ function DriverManager({ drivers, onDriverAdded, onDriverUpdated }) {
                         className: "w-3.5 h-3.5"
                     }, void 0, false, {
                         fileName: "[project]/components/drivers/DriverManager.tsx",
-                        lineNumber: 172,
+                        lineNumber: 180,
                         columnNumber: 9
                     }, this),
                     "Нэмэх"
                 ]
             }, void 0, true, {
                 fileName: "[project]/components/drivers/DriverManager.tsx",
-                lineNumber: 165,
+                lineNumber: 173,
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$dialog$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Dialog"], {
@@ -2272,20 +2575,20 @@ function DriverManager({ drivers, onDriverAdded, onDriverUpdated }) {
                                     children: editingDriver ? "Жолооч засах" : "Жолооч нэмэх"
                                 }, void 0, false, {
                                     fileName: "[project]/components/drivers/DriverManager.tsx",
-                                    lineNumber: 179,
+                                    lineNumber: 187,
                                     columnNumber: 13
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$dialog$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["DialogDescription"], {
                                     children: editingDriver ? "Жолоочийн мэдээллийг засах." : "Жолоочийн мэдээлэл оруулах."
                                 }, void 0, false, {
                                     fileName: "[project]/components/drivers/DriverManager.tsx",
-                                    lineNumber: 182,
+                                    lineNumber: 190,
                                     columnNumber: 13
                                 }, this)
                             ]
                         }, void 0, true, {
                             fileName: "[project]/components/drivers/DriverManager.tsx",
-                            lineNumber: 178,
+                            lineNumber: 186,
                             columnNumber: 11
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -2298,7 +2601,7 @@ function DriverManager({ drivers, onDriverAdded, onDriverUpdated }) {
                                             children: "Бүтэн нэр *"
                                         }, void 0, false, {
                                             fileName: "[project]/components/drivers/DriverManager.tsx",
-                                            lineNumber: 191,
+                                            lineNumber: 199,
                                             columnNumber: 15
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$input$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Input"], {
@@ -2313,13 +2616,13 @@ function DriverManager({ drivers, onDriverAdded, onDriverUpdated }) {
                                             required: true
                                         }, void 0, false, {
                                             fileName: "[project]/components/drivers/DriverManager.tsx",
-                                            lineNumber: 192,
+                                            lineNumber: 200,
                                             columnNumber: 15
                                         }, this)
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/components/drivers/DriverManager.tsx",
-                                    lineNumber: 190,
+                                    lineNumber: 198,
                                     columnNumber: 13
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -2329,7 +2632,7 @@ function DriverManager({ drivers, onDriverAdded, onDriverUpdated }) {
                                             children: "Утасны дугаар"
                                         }, void 0, false, {
                                             fileName: "[project]/components/drivers/DriverManager.tsx",
-                                            lineNumber: 205,
+                                            lineNumber: 213,
                                             columnNumber: 15
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$input$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Input"], {
@@ -2343,13 +2646,13 @@ function DriverManager({ drivers, onDriverAdded, onDriverUpdated }) {
                                             placeholder: "Утасны дугаар оруулах"
                                         }, void 0, false, {
                                             fileName: "[project]/components/drivers/DriverManager.tsx",
-                                            lineNumber: 206,
+                                            lineNumber: 214,
                                             columnNumber: 15
                                         }, this)
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/components/drivers/DriverManager.tsx",
-                                    lineNumber: 204,
+                                    lineNumber: 212,
                                     columnNumber: 13
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -2359,7 +2662,7 @@ function DriverManager({ drivers, onDriverAdded, onDriverUpdated }) {
                                             children: "Регистэрийн дугаар"
                                         }, void 0, false, {
                                             fileName: "[project]/components/drivers/DriverManager.tsx",
-                                            lineNumber: 218,
+                                            lineNumber: 226,
                                             columnNumber: 15
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$input$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Input"], {
@@ -2372,13 +2675,13 @@ function DriverManager({ drivers, onDriverAdded, onDriverUpdated }) {
                                             placeholder: "Регистэрийн дугаар оруулах"
                                         }, void 0, false, {
                                             fileName: "[project]/components/drivers/DriverManager.tsx",
-                                            lineNumber: 219,
+                                            lineNumber: 227,
                                             columnNumber: 15
                                         }, this)
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/components/drivers/DriverManager.tsx",
-                                    lineNumber: 217,
+                                    lineNumber: 225,
                                     columnNumber: 13
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -2388,7 +2691,7 @@ function DriverManager({ drivers, onDriverAdded, onDriverUpdated }) {
                                             children: "Нэмэлт мэдээлэл"
                                         }, void 0, false, {
                                             fileName: "[project]/components/drivers/DriverManager.tsx",
-                                            lineNumber: 230,
+                                            lineNumber: 238,
                                             columnNumber: 15
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$textarea$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Textarea"], {
@@ -2402,13 +2705,13 @@ function DriverManager({ drivers, onDriverAdded, onDriverUpdated }) {
                                             rows: 3
                                         }, void 0, false, {
                                             fileName: "[project]/components/drivers/DriverManager.tsx",
-                                            lineNumber: 231,
+                                            lineNumber: 239,
                                             columnNumber: 15
                                         }, this)
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/components/drivers/DriverManager.tsx",
-                                    lineNumber: 229,
+                                    lineNumber: 237,
                                     columnNumber: 13
                                 }, this),
                                 drivers.length > 0 && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -2418,7 +2721,7 @@ function DriverManager({ drivers, onDriverAdded, onDriverUpdated }) {
                                             children: "Одоогийн жолооч нар"
                                         }, void 0, false, {
                                             fileName: "[project]/components/drivers/DriverManager.tsx",
-                                            lineNumber: 244,
+                                            lineNumber: 252,
                                             columnNumber: 17
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -2434,7 +2737,7 @@ function DriverManager({ drivers, onDriverAdded, onDriverUpdated }) {
                                                                     children: driver.name
                                                                 }, void 0, false, {
                                                                     fileName: "[project]/components/drivers/DriverManager.tsx",
-                                                                    lineNumber: 252,
+                                                                    lineNumber: 260,
                                                                     columnNumber: 25
                                                                 }, this),
                                                                 driver.phone && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -2446,13 +2749,13 @@ function DriverManager({ drivers, onDriverAdded, onDriverUpdated }) {
                                                                     ]
                                                                 }, void 0, true, {
                                                                     fileName: "[project]/components/drivers/DriverManager.tsx",
-                                                                    lineNumber: 254,
+                                                                    lineNumber: 262,
                                                                     columnNumber: 27
                                                                 }, this)
                                                             ]
                                                         }, void 0, true, {
                                                             fileName: "[project]/components/drivers/DriverManager.tsx",
-                                                            lineNumber: 251,
+                                                            lineNumber: 259,
                                                             columnNumber: 23
                                                         }, this),
                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -2468,19 +2771,19 @@ function DriverManager({ drivers, onDriverAdded, onDriverUpdated }) {
                                                                         className: "w-3.5 h-3.5"
                                                                     }, void 0, false, {
                                                                         fileName: "[project]/components/drivers/DriverManager.tsx",
-                                                                        lineNumber: 265,
+                                                                        lineNumber: 273,
                                                                         columnNumber: 27
                                                                     }, this)
                                                                 }, void 0, false, {
                                                                     fileName: "[project]/components/drivers/DriverManager.tsx",
-                                                                    lineNumber: 258,
+                                                                    lineNumber: 266,
                                                                     columnNumber: 25
                                                                 }, this),
                                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$button$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Button"], {
                                                                     type: "button",
                                                                     size: "sm",
                                                                     variant: "ghost",
-                                                                    onClick: ()=>handleDelete(driver.id),
+                                                                    onClick: ()=>handleDeleteClick(driver.id),
                                                                     disabled: isDeleting === driver.id,
                                                                     className: "h-7 w-7 p-0 text-red-600 hover:text-red-700",
                                                                     children: isDeleting === driver.id ? /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -2488,47 +2791,47 @@ function DriverManager({ drivers, onDriverAdded, onDriverUpdated }) {
                                                                         children: "..."
                                                                     }, void 0, false, {
                                                                         fileName: "[project]/components/drivers/DriverManager.tsx",
-                                                                        lineNumber: 276,
+                                                                        lineNumber: 284,
                                                                         columnNumber: 29
                                                                     }, this) : /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$trash$2d$2$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__Trash2$3e$__["Trash2"], {
                                                                         className: "w-3.5 h-3.5"
                                                                     }, void 0, false, {
                                                                         fileName: "[project]/components/drivers/DriverManager.tsx",
-                                                                        lineNumber: 278,
+                                                                        lineNumber: 286,
                                                                         columnNumber: 29
                                                                     }, this)
                                                                 }, void 0, false, {
                                                                     fileName: "[project]/components/drivers/DriverManager.tsx",
-                                                                    lineNumber: 267,
+                                                                    lineNumber: 275,
                                                                     columnNumber: 25
                                                                 }, this)
                                                             ]
                                                         }, void 0, true, {
                                                             fileName: "[project]/components/drivers/DriverManager.tsx",
-                                                            lineNumber: 257,
+                                                            lineNumber: 265,
                                                             columnNumber: 23
                                                         }, this)
                                                     ]
                                                 }, driver.id, true, {
                                                     fileName: "[project]/components/drivers/DriverManager.tsx",
-                                                    lineNumber: 247,
+                                                    lineNumber: 255,
                                                     columnNumber: 21
                                                 }, this))
                                         }, void 0, false, {
                                             fileName: "[project]/components/drivers/DriverManager.tsx",
-                                            lineNumber: 245,
+                                            lineNumber: 253,
                                             columnNumber: 17
                                         }, this)
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/components/drivers/DriverManager.tsx",
-                                    lineNumber: 243,
+                                    lineNumber: 251,
                                     columnNumber: 15
                                 }, this)
                             ]
                         }, void 0, true, {
                             fileName: "[project]/components/drivers/DriverManager.tsx",
-                            lineNumber: 189,
+                            lineNumber: 197,
                             columnNumber: 11
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$dialog$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["DialogFooter"], {
@@ -2541,7 +2844,7 @@ function DriverManager({ drivers, onDriverAdded, onDriverUpdated }) {
                                     children: "Цуцлах"
                                 }, void 0, false, {
                                     fileName: "[project]/components/drivers/DriverManager.tsx",
-                                    lineNumber: 290,
+                                    lineNumber: 298,
                                     columnNumber: 13
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$button$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Button"], {
@@ -2550,30 +2853,30 @@ function DriverManager({ drivers, onDriverAdded, onDriverUpdated }) {
                                     children: isSaving ? "Хадгалж байна..." : editingDriver ? "Засах" : "Нэмэх"
                                 }, void 0, false, {
                                     fileName: "[project]/components/drivers/DriverManager.tsx",
-                                    lineNumber: 298,
+                                    lineNumber: 306,
                                     columnNumber: 13
                                 }, this)
                             ]
                         }, void 0, true, {
                             fileName: "[project]/components/drivers/DriverManager.tsx",
-                            lineNumber: 289,
+                            lineNumber: 297,
                             columnNumber: 11
                         }, this)
                     ]
                 }, void 0, true, {
                     fileName: "[project]/components/drivers/DriverManager.tsx",
-                    lineNumber: 177,
+                    lineNumber: 185,
                     columnNumber: 9
                 }, this)
             }, void 0, false, {
                 fileName: "[project]/components/drivers/DriverManager.tsx",
-                lineNumber: 176,
+                lineNumber: 184,
                 columnNumber: 7
             }, this)
         ]
     }, void 0, true);
 }
-_s(DriverManager, "oAJ6Y51d7Ol4XqGMMFPocm4Fs1o=", false, function() {
+_s(DriverManager, "U7reZYHKA+STgv8GE+3dKp3Z8tk=", false, function() {
     return [
         __TURBOPACK__imported__module__$5b$project$5d2f$hooks$2f$use$2d$toast$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useToast"]
     ];
@@ -3581,7 +3884,6 @@ function TruckSection({ direction, onSave, onSend }) {
                                                         value: transportCompanyId,
                                                         onValueChange: (value)=>{
                                                             handleFieldChange(setTransportCompanyId, value);
-                                                            setTransportCompanyId(value);
                                                         },
                                                         disabled: isLoadingCompanies,
                                                         placeholder: isLoadingCompanies ? "Уншиж байна..." : "Тээврийн компани сонгох",
@@ -3608,7 +3910,7 @@ function TruckSection({ direction, onSave, onSend }) {
                                                                 children: "Хаанаас"
                                                             }, void 0, false, {
                                                                 fileName: "[project]/components/trucks/TruckSection.tsx",
-                                                                lineNumber: 702,
+                                                                lineNumber: 701,
                                                                 columnNumber: 15
                                                             }, this),
                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$input$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Input"], {
@@ -3619,13 +3921,13 @@ function TruckSection({ direction, onSave, onSend }) {
                                                                 placeholder: "Гарах газар"
                                                             }, void 0, false, {
                                                                 fileName: "[project]/components/trucks/TruckSection.tsx",
-                                                                lineNumber: 705,
+                                                                lineNumber: 704,
                                                                 columnNumber: 15
                                                             }, this)
                                                         ]
                                                     }, void 0, true, {
                                                         fileName: "[project]/components/trucks/TruckSection.tsx",
-                                                        lineNumber: 701,
+                                                        lineNumber: 700,
                                                         columnNumber: 13
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -3636,7 +3938,7 @@ function TruckSection({ direction, onSave, onSend }) {
                                                                 children: "Хаашаа"
                                                             }, void 0, false, {
                                                                 fileName: "[project]/components/trucks/TruckSection.tsx",
-                                                                lineNumber: 714,
+                                                                lineNumber: 713,
                                                                 columnNumber: 15
                                                             }, this),
                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$input$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Input"], {
@@ -3647,19 +3949,19 @@ function TruckSection({ direction, onSave, onSend }) {
                                                                 placeholder: "Очих газар"
                                                             }, void 0, false, {
                                                                 fileName: "[project]/components/trucks/TruckSection.tsx",
-                                                                lineNumber: 717,
+                                                                lineNumber: 716,
                                                                 columnNumber: 15
                                                             }, this)
                                                         ]
                                                     }, void 0, true, {
                                                         fileName: "[project]/components/trucks/TruckSection.tsx",
-                                                        lineNumber: 713,
+                                                        lineNumber: 712,
                                                         columnNumber: 13
                                                     }, this)
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/components/trucks/TruckSection.tsx",
-                                                lineNumber: 700,
+                                                lineNumber: 699,
                                                 columnNumber: 11
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -3670,7 +3972,7 @@ function TruckSection({ direction, onSave, onSend }) {
                                                         children: "Бүтээгдэхүүн"
                                                     }, void 0, false, {
                                                         fileName: "[project]/components/trucks/TruckSection.tsx",
-                                                        lineNumber: 729,
+                                                        lineNumber: 728,
                                                         columnNumber: 13
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$filterable$2d$select$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["FilterableSelect"], {
@@ -3685,7 +3987,7 @@ function TruckSection({ direction, onSave, onSend }) {
                                                         searchPlaceholder: "Бүтээгдэхүүн хайх..."
                                                     }, void 0, false, {
                                                         fileName: "[project]/components/trucks/TruckSection.tsx",
-                                                        lineNumber: 732,
+                                                        lineNumber: 731,
                                                         columnNumber: 13
                                                     }, this),
                                                     errors.cargoType && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -3693,13 +3995,13 @@ function TruckSection({ direction, onSave, onSend }) {
                                                         children: errors.cargoType
                                                     }, void 0, false, {
                                                         fileName: "[project]/components/trucks/TruckSection.tsx",
-                                                        lineNumber: 744,
+                                                        lineNumber: 743,
                                                         columnNumber: 15
                                                     }, this)
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/components/trucks/TruckSection.tsx",
-                                                lineNumber: 728,
+                                                lineNumber: 727,
                                                 columnNumber: 11
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -3713,7 +4015,7 @@ function TruckSection({ direction, onSave, onSend }) {
                                                                 children: "Илгээч байгууллага"
                                                             }, void 0, false, {
                                                                 fileName: "[project]/components/trucks/TruckSection.tsx",
-                                                                lineNumber: 751,
+                                                                lineNumber: 750,
                                                                 columnNumber: 15
                                                             }, this),
                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$filterable$2d$select$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["FilterableSelect"], {
@@ -3724,20 +4026,19 @@ function TruckSection({ direction, onSave, onSend }) {
                                                                 value: senderOrganizationId,
                                                                 onValueChange: (value)=>{
                                                                     handleFieldChange(setSenderOrganizationId, value);
-                                                                    setSenderOrganizationId(value);
                                                                 },
                                                                 disabled: isLoadingOrganizations,
                                                                 placeholder: isLoadingOrganizations ? "Уншиж байна..." : "Илгээч байгууллага сонгох",
                                                                 searchPlaceholder: "Илгээч байгууллага хайх..."
                                                             }, void 0, false, {
                                                                 fileName: "[project]/components/trucks/TruckSection.tsx",
-                                                                lineNumber: 754,
+                                                                lineNumber: 753,
                                                                 columnNumber: 15
                                                             }, this)
                                                         ]
                                                     }, void 0, true, {
                                                         fileName: "[project]/components/trucks/TruckSection.tsx",
-                                                        lineNumber: 750,
+                                                        lineNumber: 749,
                                                         columnNumber: 13
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -3748,7 +4049,7 @@ function TruckSection({ direction, onSave, onSend }) {
                                                                 children: "Хүлээн авагч байгууллага"
                                                             }, void 0, false, {
                                                                 fileName: "[project]/components/trucks/TruckSection.tsx",
-                                                                lineNumber: 770,
+                                                                lineNumber: 768,
                                                                 columnNumber: 15
                                                             }, this),
                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$filterable$2d$select$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["FilterableSelect"], {
@@ -3759,7 +4060,6 @@ function TruckSection({ direction, onSave, onSend }) {
                                                                 value: receiverOrganizationId,
                                                                 onValueChange: (value)=>{
                                                                     handleFieldChange(setReceiverOrganizationId, value);
-                                                                    setReceiverOrganizationId(value);
                                                                 },
                                                                 disabled: isLoadingOrganizations,
                                                                 placeholder: isLoadingOrganizations ? "Уншиж байна..." : "Хүлээн авагч байгууллага сонгох эсвэл бичих",
@@ -3768,19 +4068,19 @@ function TruckSection({ direction, onSave, onSend }) {
                                                                 createNewLabel: "нэмэх"
                                                             }, void 0, false, {
                                                                 fileName: "[project]/components/trucks/TruckSection.tsx",
-                                                                lineNumber: 773,
+                                                                lineNumber: 771,
                                                                 columnNumber: 15
                                                             }, this)
                                                         ]
                                                     }, void 0, true, {
                                                         fileName: "[project]/components/trucks/TruckSection.tsx",
-                                                        lineNumber: 769,
+                                                        lineNumber: 767,
                                                         columnNumber: 13
                                                     }, this)
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/components/trucks/TruckSection.tsx",
-                                                lineNumber: 749,
+                                                lineNumber: 748,
                                                 columnNumber: 11
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -3791,7 +4091,7 @@ function TruckSection({ direction, onSave, onSend }) {
                                                         children: "Жолооч"
                                                     }, void 0, false, {
                                                         fileName: "[project]/components/trucks/TruckSection.tsx",
-                                                        lineNumber: 794,
+                                                        lineNumber: 791,
                                                         columnNumber: 13
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -3816,12 +4116,12 @@ function TruckSection({ direction, onSave, onSend }) {
                                                                     searchPlaceholder: "Жолооч хайх..."
                                                                 }, void 0, false, {
                                                                     fileName: "[project]/components/trucks/TruckSection.tsx",
-                                                                    lineNumber: 799,
+                                                                    lineNumber: 796,
                                                                     columnNumber: 17
                                                                 }, this)
                                                             }, void 0, false, {
                                                                 fileName: "[project]/components/trucks/TruckSection.tsx",
-                                                                lineNumber: 798,
+                                                                lineNumber: 795,
                                                                 columnNumber: 15
                                                             }, this),
                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$drivers$2f$DriverManager$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["DriverManager"], {
@@ -3830,13 +4130,13 @@ function TruckSection({ direction, onSave, onSend }) {
                                                                 onDriverUpdated: handleDriverAdded
                                                             }, void 0, false, {
                                                                 fileName: "[project]/components/trucks/TruckSection.tsx",
-                                                                lineNumber: 816,
+                                                                lineNumber: 813,
                                                                 columnNumber: 15
                                                             }, this)
                                                         ]
                                                     }, void 0, true, {
                                                         fileName: "[project]/components/trucks/TruckSection.tsx",
-                                                        lineNumber: 797,
+                                                        lineNumber: 794,
                                                         columnNumber: 13
                                                     }, this),
                                                     errors.driverId && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -3844,13 +4144,13 @@ function TruckSection({ direction, onSave, onSend }) {
                                                         children: errors.driverId
                                                     }, void 0, false, {
                                                         fileName: "[project]/components/trucks/TruckSection.tsx",
-                                                        lineNumber: 823,
+                                                        lineNumber: 820,
                                                         columnNumber: 15
                                                     }, this)
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/components/trucks/TruckSection.tsx",
-                                                lineNumber: 793,
+                                                lineNumber: 790,
                                                 columnNumber: 11
                                             }, this),
                                             direction === "OUT" && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -3861,7 +4161,7 @@ function TruckSection({ direction, onSave, onSend }) {
                                                         children: "Лацны дугаар"
                                                     }, void 0, false, {
                                                         fileName: "[project]/components/trucks/TruckSection.tsx",
-                                                        lineNumber: 830,
+                                                        lineNumber: 827,
                                                         columnNumber: 15
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$input$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Input"], {
@@ -3872,13 +4172,13 @@ function TruckSection({ direction, onSave, onSend }) {
                                                         placeholder: "Лацны дугаар оруулах"
                                                     }, void 0, false, {
                                                         fileName: "[project]/components/trucks/TruckSection.tsx",
-                                                        lineNumber: 833,
+                                                        lineNumber: 830,
                                                         columnNumber: 15
                                                     }, this)
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/components/trucks/TruckSection.tsx",
-                                                lineNumber: 829,
+                                                lineNumber: 826,
                                                 columnNumber: 13
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -3895,7 +4195,7 @@ function TruckSection({ direction, onSave, onSend }) {
                                                         }
                                                     }, void 0, false, {
                                                         fileName: "[project]/components/trucks/TruckSection.tsx",
-                                                        lineNumber: 845,
+                                                        lineNumber: 842,
                                                         columnNumber: 13
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$label$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Label"], {
@@ -3904,13 +4204,13 @@ function TruckSection({ direction, onSave, onSend }) {
                                                         children: "Чиргүүлтэй"
                                                     }, void 0, false, {
                                                         fileName: "[project]/components/trucks/TruckSection.tsx",
-                                                        lineNumber: 855,
+                                                        lineNumber: 852,
                                                         columnNumber: 13
                                                     }, this)
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/components/trucks/TruckSection.tsx",
-                                                lineNumber: 844,
+                                                lineNumber: 841,
                                                 columnNumber: 11
                                             }, this),
                                             hasTrailer && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -3921,7 +4221,7 @@ function TruckSection({ direction, onSave, onSend }) {
                                                         children: "Чиргүүлийн улсын дугаар"
                                                     }, void 0, false, {
                                                         fileName: "[project]/components/trucks/TruckSection.tsx",
-                                                        lineNumber: 866,
+                                                        lineNumber: 863,
                                                         columnNumber: 15
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$input$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Input"], {
@@ -3932,13 +4232,13 @@ function TruckSection({ direction, onSave, onSend }) {
                                                         placeholder: "Чиргүүлийн улсын дугаар"
                                                     }, void 0, false, {
                                                         fileName: "[project]/components/trucks/TruckSection.tsx",
-                                                        lineNumber: 869,
+                                                        lineNumber: 866,
                                                         columnNumber: 15
                                                     }, this)
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/components/trucks/TruckSection.tsx",
-                                                lineNumber: 865,
+                                                lineNumber: 862,
                                                 columnNumber: 13
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -3949,7 +4249,7 @@ function TruckSection({ direction, onSave, onSend }) {
                                                         children: "Нэмэлт"
                                                     }, void 0, false, {
                                                         fileName: "[project]/components/trucks/TruckSection.tsx",
-                                                        lineNumber: 881,
+                                                        lineNumber: 878,
                                                         columnNumber: 13
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$textarea$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Textarea"], {
@@ -3961,13 +4261,13 @@ function TruckSection({ direction, onSave, onSend }) {
                                                         rows: 3
                                                     }, void 0, false, {
                                                         fileName: "[project]/components/trucks/TruckSection.tsx",
-                                                        lineNumber: 884,
+                                                        lineNumber: 881,
                                                         columnNumber: 13
                                                     }, this)
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/components/trucks/TruckSection.tsx",
-                                                lineNumber: 880,
+                                                lineNumber: 877,
                                                 columnNumber: 11
                                             }, this)
                                         ]
@@ -3990,7 +4290,7 @@ function TruckSection({ direction, onSave, onSend }) {
                                                             className: "w-4 h-4 mr-2 animate-spin"
                                                         }, void 0, false, {
                                                             fileName: "[project]/components/trucks/TruckSection.tsx",
-                                                            lineNumber: 908,
+                                                            lineNumber: 905,
                                                             columnNumber: 17
                                                         }, this),
                                                         "Хадгалж байна..."
@@ -3998,7 +4298,7 @@ function TruckSection({ direction, onSave, onSend }) {
                                                 }, void 0, true) : "Хадгалах"
                                             }, void 0, false, {
                                                 fileName: "[project]/components/trucks/TruckSection.tsx",
-                                                lineNumber: 900,
+                                                lineNumber: 897,
                                                 columnNumber: 11
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$button$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Button"], {
@@ -4011,7 +4311,7 @@ function TruckSection({ direction, onSave, onSend }) {
                                                             className: "w-4 h-4 mr-2 animate-spin"
                                                         }, void 0, false, {
                                                             fileName: "[project]/components/trucks/TruckSection.tsx",
-                                                            lineNumber: 922,
+                                                            lineNumber: 919,
                                                             columnNumber: 17
                                                         }, this),
                                                         "Илгээж байна..."
@@ -4019,13 +4319,13 @@ function TruckSection({ direction, onSave, onSend }) {
                                                 }, void 0, true) : "Гаалид илгээх"
                                             }, void 0, false, {
                                                 fileName: "[project]/components/trucks/TruckSection.tsx",
-                                                lineNumber: 915,
+                                                lineNumber: 912,
                                                 columnNumber: 11
                                             }, this)
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/components/trucks/TruckSection.tsx",
-                                        lineNumber: 899,
+                                        lineNumber: 896,
                                         columnNumber: 9
                                     }, this)
                                 ]

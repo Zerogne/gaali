@@ -2,6 +2,7 @@
 
 import { useState } from "react"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -26,6 +27,8 @@ export function ProductManager({ products, onProductAdded }: ProductManagerProps
   const [newProductLabel, setNewProductLabel] = useState("")
   const [isAdding, setIsAdding] = useState(false)
   const [isDeleting, setIsDeleting] = useState<string | null>(null)
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
+  const [productToDelete, setProductToDelete] = useState<string | null>(null)
 
   const customProducts = products.filter((p) => p.isCustom)
 
@@ -74,14 +77,18 @@ export function ProductManager({ products, onProductAdded }: ProductManagerProps
     }
   }
 
-  const handleDeleteProduct = async (productId: string) => {
-    if (!confirm("Are you sure you want to delete this product?")) {
-      return
-    }
+  const handleDeleteClick = (productId: string) => {
+    setProductToDelete(productId)
+    setDeleteDialogOpen(true)
+  }
 
-    setIsDeleting(productId)
+  const handleDeleteConfirm = async () => {
+    if (!productToDelete) return
+
+    setIsDeleting(productToDelete)
+    setDeleteDialogOpen(false)
     try {
-      const response = await fetch(`/api/products/${productId}`, {
+      const response = await fetch(`/api/products/${productToDelete}`, {
         method: "DELETE",
       })
 
@@ -106,10 +113,12 @@ export function ProductManager({ products, onProductAdded }: ProductManagerProps
       })
     } finally {
       setIsDeleting(null)
+      setProductToDelete(null)
     }
   }
 
   return (
+    <>
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
         <Button
@@ -173,7 +182,7 @@ export function ProductManager({ products, onProductAdded }: ProductManagerProps
                     <Button
                       variant="ghost"
                       size="sm"
-                      onClick={() => handleDeleteProduct(product.id)}
+                      onClick={() => handleDeleteClick(product.id)}
                       disabled={isDeleting === product.id}
                       className="h-8 w-8 p-0 text-red-600 hover:text-red-700 hover:bg-red-50"
                     >
@@ -197,6 +206,26 @@ export function ProductManager({ products, onProductAdded }: ProductManagerProps
         </div>
       </DialogContent>
     </Dialog>
+
+    <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>Delete Product</AlertDialogTitle>
+          <AlertDialogDescription>
+            Are you sure you want to delete this product? This action cannot be undone.
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel>Cancel</AlertDialogCancel>
+          <AlertDialogAction
+            onClick={handleDeleteConfirm}
+            className="bg-red-600 hover:bg-red-700 focus:ring-red-600"
+          >
+            Delete
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+    </>
   )
 }
-

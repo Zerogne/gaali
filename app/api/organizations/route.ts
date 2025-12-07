@@ -4,9 +4,8 @@ import { getCompanyCollection } from "@/lib/db/companyDb"
 import { errorToResponse } from "@/lib/errors"
 
 /**
- * GET /api/organizations - Get organizations for the active company
- * Query params:
- *   - type: "sender" | "receiver" (optional, filters by type)
+ * GET /api/organizations - Get all organizations for the active company
+ * All organizations are shared between sender and receiver
  */
 export async function GET(request: Request) {
   try {
@@ -17,14 +16,8 @@ export async function GET(request: Request) {
     const companyId = session.companyId
     const orgsCollection = await getCompanyCollection(companyId, "organizations")
     
-    // Get type filter from query params
-    const url = new URL(request.url)
-    const type = url.searchParams.get("type") as "sender" | "receiver" | null
-    
-    // Build query filter
-    const filter = type ? { type } : {}
-    
-    const organizations = await orgsCollection.find(filter).toArray()
+    // Get all organizations (no type filter - they're all shared)
+    const organizations = await orgsCollection.find({}).toArray()
     
     // Serialize MongoDB documents
     const serialized = organizations.map((org: any) => {
@@ -39,12 +32,13 @@ export async function GET(request: Request) {
     const statusCode = error instanceof Error && 'statusCode' in error
       ? (error as { statusCode: number }).statusCode
       : 500
-    return NextResponse.json(errorResponse, { status: statusCode })
+    return NextResponse.json(errorResponse, { statusCode })
   }
 }
 
 /**
  * POST /api/organizations - Add a new organization
+ * Organizations are shared between sender and receiver
  */
 export async function POST(request: Request) {
   try {
@@ -55,7 +49,7 @@ export async function POST(request: Request) {
     const companyId = session.companyId
     const orgsCollection = await getCompanyCollection(companyId, "organizations")
     const body = await request.json()
-    const { name, type } = body
+    const { name } = body
 
     if (!name || typeof name !== "string" || !name.trim()) {
       return NextResponse.json(
@@ -64,21 +58,13 @@ export async function POST(request: Request) {
       )
     }
 
-    if (!type || (type !== "sender" && type !== "receiver")) {
-      return NextResponse.json(
-        { error: "Organization type must be 'sender' or 'receiver'" },
-        { status: 400 }
-      )
-    }
-
-    // Check if organization already exists (same name and type)
+    // Check if organization already exists (by name only, no type distinction)
     const existing = await orgsCollection.findOne({ 
-      name: name.trim(),
-      type: type
+      name: name.trim()
     })
     if (existing) {
       return NextResponse.json(
-        { error: "Organization with this name and type already exists" },
+        { error: "Organization with this name already exists" },
         { status: 409 }
       )
     }
@@ -86,7 +72,6 @@ export async function POST(request: Request) {
     const newOrg = {
       id: `org_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
       name: name.trim(),
-      type: type,
       createdAt: new Date().toISOString(),
     }
 
@@ -101,7 +86,6 @@ export async function POST(request: Request) {
     const statusCode = error instanceof Error && 'statusCode' in error
       ? (error as { statusCode: number }).statusCode
       : 500
-    return NextResponse.json(errorResponse, { status: statusCode })
+    return NextResponse.json(errorResponse, { statusCode })
   }
 }
-

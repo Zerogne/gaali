@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useMemo } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -17,6 +17,8 @@ import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/compone
 import { ScrollArea } from "@/components/ui/scroll-area"
 import type { TransportCompany, Organization, Driver } from "@/lib/types"
 import { DriverManager } from "@/components/drivers/DriverManager"
+import { findSimilarValue } from "@/lib/utils/string-similarity"
+import { AlertDialog, AlertDialogAction, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog"
 
 interface Product {
   id: string
@@ -44,9 +46,10 @@ export function TruckSection({ direction, onSave, onSend }: TruckSectionProps) {
   const [isLoadingCompanies, setIsLoadingCompanies] = useState(true)
   const [drivers, setDrivers] = useState<Driver[]>([])
   const [isLoadingDrivers, setIsLoadingDrivers] = useState(true)
-  const [senderOrganizations, setSenderOrganizations] = useState<Organization[]>([])
-  const [receiverOrganizations, setReceiverOrganizations] = useState<Organization[]>([])
+  const [organizations, setOrganizations] = useState<Organization[]>([])
   const [isLoadingOrganizations, setIsLoadingOrganizations] = useState(true)
+  const [duplicateDialogOpen, setDuplicateDialogOpen] = useState(false)
+  const [duplicateValue, setDuplicateValue] = useState<string | null>(null)
 
   // Form state
   const [plate, setPlate] = useState("Б1234АВ")
@@ -109,27 +112,16 @@ export function TruckSection({ direction, onSave, onSend }: TruckSectionProps) {
       setIsLoadingDrivers(false)
     }
 
-    // Load sender organizations
+    // Load organizations (shared pool)
     try {
       setIsLoadingOrganizations(true)
-      const senderResponse = await fetch("/api/organizations?type=sender")
-      if (senderResponse.ok) {
-        const senderData = await senderResponse.json()
-        setSenderOrganizations(senderData)
+      const response = await fetch("/api/organizations")
+      if (response.ok) {
+        const data = await response.json()
+        setOrganizations(data)
       }
     } catch (error) {
-      console.error("Error loading sender organizations:", error)
-    }
-
-    // Load receiver organizations
-    try {
-      const receiverResponse = await fetch("/api/organizations?type=receiver")
-      if (receiverResponse.ok) {
-        const receiverData = await receiverResponse.json()
-        setReceiverOrganizations(receiverData)
-      }
-    } catch (error) {
-      console.error("Error loading receiver organizations:", error)
+      console.error("Error loading organizations:", error)
     } finally {
       setIsLoadingOrganizations(false)
     }
@@ -151,6 +143,24 @@ export function TruckSection({ direction, onSave, onSend }: TruckSectionProps) {
       window.removeEventListener("refreshDropdownData", handleRefresh)
     }
   }, [])
+
+  // Memoize organization options to prevent infinite re-renders
+  const organizationOptions = useMemo(() => 
+    organizations.map((org) => ({
+      value: org.id,
+      label: org.name,
+    })), 
+    [organizations]
+  );
+
+  // Memoize driver options to prevent infinite re-renders
+  const driverOptions = useMemo(() => 
+    drivers.map((driver) => ({
+      value: driver.id,
+      label: `${driver.name}${driver.phone ? ` (${driver.phone})` : ""}`,
+    })), 
+    [drivers]
+  );
 
   // Auto-calculate net weight for OUT direction
   useEffect(() => {
@@ -246,38 +256,163 @@ export function TruckSection({ direction, onSave, onSend }: TruckSectionProps) {
     reloadDrivers()
   }
 
-  const handleSenderOrganizationAdded = () => {
-    async function reloadSenderOrganizations() {
+  const handleOrganizationAdded = () => {
+    async function reloadOrganizations() {
       try {
-        const response = await fetch("/api/organizations?type=sender")
+        const response = await fetch("/api/organizations")
         if (response.ok) {
           const data = await response.json()
-          setSenderOrganizations(data)
+          setOrganizations(data)
         }
       } catch (error) {
-        console.error("Error reloading sender organizations:", error)
+        console.error("Error reloading organizations:", error)
       }
     }
-    reloadSenderOrganizations()
+    reloadOrganizations()
   }
 
-  const handleReceiverOrganizationAdded = () => {
-    async function reloadReceiverOrganizations() {
-      try {
-        const response = await fetch("/api/organizations?type=receiver")
-        if (response.ok) {
-          const data = await response.json()
-          setReceiverOrganizations(data)
+  // Handle creating a new product
+  const handleCreateProduct = async (label: string): Promise<string | null> => {
+    // Check for similar/duplicate products
+    const existingLabels = products.map((p: Product) => p.label)
+    const similarProduct = findSimilarValue(label.trim(), existingLabels)
+    
+    if (similarProduct) {
+      setDuplicateValue(similarProduct)
+      setDuplicateDialogOpen(true)
+      return null
+    }
+
+    try {
+      const response = await fetch("/api/products", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          label: label.trim(),
+        }),
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json()
+        if (response.status === 409) {
+          // Product already exists, try to find it
+          const existingResponse = await fetch("/api/products")
+          if (existingResponse.ok) {
+            const prods = await existingResponse.json()
+            const existing = prods.find((p: Product) => 
+              p.label.toLowerCase() === label.trim().toLowerCase()
+            )
+            if (existing) {
+              handleProductAdded()
+              return existing.value
+            }
+          }
         }
-      } catch (error) {
-        console.error("Error reloading receiver organizations:", error)
+        toast({
+          title: "Алдаа",
+          description: errorData.error || "Бүтээгдэхүүн нэмэхэд алдаа гарлаа",
+          variant: "destructive",
+        })
+        return null
       }
+
+      const newProduct = await response.json()
+      handleProductAdded()
+      toast({
+        title: "Амжилттай",
+        description: `"${newProduct.label}" бүтээгдэхүүн нэмэгдлээ`,
+      })
+      return newProduct.value
+    } catch (error) {
+      console.error("Error creating product:", error)
+      toast({
+        title: "Алдаа",
+        description: "Бүтээгдэхүүн нэмэхэд алдаа гарлаа",
+        variant: "destructive",
+      })
+      return null
     }
-    reloadReceiverOrganizations()
   }
 
-  // Handle creating a new receiver organization
-  const handleCreateReceiverOrganization = async (name: string): Promise<string | null> => {
+  // Handle creating a new transport company
+  const handleCreateTransportCompany = async (name: string): Promise<string | null> => {
+    // Check for similar/duplicate transport companies
+    const existingNames = transportCompanies.map(c => c.name)
+    const similarCompany = findSimilarValue(name.trim(), existingNames)
+    
+    if (similarCompany) {
+      setDuplicateValue(similarCompany)
+      setDuplicateDialogOpen(true)
+      return null
+    }
+
+    try {
+      const response = await fetch("/api/transport-companies", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          name: name.trim(),
+        }),
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json()
+        if (response.status === 409) {
+          // Company already exists, try to find it
+          const existingResponse = await fetch("/api/transport-companies")
+          if (existingResponse.ok) {
+            const companies = await existingResponse.json()
+            const existing = companies.find((c: TransportCompany) => 
+              c.name.toLowerCase() === name.trim().toLowerCase()
+            )
+            if (existing) {
+              handleCompanyAdded()
+              return existing.id
+            }
+          }
+        }
+        toast({
+          title: "Алдаа",
+          description: errorData.error || "Тээврийн компани нэмэхэд алдаа гарлаа",
+          variant: "destructive",
+        })
+        return null
+      }
+
+      const newCompany = await response.json()
+      handleCompanyAdded()
+      toast({
+        title: "Амжилттай",
+        description: `"${newCompany.name}" тээврийн компани нэмэгдлээ`,
+      })
+      return newCompany.id
+    } catch (error) {
+      console.error("Error creating transport company:", error)
+      toast({
+        title: "Алдаа",
+        description: "Тээврийн компани нэмэхэд алдаа гарлаа",
+        variant: "destructive",
+      })
+      return null
+    }
+  }
+
+  // Handle creating a new organization (shared for both sender and receiver)
+  const handleCreateOrganization = async (name: string): Promise<string | null> => {
+    // Check for similar/duplicate organizations
+    const existingNames = organizations.map(o => o.name)
+    const similarOrg = findSimilarValue(name.trim(), existingNames)
+    
+    if (similarOrg) {
+      setDuplicateValue(similarOrg)
+      setDuplicateDialogOpen(true)
+      return null
+    }
+
     try {
       const response = await fetch("/api/organizations", {
         method: "POST",
@@ -286,7 +421,6 @@ export function TruckSection({ direction, onSave, onSend }: TruckSectionProps) {
         },
         body: JSON.stringify({
           name: name.trim(),
-          type: "receiver",
         }),
       })
 
@@ -294,14 +428,14 @@ export function TruckSection({ direction, onSave, onSend }: TruckSectionProps) {
         const errorData = await response.json()
         if (response.status === 409) {
           // Organization already exists, try to find it
-          const existingResponse = await fetch("/api/organizations?type=receiver")
+          const existingResponse = await fetch("/api/organizations")
           if (existingResponse.ok) {
             const orgs = await existingResponse.json()
             const existing = orgs.find((org: Organization) => 
               org.name.toLowerCase() === name.trim().toLowerCase()
             )
             if (existing) {
-              handleReceiverOrganizationAdded()
+              handleOrganizationAdded()
               return existing.id
             }
           }
@@ -315,14 +449,14 @@ export function TruckSection({ direction, onSave, onSend }: TruckSectionProps) {
       }
 
       const newOrg = await response.json()
-      handleReceiverOrganizationAdded()
+      handleOrganizationAdded()
       toast({
         title: "Амжилттай",
         description: `"${newOrg.name}" байгууллага нэмэгдлээ`,
       })
       return newOrg.id
     } catch (error) {
-      console.error("Error creating receiver organization:", error)
+      console.error("Error creating organization:", error)
       toast({
         title: "Алдаа",
         description: "Байгууллага нэмэхэд алдаа гарлаа",
@@ -688,11 +822,12 @@ export function TruckSection({ direction, onSave, onSend }: TruckSectionProps) {
               value={transportCompanyId}
               onValueChange={(value) => {
                 handleFieldChange(setTransportCompanyId, value)
-                setTransportCompanyId(value)
               }}
               disabled={isLoadingCompanies}
               placeholder={isLoadingCompanies ? "Уншиж байна..." : "Тээврийн компани сонгох"}
               searchPlaceholder="Тээврийн компани хайх..."
+              onCreateNew={handleCreateTransportCompany}
+              createNewLabel="+ Нэмэх ..."
             />
           </div>
 
@@ -739,6 +874,8 @@ export function TruckSection({ direction, onSave, onSend }: TruckSectionProps) {
               disabled={isLoadingProducts}
               placeholder={isLoadingProducts ? "Уншиж байна..." : "Бүтээгдэхүүн сонгох"}
               searchPlaceholder="Бүтээгдэхүүн хайх..."
+              onCreateNew={handleCreateProduct}
+              createNewLabel="+ Нэмэх ..."
             />
             {errors.cargoType && (
               <p className="mt-1 text-xs text-red-600">{errors.cargoType}</p>
@@ -752,18 +889,16 @@ export function TruckSection({ direction, onSave, onSend }: TruckSectionProps) {
                 Илгээч байгууллага
               </Label>
               <FilterableSelect
-                options={senderOrganizations.map((org) => ({
-                  value: org.id,
-                  label: org.name,
-                }))}
+                options={organizationOptions}
                 value={senderOrganizationId}
                 onValueChange={(value) => {
                   handleFieldChange(setSenderOrganizationId, value)
-                  setSenderOrganizationId(value)
                 }}
                 disabled={isLoadingOrganizations}
                 placeholder={isLoadingOrganizations ? "Уншиж байна..." : "Илгээч байгууллага сонгох"}
                 searchPlaceholder="Илгээч байгууллага хайх..."
+                onCreateNew={handleCreateOrganization}
+                createNewLabel="+ Нэмэх ..."
               />
             </div>
             <div>
@@ -771,20 +906,16 @@ export function TruckSection({ direction, onSave, onSend }: TruckSectionProps) {
                 Хүлээн авагч байгууллага
               </Label>
               <FilterableSelect
-                options={receiverOrganizations.map((org) => ({
-                  value: org.id,
-                  label: org.name,
-                }))}
+                options={organizationOptions}
                 value={receiverOrganizationId}
                 onValueChange={(value) => {
                   handleFieldChange(setReceiverOrganizationId, value)
-                  setReceiverOrganizationId(value)
                 }}
                 disabled={isLoadingOrganizations}
-                placeholder={isLoadingOrganizations ? "Уншиж байна..." : "Хүлээн авагч байгууллага сонгох эсвэл бичих"}
-                searchPlaceholder="Хүлээн авагч байгууллага хайх эсвэл бичих..."
-                onCreateNew={handleCreateReceiverOrganization}
-                createNewLabel="нэмэх"
+                placeholder={isLoadingOrganizations ? "Уншиж байна..." : "Хүлээн авагч байгууллага сонгох"}
+                searchPlaceholder="Хүлээн авагч байгууллага хайх..."
+                onCreateNew={handleCreateOrganization}
+                createNewLabel="+ Нэмэх ..."
               />
             </div>
           </div>
@@ -797,16 +928,16 @@ export function TruckSection({ direction, onSave, onSend }: TruckSectionProps) {
             <div className="flex items-center gap-2">
               <div className="flex-1">
                 <FilterableSelect
-                  options={drivers.map((driver) => ({
-                    value: driver.id,
-                    label: `${driver.name}${driver.phone ? ` (${driver.phone})` : ""}`,
-                  }))}
+                  options={driverOptions}
                   value={driverId}
                   onValueChange={(value) => {
                     setDriverId(value)
                     const selectedDriver = drivers.find(d => d.id === value)
                     setDriverName(selectedDriver?.name || "")
-                    handleFieldChange(() => {}, value)
+                    // Clear saved log ID when driver changes
+                    if (savedLogId) {
+                      setSavedLogId(null)
+                    }
                   }}
                   disabled={isLoadingDrivers}
                   placeholder={isLoadingDrivers ? "Уншиж байна..." : "Жолооч сонгох"}
@@ -931,6 +1062,22 @@ export function TruckSection({ direction, onSave, onSend }: TruckSectionProps) {
           </ScrollArea>
         </DialogContent>
       </Dialog>
+
+      <AlertDialog open={duplicateDialogOpen} onOpenChange={setDuplicateDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Давхардсан утга</AlertDialogTitle>
+            <AlertDialogDescription>
+              Ижил төстэй утга аль хэдийн байна: <strong>"{duplicateValue}"</strong>. Өөр утга ашиглана уу.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogAction onClick={() => setDuplicateDialogOpen(false)}>
+              Болж байна
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </>
   )
 }

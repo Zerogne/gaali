@@ -522,14 +522,8 @@ async function GET(request) {
         }
         const companyId = session.companyId;
         const orgsCollection = await (0, __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$db$2f$companyDb$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["getCompanyCollection"])(companyId, "organizations");
-        // Get type filter from query params
-        const url = new URL(request.url);
-        const type = url.searchParams.get("type");
-        // Build query filter
-        const filter = type ? {
-            type
-        } : {};
-        const organizations = await orgsCollection.find(filter).toArray();
+        // Get all organizations (no type filter - they're all shared)
+        const organizations = await orgsCollection.find({}).toArray();
         // Serialize MongoDB documents
         const serialized = organizations.map((org)=>{
             const { _id, ...data } = org;
@@ -543,7 +537,7 @@ async function GET(request) {
         const errorResponse = (0, __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$errors$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["errorToResponse"])(error);
         const statusCode = error instanceof Error && 'statusCode' in error ? error.statusCode : 500;
         return __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$server$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["NextResponse"].json(errorResponse, {
-            status: statusCode
+            statusCode
         });
     }
 }
@@ -560,7 +554,7 @@ async function POST(request) {
         const companyId = session.companyId;
         const orgsCollection = await (0, __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$db$2f$companyDb$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["getCompanyCollection"])(companyId, "organizations");
         const body = await request.json();
-        const { name, type } = body;
+        const { name } = body;
         if (!name || typeof name !== "string" || !name.trim()) {
             return __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$server$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["NextResponse"].json({
                 error: "Organization name is required"
@@ -568,21 +562,13 @@ async function POST(request) {
                 status: 400
             });
         }
-        if (!type || type !== "sender" && type !== "receiver") {
-            return __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$server$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["NextResponse"].json({
-                error: "Organization type must be 'sender' or 'receiver'"
-            }, {
-                status: 400
-            });
-        }
-        // Check if organization already exists (same name and type)
+        // Check if organization already exists (by name only, no type distinction)
         const existing = await orgsCollection.findOne({
-            name: name.trim(),
-            type: type
+            name: name.trim()
         });
         if (existing) {
             return __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$server$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["NextResponse"].json({
-                error: "Organization with this name and type already exists"
+                error: "Organization with this name already exists"
             }, {
                 status: 409
             });
@@ -590,7 +576,6 @@ async function POST(request) {
         const newOrg = {
             id: `org_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
             name: name.trim(),
-            type: type,
             createdAt: new Date().toISOString()
         };
         await orgsCollection.insertOne(newOrg);
@@ -604,7 +589,7 @@ async function POST(request) {
         const errorResponse = (0, __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$errors$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["errorToResponse"])(error);
         const statusCode = error instanceof Error && 'statusCode' in error ? error.statusCode : 500;
         return __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$server$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["NextResponse"].json(errorResponse, {
-            status: statusCode
+            statusCode
         });
     }
 }

@@ -1,65 +1,5 @@
 {
   "node": {
-    "40a0f5fbdc65e39265f0539e0044af3d7c60b4fca8": {
-      "workers": {
-        "app/(auth)/login/page": {
-          "moduleId": "[project]/.next-internal/server/app/(auth)/login/page/actions.js { ACTIONS_MODULE0 => \"[project]/lib/companies/workers.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/lib/auth/authServer.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
-          "async": false,
-          "exportedName": "getCompanyWorkers",
-          "filename": "lib/companies/workers.ts"
-        }
-      },
-      "layer": {
-        "app/(auth)/login/page": "action-browser"
-      },
-      "filename": "lib/companies/workers.ts",
-      "exportedName": "getCompanyWorkers"
-    },
-    "60e48f651e5ebbd9864e4b8a06cf8fa97d8e2239ad": {
-      "workers": {
-        "app/(auth)/login/page": {
-          "moduleId": "[project]/.next-internal/server/app/(auth)/login/page/actions.js { ACTIONS_MODULE0 => \"[project]/lib/companies/workers.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/lib/auth/authServer.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
-          "async": false,
-          "exportedName": "loginCompany",
-          "filename": "lib/auth/authServer.ts"
-        }
-      },
-      "layer": {
-        "app/(auth)/login/page": "action-browser"
-      },
-      "filename": "lib/auth/authServer.ts",
-      "exportedName": "loginCompany"
-    },
-    "400171263a30e7f65dafe2a32d7b3a8fdc60ea9bd5": {
-      "workers": {
-        "app/(auth)/login/page": {
-          "moduleId": "[project]/.next-internal/server/app/(auth)/login/page/actions.js { ACTIONS_MODULE0 => \"[project]/lib/companies/workers.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/lib/auth/authServer.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
-          "async": false,
-          "exportedName": "selectWorker",
-          "filename": "lib/auth/authServer.ts"
-        }
-      },
-      "layer": {
-        "app/(auth)/login/page": "action-browser"
-      },
-      "filename": "lib/auth/authServer.ts",
-      "exportedName": "selectWorker"
-    },
-    "706eaece57029aad276a30b25bf6e85547c101354f": {
-      "workers": {
-        "app/(auth)/login/page": {
-          "moduleId": "[project]/.next-internal/server/app/(auth)/login/page/actions.js { ACTIONS_MODULE0 => \"[project]/lib/companies/workers.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/lib/auth/authServer.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
-          "async": false,
-          "exportedName": "loginWorker",
-          "filename": "lib/auth/authServer.ts"
-        }
-      },
-      "layer": {
-        "app/(auth)/login/page": "action-browser"
-      },
-      "filename": "lib/auth/authServer.ts",
-      "exportedName": "loginWorker"
-    },
     "603823d3910066eeba55100ec7665dcabbb8bf509e": {
       "workers": {
         "app/page": {
@@ -113,6 +53,12 @@
           "exportedName": "logout",
           "filename": "lib/auth/authServer.ts"
         },
+        "app/drivers/page": {
+          "moduleId": "[project]/.next-internal/server/app/drivers/page/actions.js { ACTIONS_MODULE0 => \"[project]/lib/auth/authServer.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false,
+          "exportedName": "logout",
+          "filename": "lib/auth/authServer.ts"
+        },
         "app/organizations/page": {
           "moduleId": "[project]/.next-internal/server/app/organizations/page/actions.js { ACTIONS_MODULE0 => \"[project]/lib/auth/authServer.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
           "async": false,
@@ -130,13 +76,21 @@
           "async": false,
           "exportedName": "logout",
           "filename": "lib/auth/authServer.ts"
+        },
+        "app/settings/page": {
+          "moduleId": "[project]/.next-internal/server/app/settings/page/actions.js { ACTIONS_MODULE0 => \"[project]/lib/auth/authServer.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false,
+          "exportedName": "logout",
+          "filename": "lib/auth/authServer.ts"
         }
       },
       "layer": {
         "app/companies/page": "action-browser",
+        "app/drivers/page": "action-browser",
         "app/organizations/page": "action-browser",
         "app/page": "action-browser",
-        "app/products/page": "action-browser"
+        "app/products/page": "action-browser",
+        "app/settings/page": "action-browser"
       },
       "filename": "lib/auth/authServer.ts",
       "exportedName": "logout"
