@@ -283,7 +283,7 @@ export function TruckSection({ direction, onSave, onSend }: TruckSectionProps) {
       return null
     }
 
-    try {
+      try {
       const response = await fetch("/api/products", {
         method: "POST",
         headers: {
@@ -325,7 +325,7 @@ export function TruckSection({ direction, onSave, onSend }: TruckSectionProps) {
         description: `"${newProduct.label}" бүтээгдэхүүн нэмэгдлээ`,
       })
       return newProduct.value
-    } catch (error) {
+      } catch (error) {
       console.error("Error creating product:", error)
       toast({
         title: "Алдаа",
@@ -763,7 +763,7 @@ export function TruckSection({ direction, onSave, onSend }: TruckSectionProps) {
               id={`plate-${direction}`}
               value={plate}
               onChange={(e) => setPlate(e.target.value)}
-              className="mt-1 bg-white border-gray-300 focus:border-blue-500 focus:ring-blue-500"
+              className="mt-2 bg-white border-gray-300 focus:border-blue-500 focus:ring-blue-500"
               placeholder="Улсын дугаар оруулах"
             />
             {errors.plate && (
@@ -781,7 +781,7 @@ export function TruckSection({ direction, onSave, onSend }: TruckSectionProps) {
               type="number"
               value={weight}
               onChange={(e) => handleFieldChange(setWeight, e.target.value)}
-              className="mt-1 bg-white border-gray-300 focus:border-blue-500 focus:ring-blue-500"
+              className="mt-2 bg-white border-gray-300 focus:border-blue-500 focus:ring-blue-500"
               placeholder="Жин (кг) оруулах"
             />
             {errors.weight && (
@@ -800,7 +800,7 @@ export function TruckSection({ direction, onSave, onSend }: TruckSectionProps) {
                 type="number"
                 value={netWeight}
                 readOnly
-                className="mt-1 bg-gray-50 border-gray-300 text-gray-700 cursor-not-allowed"
+                className="mt-2 bg-gray-50 border-gray-300 text-gray-700 cursor-not-allowed"
                 placeholder="Цэвэр жин автоматаар тооцоологдоно"
               />
               {errors.netWeight && (
@@ -841,7 +841,7 @@ export function TruckSection({ direction, onSave, onSend }: TruckSectionProps) {
                 id={`origin-${direction}`}
                 value={origin}
                 onChange={(e) => handleFieldChange(setOrigin, e.target.value)}
-                className="mt-1 bg-white border-gray-300 focus:border-blue-500 focus:ring-blue-500"
+                className="mt-2 bg-white border-gray-300 focus:border-blue-500 focus:ring-blue-500"
                 placeholder="Гарах газар"
               />
             </div>
@@ -853,7 +853,7 @@ export function TruckSection({ direction, onSave, onSend }: TruckSectionProps) {
                 id={`destination-${direction}`}
                 value={destination}
                 onChange={(e) => handleFieldChange(setDestination, e.target.value)}
-                className="mt-1 bg-white border-gray-300 focus:border-blue-500 focus:ring-blue-500"
+                className="mt-2 bg-white border-gray-300 focus:border-blue-500 focus:ring-blue-500"
                 placeholder="Очих газар"
               />
             </div>
@@ -925,7 +925,7 @@ export function TruckSection({ direction, onSave, onSend }: TruckSectionProps) {
             <Label htmlFor={`driver-${direction}`} className="text-sm font-medium text-gray-700 mb-2 block">
               Жолооч
             </Label>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 mt-2">
               <div className="flex-1">
                 <FilterableSelect
                   options={driverOptions}
@@ -965,7 +965,7 @@ export function TruckSection({ direction, onSave, onSend }: TruckSectionProps) {
                 id={`seal-${direction}`}
                 value={sealNumber}
                 onChange={(e) => handleFieldChange(setSealNumber, e.target.value)}
-                className="mt-1 bg-white border-gray-300 focus:border-blue-500 focus:ring-blue-500"
+                className="mt-2 bg-white border-gray-300 focus:border-blue-500 focus:ring-blue-500"
                 placeholder="Лацны дугаар оруулах"
               />
             </div>
@@ -1001,7 +1001,7 @@ export function TruckSection({ direction, onSave, onSend }: TruckSectionProps) {
                 id={`trailer-plate-${direction}`}
                 value={trailerPlate}
                 onChange={(e) => handleFieldChange(setTrailerPlate, e.target.value)}
-                className="mt-1 bg-white border-gray-300 focus:border-blue-500 focus:ring-blue-500"
+                className="mt-2 bg-white border-gray-300 focus:border-blue-500 focus:ring-blue-500"
                 placeholder="Чиргүүлийн улсын дугаар"
               />
             </div>

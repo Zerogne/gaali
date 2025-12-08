@@ -2422,7 +2422,7 @@ function DriverManager({ drivers, onDriverAdded, onDriverUpdated }) {
                             columnNumber: 11
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                            className: "space-y-4",
+                            className: "space-y-4 mt-4",
                             children: [
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                                     children: [
@@ -3839,7 +3839,7 @@ function TruckSection({ direction, onSave, onSend }) {
                                                         id: `plate-${direction}`,
                                                         value: plate,
                                                         onChange: (e)=>setPlate(e.target.value),
-                                                        className: "mt-1 bg-white border-gray-300 focus:border-blue-500 focus:ring-blue-500",
+                                                        className: "mt-2 bg-white border-gray-300 focus:border-blue-500 focus:ring-blue-500",
                                                         placeholder: "Улсын дугаар оруулах"
                                                     }, void 0, false, {
                                                         fileName: "[project]/components/trucks/TruckSection.tsx",
@@ -3876,7 +3876,7 @@ function TruckSection({ direction, onSave, onSend }) {
                                                         type: "number",
                                                         value: weight,
                                                         onChange: (e)=>handleFieldChange(setWeight, e.target.value),
-                                                        className: "mt-1 bg-white border-gray-300 focus:border-blue-500 focus:ring-blue-500",
+                                                        className: "mt-2 bg-white border-gray-300 focus:border-blue-500 focus:ring-blue-500",
                                                         placeholder: "Жин (кг) оруулах"
                                                     }, void 0, false, {
                                                         fileName: "[project]/components/trucks/TruckSection.tsx",
@@ -3923,7 +3923,7 @@ function TruckSection({ direction, onSave, onSend }) {
                                                         type: "number",
                                                         value: netWeight,
                                                         readOnly: true,
-                                                        className: "mt-1 bg-gray-50 border-gray-300 text-gray-700 cursor-not-allowed",
+                                                        className: "mt-2 bg-gray-50 border-gray-300 text-gray-700 cursor-not-allowed",
                                                         placeholder: "Цэвэр жин автоматаар тооцоологдоно"
                                                     }, void 0, false, {
                                                         fileName: "[project]/components/trucks/TruckSection.tsx",
@@ -3998,7 +3998,7 @@ function TruckSection({ direction, onSave, onSend }) {
                                                                 id: `origin-${direction}`,
                                                                 value: origin,
                                                                 onChange: (e)=>handleFieldChange(setOrigin, e.target.value),
-                                                                className: "mt-1 bg-white border-gray-300 focus:border-blue-500 focus:ring-blue-500",
+                                                                className: "mt-2 bg-white border-gray-300 focus:border-blue-500 focus:ring-blue-500",
                                                                 placeholder: "Гарах газар"
                                                             }, void 0, false, {
                                                                 fileName: "[project]/components/trucks/TruckSection.tsx",
@@ -4026,7 +4026,7 @@ function TruckSection({ direction, onSave, onSend }) {
                                                                 id: `destination-${direction}`,
                                                                 value: destination,
                                                                 onChange: (e)=>handleFieldChange(setDestination, e.target.value),
-                                                                className: "mt-1 bg-white border-gray-300 focus:border-blue-500 focus:ring-blue-500",
+                                                                className: "mt-2 bg-white border-gray-300 focus:border-blue-500 focus:ring-blue-500",
                                                                 placeholder: "Очих газар"
                                                             }, void 0, false, {
                                                                 fileName: "[project]/components/trucks/TruckSection.tsx",
@@ -4174,7 +4174,7 @@ function TruckSection({ direction, onSave, onSend }) {
                                                         columnNumber: 13
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                                        className: "flex items-center gap-2",
+                                                        className: "flex items-center gap-2 mt-2",
                                                         children: [
                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                                                                 className: "flex-1",
@@ -4247,7 +4247,7 @@ function TruckSection({ direction, onSave, onSend }) {
                                                         id: `seal-${direction}`,
                                                         value: sealNumber,
                                                         onChange: (e)=>handleFieldChange(setSealNumber, e.target.value),
-                                                        className: "mt-1 bg-white border-gray-300 focus:border-blue-500 focus:ring-blue-500",
+                                                        className: "mt-2 bg-white border-gray-300 focus:border-blue-500 focus:ring-blue-500",
                                                         placeholder: "Лацны дугаар оруулах"
                                                     }, void 0, false, {
                                                         fileName: "[project]/components/trucks/TruckSection.tsx",
@@ -4307,7 +4307,7 @@ function TruckSection({ direction, onSave, onSend }) {
                                                         id: `trailer-plate-${direction}`,
                                                         value: trailerPlate,
                                                         onChange: (e)=>handleFieldChange(setTrailerPlate, e.target.value),
-                                                        className: "mt-1 bg-white border-gray-300 focus:border-blue-500 focus:ring-blue-500",
+                                                        className: "mt-2 bg-white border-gray-300 focus:border-blue-500 focus:ring-blue-500",
                                                         placeholder: "Чиргүүлийн улсын дугаар"
                                                     }, void 0, false, {
                                                         fileName: "[project]/components/trucks/TruckSection.tsx",
@@ -6640,6 +6640,8 @@ var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$re
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$search$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$export__default__as__Search$3e$__ = __turbopack_context__.i("[project]/node_modules/lucide-react/dist/esm/icons/search.js [app-ssr] (ecmascript) <export default as Search>");
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$square$2d$pen$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$export__default__as__Edit$3e$__ = __turbopack_context__.i("[project]/node_modules/lucide-react/dist/esm/icons/square-pen.js [app-ssr] (ecmascript) <export default as Edit>");
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$file$2d$down$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$export__default__as__FileDown$3e$__ = __turbopack_context__.i("[project]/node_modules/lucide-react/dist/esm/icons/file-down.js [app-ssr] (ecmascript) <export default as FileDown>");
+var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$external$2d$link$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$export__default__as__ExternalLink$3e$__ = __turbopack_context__.i("[project]/node_modules/lucide-react/dist/esm/icons/external-link.js [app-ssr] (ecmascript) <export default as ExternalLink>");
+var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$navigation$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/next/navigation.js [app-ssr] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$components$2f$history$2f$EditLogDialog$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/components/history/EditLogDialog.tsx [app-ssr] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$pdf$2d$export$2e$ts__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/lib/pdf-export.ts [app-ssr] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$data$3a$4a9d6d__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$text$2f$javascript$3e$__ = __turbopack_context__.i("[project]/lib/data:4a9d6d [app-ssr] (ecmascript) <text/javascript>");
@@ -6658,8 +6660,10 @@ var __TURBOPACK__imported__module__$5b$project$5d2f$hooks$2f$use$2d$toast$2e$ts_
 ;
 ;
 ;
+;
 function TruckTable({ logs, onSend, onUpdate }) {
     const { toast } = (0, __TURBOPACK__imported__module__$5b$project$5d2f$hooks$2f$use$2d$toast$2e$ts__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useToast"])();
+    const router = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$navigation$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useRouter"])();
     const [directionFilter, setDirectionFilter] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useState"])("ALL");
     const [searchQuery, setSearchQuery] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useState"])("");
     const [sendingIds, setSendingIds] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useState"])(new Set());
@@ -6682,27 +6686,26 @@ function TruckTable({ logs, onSend, onUpdate }) {
         return matchesDirection && matchesSearch;
     });
     const handleResend = async (log)=>{
-        if (log.sentToCustoms) return;
         setSendingIds((prev)=>new Set(prev).add(log.id));
         try {
             const result = await (0, __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$data$3a$4a9d6d__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$text$2f$javascript$3e$__["sendTruckLogToCustoms"])(log.id);
             if (result.success) {
                 onSend(log.id);
                 toast({
-                    title: "Success",
-                    description: "Data successfully sent to Mongolian Customs"
+                    title: "Амжилттай",
+                    description: "Мэдээлэл Монголын гаалинд амжилттай илгээгдлээ"
                 });
             } else {
                 toast({
-                    title: "Error",
-                    description: result.error || "Failed to send to customs",
+                    title: "Алдаа",
+                    description: result.error || "Гаалинд илгээхэд алдаа гарлаа",
                     variant: "destructive"
                 });
             }
         } catch (error) {
             toast({
-                title: "Error",
-                description: "Failed to send to customs",
+                title: "Алдаа",
+                description: "Гаалинд илгээхэд алдаа гарлаа",
                 variant: "destructive"
             });
         } finally{
@@ -6714,7 +6717,7 @@ function TruckTable({ logs, onSend, onUpdate }) {
         }
     };
     const formatDate = (dateString)=>{
-        return new Date(dateString).toLocaleString("en-US", {
+        return new Date(dateString).toLocaleString("mn-MN", {
             month: "short",
             day: "numeric",
             year: "numeric",
@@ -6729,17 +6732,40 @@ function TruckTable({ logs, onSend, onUpdate }) {
                 children: [
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                         className: "flex items-center justify-between mb-4",
-                        children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$card$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["CardTitle"], {
-                            className: "text-lg font-semibold text-gray-900",
-                            children: "Truck Log History"
-                        }, void 0, false, {
-                            fileName: "[project]/components/trucks/TruckTable.tsx",
-                            lineNumber: 101,
-                            columnNumber: 11
-                        }, this)
-                    }, void 0, false, {
+                        children: [
+                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$card$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["CardTitle"], {
+                                className: "text-lg font-semibold text-gray-900",
+                                children: "Тээврийн хэрэгслийн түүх"
+                            }, void 0, false, {
+                                fileName: "[project]/components/trucks/TruckTable.tsx",
+                                lineNumber: 102,
+                                columnNumber: 11
+                            }, this),
+                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$button$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Button"], {
+                                variant: "outline",
+                                size: "sm",
+                                onClick: ()=>router.push("/history"),
+                                className: "flex items-center gap-2",
+                                title: "Бүрэн түүх харах",
+                                children: [
+                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$external$2d$link$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$export__default__as__ExternalLink$3e$__["ExternalLink"], {
+                                        className: "w-4 h-4"
+                                    }, void 0, false, {
+                                        fileName: "[project]/components/trucks/TruckTable.tsx",
+                                        lineNumber: 110,
+                                        columnNumber: 13
+                                    }, this),
+                                    "Бүрэн түүх"
+                                ]
+                            }, void 0, true, {
+                                fileName: "[project]/components/trucks/TruckTable.tsx",
+                                lineNumber: 103,
+                                columnNumber: 11
+                            }, this)
+                        ]
+                    }, void 0, true, {
                         fileName: "[project]/components/trucks/TruckTable.tsx",
-                        lineNumber: 100,
+                        lineNumber: 101,
                         columnNumber: 9
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -6752,23 +6778,23 @@ function TruckTable({ logs, onSend, onUpdate }) {
                                         className: "absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400"
                                     }, void 0, false, {
                                         fileName: "[project]/components/trucks/TruckTable.tsx",
-                                        lineNumber: 107,
+                                        lineNumber: 118,
                                         columnNumber: 13
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$input$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Input"], {
-                                        placeholder: "Search by plate or driver name...",
+                                        placeholder: "Улсын дугаар эсвэл жолоочийн нэрээр хайх...",
                                         value: searchQuery,
                                         onChange: (e)=>setSearchQuery(e.target.value),
                                         className: "pl-10 bg-gray-50 border-gray-300 focus:bg-white focus:border-blue-500"
                                     }, void 0, false, {
                                         fileName: "[project]/components/trucks/TruckTable.tsx",
-                                        lineNumber: 108,
+                                        lineNumber: 119,
                                         columnNumber: 13
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/components/trucks/TruckTable.tsx",
-                                lineNumber: 106,
+                                lineNumber: 117,
                                 columnNumber: 11
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$select$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Select"], {
@@ -6779,77 +6805,77 @@ function TruckTable({ logs, onSend, onUpdate }) {
                                         className: "w-full sm:w-[180px] bg-white border-gray-300",
                                         children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$select$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["SelectValue"], {}, void 0, false, {
                                             fileName: "[project]/components/trucks/TruckTable.tsx",
-                                            lineNumber: 117,
+                                            lineNumber: 128,
                                             columnNumber: 15
                                         }, this)
                                     }, void 0, false, {
                                         fileName: "[project]/components/trucks/TruckTable.tsx",
-                                        lineNumber: 116,
+                                        lineNumber: 127,
                                         columnNumber: 13
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$select$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["SelectContent"], {
                                         children: [
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$select$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["SelectItem"], {
                                                 value: "ALL",
-                                                children: "All Directions"
+                                                children: "Бүх чиглэл"
                                             }, void 0, false, {
                                                 fileName: "[project]/components/trucks/TruckTable.tsx",
-                                                lineNumber: 120,
+                                                lineNumber: 131,
                                                 columnNumber: 15
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$select$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["SelectItem"], {
                                                 value: "IN",
-                                                children: "IN Only"
+                                                children: "Зөвхөн ОРОХ"
                                             }, void 0, false, {
                                                 fileName: "[project]/components/trucks/TruckTable.tsx",
-                                                lineNumber: 121,
+                                                lineNumber: 132,
                                                 columnNumber: 15
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$select$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["SelectItem"], {
                                                 value: "OUT",
-                                                children: "OUT Only"
+                                                children: "Зөвхөн ГАРАХ"
                                             }, void 0, false, {
                                                 fileName: "[project]/components/trucks/TruckTable.tsx",
-                                                lineNumber: 122,
+                                                lineNumber: 133,
                                                 columnNumber: 15
                                             }, this)
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/components/trucks/TruckTable.tsx",
-                                        lineNumber: 119,
+                                        lineNumber: 130,
                                         columnNumber: 13
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/components/trucks/TruckTable.tsx",
-                                lineNumber: 115,
+                                lineNumber: 126,
                                 columnNumber: 11
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/components/trucks/TruckTable.tsx",
-                        lineNumber: 105,
+                        lineNumber: 116,
                         columnNumber: 9
                     }, this)
                 ]
             }, void 0, true, {
                 fileName: "[project]/components/trucks/TruckTable.tsx",
-                lineNumber: 99,
+                lineNumber: 100,
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$card$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["CardContent"], {
                 children: filteredLogs.length === 0 ? /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                     className: "text-center py-12 text-gray-500",
                     children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
-                        children: "No truck logs found"
+                        children: "Тээврийн хэрэгслийн бүртгэл олдсонгүй"
                     }, void 0, false, {
                         fileName: "[project]/components/trucks/TruckTable.tsx",
-                        lineNumber: 130,
+                        lineNumber: 141,
                         columnNumber: 13
                     }, this)
                 }, void 0, false, {
                     fileName: "[project]/components/trucks/TruckTable.tsx",
-                    lineNumber: 129,
+                    lineNumber: 140,
                     columnNumber: 11
                 }, this) : /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                     className: "rounded-lg border border-gray-200 overflow-hidden",
@@ -6861,26 +6887,26 @@ function TruckTable({ logs, onSend, onUpdate }) {
                                     children: [
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$table$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["TableHead"], {
                                             className: "text-gray-700 font-semibold",
-                                            children: "Direction"
+                                            children: "Чиглэл"
                                         }, void 0, false, {
                                             fileName: "[project]/components/trucks/TruckTable.tsx",
-                                            lineNumber: 137,
+                                            lineNumber: 148,
                                             columnNumber: 19
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$table$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["TableHead"], {
                                             className: "text-gray-700 font-semibold",
-                                            children: "Plate"
+                                            children: "Улсын дугаар"
                                         }, void 0, false, {
                                             fileName: "[project]/components/trucks/TruckTable.tsx",
-                                            lineNumber: 138,
+                                            lineNumber: 149,
                                             columnNumber: 19
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$table$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["TableHead"], {
                                             className: "text-gray-700 font-semibold",
-                                            children: "Driver"
+                                            children: "Жолооч"
                                         }, void 0, false, {
                                             fileName: "[project]/components/trucks/TruckTable.tsx",
-                                            lineNumber: 139,
+                                            lineNumber: 150,
                                             columnNumber: 19
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$table$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["TableHead"], {
@@ -6888,15 +6914,15 @@ function TruckTable({ logs, onSend, onUpdate }) {
                                             children: "Бүтээгдэхүүн"
                                         }, void 0, false, {
                                             fileName: "[project]/components/trucks/TruckTable.tsx",
-                                            lineNumber: 140,
+                                            lineNumber: 151,
                                             columnNumber: 19
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$table$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["TableHead"], {
                                             className: "text-gray-700 font-semibold",
-                                            children: "Weight (kg)"
+                                            children: "Жин (кг)"
                                         }, void 0, false, {
                                             fileName: "[project]/components/trucks/TruckTable.tsx",
-                                            lineNumber: 141,
+                                            lineNumber: 152,
                                             columnNumber: 19
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$table$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["TableHead"], {
@@ -6904,7 +6930,7 @@ function TruckTable({ logs, onSend, onUpdate }) {
                                             children: "Хаанаас"
                                         }, void 0, false, {
                                             fileName: "[project]/components/trucks/TruckTable.tsx",
-                                            lineNumber: 142,
+                                            lineNumber: 153,
                                             columnNumber: 19
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$table$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["TableHead"], {
@@ -6912,42 +6938,42 @@ function TruckTable({ logs, onSend, onUpdate }) {
                                             children: "Хаашаа"
                                         }, void 0, false, {
                                             fileName: "[project]/components/trucks/TruckTable.tsx",
-                                            lineNumber: 143,
+                                            lineNumber: 154,
                                             columnNumber: 19
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$table$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["TableHead"], {
                                             className: "text-gray-700 font-semibold",
-                                            children: "Created At"
+                                            children: "Үүсгэсэн огноо"
                                         }, void 0, false, {
                                             fileName: "[project]/components/trucks/TruckTable.tsx",
-                                            lineNumber: 144,
+                                            lineNumber: 155,
                                             columnNumber: 19
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$table$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["TableHead"], {
                                             className: "text-gray-700 font-semibold",
-                                            children: "Status"
+                                            children: "Төлөв"
                                         }, void 0, false, {
                                             fileName: "[project]/components/trucks/TruckTable.tsx",
-                                            lineNumber: 145,
+                                            lineNumber: 156,
                                             columnNumber: 19
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$table$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["TableHead"], {
                                             className: "text-gray-700 font-semibold",
-                                            children: "Actions"
+                                            children: "Үйлдлүүд"
                                         }, void 0, false, {
                                             fileName: "[project]/components/trucks/TruckTable.tsx",
-                                            lineNumber: 146,
+                                            lineNumber: 157,
                                             columnNumber: 19
                                         }, this)
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/components/trucks/TruckTable.tsx",
-                                    lineNumber: 136,
+                                    lineNumber: 147,
                                     columnNumber: 17
                                 }, this)
                             }, void 0, false, {
                                 fileName: "[project]/components/trucks/TruckTable.tsx",
-                                lineNumber: 135,
+                                lineNumber: 146,
                                 columnNumber: 15
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$table$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["TableBody"], {
@@ -6961,12 +6987,12 @@ function TruckTable({ logs, onSend, onUpdate }) {
                                                     children: log.direction
                                                 }, void 0, false, {
                                                     fileName: "[project]/components/trucks/TruckTable.tsx",
-                                                    lineNumber: 153,
+                                                    lineNumber: 164,
                                                     columnNumber: 23
                                                 }, this)
                                             }, void 0, false, {
                                                 fileName: "[project]/components/trucks/TruckTable.tsx",
-                                                lineNumber: 152,
+                                                lineNumber: 163,
                                                 columnNumber: 21
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$table$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["TableCell"], {
@@ -6974,7 +7000,7 @@ function TruckTable({ logs, onSend, onUpdate }) {
                                                 children: log.plate
                                             }, void 0, false, {
                                                 fileName: "[project]/components/trucks/TruckTable.tsx",
-                                                lineNumber: 164,
+                                                lineNumber: 175,
                                                 columnNumber: 21
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$table$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["TableCell"], {
@@ -6982,7 +7008,7 @@ function TruckTable({ logs, onSend, onUpdate }) {
                                                 children: log.driverName
                                             }, void 0, false, {
                                                 fileName: "[project]/components/trucks/TruckTable.tsx",
-                                                lineNumber: 167,
+                                                lineNumber: 178,
                                                 columnNumber: 21
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$table$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["TableCell"], {
@@ -6990,7 +7016,7 @@ function TruckTable({ logs, onSend, onUpdate }) {
                                                 children: log.cargoType
                                             }, void 0, false, {
                                                 fileName: "[project]/components/trucks/TruckTable.tsx",
-                                                lineNumber: 168,
+                                                lineNumber: 179,
                                                 columnNumber: 21
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$table$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["TableCell"], {
@@ -6998,7 +7024,7 @@ function TruckTable({ logs, onSend, onUpdate }) {
                                                 children: log.weightKg?.toLocaleString() || "N/A"
                                             }, void 0, false, {
                                                 fileName: "[project]/components/trucks/TruckTable.tsx",
-                                                lineNumber: 169,
+                                                lineNumber: 180,
                                                 columnNumber: 21
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$table$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["TableCell"], {
@@ -7006,7 +7032,7 @@ function TruckTable({ logs, onSend, onUpdate }) {
                                                 children: log.origin || "—"
                                             }, void 0, false, {
                                                 fileName: "[project]/components/trucks/TruckTable.tsx",
-                                                lineNumber: 172,
+                                                lineNumber: 183,
                                                 columnNumber: 21
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$table$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["TableCell"], {
@@ -7014,7 +7040,7 @@ function TruckTable({ logs, onSend, onUpdate }) {
                                                 children: log.destination || "—"
                                             }, void 0, false, {
                                                 fileName: "[project]/components/trucks/TruckTable.tsx",
-                                                lineNumber: 175,
+                                                lineNumber: 186,
                                                 columnNumber: 21
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$table$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["TableCell"], {
@@ -7022,29 +7048,29 @@ function TruckTable({ logs, onSend, onUpdate }) {
                                                 children: formatDate(log.createdAt)
                                             }, void 0, false, {
                                                 fileName: "[project]/components/trucks/TruckTable.tsx",
-                                                lineNumber: 178,
+                                                lineNumber: 189,
                                                 columnNumber: 21
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$table$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["TableCell"], {
                                                 children: log.sentToCustoms ? /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$badge$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Badge"], {
                                                     className: "bg-green-50 text-green-700 border-green-200",
-                                                    children: "Sent to Customs"
+                                                    children: "Гаалинд илгээсэн"
                                                 }, void 0, false, {
                                                     fileName: "[project]/components/trucks/TruckTable.tsx",
-                                                    lineNumber: 181,
+                                                    lineNumber: 192,
                                                     columnNumber: 25
                                                 }, this) : /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$badge$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Badge"], {
                                                     variant: "outline",
                                                     className: "bg-amber-50 text-amber-700 border-amber-200",
-                                                    children: "Saved only"
+                                                    children: "Зөвхөн хадгалсан"
                                                 }, void 0, false, {
                                                     fileName: "[project]/components/trucks/TruckTable.tsx",
-                                                    lineNumber: 185,
+                                                    lineNumber: 196,
                                                     columnNumber: 25
                                                 }, this)
                                             }, void 0, false, {
                                                 fileName: "[project]/components/trucks/TruckTable.tsx",
-                                                lineNumber: 179,
+                                                lineNumber: 190,
                                                 columnNumber: 21
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$table$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["TableCell"], {
@@ -7056,21 +7082,21 @@ function TruckTable({ logs, onSend, onUpdate }) {
                                                             variant: "outline",
                                                             onClick: ()=>handleEdit(log),
                                                             disabled: log.sentToCustoms,
-                                                            title: log.sentToCustoms ? "Cannot edit logs sent to customs" : "Edit log",
+                                                            title: log.sentToCustoms ? "Гаалинд илгээсэн бүртгэлийг засах боломжгүй" : "Бүртгэл засах",
                                                             className: "border-gray-300 hover:bg-gray-50",
                                                             children: [
                                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$square$2d$pen$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$export__default__as__Edit$3e$__["Edit"], {
                                                                     className: "w-3.5 h-3.5 mr-1.5"
                                                                 }, void 0, false, {
                                                                     fileName: "[project]/components/trucks/TruckTable.tsx",
-                                                                    lineNumber: 200,
+                                                                    lineNumber: 211,
                                                                     columnNumber: 27
                                                                 }, this),
-                                                                "Edit"
+                                                                "Засах"
                                                             ]
                                                         }, void 0, true, {
                                                             fileName: "[project]/components/trucks/TruckTable.tsx",
-                                                            lineNumber: 192,
+                                                            lineNumber: 203,
                                                             columnNumber: 25
                                                         }, this),
                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$button$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Button"], {
@@ -7083,82 +7109,83 @@ function TruckTable({ logs, onSend, onUpdate }) {
                                                                     console.error("Error exporting PDF:", error);
                                                                 }
                                                             },
-                                                            title: "Export to PDF",
+                                                            title: "PDF файл татах",
                                                             className: "border-gray-300 hover:bg-gray-50",
                                                             children: [
                                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$file$2d$down$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$export__default__as__FileDown$3e$__["FileDown"], {
                                                                     className: "w-3.5 h-3.5 mr-1.5"
                                                                 }, void 0, false, {
                                                                     fileName: "[project]/components/trucks/TruckTable.tsx",
-                                                                    lineNumber: 216,
+                                                                    lineNumber: 227,
                                                                     columnNumber: 27
                                                                 }, this),
                                                                 "PDF"
                                                             ]
                                                         }, void 0, true, {
                                                             fileName: "[project]/components/trucks/TruckTable.tsx",
-                                                            lineNumber: 203,
+                                                            lineNumber: 214,
                                                             columnNumber: 25
                                                         }, this),
-                                                        !log.sentToCustoms && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$button$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Button"], {
+                                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$button$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Button"], {
                                                             size: "sm",
                                                             variant: "outline",
                                                             onClick: ()=>handleResend(log),
                                                             disabled: sendingIds.has(log.id),
                                                             className: "border-gray-300 hover:bg-gray-50",
-                                                            children: sendingIds.has(log.id) ? "Sending..." : /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Fragment"], {
+                                                            title: log.sentToCustoms ? "Гаалинд дахин илгээх" : "Гаалинд илгээх",
+                                                            children: sendingIds.has(log.id) ? "Илгээж байна..." : /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Fragment"], {
                                                                 children: [
                                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$send$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$export__default__as__Send$3e$__["Send"], {
                                                                         className: "w-3.5 h-3.5 mr-1.5"
                                                                     }, void 0, false, {
                                                                         fileName: "[project]/components/trucks/TruckTable.tsx",
-                                                                        lineNumber: 231,
-                                                                        columnNumber: 33
+                                                                        lineNumber: 242,
+                                                                        columnNumber: 31
                                                                     }, this),
-                                                                    "Resend"
+                                                                    "Дахин илгээх"
                                                                 ]
                                                             }, void 0, true)
                                                         }, void 0, false, {
                                                             fileName: "[project]/components/trucks/TruckTable.tsx",
-                                                            lineNumber: 220,
-                                                            columnNumber: 27
+                                                            lineNumber: 230,
+                                                            columnNumber: 25
                                                         }, this)
                                                     ]
                                                 }, void 0, true, {
                                                     fileName: "[project]/components/trucks/TruckTable.tsx",
-                                                    lineNumber: 191,
+                                                    lineNumber: 202,
                                                     columnNumber: 23
                                                 }, this)
                                             }, void 0, false, {
                                                 fileName: "[project]/components/trucks/TruckTable.tsx",
-                                                lineNumber: 190,
+                                                lineNumber: 201,
                                                 columnNumber: 21
                                             }, this)
                                         ]
                                     }, log.id, true, {
                                         fileName: "[project]/components/trucks/TruckTable.tsx",
-                                        lineNumber: 151,
+                                        lineNumber: 162,
                                         columnNumber: 19
                                     }, this))
                             }, void 0, false, {
                                 fileName: "[project]/components/trucks/TruckTable.tsx",
-                                lineNumber: 149,
+                                lineNumber: 160,
                                 columnNumber: 15
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/components/trucks/TruckTable.tsx",
-                        lineNumber: 134,
+                        lineNumber: 145,
                         columnNumber: 13
                     }, this)
                 }, void 0, false, {
                     fileName: "[project]/components/trucks/TruckTable.tsx",
-                    lineNumber: 133,
+                    lineNumber: 144,
                     columnNumber: 11
                 }, this)
             }, void 0, false, {
                 fileName: "[project]/components/trucks/TruckTable.tsx",
-                lineNumber: 127,
+                lineNumber: 138,
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$history$2f$EditLogDialog$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["EditLogDialog"], {
@@ -7168,13 +7195,13 @@ function TruckTable({ logs, onSend, onUpdate }) {
                 onSuccess: handleEditSuccess
             }, void 0, false, {
                 fileName: "[project]/components/trucks/TruckTable.tsx",
-                lineNumber: 247,
+                lineNumber: 257,
                 columnNumber: 7
             }, this)
         ]
     }, void 0, true, {
         fileName: "[project]/components/trucks/TruckTable.tsx",
-        lineNumber: 98,
+        lineNumber: 99,
         columnNumber: 5
     }, this);
 }

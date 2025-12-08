@@ -79,7 +79,8 @@ async function ensureCompanyCollections(companyId) {
         "workers",
         "sessions",
         "settings",
-        "products"
+        "products",
+        "truck_sessions"
     ];
     for (const collectionName of collections){
         const collection = await getCompanyCollection(companyId, collectionName);
@@ -121,6 +122,22 @@ async function ensureCompanyCollections(companyId) {
             });
             await collection.createIndex({
                 isCustom: 1
+            });
+        } else if (collectionName === "truck_sessions") {
+            await collection.createIndex({
+                createdAt: -1
+            });
+            await collection.createIndex({
+                direction: 1
+            });
+            await collection.createIndex({
+                plateNumber: 1
+            });
+            await collection.createIndex({
+                inSessionId: 1
+            });
+            await collection.createIndex({
+                companyId: 1
             });
         }
     }
@@ -726,13 +743,7 @@ async function updateTruckLog(logId, updates) {
                 error: "Log not found"
             };
         }
-        // Prevent editing logs that have been sent to customs
-        if (existingLog.sentToCustoms) {
-            return {
-                success: false,
-                error: "Cannot edit logs that have been sent to customs"
-            };
-        }
+        // Allow editing logs even if sent to customs (re-edit feature)
         // Validate updates if provided
         if (Object.keys(updates).length > 0) {
             const validation = __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$validation$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["truckLogSchema"].partial().safeParse(updates);

@@ -1,18 +1,18 @@
 {
   "node": {
-    "603823d3910066eeba55100ec7665dcabbb8bf509e": {
+    "40a2ead62e15f1c40ce6d586420a2c191a6a5596a9": {
       "workers": {
         "app/history/page": {
           "moduleId": "[project]/.next-internal/server/app/history/page/actions.js { ACTIONS_MODULE0 => \"[project]/lib/api.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/lib/auth/authServer.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
           "async": false,
-          "exportedName": "getTruckLogs",
+          "exportedName": "sendTruckLogToCustoms",
           "filename": "lib/api.ts"
         }
       },
       "layer": {
         "app/history/page": "action-browser"
       },
-      "exportedName": "getTruckLogs",
+      "exportedName": "sendTruckLogToCustoms",
       "filename": "lib/api.ts"
     },
     "00db69d86cc3b8562947f5f5012a7dc7936b0621ed": {

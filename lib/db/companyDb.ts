@@ -57,7 +57,7 @@ export async function getCompaniesCollection() {
  * Creates indexes for better query performance
  */
 export async function ensureCompanyCollections(companyId: string) {
-  const collections = ["logs", "workers", "sessions", "settings", "products"]
+  const collections = ["logs", "workers", "sessions", "settings", "products", "truck_sessions"]
   
   for (const collectionName of collections) {
     const collection = await getCompanyCollection(companyId, collectionName)
@@ -77,7 +77,12 @@ export async function ensureCompanyCollections(companyId: string) {
     } else if (collectionName === "products") {
       await collection.createIndex({ value: 1 }, { unique: true })
       await collection.createIndex({ isCustom: 1 })
+    } else if (collectionName === "truck_sessions") {
+      await collection.createIndex({ createdAt: -1 })
+      await collection.createIndex({ direction: 1 })
+      await collection.createIndex({ plateNumber: 1 })
+      await collection.createIndex({ inSessionId: 1 })
+      await collection.createIndex({ companyId: 1 })
     }
   }
 }
-

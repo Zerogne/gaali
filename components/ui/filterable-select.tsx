@@ -109,14 +109,14 @@ export function FilterableSelect({
   // Handle editing existing value
   const handleEdit = React.useCallback(
     async (itemValue: string, newLabel: string) => {
-      if (
+    if (
         !onEdit ||
         !newLabel.trim() ||
         isEditing ||
-        isHandlingSelectRef.current
-      ) {
-        return;
-      }
+      isHandlingSelectRef.current
+    ) {
+      return;
+    }
 
       isHandlingSelectRef.current = true;
       setIsEditing(true);
@@ -150,25 +150,25 @@ export function FilterableSelect({
         return;
       }
 
-      isHandlingSelectRef.current = true;
-      setIsCreating(true);
-      try {
+    isHandlingSelectRef.current = true;
+    setIsCreating(true);
+    try {
         const newValue = await onCreateNew(label.trim());
-        if (newValue) {
-          // Use ref to prevent dependency issues
-          onValueChangeRef.current?.(newValue);
-          setOpen(false);
-          setSearchQuery("");
-        }
-      } catch (error) {
-        console.error("Error creating new value:", error);
-      } finally {
-        setIsCreating(false);
-        // Reset the ref after a short delay to allow state updates to complete
-        setTimeout(() => {
-          isHandlingSelectRef.current = false;
-        }, 100);
+      if (newValue) {
+        // Use ref to prevent dependency issues
+        onValueChangeRef.current?.(newValue);
+        setOpen(false);
+        setSearchQuery("");
       }
+    } catch (error) {
+      console.error("Error creating new value:", error);
+    } finally {
+      setIsCreating(false);
+      // Reset the ref after a short delay to allow state updates to complete
+      setTimeout(() => {
+        isHandlingSelectRef.current = false;
+      }, 100);
+    }
     },
     [onCreateNew, isCreating]
   );
@@ -187,7 +187,7 @@ export function FilterableSelect({
           if (selectedOption && searchQuery.trim() !== selectedOption.label) {
             handleEdit(editingValue, searchQuery.trim());
             return;
-          }
+      }
         }
 
         // Check if we have a selected value and user typed something different - edit that item

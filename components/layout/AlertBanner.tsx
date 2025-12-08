@@ -13,9 +13,9 @@ export function AlertBanner() {
       <div className="flex items-center gap-3">
         <AlertCircle className="w-5 h-5 text-orange-600" />
         <div>
-          <p className="text-sm font-medium text-orange-900">Unrecognized Plate Detected</p>
+          <p className="text-sm font-medium text-orange-900">Танигдаагүй улсын дугаар илрүүлсэн</p>
           <p className="text-xs text-orange-700">
-            Vehicle "Б9999ЗЗ" could not be verified in customs database - Manual review required
+            Тээврийн хэрэгсэл "Б9999ЗЗ" гаалийн мэдээллийн санд баталгаажуулах боломжгүй - Гараар шалгах шаардлагатай
           </p>
         </div>
       </div>
@@ -28,4 +28,3 @@ export function AlertBanner() {
     </div>
   )
 }
-

@@ -243,13 +243,7 @@ export async function updateTruckLog(
       }
     }
 
-    // Prevent editing logs that have been sent to customs
-    if (existingLog.sentToCustoms) {
-      return {
-        success: false,
-        error: "Cannot edit logs that have been sent to customs",
-      }
-    }
+    // Allow editing logs even if sent to customs (re-edit feature)
 
     // Validate updates if provided
     if (Object.keys(updates).length > 0) {

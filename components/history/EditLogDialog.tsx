@@ -453,28 +453,35 @@ export function EditLogDialog({
         <DialogDescription className="sr-only">
           Update the truck log information below.
         </DialogDescription>
-        {isSentToCustoms ? (
-          <div className="p-6">
-            <p className="text-sm text-gray-600">
-              Энэ бүртгэл гаалид илгээгдсэн тул засварлах боломжгүй.
-            </p>
-          </div>
-        ) : (
-          <Card className="border-gray-200 bg-white">
-            <CardHeader className="pb-4">
-              <div className="flex items-center justify-between">
-                <CardTitle className="flex items-center gap-2.5 text-gray-900 text-lg font-semibold">
-                  <div className="p-2 rounded-lg bg-blue-50">
-                    <Camera className="w-5 h-5 text-blue-600" />
-                  </div>
-                  Засах: {title}
-                </CardTitle>
+        <Card className="border-gray-200 bg-white">
+          <CardHeader className="pb-4">
+            <div className="flex items-center justify-between">
+              <CardTitle className="flex items-center gap-2.5 text-gray-900 text-lg font-semibold">
+                <div className="p-2 rounded-lg bg-blue-50">
+                  <Camera className="w-5 h-5 text-blue-600" />
+                </div>
+                {isSentToCustoms ? "Дахин засах: " : "Засах: "}{title}
+              </CardTitle>
+              <div className="flex items-center gap-2">
+                {isSentToCustoms && (
+                  <Badge className="bg-orange-50 text-orange-700 border-orange-200 px-2.5 py-1">
+                    Гаалинд илгээсэн
+                  </Badge>
+                )}
                 <Badge className="bg-green-50 text-green-700 border-green-200 px-2.5 py-1">
                   <CheckCircle2 className="w-3.5 h-3.5 mr-1.5" />
                   Танигдсан
                 </Badge>
               </div>
-            </CardHeader>
+            </div>
+            {isSentToCustoms && (
+              <div className="mt-3 p-3 bg-orange-50 border border-orange-200 rounded-lg">
+                <p className="text-sm text-orange-800">
+                  <strong>Анхаар:</strong> Энэ бүртгэл гаалинд илгээгдсэн байна. Засварласны дараа дахин илгээх шаардлагатай.
+                </p>
+              </div>
+            )}
+          </CardHeader>
             <CardContent className="space-y-5">
               <form onSubmit={handleSubmit} className="space-y-5">
                 {/* License Plate Recognition */}
@@ -787,7 +794,7 @@ export function EditLogDialog({
                     disabled={isSaving}
                     className="flex-1 border-gray-300 hover:bg-gray-50"
                   >
-                    Cancel
+                    Цуцлах
                   </Button>
                   <Button
                     type="submit"
@@ -797,17 +804,16 @@ export function EditLogDialog({
                     {isSaving ? (
                       <>
                         <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                        Saving...
+                        Хадгалж байна...
                       </>
                     ) : (
-                      "Save Changes"
+                      "Өөрчлөлт хадгалах"
                     )}
                   </Button>
                 </div>
               </form>
             </CardContent>
           </Card>
-        )}
       </DialogContent>
     </Dialog>
   )

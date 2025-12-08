@@ -79,7 +79,8 @@ async function ensureCompanyCollections(companyId) {
         "workers",
         "sessions",
         "settings",
-        "products"
+        "products",
+        "truck_sessions"
     ];
     for (const collectionName of collections){
         const collection = await getCompanyCollection(companyId, collectionName);
@@ -121,6 +122,22 @@ async function ensureCompanyCollections(companyId) {
             });
             await collection.createIndex({
                 isCustom: 1
+            });
+        } else if (collectionName === "truck_sessions") {
+            await collection.createIndex({
+                createdAt: -1
+            });
+            await collection.createIndex({
+                direction: 1
+            });
+            await collection.createIndex({
+                plateNumber: 1
+            });
+            await collection.createIndex({
+                inSessionId: 1
+            });
+            await collection.createIndex({
+                companyId: 1
             });
         }
     }
@@ -375,17 +392,32 @@ const truckLogSchema = __TURBOPACK__imported__module__$5b$project$5d2f$node_modu
             })
     }),
     plate: __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$zod$2f$v3$2f$external$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__$3c$export__$2a$__as__z$3e$__["z"].string().min(1, 'Plate number is required').max(20, 'Plate number is too long').regex(/^[А-ЯЁA-Z0-9\s-]+$/i, 'Plate number contains invalid characters'),
+    driverId: __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$zod$2f$v3$2f$external$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__$3c$export__$2a$__as__z$3e$__["z"].string().max(100).optional(),
     driverName: __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$zod$2f$v3$2f$external$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__$3c$export__$2a$__as__z$3e$__["z"].string().min(1, 'Driver name is required').max(200, 'Driver name is too long'),
     cargoType: __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$zod$2f$v3$2f$external$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__$3c$export__$2a$__as__z$3e$__["z"].string().min(1, 'Cargo type is required').max(100, 'Cargo type is too long'),
-    weightKg: __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$zod$2f$v3$2f$external$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__$3c$export__$2a$__as__z$3e$__["z"].number().positive('Weight must be positive').max(1000000, 'Weight is too large'),
+    weightKg: __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$zod$2f$v3$2f$external$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__$3c$export__$2a$__as__z$3e$__["z"].number().positive('Weight must be positive').max(1000000, 'Weight is too large').optional(),
     netWeightKg: __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$zod$2f$v3$2f$external$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__$3c$export__$2a$__as__z$3e$__["z"].number().positive('Net weight must be positive').max(1000000, 'Net weight is too large').optional(),
     comments: __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$zod$2f$v3$2f$external$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__$3c$export__$2a$__as__z$3e$__["z"].string().max(1000, 'Comments are too long').optional(),
     vehicleRegistrationNumber: __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$zod$2f$v3$2f$external$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__$3c$export__$2a$__as__z$3e$__["z"].string().max(50).optional(),
     vehicleRegistrationYear: __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$zod$2f$v3$2f$external$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__$3c$export__$2a$__as__z$3e$__["z"].string().max(4).optional(),
     origin: __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$zod$2f$v3$2f$external$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__$3c$export__$2a$__as__z$3e$__["z"].string().max(200).optional(),
     destination: __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$zod$2f$v3$2f$external$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__$3c$export__$2a$__as__z$3e$__["z"].string().max(200).optional(),
+    senderOrganizationId: __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$zod$2f$v3$2f$external$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__$3c$export__$2a$__as__z$3e$__["z"].string().max(100).optional(),
     senderOrganization: __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$zod$2f$v3$2f$external$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__$3c$export__$2a$__as__z$3e$__["z"].string().max(200).optional(),
-    receiverOrganization: __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$zod$2f$v3$2f$external$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__$3c$export__$2a$__as__z$3e$__["z"].string().max(200).optional()
+    receiverOrganizationId: __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$zod$2f$v3$2f$external$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__$3c$export__$2a$__as__z$3e$__["z"].string().max(100).optional(),
+    receiverOrganization: __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$zod$2f$v3$2f$external$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__$3c$export__$2a$__as__z$3e$__["z"].string().max(200).optional(),
+    transportCompanyId: __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$zod$2f$v3$2f$external$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__$3c$export__$2a$__as__z$3e$__["z"].string().max(100).optional(),
+    transportType: __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$zod$2f$v3$2f$external$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__$3c$export__$2a$__as__z$3e$__["z"].enum([
+        'truck',
+        'container',
+        'tanker',
+        'flatbed',
+        'refrigerated',
+        'other'
+    ]).optional(),
+    sealNumber: __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$zod$2f$v3$2f$external$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__$3c$export__$2a$__as__z$3e$__["z"].string().max(100).optional(),
+    hasTrailer: __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$zod$2f$v3$2f$external$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__$3c$export__$2a$__as__z$3e$__["z"].boolean().optional(),
+    trailerPlate: __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$zod$2f$v3$2f$external$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__$3c$export__$2a$__as__z$3e$__["z"].string().max(20).optional()
 });
 const addProductSchema = __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$zod$2f$v3$2f$external$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__$3c$export__$2a$__as__z$3e$__["z"].object({
     label: __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$zod$2f$v3$2f$external$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__$3c$export__$2a$__as__z$3e$__["z"].string().min(1, 'Product label is required').max(200, 'Product label is too long').trim()
@@ -564,7 +596,33 @@ async function saveTruckLog(log) {
         };
         // Insert into company's collection
         await logsCollection.insertOne(logDoc);
-        return logDoc;
+        // Serialize MongoDB document to plain object (remove _id, ensure all values are serializable)
+        // Create a clean copy to avoid any MongoDB-specific properties
+        const serializedLog = {
+            id: logDoc.id,
+            direction: logDoc.direction,
+            plate: logDoc.plate,
+            driverId: logDoc.driverId,
+            driverName: logDoc.driverName,
+            cargoType: logDoc.cargoType,
+            weightKg: logDoc.weightKg,
+            netWeightKg: logDoc.netWeightKg,
+            comments: logDoc.comments,
+            origin: logDoc.origin,
+            destination: logDoc.destination,
+            senderOrganizationId: logDoc.senderOrganizationId,
+            senderOrganization: logDoc.senderOrganization,
+            receiverOrganizationId: logDoc.receiverOrganizationId,
+            receiverOrganization: logDoc.receiverOrganization,
+            transportCompanyId: logDoc.transportCompanyId,
+            transportType: logDoc.transportType,
+            sealNumber: logDoc.sealNumber,
+            hasTrailer: logDoc.hasTrailer,
+            trailerPlate: logDoc.trailerPlate,
+            createdAt: logDoc.createdAt,
+            sentToCustoms: logDoc.sentToCustoms
+        };
+        return serializedLog;
     } catch (error) {
         const handled = (0, __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$errors$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["handleError"])(error);
         throw new Error(handled.message);
@@ -685,13 +743,7 @@ async function updateTruckLog(logId, updates) {
                 error: "Log not found"
             };
         }
-        // Prevent editing logs that have been sent to customs
-        if (existingLog.sentToCustoms) {
-            return {
-                success: false,
-                error: "Cannot edit logs that have been sent to customs"
-            };
-        }
+        // Allow editing logs even if sent to customs (re-edit feature)
         // Validate updates if provided
         if (Object.keys(updates).length > 0) {
             const validation = __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$validation$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["truckLogSchema"].partial().safeParse(updates);
@@ -1130,8 +1182,8 @@ var __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$auth$2f$authServer$2e
 __turbopack_context__.s([
     "00db69d86cc3b8562947f5f5012a7dc7936b0621ed",
     ()=>__TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$auth$2f$authServer$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["logout"],
-    "603823d3910066eeba55100ec7665dcabbb8bf509e",
-    ()=>__TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$api$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["getTruckLogs"]
+    "40a2ead62e15f1c40ce6d586420a2c191a6a5596a9",
+    ()=>__TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$api$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["sendTruckLogToCustoms"]
 ]);
 var __TURBOPACK__imported__module__$5b$project$5d2f2e$next$2d$internal$2f$server$2f$app$2f$history$2f$page$2f$actions$2e$js__$7b$__ACTIONS_MODULE0__$3d3e$__$225b$project$5d2f$lib$2f$api$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29222c$__ACTIONS_MODULE1__$3d3e$__$225b$project$5d2f$lib$2f$auth$2f$authServer$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$2922$__$7d$__$5b$app$2d$rsc$5d$__$28$server__actions__loader$2c$__ecmascript$29$__$3c$locals$3e$__ = __turbopack_context__.i('[project]/.next-internal/server/app/history/page/actions.js { ACTIONS_MODULE0 => "[project]/lib/api.ts [app-rsc] (ecmascript)", ACTIONS_MODULE1 => "[project]/lib/auth/authServer.ts [app-rsc] (ecmascript)" } [app-rsc] (server actions loader, ecmascript) <locals>');
 var __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$api$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/lib/api.ts [app-rsc] (ecmascript)");

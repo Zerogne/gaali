@@ -7,7 +7,9 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Send, Search, Edit, FileDown } from "lucide-react"
+import { Send, Search, Edit, FileDown, ExternalLink } from "lucide-react"
+import { Separator } from "@/components/ui/separator"
+import { useRouter } from "next/navigation"
 import { EditLogDialog } from "@/components/history/EditLogDialog"
 import { exportLogToPDF } from "@/lib/pdf-export"
 import type { TruckLog, Direction } from "@/lib/types"
@@ -22,6 +24,7 @@ interface TruckTableProps {
 
 export function TruckTable({ logs, onSend, onUpdate }: TruckTableProps) {
   const { toast } = useToast()
+  const router = useRouter()
   const [directionFilter, setDirectionFilter] = useState<Direction | "ALL">("ALL")
   const [searchQuery, setSearchQuery] = useState("")
   const [sendingIds, setSendingIds] = useState<Set<string>>(new Set())
@@ -50,8 +53,6 @@ export function TruckTable({ logs, onSend, onUpdate }: TruckTableProps) {
   })
 
   const handleResend = async (log: TruckLog) => {
-    if (log.sentToCustoms) return
-
     setSendingIds((prev) => new Set(prev).add(log.id))
     try {
       const result = await sendTruckLogToCustoms(log.id)
@@ -59,20 +60,20 @@ export function TruckTable({ logs, onSend, onUpdate }: TruckTableProps) {
       if (result.success) {
         onSend(log.id)
         toast({
-          title: "Success",
-          description: "Data successfully sent to Mongolian Customs",
+          title: "Амжилттай",
+          description: "Мэдээлэл Монголын гаалинд амжилттай илгээгдлээ",
         })
       } else {
         toast({
-          title: "Error",
-          description: result.error || "Failed to send to customs",
+          title: "Алдаа",
+          description: result.error || "Гаалинд илгээхэд алдаа гарлаа",
           variant: "destructive",
         })
       }
     } catch (error) {
       toast({
-        title: "Error",
-        description: "Failed to send to customs",
+        title: "Алдаа",
+        description: "Гаалинд илгээхэд алдаа гарлаа",
         variant: "destructive",
       })
     } finally {
@@ -85,7 +86,7 @@ export function TruckTable({ logs, onSend, onUpdate }: TruckTableProps) {
   }
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleString("en-US", {
+    return new Date(dateString).toLocaleString("mn-MN", {
       month: "short",
       day: "numeric",
       year: "numeric",
@@ -95,55 +96,99 @@ export function TruckTable({ logs, onSend, onUpdate }: TruckTableProps) {
   }
 
   return (
-    <Card className="border-gray-200 bg-white">
-      <CardHeader>
-        <div className="flex items-center justify-between mb-4">
-          <CardTitle className="text-lg font-semibold text-gray-900">Truck Log History</CardTitle>
+    <Card className="border-gray-200 bg-white shadow-sm">
+      <CardHeader className="pb-4">
+        <div className="flex items-center justify-between mb-2">
+          <div>
+            <CardTitle className="text-xl font-bold text-gray-900 mb-1">
+              Тээврийн хэрэгслийн түүх
+            </CardTitle>
+            <p className="text-sm text-gray-500">
+              Бүх тээврийн хэрэгслийн орох/гарах бүртгэлийн мэдээлэл
+            </p>
+          </div>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => router.push("/history")}
+            className="flex items-center gap-2"
+            title="Бүрэн түүх харах"
+          >
+            <ExternalLink className="w-4 h-4" />
+            Бүрэн түүх
+          </Button>
         </div>
         
-        {/* Filters */}
-        <div className="flex flex-col sm:flex-row gap-3">
-          <div className="relative flex-1 max-w-md">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-            <Input
-              placeholder="Search by plate or driver name..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10 bg-gray-50 border-gray-300 focus:bg-white focus:border-blue-500"
-            />
+        <Separator className="my-4" />
+        
+        {/* Filters Section */}
+        <div className="space-y-3">
+          <div className="flex items-center gap-2 mb-2">
+            <Search className="w-4 h-4 text-gray-400" />
+            <span className="text-sm font-medium text-gray-700">Хайлт ба шүүлт</span>
           </div>
-          <Select value={directionFilter} onValueChange={(value) => setDirectionFilter(value as Direction | "ALL")}>
-            <SelectTrigger className="w-full sm:w-[180px] bg-white border-gray-300">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="ALL">All Directions</SelectItem>
-              <SelectItem value="IN">IN Only</SelectItem>
-              <SelectItem value="OUT">OUT Only</SelectItem>
-            </SelectContent>
-          </Select>
+          <div className="flex flex-col sm:flex-row gap-3">
+            <div className="relative flex-1 max-w-md">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+              <Input
+                placeholder="Улсын дугаар эсвэл жолоочийн нэрээр хайх..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-10 bg-gray-50 border-gray-300 focus:bg-white focus:border-blue-500"
+              />
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-gray-600 whitespace-nowrap">Чиглэл:</span>
+              <Select value={directionFilter} onValueChange={(value) => setDirectionFilter(value as Direction | "ALL")}>
+                <SelectTrigger className="w-full sm:w-[180px] bg-white border-gray-300">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="ALL">Бүх чиглэл</SelectItem>
+                  <SelectItem value="IN">Зөвхөн ОРОХ</SelectItem>
+                  <SelectItem value="OUT">Зөвхөн ГАРАХ</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
         </div>
       </CardHeader>
-      <CardContent>
+      <Separator />
+      <CardContent className="pt-6">
         {filteredLogs.length === 0 ? (
           <div className="text-center py-12 text-gray-500">
-            <p>No truck logs found</p>
+            <p className="text-base font-medium mb-1">Тээврийн хэрэгслийн бүртгэл олдсонгүй</p>
+            <p className="text-sm text-gray-400">
+              Хайлтын үр дүнд тохирох бүртгэл байхгүй байна. Шүүлтийг өөрчлөх эсвэл хайлтын үгсийг өөрчлөн үзнэ үү.
+            </p>
           </div>
         ) : (
-          <div className="rounded-lg border border-gray-200 overflow-hidden">
-            <Table>
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <span className="text-sm font-medium text-gray-700">
+                  Нийт бүртгэл:
+                </span>
+                <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
+                  {filteredLogs.length}
+                </Badge>
+              </div>
+            </div>
+            <Separator />
+            <div className="rounded-lg border border-gray-200 overflow-hidden">
+              <Table>
               <TableHeader>
                 <TableRow className="bg-gray-50">
-                  <TableHead className="text-gray-700 font-semibold">Direction</TableHead>
-                  <TableHead className="text-gray-700 font-semibold">Plate</TableHead>
-                  <TableHead className="text-gray-700 font-semibold">Driver</TableHead>
+                  <TableHead className="text-gray-700 font-semibold">Чиглэл</TableHead>
+                  <TableHead className="text-gray-700 font-semibold">Улсын дугаар</TableHead>
+                  <TableHead className="text-gray-700 font-semibold">Жолооч</TableHead>
                   <TableHead className="text-gray-700 font-semibold">Бүтээгдэхүүн</TableHead>
-                  <TableHead className="text-gray-700 font-semibold">Weight (kg)</TableHead>
+                  <TableHead className="text-gray-700 font-semibold">Жин (кг)</TableHead>
                   <TableHead className="text-gray-700 font-semibold">Хаанаас</TableHead>
                   <TableHead className="text-gray-700 font-semibold">Хаашаа</TableHead>
-                  <TableHead className="text-gray-700 font-semibold">Created At</TableHead>
-                  <TableHead className="text-gray-700 font-semibold">Status</TableHead>
-                  <TableHead className="text-gray-700 font-semibold">Actions</TableHead>
+                  <TableHead className="text-gray-700 font-semibold">Үүсгэсэн огноо</TableHead>
+                  <TableHead className="text-gray-700 font-semibold">Төлөв</TableHead>
+                  <TableHead className="text-gray-700 font-semibold">Үйлдлүүд</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -179,11 +224,11 @@ export function TruckTable({ logs, onSend, onUpdate }: TruckTableProps) {
                     <TableCell>
                       {log.sentToCustoms ? (
                         <Badge className="bg-green-50 text-green-700 border-green-200">
-                          Sent to Customs
+                          Гаалинд илгээсэн
                         </Badge>
                       ) : (
                         <Badge variant="outline" className="bg-amber-50 text-amber-700 border-amber-200">
-                          Saved only
+                          Зөвхөн хадгалсан
                         </Badge>
                       )}
                     </TableCell>
@@ -193,12 +238,11 @@ export function TruckTable({ logs, onSend, onUpdate }: TruckTableProps) {
                           size="sm"
                           variant="outline"
                           onClick={() => handleEdit(log)}
-                          disabled={log.sentToCustoms}
-                          title={log.sentToCustoms ? "Cannot edit logs sent to customs" : "Edit log"}
+                          title={log.sentToCustoms ? "Бүртгэлийг дахин засах" : "Бүртгэл засах"}
                           className="border-gray-300 hover:bg-gray-50"
                         >
                           <Edit className="w-3.5 h-3.5 mr-1.5" />
-                          Edit
+                          {log.sentToCustoms ? "Дахин засах" : "Засах"}
                         </Button>
                         <Button
                           size="sm"
@@ -210,26 +254,45 @@ export function TruckTable({ logs, onSend, onUpdate }: TruckTableProps) {
                               console.error("Error exporting PDF:", error)
                             }
                           }}
-                          title="Export to PDF"
+                          title="PDF файл татах"
                           className="border-gray-300 hover:bg-gray-50"
                         >
                           <FileDown className="w-3.5 h-3.5 mr-1.5" />
                           PDF
                         </Button>
-                        {!log.sentToCustoms && (
+                        {log.sentToCustoms ? (
                           <Button
                             size="sm"
                             variant="outline"
                             onClick={() => handleResend(log)}
                             disabled={sendingIds.has(log.id)}
                             className="border-gray-300 hover:bg-gray-50"
+                            title="Гаалинд дахин илгээх"
                           >
                             {sendingIds.has(log.id) ? (
-                              "Sending..."
+                              "Илгээж байна..."
                             ) : (
                               <>
                                 <Send className="w-3.5 h-3.5 mr-1.5" />
-                                Resend
+                                Дахин илгээх
+                              </>
+                            )}
+                          </Button>
+                        ) : (
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => handleResend(log)}
+                            disabled={sendingIds.has(log.id)}
+                            className="border-gray-300 hover:bg-gray-50"
+                            title="Гаалинд илгээх"
+                          >
+                            {sendingIds.has(log.id) ? (
+                              "Илгээж байна..."
+                            ) : (
+                              <>
+                                <Send className="w-3.5 h-3.5 mr-1.5" />
+                                Илгээх
                               </>
                             )}
                           </Button>
@@ -240,6 +303,7 @@ export function TruckTable({ logs, onSend, onUpdate }: TruckTableProps) {
                 ))}
               </TableBody>
             </Table>
+            </div>
           </div>
         )}
       </CardContent>
@@ -253,4 +317,3 @@ export function TruckTable({ logs, onSend, onUpdate }: TruckTableProps) {
     </Card>
   )
 }
-
