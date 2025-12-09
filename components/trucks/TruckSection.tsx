@@ -701,13 +701,14 @@ export function TruckSection({ direction, onSave, onSend }: TruckSectionProps) {
       </Card>
 
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent className="!max-w-[60vw] !w-[95vw] max-h-[90vh] p-0" style={{ width: '95vw', maxWidth: '95vw' }}>
+        <DialogContent className="!max-w-none !w-screen !h-screen !max-h-screen !top-0 !left-0 !right-0 !bottom-0 !translate-x-0 !translate-y-0 !rounded-none p-0" style={{ width: '100vw', height: '100vh', maxWidth: '100vw', maxHeight: '100vh' }}>
           <DialogTitle className="sr-only">{direction === "IN" ? "ОРОХ бүртгэл" : "ГАРАХ бүртгэл"}</DialogTitle>
           <DialogDescription className="sr-only">
             {direction === "IN" ? "Орох тээврийн хэрэгслийн бүртгэл" : "Гарах тээврийн хэрэгслийн бүртгэл"}
           </DialogDescription>
-          <ScrollArea className="max-h-[90vh]">
-            <div className="p-6 space-y-5">
+          <ScrollArea className="max-h-[calc(100vh-2rem)]">
+            <div className="p-6">
+              <div className="max-w-4xl mx-auto space-y-5">
         {/* License Plate Recognition */}
         <div className="bg-gray-50 rounded-xl p-4 border border-gray-200">
           <h3 className="text-sm font-semibold text-gray-900 mb-3 flex items-center gap-2">
@@ -1058,6 +1059,7 @@ export function TruckSection({ direction, onSave, onSend }: TruckSectionProps) {
             )}
           </Button>
         </div>
+              </div>
             </div>
           </ScrollArea>
         </DialogContent>

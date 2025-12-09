@@ -448,13 +448,15 @@ export function EditLogDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="!max-w-[60vw] !w-[98vw] max-h-[95vh] overflow-y-auto p-0">
+      <DialogContent className="!max-w-none !w-screen !h-screen !max-h-screen !top-0 !left-0 !right-0 !bottom-0 !translate-x-0 !translate-y-0 !rounded-none p-0" style={{ width: '100vw', height: '100vh', maxWidth: '100vw', maxHeight: '100vh' }}>
         <DialogTitle className="sr-only">Edit Truck Log</DialogTitle>
         <DialogDescription className="sr-only">
           Update the truck log information below.
         </DialogDescription>
-        <Card className="border-gray-200 bg-white">
-          <CardHeader className="pb-4">
+        <div className="p-6 h-full overflow-y-auto">
+          <div className="max-w-4xl mx-auto">
+            <Card className="border-gray-200 bg-white">
+              <CardHeader className="pb-4">
             <div className="flex items-center justify-between">
               <CardTitle className="flex items-center gap-2.5 text-gray-900 text-lg font-semibold">
                 <div className="p-2 rounded-lg bg-blue-50">
@@ -814,6 +816,8 @@ export function EditLogDialog({
               </form>
             </CardContent>
           </Card>
+          </div>
+        </div>
       </DialogContent>
     </Dialog>
   )
