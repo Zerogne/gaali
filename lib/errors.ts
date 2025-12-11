@@ -107,12 +107,20 @@ export function handleError(error: unknown): { message: string; code: string; st
  */
 export function errorToResponse(error: unknown) {
   const handled = handleError(error)
-  return {
+  const response: any = {
     error: handled.message,
     code: handled.code,
-    ...(process.env.NODE_ENV === 'development' && error instanceof Error
-      ? { stack: error.stack }
-      : {}),
   }
+  
+  // Include validation field errors if available
+  if (error instanceof ValidationError && error.fields) {
+    response.errors = error.fields
+  }
+  
+  // Include stack trace in development
+  if (process.env.NODE_ENV === 'development' && error instanceof Error) {
+    response.stack = error.stack
+  }
+  
+  return response
 }
-

@@ -9,9 +9,16 @@ import { errorToResponse } from "@/lib/errors"
  */
 export async function GET() {
   try {
+    console.log("📥 GET /api/companies - Loading companies...")
     const companies = await getAllCompanies()
+    console.log("✅ Successfully loaded companies:", companies.length)
     return NextResponse.json(companies, { status: 200 })
   } catch (error) {
+    console.error("❌ Error in GET /api/companies:", error)
+    console.error("❌ Error details:", {
+      message: error instanceof Error ? error.message : String(error),
+      stack: error instanceof Error ? error.stack : undefined,
+    })
     const errorResponse = errorToResponse(error)
     const statusCode = error instanceof Error && 'statusCode' in error
       ? (error as { statusCode: number }).statusCode
@@ -20,4 +27,3 @@ export async function GET() {
     return NextResponse.json(errorResponse, { status: statusCode })
   }
 }
-

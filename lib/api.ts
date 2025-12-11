@@ -15,18 +15,54 @@ export async function saveTruckLog(
   log: Omit<TruckLog, "id" | "createdAt" | "sentToCustoms">
 ): Promise<TruckLog> {
   try {
+    console.log("💾 saveTruckLog called with:", log)
+    
+    // Clean up empty strings - convert to undefined for optional fields only
+    // Don't modify required fields (plate, driverName, cargoType) - let validation handle them
+    const cleanedLog = {
+      ...log,
+      // Optional fields - convert empty strings to undefined
+      driverId: (log.driverId === "" || log.driverId === null) ? undefined : log.driverId,
+      weightKg: (log.weightKg === null || log.weightKg === undefined || isNaN(log.weightKg) || log.weightKg <= 0) ? undefined : log.weightKg,
+      netWeightKg: (log.netWeightKg === null || log.netWeightKg === undefined || isNaN(log.netWeightKg) || log.netWeightKg <= 0) ? undefined : log.netWeightKg,
+      comments: log.comments === "" ? undefined : log.comments,
+      origin: log.origin === "" ? undefined : log.origin,
+      destination: log.destination === "" ? undefined : log.destination,
+      senderOrganizationId: log.senderOrganizationId === "" ? undefined : log.senderOrganizationId,
+      senderOrganization: log.senderOrganization === "" ? undefined : log.senderOrganization,
+      receiverOrganizationId: log.receiverOrganizationId === "" ? undefined : log.receiverOrganizationId,
+      receiverOrganization: log.receiverOrganization === "" ? undefined : log.receiverOrganization,
+      transportCompanyId: log.transportCompanyId === "" ? undefined : log.transportCompanyId,
+      sealNumber: log.sealNumber === "" ? undefined : log.sealNumber,
+      trailerPlate: log.trailerPlate === "" ? undefined : log.trailerPlate,
+      vehicleRegistrationNumber: log.vehicleRegistrationNumber === "" ? undefined : log.vehicleRegistrationNumber,
+      vehicleRegistrationYear: log.vehicleRegistrationYear === "" ? undefined : log.vehicleRegistrationYear,
+    }
+    
+    console.log("🧹 Cleaned log data:", cleanedLog)
+    
     // Validate input
-    const validation = truckLogSchema.safeParse(log)
+    const validation = truckLogSchema.safeParse(cleanedLog)
     if (!validation.success) {
+      console.error("❌ Validation failed!")
+      console.error("❌ Validation errors:", JSON.stringify(validation.error.issues, null, 2))
+      console.error("❌ Data that failed validation:", JSON.stringify(cleanedLog, null, 2))
+      
+      const fieldErrors = validation.error.issues.reduce((acc, issue) => {
+        const path = issue.path.join(".")
+        acc[path] = issue.message
+        return acc
+      }, {} as Record<string, string>)
+      
+      console.error("❌ Field errors:", fieldErrors)
+      
       throw new ValidationError(
-        "Invalid truck log data",
-        validation.error.issues.reduce((acc, issue) => {
-          const path = issue.path.join(".")
-          acc[path] = issue.message
-          return acc
-        }, {} as Record<string, string>)
+        `Invalid truck log data: ${Object.entries(fieldErrors).map(([field, msg]) => `${field}: ${msg}`).join(", ")}`,
+        fieldErrors
       )
     }
+    
+    console.log("✅ Validation passed")
 
     // Get active company from session
     const companyId = await getActiveCompany()
@@ -43,7 +79,9 @@ export async function saveTruckLog(
     }
 
     // Insert into company's collection
+    console.log("💾 Inserting log document into database...")
     await logsCollection.insertOne(logDoc)
+    console.log("✅ Log document inserted successfully")
 
     // Serialize MongoDB document to plain object (remove _id, ensure all values are serializable)
     // Create a clean copy to avoid any MongoDB-specific properties
@@ -72,8 +110,14 @@ export async function saveTruckLog(
       sentToCustoms: logDoc.sentToCustoms,
     }
 
+    console.log("✅ saveTruckLog completed successfully, log ID:", serializedLog.id)
     return serializedLog
   } catch (error) {
+    console.error("❌ Error in saveTruckLog:", error)
+    console.error("❌ Error details:", {
+      message: error instanceof Error ? error.message : String(error),
+      stack: error instanceof Error ? error.stack : undefined,
+    })
     const handled = handleError(error)
     throw new Error(handled.message)
   }

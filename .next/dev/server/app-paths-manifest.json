@@ -2,11 +2,9 @@
   "/(auth)/login/page": "app/(auth)/login/page.js",
   "/api/companies/route": "app/api/companies/route.js",
   "/api/drivers/route": "app/api/drivers/route.js",
-  "/api/logs/route": "app/api/logs/route.js",
   "/api/organizations/route": "app/api/organizations/route.js",
   "/api/products/route": "app/api/products/route.js",
   "/api/transport-companies/route": "app/api/transport-companies/route.js",
   "/api/user/route": "app/api/user/route.js",
-  "/history/page": "app/history/page.js",
   "/page": "app/page.js"
 }

@@ -8,24 +8,32 @@ import { errorToResponse } from "@/lib/errors"
 export async function POST(request: Request) {
   try {
     const body = await request.json()
+    console.log("📥 Received request body:", body)
 
-    const session = await saveTruckSession({
+    // Clean up the data before passing to saveTruckSession
+    const cleanedBody = {
       direction: body.direction,
       plateNumber: body.plateNumber,
-      driverName: body.driverName,
-      product: body.product,
-      transporterCompany: body.transporterCompany,
-      inSessionId: body.inSessionId,
+      driverName: body.driverName === "" ? undefined : body.driverName,
+      product: body.product === "" ? undefined : body.product,
+      transporterCompany: body.transporterCompany === "" ? undefined : body.transporterCompany,
+      inSessionId: body.inSessionId === "" || body.inSessionId === null ? undefined : body.inSessionId,
       grossWeightKg: body.grossWeightKg,
-      netWeightKg: body.netWeightKg,
-      inTime: body.inTime,
-      outTime: body.outTime,
-      notes: body.notes,
-    })
+      netWeightKg: body.netWeightKg === null || body.netWeightKg === undefined ? undefined : body.netWeightKg,
+      inTime: body.inTime === "" ? undefined : body.inTime,
+      outTime: body.outTime === "" ? undefined : body.outTime,
+      notes: body.notes === "" ? undefined : body.notes,
+    }
+    
+    console.log("🧹 Cleaned request body:", cleanedBody)
+
+    const session = await saveTruckSession(cleanedBody)
+    console.log("✅ Session saved successfully:", session.id)
 
     return NextResponse.json({ success: true, session }, { status: 201 })
   } catch (error) {
-    console.error("Error creating truck session:", error)
+    console.error("❌ Error creating truck session:", error)
+    console.error("❌ Error stack:", error instanceof Error ? error.stack : "No stack trace")
     const errorResponse = errorToResponse(error)
     const statusCode = error instanceof Error && "statusCode" in error
       ? (error as { statusCode: number }).statusCode

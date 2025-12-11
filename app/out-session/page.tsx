@@ -11,6 +11,8 @@ import { Sidebar } from "@/components/layout/Sidebar"
 import { AlertBanner } from "@/components/layout/AlertBanner"
 import { useToast } from "@/hooks/use-toast"
 import { useRouter } from "next/navigation"
+import { useThirdPartyAutofill } from "@/hooks/useThirdPartyAutofill"
+import { Send, Eye, EyeOff } from "lucide-react"
 import type { TruckSession } from "@/lib/truckSessions"
 
 interface OutSessionFormState {
@@ -34,7 +36,9 @@ export default function OutSessionPage() {
 
   const { toast } = useToast()
   const router = useRouter()
+  const { sendFormData, isSending: isSendingToThirdParty, isConnected, getSentDataHistory } = useThirdPartyAutofill()
   const [isSaving, setIsSaving] = useState(false)
+  const [showDebugPanel, setShowDebugPanel] = useState(false)
   const [inSession, setInSession] = useState<TruckSession | null>(null)
   const [isLoadingInSession, setIsLoadingInSession] = useState(false)
   const [inSessionError, setInSessionError] = useState<string | null>(null)
@@ -154,23 +158,39 @@ export default function OutSessionPage() {
 
     setIsSaving(true)
     try {
+      const requestData = {
+        direction: "OUT",
+        plateNumber: formState.plateNumber.trim().toUpperCase(),
+        grossWeightKg: formState.outWeightKg, // OUT weight is stored as grossWeightKg
+        netWeightKg: formState.netWeightKg ? formState.netWeightKg : undefined,
+        inSessionId: formState.inSessionId ? formState.inSessionId : undefined,
+        outTime: formState.outTime ? formState.outTime : undefined,
+        notes: formState.notes.trim() || undefined,
+      }
+      
+      console.log("💾 Saving session with data:", requestData)
+      
       const response = await fetch("/api/truck-sessions", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          direction: "OUT",
-          plateNumber: formState.plateNumber.trim().toUpperCase(),
-          grossWeightKg: formState.outWeightKg, // OUT weight is stored as grossWeightKg
-          netWeightKg: formState.netWeightKg,
-          inSessionId: formState.inSessionId,
-          outTime: formState.outTime,
-          notes: formState.notes.trim() || undefined,
-        }),
+        body: JSON.stringify(requestData),
       })
 
       if (!response.ok) {
         const errorData = await response.json()
-        throw new Error(errorData.error || "Failed to save session")
+        // Show detailed validation errors if available
+        let errorMessage = errorData.error || "Failed to save session"
+        
+        // If there are validation errors, format them nicely
+        if (errorData.errors && typeof errorData.errors === 'object') {
+          const validationErrors = Object.entries(errorData.errors)
+            .map(([field, message]) => `${field}: ${message}`)
+            .join(', ')
+          errorMessage = `Validation error: ${validationErrors}`
+        }
+        
+        console.error("Save error details:", errorData)
+        throw new Error(errorMessage)
       }
 
       const result = await response.json()
@@ -203,6 +223,67 @@ export default function OutSessionPage() {
       })
     } finally {
       setIsSaving(false)
+    }
+  }
+
+  const handleSendToThirdParty = async () => {
+    console.log("🎯 handleSendToThirdParty called (OUT session)")
+    console.log("🎯 Form state:", formState)
+    console.log("🎯 In session:", inSession)
+    console.log("🎯 Connection status:", isConnected)
+    
+    // Validate form before sending
+    if (!formState.plateNumber || !formState.outWeightKg || !formState.netWeightKg || !inSession) {
+      console.warn("⚠️ Validation failed - missing required fields")
+      toast({
+        title: "Алдаа",
+        description: "Бүх шаардлагатай талбаруудыг бөглөнө үү",
+        variant: "destructive",
+      })
+      return
+    }
+
+    // Prepare form data to send to 3rd party app
+    const formDataToSend = {
+      direction: "OUT",
+      plateNumber: formState.plateNumber.trim().toUpperCase(),
+      outTime: formState.outTime,
+      outWeightKg: formState.outWeightKg,
+      netWeightKg: formState.netWeightKg,
+      inSessionId: formState.inSessionId,
+      inSessionGrossWeight: inSession.grossWeightKg,
+      notes: formState.notes.trim() || undefined,
+    }
+
+    console.log("🎯 Prepared form data to send:", formDataToSend)
+    console.log("🎯 Calling sendFormData...")
+    
+    const result = await sendFormData(formDataToSend)
+    
+    console.log("🎯 sendFormData result:", result)
+
+    if (result.success) {
+      // Log to console for debugging
+      console.log("✅ Successfully sent form data:", formDataToSend)
+      console.log("📋 Check browser console (F12) to see the sent data")
+      
+      toast({
+        title: "Амжилттай",
+        description: isConnected 
+          ? "Форм өгөгдөл 3-р талын апп руу илгээгдлээ. Автоматаар бөглөгдөнө. (F12 дарж console-оос шалгана уу)"
+          : "Форм өгөгдөл илгээх оролдлого хийгдлээ",
+      })
+    } else {
+      // Show more detailed error message
+      const errorMsg = result.error || "3-р талын апп руу илгээхэд алдаа гарлаа"
+      toast({
+        title: "Холболтын алдаа",
+        description: errorMsg.includes("Unable to connect") || errorMsg.includes("unable to connect")
+          ? "3-р талын апптай холбогдох боломжгүй байна. Апп ажиллаж байгаа эсэхийг шалгана уу."
+          : errorMsg,
+        variant: "destructive",
+        duration: 5000, // Show for 5 seconds
+      })
     }
   }
 
@@ -344,7 +425,7 @@ export default function OutSessionPage() {
                     />
                   </div>
 
-                  {/* Submit Button */}
+                  {/* Submit Buttons */}
                   <div className="flex gap-3 pt-4">
                     <Button
                       type="submit"
@@ -352,6 +433,15 @@ export default function OutSessionPage() {
                       disabled={!inSession || !formState.netWeightKg || isSaving}
                     >
                       {isSaving ? "Хадгалж байна..." : "Бүртгэл хадгалах"}
+                    </Button>
+                    <Button
+                      type="button"
+                      onClick={handleSendToThirdParty}
+                      className="flex-1 bg-blue-600 text-white hover:bg-blue-700"
+                      disabled={isSendingToThirdParty || isSaving || !inSession || !formState.netWeightKg}
+                    >
+                      <Send className="h-4 w-4 mr-2" />
+                      {isSendingToThirdParty ? "Илгээж байна..." : "3-р талын апп руу илгээх"}
                     </Button>
                     <Button
                       type="button"
@@ -372,6 +462,69 @@ export default function OutSessionPage() {
                     >
                       Цэвэрлэх
                     </Button>
+                  </div>
+                  <div className="mt-2 space-y-2">
+                    {isConnected ? (
+                      <p className="text-xs text-green-600 font-medium">
+                        ✓ 3-р талын апптай холбогдсон
+                      </p>
+                    ) : (
+                      <div className="space-y-1">
+                        <p className="text-xs text-yellow-600 font-medium">
+                          ⚠️ 3-р талын апптай холбогдоогүй байна
+                        </p>
+                        <p className="text-xs text-gray-500">
+                          Апп ажиллаж байгаа эсэхийг шалгана уу (ws://127.0.0.1:9000/service)
+                        </p>
+                      </div>
+                    )}
+                    
+                    {/* Debug Panel Toggle */}
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setShowDebugPanel(!showDebugPanel)}
+                      className="text-xs h-7"
+                    >
+                      {showDebugPanel ? (
+                        <>
+                          <EyeOff className="h-3 w-3 mr-1" />
+                          Debug нуух
+                        </>
+                      ) : (
+                        <>
+                          <Eye className="h-3 w-3 mr-1" />
+                          Илгээсэн өгөгдөл харах (Debug)
+                        </>
+                      )}
+                    </Button>
+                    
+                    {/* Debug Panel */}
+                    {showDebugPanel && (
+                      <div className="mt-2 p-3 bg-gray-50 border border-gray-200 rounded-lg text-xs">
+                        <p className="font-semibold mb-2 text-gray-700">Илгээсэн өгөгдлийн түүх:</p>
+                        {getSentDataHistory().length === 0 ? (
+                          <p className="text-gray-500 italic">Одоогоор илгээсэн өгөгдөл байхгүй</p>
+                        ) : (
+                          <div className="space-y-2 max-h-60 overflow-y-auto">
+                            {getSentDataHistory().map((entry: any, index: number) => (
+                              <div key={index} className="p-2 bg-white border border-gray-200 rounded">
+                                <p className="text-gray-600 font-medium mb-1">
+                                  {new Date(entry.timestamp).toLocaleString("mn-MN")}
+                                </p>
+                                <pre className="text-xs overflow-x-auto text-gray-700">
+                                  {JSON.stringify(entry.data, null, 2)}
+                                </pre>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                        <p className="mt-2 text-gray-500 text-xs">
+                          💡 F12 дарж browser console-оос илгээсэн өгөгдлийг харах боломжтой
+                        </p>
+                      </div>
+                    )}
                   </div>
                 </form>
               </CardContent>

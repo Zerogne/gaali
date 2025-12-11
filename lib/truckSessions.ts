@@ -17,7 +17,7 @@ const truckSessionSchema = z.object({
   transporterCompany: z.string().optional(),
   inSessionId: z.string().optional(),
   grossWeightKg: z.number().positive("Gross weight must be positive"),
-  netWeightKg: z.number().positive().optional(),
+  netWeightKg: z.number().positive().optional().nullable(),
   inTime: z.string().optional(),
   outTime: z.string().optional(),
   notes: z.string().optional(),
@@ -51,7 +51,9 @@ export async function saveTruckSession(
   sessionData: Omit<TruckSession, "_id" | "id" | "companyId" | "createdAt" | "updatedAt">
 ): Promise<TruckSession> {
   try {
-    // Validate input
+    console.log("💾 saveTruckSession called with:", sessionData)
+    
+    // Validate input (data should already be cleaned by API route)
     const validation = truckSessionSchema.safeParse(sessionData)
     if (!validation.success) {
       throw new ValidationError(

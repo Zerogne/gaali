@@ -1,80 +1,196 @@
-[00:00:01.423] Server  LOG      ✓ Ready in 1248ms
-[00:00:25.111] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
-[00:00:25.888] Browser LOG     %c[Vercel Web Analytics]%c Debug mode is enabled by default in development. No requests will be sent to the server. color: rgb(120, 120, 120) color: inherit
-[00:00:25.888] Browser LOG     %c[Vercel Web Analytics]%c Running queued event color: rgb(120, 120, 120) color: inherit pageview {"path":"/login","route":"/login"}
-[00:00:25.888] Browser LOG     %c[Vercel Web Analytics]%c [pageview] http://localhost:3000/login color: rgb(120, 120, 120) color: inherit {"dp":"/login","o":"http://localhost:3000/login","r":"","sdkn":"@vercel/analytics/next","sdkv":"1.5.0","sv":"0.1.3","ts":1765286025726}
-[00:00:25.961] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
-[00:00:26.883] Browser LOG     %c[Vercel Web Analytics]%c Debug mode is enabled by default in development. No requests will be sent to the server. color: rgb(120, 120, 120) color: inherit
-[00:00:26.883] Browser LOG     %c[Vercel Web Analytics]%c Running queued event color: rgb(120, 120, 120) color: inherit pageview {"path":"/login","route":"/login"}
-[00:00:26.883] Browser LOG     %c[Vercel Web Analytics]%c [pageview] http://localhost:3000/login color: rgb(120, 120, 120) color: inherit {"dp":"/login","o":"http://localhost:3000/login","r":"","sdkn":"@vercel/analytics/next","sdkv":"1.5.0","sv":"0.1.3","ts":1765286026155}
-[00:00:26.981] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
-[00:00:27.883] Browser LOG     %c[Vercel Web Analytics]%c Debug mode is enabled by default in development. No requests will be sent to the server. color: rgb(120, 120, 120) color: inherit
-[00:00:27.883] Browser LOG     %c[Vercel Web Analytics]%c Running queued event color: rgb(120, 120, 120) color: inherit pageview {"path":"/login","route":"/login"}
-[00:00:27.883] Browser LOG     %c[Vercel Web Analytics]%c [pageview] http://localhost:3000/login color: rgb(120, 120, 120) color: inherit {"dp":"/login","o":"http://localhost:3000/login","r":"","sdkn":"@vercel/analytics/next","sdkv":"1.5.0","sv":"0.1.3","ts":1765286027176}
-[00:01:38.428] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
-[00:01:38.529] Browser LOG     %c[Vercel Web Analytics]%c Debug mode is enabled by default in development. No requests will be sent to the server. color: rgb(120, 120, 120) color: inherit
-[00:01:38.529] Browser LOG     %c[Vercel Web Analytics]%c Running queued event color: rgb(120, 120, 120) color: inherit pageview {"path":"/login","route":"/login"}
-[00:01:38.529] Browser LOG     %c[Vercel Web Analytics]%c [pageview] http://localhost:3000/login color: rgb(120, 120, 120) color: inherit {"dp":"/login","o":"http://localhost:3000/login","r":"","sdkn":"@vercel/analytics/next","sdkv":"1.5.0","sv":"0.1.3","ts":1765286098605}
-[00:01:48.430] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
-[00:01:48.562] Browser LOG     %c[Vercel Web Analytics]%c Debug mode is enabled by default in development. No requests will be sent to the server. color: rgb(120, 120, 120) color: inherit
-[00:01:48.562] Browser LOG     %c[Vercel Web Analytics]%c Running queued event color: rgb(120, 120, 120) color: inherit pageview {"path":"/","route":"/"}
-[00:01:48.562] Browser LOG     %c[Vercel Web Analytics]%c [pageview] http://localhost:3000/ color: rgb(120, 120, 120) color: inherit {"dp":"/","o":"http://localhost:3000/","sdkn":"@vercel/analytics/next","sdkv":"1.5.0","sv":"0.1.3","ts":1765286108638}
-[00:04:26.481] Server  LOG      ✓ Compiled in 87ms
-[00:04:31.296] Server  LOG      ✓ Compiled in 37ms
-[00:04:33.006] Browser LOG     %c[Vercel Web Analytics]%c [pageview] http://localhost:3000/history color: rgb(120, 120, 120) color: inherit {"dp":"/history","o":"http://localhost:3000/history","sdkn":"@vercel/analytics/next","sdkv":"1.5.0","sv":"0.1.3","ts":1765286273101}
-[00:04:42.330] Browser LOG     %c[Vercel Web Analytics]%c [pageview] http://localhost:3000/ color: rgb(120, 120, 120) color: inherit {"dp":"/","o":"http://localhost:3000/","sdkn":"@vercel/analytics/next","sdkv":"1.5.0","sv":"0.1.3","ts":1765286282423}
-[00:06:36.571] Server  LOG      ✓ Compiled in 57ms
-[00:06:36.881] Browser ERROR   ./components/trucks/TruckSection.tsx:1063:24
-Parsing ecmascript source code failed
-  1061 |         </div>
-  1062 |             </div>
-> 1063 |           </ScrollArea>
-       |                        ^
-> 1064 |         </DialogContent>
-       | ^^^^^^^^^
-  1065 |       </Dialog>
-  1066 |
-  1067 |       <AlertDialog open={duplicateDialogOpen} onOpenChange={setDuplicateDialogOpen}>
-
-Expected '</', got 'jsx text (
-        )'
-
-Import traces:
-  Client Component Browser:
-    ./components/trucks/TruckSection.tsx [Client Component Browser]
-    ./app/page.tsx [Client Component Browser]
-    ./app/page.tsx [Server Component]
-
-  Client Component SSR:
-    ./components/trucks/TruckSection.tsx [Client Component SSR]
-    ./app/page.tsx [Client Component SSR]
-    ./app/page.tsx [Server Component]
-[00:15:45.950] Server  LOG      ✓ Compiled in 45ms
-[00:15:46.882] Browser ERROR   ./components/history/EditLogDialog.tsx:819:23
-Parsing ecmascript source code failed
-  817 |             </CardContent>
-  818 |           </Card>
-> 819 |       </DialogContent>
-      |                       ^
-> 820 |     </Dialog>
-      | ^^^^^
-  821 |   )
-  822 | }
-  823 |
-
-Expected '</', got 'jsx text (
-    )'
-
-Import traces:
-  Client Component Browser:
-    ./components/history/EditLogDialog.tsx [Client Component Browser]
-    ./components/trucks/TruckTable.tsx [Client Component Browser]
-    ./app/page.tsx [Client Component Browser]
-    ./app/page.tsx [Server Component]
-
-  Client Component SSR:
-    ./components/history/EditLogDialog.tsx [Client Component SSR]
-    ./components/trucks/TruckTable.tsx [Client Component SSR]
-    ./app/page.tsx [Client Component SSR]
-    ./app/page.tsx [Server Component]
-[00:15:54.229] Server  LOG      ✓ Compiled in 29ms
+[00:00:03.217] Server  LOG      ✓ Ready in 2.1s
+[00:00:06.776] Server  LOG      ○ Compiling /login ...
+[00:00:11.558] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:00:11.795] Browser LOG     %c[Vercel Web Analytics]%c Debug mode is enabled by default in development. No requests will be sent to the server. color: rgb(120, 120, 120) color: inherit
+[00:00:11.795] Browser LOG     %c[Vercel Web Analytics]%c Running queued event color: rgb(120, 120, 120) color: inherit pageview {"path":"/login","route":"/login"}
+[00:00:11.795] Browser LOG     %c[Vercel Web Analytics]%c [pageview] http://localhost:3000/login color: rgb(120, 120, 120) color: inherit {"dp":"/login","o":"http://localhost:3000/login","sdkn":"@vercel/analytics/next","sdkv":"1.5.0","sv":"0.1.3","ts":1765432461229}
+[00:00:12.238] Browser LOG     %c[Vercel Web Analytics]%c Debug mode is enabled by default in development. No requests will be sent to the server. color: rgb(120, 120, 120) color: inherit
+[00:00:12.238] Browser LOG     %c[Vercel Web Analytics]%c Running queued event color: rgb(120, 120, 120) color: inherit pageview {"path":"/login","route":"/login"}
+[00:00:12.238] Browser LOG     %c[Vercel Web Analytics]%c [pageview] http://localhost:3000/login color: rgb(120, 120, 120) color: inherit {"dp":"/login","o":"http://localhost:3000/login","sdkn":"@vercel/analytics/next","sdkv":"1.5.0","sv":"0.1.3","ts":1765432461672}
+[00:00:13.950] Server  LOG     📥 GET /api/companies - Loading companies...
+[00:00:13.955] Server  LOG     📥 getAllCompanies: Getting companies collection...
+[00:00:13.963] Server  LOG     📥 GET /api/companies - Loading companies...
+[00:00:13.964] Server  LOG     📥 getAllCompanies: Getting companies collection...
+[00:00:19.524] Server  LOG     📥 getAllCompanies: Finding companies...
+[00:00:19.530] Server  LOG     📥 getAllCompanies: Finding companies...
+[00:00:19.755] Server  LOG     📥 getAllCompanies: Found 4 companies
+[00:00:19.756] Server  LOG     ✅ getAllCompanies: Successfully serialized companies
+[00:00:19.758] Server  LOG     ✅ Successfully loaded companies: 4
+[00:00:20.864] Server  LOG     📥 getAllCompanies: Found 4 companies
+[00:00:20.865] Server  LOG     ✅ getAllCompanies: Successfully serialized companies
+[00:00:20.866] Server  LOG     ✅ Successfully loaded companies: 4
+[00:00:38.447] Server  LOG      ○ Compiling / ...
+[00:00:41.257] Browser LOG     %c[Vercel Web Analytics]%c Debug mode is enabled by default in development. No requests will be sent to the server. color: rgb(120, 120, 120) color: inherit
+[00:00:41.257] Browser LOG     %c[Vercel Web Analytics]%c Running queued event color: rgb(120, 120, 120) color: inherit pageview {"path":"/","route":"/"}
+[00:00:41.257] Browser LOG     %c[Vercel Web Analytics]%c [pageview] http://localhost:3000/ color: rgb(120, 120, 120) color: inherit {"dp":"/","o":"http://localhost:3000/","sdkn":"@vercel/analytics/next","sdkv":"1.5.0","sv":"0.1.3","ts":1765432490642}
+[00:01:11.985] Server  ERROR   C:\Users\Danny\Documents\xuji\gaali\.next\dev\server\chunks\ssr\[root-of-the-server]__49770b4e._.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
+[00:01:12.093] Server  ERROR   C:\Users\Danny\Documents\xuji\gaali\node_modules\next\dist\compiled\next-server\app-page-turbo.runtime.dev.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
+[00:01:12.096] Server  ERROR   C:\Users\Danny\Documents\xuji\gaali\.next\dev\server\chunks\ssr\ef5c4_next_dist_6e3e310d._.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
+[00:01:12.104] Server  ERROR   C:\Users\Danny\Documents\xuji\gaali\node_modules\next\dist\server\base-server.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
+[00:01:12.108] Server  ERROR   C:\Users\Danny\Documents\xuji\gaali\node_modules\next\dist\server\next-server.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
+[00:01:12.110] Server  ERROR   C:\Users\Danny\Documents\xuji\gaali\node_modules\next\dist\server\dev\next-dev-server.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
+[00:01:12.112] Server  ERROR   C:\Users\Danny\Documents\xuji\gaali\node_modules\next\dist\trace\trace.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
+[00:01:12.114] Server  ERROR   C:\Users\Danny\Documents\xuji\gaali\node_modules\next\dist\server\lib\router-server.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
+[00:01:12.122] Server  ERROR   C:\Users\Danny\Documents\xuji\gaali\node_modules\next\dist\server\lib\start-server.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
+[00:01:12.127] Server  ERROR    ⨯ Error: Invalid truck log data
+[00:01:15.160] Server  ERROR   C:\Users\Danny\Documents\xuji\gaali\.next\dev\server\chunks\ssr\[root-of-the-server]__49770b4e._.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
+[00:01:15.163] Server  ERROR   C:\Users\Danny\Documents\xuji\gaali\node_modules\next\dist\compiled\next-server\app-page-turbo.runtime.dev.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
+[00:01:15.170] Server  ERROR   C:\Users\Danny\Documents\xuji\gaali\.next\dev\server\chunks\ssr\ef5c4_next_dist_6e3e310d._.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
+[00:01:15.172] Server  ERROR   C:\Users\Danny\Documents\xuji\gaali\node_modules\next\dist\server\base-server.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
+[00:01:15.173] Server  ERROR   C:\Users\Danny\Documents\xuji\gaali\node_modules\next\dist\server\next-server.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
+[00:01:15.175] Server  ERROR   C:\Users\Danny\Documents\xuji\gaali\node_modules\next\dist\server\dev\next-dev-server.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
+[00:01:15.175] Server  ERROR   C:\Users\Danny\Documents\xuji\gaali\node_modules\next\dist\trace\trace.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
+[00:01:15.176] Server  ERROR   C:\Users\Danny\Documents\xuji\gaali\node_modules\next\dist\server\lib\router-server.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
+[00:01:15.177] Server  ERROR   C:\Users\Danny\Documents\xuji\gaali\node_modules\next\dist\server\lib\start-server.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
+[00:01:15.182] Server  ERROR    ⨯ Error: Invalid truck log data
+[00:02:17.732] Server  LOG      ✓ Compiled in 352ms
+[00:02:23.987] Server  LOG      ✓ Compiled in 342ms
+[00:02:28.515] Server  LOG      ✓ Compiled in 253ms
+[00:03:17.915] Server  LOG     💾 saveTruckLog called with: {}
+[00:03:17.918] Server  LOG     🧹 Cleaned log data: {}
+[00:03:17.930] Server  ERROR   ❌ Validation failed: [{...}]
+[00:03:17.950] Server  ERROR   C:\Users\Danny\Documents\xuji\gaali\.next\dev\server\chunks\ssr\[root-of-the-server]__49770b4e._.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
+[00:03:17.966] Server  ERROR   C:\Users\Danny\Documents\xuji\gaali\node_modules\next\dist\compiled\next-server\app-page-turbo.runtime.dev.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
+[00:03:17.968] Server  ERROR   C:\Users\Danny\Documents\xuji\gaali\.next\dev\server\chunks\ssr\ef5c4_next_dist_6e3e310d._.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
+[00:03:17.969] Server  ERROR   C:\Users\Danny\Documents\xuji\gaali\node_modules\next\dist\server\base-server.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
+[00:03:17.978] Server  ERROR   C:\Users\Danny\Documents\xuji\gaali\node_modules\next\dist\server\next-server.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
+[00:03:17.987] Server  ERROR   C:\Users\Danny\Documents\xuji\gaali\node_modules\next\dist\server\dev\next-dev-server.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
+[00:03:17.997] Server  ERROR   C:\Users\Danny\Documents\xuji\gaali\node_modules\next\dist\trace\trace.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
+[00:03:17.999] Server  ERROR   C:\Users\Danny\Documents\xuji\gaali\node_modules\next\dist\server\lib\router-server.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
+[00:03:18.002] Server  ERROR   C:\Users\Danny\Documents\xuji\gaali\node_modules\next\dist\server\lib\start-server.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
+[00:03:18.011] Server  ERROR   ❌ Error in saveTruckLog: ValidationError: Invalid truck log data
+[00:03:18.032] Server  ERROR   ❌ Error details: {}
+[00:03:18.046] Server  ERROR   C:\Users\Danny\Documents\xuji\gaali\.next\dev\server\chunks\ssr\[root-of-the-server]__49770b4e._.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
+[00:03:18.051] Server  ERROR   C:\Users\Danny\Documents\xuji\gaali\node_modules\next\dist\compiled\next-server\app-page-turbo.runtime.dev.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
+[00:03:18.053] Server  ERROR   C:\Users\Danny\Documents\xuji\gaali\.next\dev\server\chunks\ssr\ef5c4_next_dist_6e3e310d._.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
+[00:03:18.054] Server  ERROR   C:\Users\Danny\Documents\xuji\gaali\node_modules\next\dist\server\base-server.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
+[00:03:18.055] Server  ERROR   C:\Users\Danny\Documents\xuji\gaali\node_modules\next\dist\server\next-server.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
+[00:03:18.061] Server  ERROR   C:\Users\Danny\Documents\xuji\gaali\node_modules\next\dist\server\dev\next-dev-server.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
+[00:03:18.062] Server  ERROR   C:\Users\Danny\Documents\xuji\gaali\node_modules\next\dist\trace\trace.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
+[00:03:18.063] Server  ERROR   C:\Users\Danny\Documents\xuji\gaali\node_modules\next\dist\server\lib\router-server.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
+[00:03:18.064] Server  ERROR   C:\Users\Danny\Documents\xuji\gaali\node_modules\next\dist\server\lib\start-server.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
+[00:03:18.067] Server  ERROR    ⨯ Error: Invalid truck log data
+[00:05:12.093] Server  LOG      ✓ Compiled in 271ms
+[00:05:38.048] Server  LOG      ✓ Compiled in 302ms
+[00:07:25.180] Server  LOG     💾 saveTruckLog called with: {}
+[00:07:25.184] Server  LOG     🧹 Cleaned log data: {}
+[00:07:25.186] Server  ERROR   ❌ Validation failed!
+[00:07:25.194] Server  ERROR   ❌ Validation errors: "[\n  {\n    \"code\": \"too_big\",\n    \"maximum\": 1000000,\n    \"type\": \"number\",\n    \"inclusive\": true,\n    \"exact\": false,\n    \"message\": \"Weight is too large\",\n    \"path\": [\n      \"weightKg\"\n    ]\n  }\n]"
+[00:07:25.197] Server  ERROR   ❌ Data that failed validation: "{\n  \"direction\": \"IN\",\n  \"plate\": \"xuji\",\n  \"driverId\": \"drv_1765123007572_vdvwb2os4\",\n  \"driverName\": \"danny\",\n  \"cargoType\": \"chemicals\",\n  \"weightKg\": 12345678,\n  \"comments\": \"adasdasdasdas\",\n  \"origin\": \"darkhan\",\n  \"destination\": \"erdenet\",\n  \"senderOrganizationId\": \"org_1765126887449_elnj38rhu\",\n  \"receiverOrganizationId\": \"org_1765126887449_elnj38rhu\",\n  \"transportCompanyId\": \"tc_1765122316449_8rvekk0hh\"\n}"
+[00:07:25.200] Server  ERROR   ❌ Field errors: {}
+[00:07:25.216] Server  ERROR   C:\Users\Danny\Documents\xuji\gaali\.next\dev\server\chunks\ssr\[root-of-the-server]__49770b4e._.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
+[00:07:25.297] Server  ERROR   C:\Users\Danny\Documents\xuji\gaali\node_modules\next\dist\compiled\next-server\app-page-turbo.runtime.dev.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
+[00:07:25.345] Server  ERROR   C:\Users\Danny\Documents\xuji\gaali\.next\dev\server\chunks\ssr\ef5c4_next_dist_6e3e310d._.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
+[00:07:25.385] Server  ERROR   C:\Users\Danny\Documents\xuji\gaali\node_modules\next\dist\server\base-server.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
+[00:07:25.420] Server  ERROR   C:\Users\Danny\Documents\xuji\gaali\node_modules\next\dist\server\next-server.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
+[00:07:25.450] Server  ERROR   C:\Users\Danny\Documents\xuji\gaali\node_modules\next\dist\server\dev\next-dev-server.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
+[00:07:25.478] Server  ERROR   C:\Users\Danny\Documents\xuji\gaali\node_modules\next\dist\trace\trace.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
+[00:07:25.479] Server  ERROR   C:\Users\Danny\Documents\xuji\gaali\node_modules\next\dist\server\lib\router-server.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
+[00:07:25.481] Server  ERROR   C:\Users\Danny\Documents\xuji\gaali\node_modules\next\dist\server\lib\start-server.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
+[00:07:25.485] Server  ERROR   ❌ Error in saveTruckLog: ValidationError: Invalid truck log data: weightKg: Weight is too large
+[00:07:25.499] Server  ERROR   ❌ Error details: {}
+[00:07:25.537] Server  ERROR   C:\Users\Danny\Documents\xuji\gaali\.next\dev\server\chunks\ssr\[root-of-the-server]__49770b4e._.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
+[00:07:25.562] Server  ERROR   C:\Users\Danny\Documents\xuji\gaali\node_modules\next\dist\compiled\next-server\app-page-turbo.runtime.dev.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
+[00:07:25.563] Server  ERROR   C:\Users\Danny\Documents\xuji\gaali\.next\dev\server\chunks\ssr\ef5c4_next_dist_6e3e310d._.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
+[00:07:25.565] Server  ERROR   C:\Users\Danny\Documents\xuji\gaali\node_modules\next\dist\server\base-server.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
+[00:07:25.566] Server  ERROR   C:\Users\Danny\Documents\xuji\gaali\node_modules\next\dist\server\next-server.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
+[00:07:25.567] Server  ERROR   C:\Users\Danny\Documents\xuji\gaali\node_modules\next\dist\server\dev\next-dev-server.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
+[00:07:25.568] Server  ERROR   C:\Users\Danny\Documents\xuji\gaali\node_modules\next\dist\trace\trace.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
+[00:07:25.570] Server  ERROR   C:\Users\Danny\Documents\xuji\gaali\node_modules\next\dist\server\lib\router-server.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
+[00:07:25.576] Server  ERROR   C:\Users\Danny\Documents\xuji\gaali\node_modules\next\dist\server\lib\start-server.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
+[00:07:25.578] Server  ERROR    ⨯ Error: Invalid truck log data: weightKg: Weight is too large
+[00:07:41.956] Browser LOG     %c[Vercel Web Analytics]%c Debug mode is enabled by default in development. No requests will be sent to the server. color: rgb(120, 120, 120) color: inherit
+[00:07:41.956] Browser LOG     %c[Vercel Web Analytics]%c Running queued event color: rgb(120, 120, 120) color: inherit pageview {"path":"/","route":"/"}
+[00:07:41.956] Browser LOG     %c[Vercel Web Analytics]%c [pageview] http://localhost:3000/ color: rgb(120, 120, 120) color: inherit {"dp":"/","o":"http://localhost:3000/","sdkn":"@vercel/analytics/next","sdkv":"1.5.0","sv":"0.1.3","ts":1765432911370}
+[00:08:12.631] Server  LOG     💾 saveTruckLog called with: {}
+[00:08:12.635] Server  LOG     🧹 Cleaned log data: {}
+[00:08:12.637] Server  ERROR   ❌ Validation failed!
+[00:08:12.646] Server  ERROR   ❌ Validation errors: "[\n  {\n    \"code\": \"too_big\",\n    \"maximum\": 1000000,\n    \"type\": \"number\",\n    \"inclusive\": true,\n    \"exact\": false,\n    \"message\": \"Weight is too large\",\n    \"path\": [\n      \"weightKg\"\n    ]\n  }\n]"
+[00:08:12.649] Server  ERROR   ❌ Data that failed validation: "{\n  \"direction\": \"IN\",\n  \"plate\": \"medku\",\n  \"driverId\": \"drv_1765123007572_vdvwb2os4\",\n  \"driverName\": \"danny\",\n  \"cargoType\": \"chemicals\",\n  \"weightKg\": 1123123213,\n  \"comments\": \"sadasdasas\",\n  \"origin\": \"darkhan\",\n  \"destination\": \"erdenet\",\n  \"senderOrganizationId\": \"org_1765126887449_elnj38rhu\",\n  \"receiverOrganizationId\": \"org_1765126887449_elnj38rhu\",\n  \"transportCompanyId\": \"tc_1765127013469_sqzaf1evj\"\n}"
+[00:08:12.650] Server  ERROR   ❌ Field errors: {}
+[00:08:12.652] Server  ERROR   C:\Users\Danny\Documents\xuji\gaali\.next\dev\server\chunks\ssr\[root-of-the-server]__49770b4e._.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
+[00:08:12.666] Server  ERROR   C:\Users\Danny\Documents\xuji\gaali\node_modules\next\dist\compiled\next-server\app-page-turbo.runtime.dev.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
+[00:08:12.669] Server  ERROR   C:\Users\Danny\Documents\xuji\gaali\.next\dev\server\chunks\ssr\ef5c4_next_dist_6e3e310d._.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
+[00:08:12.678] Server  ERROR   C:\Users\Danny\Documents\xuji\gaali\node_modules\next\dist\server\base-server.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
+[00:08:12.681] Server  ERROR   C:\Users\Danny\Documents\xuji\gaali\node_modules\next\dist\server\next-server.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
+[00:08:12.683] Server  ERROR   C:\Users\Danny\Documents\xuji\gaali\node_modules\next\dist\server\dev\next-dev-server.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
+[00:08:12.684] Server  ERROR   C:\Users\Danny\Documents\xuji\gaali\node_modules\next\dist\trace\trace.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
+[00:08:12.687] Server  ERROR   C:\Users\Danny\Documents\xuji\gaali\node_modules\next\dist\server\lib\router-server.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
+[00:08:12.694] Server  ERROR   C:\Users\Danny\Documents\xuji\gaali\node_modules\next\dist\server\lib\start-server.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
+[00:08:12.697] Server  ERROR   ❌ Error in saveTruckLog: ValidationError: Invalid truck log data: weightKg: Weight is too large
+[00:08:12.734] Server  ERROR   ❌ Error details: {}
+[00:08:12.767] Server  ERROR   C:\Users\Danny\Documents\xuji\gaali\.next\dev\server\chunks\ssr\[root-of-the-server]__49770b4e._.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
+[00:08:12.770] Server  ERROR   C:\Users\Danny\Documents\xuji\gaali\node_modules\next\dist\compiled\next-server\app-page-turbo.runtime.dev.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
+[00:08:12.777] Server  ERROR   C:\Users\Danny\Documents\xuji\gaali\.next\dev\server\chunks\ssr\ef5c4_next_dist_6e3e310d._.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
+[00:08:12.778] Server  ERROR   C:\Users\Danny\Documents\xuji\gaali\node_modules\next\dist\server\base-server.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
+[00:08:12.779] Server  ERROR   C:\Users\Danny\Documents\xuji\gaali\node_modules\next\dist\server\next-server.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
+[00:08:12.782] Server  ERROR   C:\Users\Danny\Documents\xuji\gaali\node_modules\next\dist\server\dev\next-dev-server.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
+[00:08:12.783] Server  ERROR   C:\Users\Danny\Documents\xuji\gaali\node_modules\next\dist\trace\trace.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
+[00:08:12.784] Server  ERROR   C:\Users\Danny\Documents\xuji\gaali\node_modules\next\dist\server\lib\router-server.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
+[00:08:12.784] Server  ERROR   C:\Users\Danny\Documents\xuji\gaali\node_modules\next\dist\server\lib\start-server.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
+[00:08:12.786] Server  ERROR    ⨯ Error: Invalid truck log data: weightKg: Weight is too large
+[00:09:13.311] Server  LOG      ✓ Compiled in 458ms
+[00:09:37.621] Server  LOG     💾 saveTruckLog called with: {}
+[00:09:37.625] Server  LOG     🧹 Cleaned log data: {}
+[00:09:37.636] Server  ERROR   ❌ Validation failed!
+[00:09:37.638] Server  ERROR   ❌ Validation errors: "[\n  {\n    \"code\": \"too_big\",\n    \"maximum\": 1000000,\n    \"type\": \"number\",\n    \"inclusive\": true,\n    \"exact\": false,\n    \"message\": \"Weight is too large\",\n    \"path\": [\n      \"weightKg\"\n    ]\n  }\n]"
+[00:09:37.640] Server  ERROR   ❌ Data that failed validation: "{\n  \"direction\": \"IN\",\n  \"plate\": \"medku\",\n  \"driverId\": \"drv_1765123007572_vdvwb2os4\",\n  \"driverName\": \"danny\",\n  \"cargoType\": \"chemicals\",\n  \"weightKg\": 1123123213,\n  \"comments\": \"sadasdasas\",\n  \"origin\": \"darkhan\",\n  \"destination\": \"erdenet\",\n  \"senderOrganizationId\": \"org_1765126887449_elnj38rhu\",\n  \"receiverOrganizationId\": \"org_1765126887449_elnj38rhu\",\n  \"transportCompanyId\": \"tc_1765127013469_sqzaf1evj\"\n}"
+[00:09:37.642] Server  ERROR   ❌ Field errors: {}
+[00:09:37.651] Server  ERROR   C:\Users\Danny\Documents\xuji\gaali\.next\dev\server\chunks\ssr\[root-of-the-server]__49770b4e._.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
+[00:09:37.657] Server  ERROR   C:\Users\Danny\Documents\xuji\gaali\node_modules\next\dist\compiled\next-server\app-page-turbo.runtime.dev.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
+[00:09:37.659] Server  ERROR   C:\Users\Danny\Documents\xuji\gaali\.next\dev\server\chunks\ssr\ef5c4_next_dist_6e3e310d._.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
+[00:09:37.665] Server  ERROR   C:\Users\Danny\Documents\xuji\gaali\node_modules\next\dist\server\base-server.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
+[00:09:37.667] Server  ERROR   C:\Users\Danny\Documents\xuji\gaali\node_modules\next\dist\server\next-server.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
+[00:09:37.668] Server  ERROR   C:\Users\Danny\Documents\xuji\gaali\node_modules\next\dist\server\dev\next-dev-server.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
+[00:09:37.669] Server  ERROR   C:\Users\Danny\Documents\xuji\gaali\node_modules\next\dist\trace\trace.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
+[00:09:37.670] Server  ERROR   C:\Users\Danny\Documents\xuji\gaali\node_modules\next\dist\server\lib\router-server.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
+[00:09:37.673] Server  ERROR   C:\Users\Danny\Documents\xuji\gaali\node_modules\next\dist\server\lib\start-server.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
+[00:09:37.683] Server  ERROR   ❌ Error in saveTruckLog: ValidationError: Invalid truck log data: weightKg: Weight is too large
+[00:09:37.698] Server  ERROR   ❌ Error details: {}
+[00:09:37.733] Server  ERROR   C:\Users\Danny\Documents\xuji\gaali\.next\dev\server\chunks\ssr\[root-of-the-server]__49770b4e._.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
+[00:09:37.740] Server  ERROR   C:\Users\Danny\Documents\xuji\gaali\node_modules\next\dist\compiled\next-server\app-page-turbo.runtime.dev.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
+[00:09:37.743] Server  ERROR   C:\Users\Danny\Documents\xuji\gaali\.next\dev\server\chunks\ssr\ef5c4_next_dist_6e3e310d._.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
+[00:09:37.746] Server  ERROR   C:\Users\Danny\Documents\xuji\gaali\node_modules\next\dist\server\base-server.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
+[00:09:37.748] Server  ERROR   C:\Users\Danny\Documents\xuji\gaali\node_modules\next\dist\server\next-server.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
+[00:09:37.750] Server  ERROR   C:\Users\Danny\Documents\xuji\gaali\node_modules\next\dist\server\dev\next-dev-server.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
+[00:09:37.752] Server  ERROR   C:\Users\Danny\Documents\xuji\gaali\node_modules\next\dist\trace\trace.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
+[00:09:37.753] Server  ERROR   C:\Users\Danny\Documents\xuji\gaali\node_modules\next\dist\server\lib\router-server.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
+[00:09:37.754] Server  ERROR   C:\Users\Danny\Documents\xuji\gaali\node_modules\next\dist\server\lib\start-server.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
+[00:09:37.756] Server  ERROR    ⨯ Error: Invalid truck log data: weightKg: Weight is too large
+[00:09:46.267] Server  LOG     💾 saveTruckLog called with: {}
+[00:09:46.271] Server  LOG     🧹 Cleaned log data: {}
+[00:09:46.273] Server  ERROR   ❌ Validation failed!
+[00:09:46.282] Server  ERROR   ❌ Validation errors: "[\n  {\n    \"code\": \"too_big\",\n    \"maximum\": 1000000,\n    \"type\": \"number\",\n    \"inclusive\": true,\n    \"exact\": false,\n    \"message\": \"Weight is too large\",\n    \"path\": [\n      \"weightKg\"\n    ]\n  }\n]"
+[00:09:46.284] Server  ERROR   ❌ Data that failed validation: "{\n  \"direction\": \"IN\",\n  \"plate\": \"medku\",\n  \"driverId\": \"drv_1765123007572_vdvwb2os4\",\n  \"driverName\": \"danny\",\n  \"cargoType\": \"chemicals\",\n  \"weightKg\": 1123123213,\n  \"comments\": \"sadasdasas\",\n  \"origin\": \"darkhan\",\n  \"destination\": \"erdenet\",\n  \"senderOrganizationId\": \"org_1765126887449_elnj38rhu\",\n  \"receiverOrganizationId\": \"org_1765126887449_elnj38rhu\",\n  \"transportCompanyId\": \"tc_1765127013469_sqzaf1evj\"\n}"
+[00:09:46.286] Server  ERROR   ❌ Field errors: {}
+[00:09:46.288] Server  ERROR   C:\Users\Danny\Documents\xuji\gaali\.next\dev\server\chunks\ssr\[root-of-the-server]__49770b4e._.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
+[00:09:46.297] Server  ERROR   C:\Users\Danny\Documents\xuji\gaali\node_modules\next\dist\compiled\next-server\app-page-turbo.runtime.dev.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
+[00:09:46.298] Server  ERROR   C:\Users\Danny\Documents\xuji\gaali\.next\dev\server\chunks\ssr\ef5c4_next_dist_6e3e310d._.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
+[00:09:46.300] Server  ERROR   C:\Users\Danny\Documents\xuji\gaali\node_modules\next\dist\server\base-server.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
+[00:09:46.301] Server  ERROR   C:\Users\Danny\Documents\xuji\gaali\node_modules\next\dist\server\next-server.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
+[00:09:46.302] Server  ERROR   C:\Users\Danny\Documents\xuji\gaali\node_modules\next\dist\server\dev\next-dev-server.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
+[00:09:46.304] Server  ERROR   C:\Users\Danny\Documents\xuji\gaali\node_modules\next\dist\trace\trace.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
+[00:09:46.313] Server  ERROR   C:\Users\Danny\Documents\xuji\gaali\node_modules\next\dist\server\lib\router-server.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
+[00:09:46.315] Server  ERROR   C:\Users\Danny\Documents\xuji\gaali\node_modules\next\dist\server\lib\start-server.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
+[00:09:46.326] Server  ERROR   ❌ Error in saveTruckLog: ValidationError: Invalid truck log data: weightKg: Weight is too large
+[00:09:46.428] Server  ERROR   ❌ Error details: {}
+[00:09:46.435] Server  ERROR   C:\Users\Danny\Documents\xuji\gaali\.next\dev\server\chunks\ssr\[root-of-the-server]__49770b4e._.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
+[00:09:46.444] Server  ERROR   C:\Users\Danny\Documents\xuji\gaali\node_modules\next\dist\compiled\next-server\app-page-turbo.runtime.dev.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
+[00:09:46.446] Server  ERROR   C:\Users\Danny\Documents\xuji\gaali\.next\dev\server\chunks\ssr\ef5c4_next_dist_6e3e310d._.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
+[00:09:46.450] Server  ERROR   C:\Users\Danny\Documents\xuji\gaali\node_modules\next\dist\server\base-server.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
+[00:09:46.451] Server  ERROR   C:\Users\Danny\Documents\xuji\gaali\node_modules\next\dist\server\next-server.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
+[00:09:46.453] Server  ERROR   C:\Users\Danny\Documents\xuji\gaali\node_modules\next\dist\server\dev\next-dev-server.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
+[00:09:46.454] Server  ERROR   C:\Users\Danny\Documents\xuji\gaali\node_modules\next\dist\trace\trace.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
+[00:09:46.455] Server  ERROR   C:\Users\Danny\Documents\xuji\gaali\node_modules\next\dist\server\lib\router-server.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
+[00:09:46.458] Server  ERROR   C:\Users\Danny\Documents\xuji\gaali\node_modules\next\dist\server\lib\start-server.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
+[00:09:46.462] Server  ERROR    ⨯ Error: Invalid truck log data: weightKg: Weight is too large
+[00:09:50.710] Browser LOG     %c[Vercel Web Analytics]%c Debug mode is enabled by default in development. No requests will be sent to the server. color: rgb(120, 120, 120) color: inherit
+[00:09:50.710] Browser LOG     %c[Vercel Web Analytics]%c Running queued event color: rgb(120, 120, 120) color: inherit pageview {"path":"/","route":"/"}
+[00:09:50.710] Browser LOG     %c[Vercel Web Analytics]%c [pageview] http://localhost:3000/ color: rgb(120, 120, 120) color: inherit {"dp":"/","o":"http://localhost:3000/","sdkn":"@vercel/analytics/next","sdkv":"1.5.0","sv":"0.1.3","ts":1765433040030}
+[00:10:29.415] Server  LOG     💾 saveTruckLog called with: {}
+[00:10:29.419] Server  LOG     🧹 Cleaned log data: {}
+[00:10:29.420] Server  LOG     ✅ Validation passed
+[00:10:29.427] Server  LOG     💾 Inserting log document into database...
+[00:10:29.610] Server  LOG     ✅ Log document inserted successfully
+[00:10:29.612] Server  LOG     ✅ saveTruckLog completed successfully, log ID: "truck-1765433078938-ip0id8wub"
+[00:26:33.781] Server  LOG      ✓ Compiled in 601ms
