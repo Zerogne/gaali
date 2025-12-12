@@ -93,7 +93,10 @@ export function useScaleBridge(): UseScaleBridgeResult {
 
       ws.onerror = (error) => {
         if (!isMountedRef.current) return
-        console.error("WebSocket error:", error)
+        // Only log in development and only for first few attempts to reduce console noise
+        if (process.env.NODE_ENV === "development" && reconnectAttemptsRef.current <= 1) {
+          console.warn("WebSocket connection error (expected if scale service is not running)")
+        }
         setStatus("error")
         setErrorMessage("WebSocket connection error")
         setIsRequestPending(false)
@@ -126,7 +129,10 @@ export function useScaleBridge(): UseScaleBridgeResult {
       }
     } catch (error) {
       if (!isMountedRef.current) return
-      console.error("Failed to create WebSocket:", error)
+      // Only log in development to reduce console noise
+      if (process.env.NODE_ENV === "development") {
+        console.warn("Failed to create WebSocket connection (expected if scale service is not running)")
+      }
       setStatus("error")
       setErrorMessage(error instanceof Error ? error.message : "Failed to create WebSocket connection")
     }
@@ -176,7 +182,10 @@ export function useScaleBridge(): UseScaleBridgeResult {
         setIsRequestPending(true)
         setErrorMessage(null)
       } catch (error) {
-        console.error("Failed to send message:", error)
+        // Only log in development
+        if (process.env.NODE_ENV === "development") {
+          console.warn("Failed to send WebSocket message:", error)
+        }
         setErrorMessage(error instanceof Error ? error.message : "Failed to send request")
         setIsRequestPending(false)
       }

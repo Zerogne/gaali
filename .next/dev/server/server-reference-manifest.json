@@ -1,123 +1,63 @@
 {
   "node": {
-    "406c157d22810210e2e76447e965e5fc5db442cd97": {
-      "workers": {
-        "app/(auth)/login/page": {
-          "moduleId": "[project]/Documents/xuji/gaali/.next-internal/server/app/(auth)/login/page/actions.js { ACTIONS_MODULE0 => \"[project]/Documents/xuji/gaali/lib/companies/workers.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/Documents/xuji/gaali/lib/auth/authServer.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
-          "async": false,
-          "exportedName": "getCompanyWorkers",
-          "filename": "Documents/xuji/gaali/lib/companies/workers.ts"
-        }
-      },
-      "layer": {
-        "app/(auth)/login/page": "action-browser"
-      },
-      "filename": "Documents/xuji/gaali/lib/companies/workers.ts",
-      "exportedName": "getCompanyWorkers"
-    },
-    "607e05f0d57c47ea72f07455cbd86f03d9ea25df58": {
-      "workers": {
-        "app/(auth)/login/page": {
-          "moduleId": "[project]/Documents/xuji/gaali/.next-internal/server/app/(auth)/login/page/actions.js { ACTIONS_MODULE0 => \"[project]/Documents/xuji/gaali/lib/companies/workers.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/Documents/xuji/gaali/lib/auth/authServer.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
-          "async": false,
-          "exportedName": "loginCompany",
-          "filename": "Documents/xuji/gaali/lib/auth/authServer.ts"
-        }
-      },
-      "layer": {
-        "app/(auth)/login/page": "action-browser"
-      },
-      "filename": "Documents/xuji/gaali/lib/auth/authServer.ts",
-      "exportedName": "loginCompany"
-    },
-    "4067cb4ea0ebb50e35215214372edac96c001ca62c": {
-      "workers": {
-        "app/(auth)/login/page": {
-          "moduleId": "[project]/Documents/xuji/gaali/.next-internal/server/app/(auth)/login/page/actions.js { ACTIONS_MODULE0 => \"[project]/Documents/xuji/gaali/lib/companies/workers.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/Documents/xuji/gaali/lib/auth/authServer.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
-          "async": false,
-          "exportedName": "selectWorker",
-          "filename": "Documents/xuji/gaali/lib/auth/authServer.ts"
-        }
-      },
-      "layer": {
-        "app/(auth)/login/page": "action-browser"
-      },
-      "filename": "Documents/xuji/gaali/lib/auth/authServer.ts",
-      "exportedName": "selectWorker"
-    },
-    "70aa6c943b1064da085f5dd618b131352119f2a925": {
-      "workers": {
-        "app/(auth)/login/page": {
-          "moduleId": "[project]/Documents/xuji/gaali/.next-internal/server/app/(auth)/login/page/actions.js { ACTIONS_MODULE0 => \"[project]/Documents/xuji/gaali/lib/companies/workers.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/Documents/xuji/gaali/lib/auth/authServer.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
-          "async": false,
-          "exportedName": "loginWorker",
-          "filename": "Documents/xuji/gaali/lib/auth/authServer.ts"
-        }
-      },
-      "layer": {
-        "app/(auth)/login/page": "action-browser"
-      },
-      "filename": "Documents/xuji/gaali/lib/auth/authServer.ts",
-      "exportedName": "loginWorker"
-    },
-    "60884d288122485264a4a41c60752ff9f2336da9af": {
+    "60d0871f8d26cdb099b5db3faa7615143472da5524": {
       "workers": {
         "app/page": {
-          "moduleId": "[project]/Documents/xuji/gaali/.next-internal/server/app/page/actions.js { ACTIONS_MODULE0 => \"[project]/Documents/xuji/gaali/lib/api.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/Documents/xuji/gaali/lib/auth/authServer.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "moduleId": "[project]/Documents/gaali/.next-internal/server/app/page/actions.js { ACTIONS_MODULE0 => \"[project]/Documents/gaali/lib/api.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/Documents/gaali/lib/auth/authServer.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
           "async": false,
           "exportedName": "getTruckLogs",
-          "filename": "Documents/xuji/gaali/lib/api.ts"
+          "filename": "Documents/gaali/lib/api.ts"
         }
       },
       "layer": {
         "app/page": "action-browser"
       },
-      "filename": "Documents/xuji/gaali/lib/api.ts",
+      "filename": "Documents/gaali/lib/api.ts",
       "exportedName": "getTruckLogs"
     },
-    "406392c6e29fe512320ae0719fa1234db7cd555beb": {
+    "407db5ef88225aebb71bae6e1a8cb30e9e7f85eb91": {
       "workers": {
         "app/page": {
-          "moduleId": "[project]/Documents/xuji/gaali/.next-internal/server/app/page/actions.js { ACTIONS_MODULE0 => \"[project]/Documents/xuji/gaali/lib/api.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/Documents/xuji/gaali/lib/auth/authServer.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "moduleId": "[project]/Documents/gaali/.next-internal/server/app/page/actions.js { ACTIONS_MODULE0 => \"[project]/Documents/gaali/lib/api.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/Documents/gaali/lib/auth/authServer.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
           "async": false,
           "exportedName": "saveTruckLog",
-          "filename": "Documents/xuji/gaali/lib/api.ts"
+          "filename": "Documents/gaali/lib/api.ts"
         }
       },
       "layer": {
         "app/page": "action-browser"
       },
-      "filename": "Documents/xuji/gaali/lib/api.ts",
+      "filename": "Documents/gaali/lib/api.ts",
       "exportedName": "saveTruckLog"
     },
-    "40146e0cb252b60e1655f8c2c159b6c85c2dac8d16": {
+    "404c252c17db8a450d7663a59f2cf660868d01fe33": {
       "workers": {
         "app/page": {
-          "moduleId": "[project]/Documents/xuji/gaali/.next-internal/server/app/page/actions.js { ACTIONS_MODULE0 => \"[project]/Documents/xuji/gaali/lib/api.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/Documents/xuji/gaali/lib/auth/authServer.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "moduleId": "[project]/Documents/gaali/.next-internal/server/app/page/actions.js { ACTIONS_MODULE0 => \"[project]/Documents/gaali/lib/api.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/Documents/gaali/lib/auth/authServer.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
           "async": false,
           "exportedName": "sendTruckLogToCustoms",
-          "filename": "Documents/xuji/gaali/lib/api.ts"
+          "filename": "Documents/gaali/lib/api.ts"
         }
       },
       "layer": {
         "app/page": "action-browser"
       },
-      "filename": "Documents/xuji/gaali/lib/api.ts",
+      "filename": "Documents/gaali/lib/api.ts",
       "exportedName": "sendTruckLogToCustoms"
     },
-    "007a3bbaee0e4849c06085378210fa59073c1cfe27": {
+    "00284fe93ad2f15773109f927e7373e31749d9aeda": {
       "workers": {
         "app/page": {
-          "moduleId": "[project]/Documents/xuji/gaali/.next-internal/server/app/page/actions.js { ACTIONS_MODULE0 => \"[project]/Documents/xuji/gaali/lib/api.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/Documents/xuji/gaali/lib/auth/authServer.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "moduleId": "[project]/Documents/gaali/.next-internal/server/app/page/actions.js { ACTIONS_MODULE0 => \"[project]/Documents/gaali/lib/api.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/Documents/gaali/lib/auth/authServer.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
           "async": false,
           "exportedName": "logout",
-          "filename": "Documents/xuji/gaali/lib/auth/authServer.ts"
+          "filename": "Documents/gaali/lib/auth/authServer.ts"
         }
       },
       "layer": {
         "app/page": "action-browser"
       },
-      "filename": "Documents/xuji/gaali/lib/auth/authServer.ts",
+      "filename": "Documents/gaali/lib/auth/authServer.ts",
       "exportedName": "logout"
     }
   },

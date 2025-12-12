@@ -134,7 +134,10 @@ export function useThirdPartyAutofill() {
             hasResolved = true
             isConnecting = false
             setIsConnected(false)
-            console.error("WebSocket error:", error)
+            // Only log error details in development, and only once per connection attempt
+            if (process.env.NODE_ENV === "development" && connectionAttemptRef.current <= 1) {
+              console.warn("WebSocket connection error (this is expected if 3rd party app is not running)")
+            }
             const wsUrl = getWebSocketUrl()
             reject(
               new Error(
@@ -154,6 +157,10 @@ export function useThirdPartyAutofill() {
             hasResolved = true
             isConnecting = false
             setIsConnected(false)
+            // Only log in development for initial connection failures
+            if (process.env.NODE_ENV === "development" && connectionAttemptRef.current <= 1) {
+              console.warn("WebSocket connection closed before opening (3rd party app may not be running)")
+            }
             const wsUrl = getWebSocketUrl()
             reject(
               new Error(
@@ -169,7 +176,7 @@ export function useThirdPartyAutofill() {
                 clearTimeout(reconnectTimeout)
               }
               reconnectTimeout = setTimeout(() => {
-                console.log("Attempting to reconnect...")
+                // Silently attempt reconnection
                 connectWebSocket().catch(() => {
                   // Reconnection failed, will retry on next attempt
                 })
@@ -338,9 +345,9 @@ export function useThirdPartyAutofill() {
   // Try to connect on mount
   useEffect(() => {
     // Attempt initial connection
-    connectWebSocket().catch((error) => {
-      console.log("Initial connection attempt failed:", error.message)
-      // Don't show error on initial connection attempt, just log it
+    connectWebSocket().catch(() => {
+      // Silently handle connection failures - UI will show connection status
+      // No need to log errors as this is expected when 3rd party app is not running
     })
 
     // Cleanup on unmount

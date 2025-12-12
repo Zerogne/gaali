@@ -1,196 +1,773 @@
-[00:00:03.217] Server  LOG      ✓ Ready in 2.1s
-[00:00:06.776] Server  LOG      ○ Compiling /login ...
-[00:00:11.558] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
-[00:00:11.795] Browser LOG     %c[Vercel Web Analytics]%c Debug mode is enabled by default in development. No requests will be sent to the server. color: rgb(120, 120, 120) color: inherit
-[00:00:11.795] Browser LOG     %c[Vercel Web Analytics]%c Running queued event color: rgb(120, 120, 120) color: inherit pageview {"path":"/login","route":"/login"}
-[00:00:11.795] Browser LOG     %c[Vercel Web Analytics]%c [pageview] http://localhost:3000/login color: rgb(120, 120, 120) color: inherit {"dp":"/login","o":"http://localhost:3000/login","sdkn":"@vercel/analytics/next","sdkv":"1.5.0","sv":"0.1.3","ts":1765432461229}
-[00:00:12.238] Browser LOG     %c[Vercel Web Analytics]%c Debug mode is enabled by default in development. No requests will be sent to the server. color: rgb(120, 120, 120) color: inherit
-[00:00:12.238] Browser LOG     %c[Vercel Web Analytics]%c Running queued event color: rgb(120, 120, 120) color: inherit pageview {"path":"/login","route":"/login"}
-[00:00:12.238] Browser LOG     %c[Vercel Web Analytics]%c [pageview] http://localhost:3000/login color: rgb(120, 120, 120) color: inherit {"dp":"/login","o":"http://localhost:3000/login","sdkn":"@vercel/analytics/next","sdkv":"1.5.0","sv":"0.1.3","ts":1765432461672}
-[00:00:13.950] Server  LOG     📥 GET /api/companies - Loading companies...
-[00:00:13.955] Server  LOG     📥 getAllCompanies: Getting companies collection...
-[00:00:13.963] Server  LOG     📥 GET /api/companies - Loading companies...
-[00:00:13.964] Server  LOG     📥 getAllCompanies: Getting companies collection...
-[00:00:19.524] Server  LOG     📥 getAllCompanies: Finding companies...
-[00:00:19.530] Server  LOG     📥 getAllCompanies: Finding companies...
-[00:00:19.755] Server  LOG     📥 getAllCompanies: Found 4 companies
-[00:00:19.756] Server  LOG     ✅ getAllCompanies: Successfully serialized companies
-[00:00:19.758] Server  LOG     ✅ Successfully loaded companies: 4
-[00:00:20.864] Server  LOG     📥 getAllCompanies: Found 4 companies
-[00:00:20.865] Server  LOG     ✅ getAllCompanies: Successfully serialized companies
-[00:00:20.866] Server  LOG     ✅ Successfully loaded companies: 4
-[00:00:38.447] Server  LOG      ○ Compiling / ...
-[00:00:41.257] Browser LOG     %c[Vercel Web Analytics]%c Debug mode is enabled by default in development. No requests will be sent to the server. color: rgb(120, 120, 120) color: inherit
-[00:00:41.257] Browser LOG     %c[Vercel Web Analytics]%c Running queued event color: rgb(120, 120, 120) color: inherit pageview {"path":"/","route":"/"}
-[00:00:41.257] Browser LOG     %c[Vercel Web Analytics]%c [pageview] http://localhost:3000/ color: rgb(120, 120, 120) color: inherit {"dp":"/","o":"http://localhost:3000/","sdkn":"@vercel/analytics/next","sdkv":"1.5.0","sv":"0.1.3","ts":1765432490642}
-[00:01:11.985] Server  ERROR   C:\Users\Danny\Documents\xuji\gaali\.next\dev\server\chunks\ssr\[root-of-the-server]__49770b4e._.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
-[00:01:12.093] Server  ERROR   C:\Users\Danny\Documents\xuji\gaali\node_modules\next\dist\compiled\next-server\app-page-turbo.runtime.dev.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
-[00:01:12.096] Server  ERROR   C:\Users\Danny\Documents\xuji\gaali\.next\dev\server\chunks\ssr\ef5c4_next_dist_6e3e310d._.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
-[00:01:12.104] Server  ERROR   C:\Users\Danny\Documents\xuji\gaali\node_modules\next\dist\server\base-server.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
-[00:01:12.108] Server  ERROR   C:\Users\Danny\Documents\xuji\gaali\node_modules\next\dist\server\next-server.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
-[00:01:12.110] Server  ERROR   C:\Users\Danny\Documents\xuji\gaali\node_modules\next\dist\server\dev\next-dev-server.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
-[00:01:12.112] Server  ERROR   C:\Users\Danny\Documents\xuji\gaali\node_modules\next\dist\trace\trace.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
-[00:01:12.114] Server  ERROR   C:\Users\Danny\Documents\xuji\gaali\node_modules\next\dist\server\lib\router-server.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
-[00:01:12.122] Server  ERROR   C:\Users\Danny\Documents\xuji\gaali\node_modules\next\dist\server\lib\start-server.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
-[00:01:12.127] Server  ERROR    ⨯ Error: Invalid truck log data
-[00:01:15.160] Server  ERROR   C:\Users\Danny\Documents\xuji\gaali\.next\dev\server\chunks\ssr\[root-of-the-server]__49770b4e._.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
-[00:01:15.163] Server  ERROR   C:\Users\Danny\Documents\xuji\gaali\node_modules\next\dist\compiled\next-server\app-page-turbo.runtime.dev.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
-[00:01:15.170] Server  ERROR   C:\Users\Danny\Documents\xuji\gaali\.next\dev\server\chunks\ssr\ef5c4_next_dist_6e3e310d._.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
-[00:01:15.172] Server  ERROR   C:\Users\Danny\Documents\xuji\gaali\node_modules\next\dist\server\base-server.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
-[00:01:15.173] Server  ERROR   C:\Users\Danny\Documents\xuji\gaali\node_modules\next\dist\server\next-server.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
-[00:01:15.175] Server  ERROR   C:\Users\Danny\Documents\xuji\gaali\node_modules\next\dist\server\dev\next-dev-server.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
-[00:01:15.175] Server  ERROR   C:\Users\Danny\Documents\xuji\gaali\node_modules\next\dist\trace\trace.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
-[00:01:15.176] Server  ERROR   C:\Users\Danny\Documents\xuji\gaali\node_modules\next\dist\server\lib\router-server.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
-[00:01:15.177] Server  ERROR   C:\Users\Danny\Documents\xuji\gaali\node_modules\next\dist\server\lib\start-server.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
-[00:01:15.182] Server  ERROR    ⨯ Error: Invalid truck log data
-[00:02:17.732] Server  LOG      ✓ Compiled in 352ms
-[00:02:23.987] Server  LOG      ✓ Compiled in 342ms
-[00:02:28.515] Server  LOG      ✓ Compiled in 253ms
-[00:03:17.915] Server  LOG     💾 saveTruckLog called with: {}
-[00:03:17.918] Server  LOG     🧹 Cleaned log data: {}
-[00:03:17.930] Server  ERROR   ❌ Validation failed: [{...}]
-[00:03:17.950] Server  ERROR   C:\Users\Danny\Documents\xuji\gaali\.next\dev\server\chunks\ssr\[root-of-the-server]__49770b4e._.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
-[00:03:17.966] Server  ERROR   C:\Users\Danny\Documents\xuji\gaali\node_modules\next\dist\compiled\next-server\app-page-turbo.runtime.dev.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
-[00:03:17.968] Server  ERROR   C:\Users\Danny\Documents\xuji\gaali\.next\dev\server\chunks\ssr\ef5c4_next_dist_6e3e310d._.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
-[00:03:17.969] Server  ERROR   C:\Users\Danny\Documents\xuji\gaali\node_modules\next\dist\server\base-server.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
-[00:03:17.978] Server  ERROR   C:\Users\Danny\Documents\xuji\gaali\node_modules\next\dist\server\next-server.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
-[00:03:17.987] Server  ERROR   C:\Users\Danny\Documents\xuji\gaali\node_modules\next\dist\server\dev\next-dev-server.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
-[00:03:17.997] Server  ERROR   C:\Users\Danny\Documents\xuji\gaali\node_modules\next\dist\trace\trace.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
-[00:03:17.999] Server  ERROR   C:\Users\Danny\Documents\xuji\gaali\node_modules\next\dist\server\lib\router-server.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
-[00:03:18.002] Server  ERROR   C:\Users\Danny\Documents\xuji\gaali\node_modules\next\dist\server\lib\start-server.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
-[00:03:18.011] Server  ERROR   ❌ Error in saveTruckLog: ValidationError: Invalid truck log data
-[00:03:18.032] Server  ERROR   ❌ Error details: {}
-[00:03:18.046] Server  ERROR   C:\Users\Danny\Documents\xuji\gaali\.next\dev\server\chunks\ssr\[root-of-the-server]__49770b4e._.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
-[00:03:18.051] Server  ERROR   C:\Users\Danny\Documents\xuji\gaali\node_modules\next\dist\compiled\next-server\app-page-turbo.runtime.dev.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
-[00:03:18.053] Server  ERROR   C:\Users\Danny\Documents\xuji\gaali\.next\dev\server\chunks\ssr\ef5c4_next_dist_6e3e310d._.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
-[00:03:18.054] Server  ERROR   C:\Users\Danny\Documents\xuji\gaali\node_modules\next\dist\server\base-server.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
-[00:03:18.055] Server  ERROR   C:\Users\Danny\Documents\xuji\gaali\node_modules\next\dist\server\next-server.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
-[00:03:18.061] Server  ERROR   C:\Users\Danny\Documents\xuji\gaali\node_modules\next\dist\server\dev\next-dev-server.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
-[00:03:18.062] Server  ERROR   C:\Users\Danny\Documents\xuji\gaali\node_modules\next\dist\trace\trace.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
-[00:03:18.063] Server  ERROR   C:\Users\Danny\Documents\xuji\gaali\node_modules\next\dist\server\lib\router-server.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
-[00:03:18.064] Server  ERROR   C:\Users\Danny\Documents\xuji\gaali\node_modules\next\dist\server\lib\start-server.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
-[00:03:18.067] Server  ERROR    ⨯ Error: Invalid truck log data
-[00:05:12.093] Server  LOG      ✓ Compiled in 271ms
-[00:05:38.048] Server  LOG      ✓ Compiled in 302ms
-[00:07:25.180] Server  LOG     💾 saveTruckLog called with: {}
-[00:07:25.184] Server  LOG     🧹 Cleaned log data: {}
-[00:07:25.186] Server  ERROR   ❌ Validation failed!
-[00:07:25.194] Server  ERROR   ❌ Validation errors: "[\n  {\n    \"code\": \"too_big\",\n    \"maximum\": 1000000,\n    \"type\": \"number\",\n    \"inclusive\": true,\n    \"exact\": false,\n    \"message\": \"Weight is too large\",\n    \"path\": [\n      \"weightKg\"\n    ]\n  }\n]"
-[00:07:25.197] Server  ERROR   ❌ Data that failed validation: "{\n  \"direction\": \"IN\",\n  \"plate\": \"xuji\",\n  \"driverId\": \"drv_1765123007572_vdvwb2os4\",\n  \"driverName\": \"danny\",\n  \"cargoType\": \"chemicals\",\n  \"weightKg\": 12345678,\n  \"comments\": \"adasdasdasdas\",\n  \"origin\": \"darkhan\",\n  \"destination\": \"erdenet\",\n  \"senderOrganizationId\": \"org_1765126887449_elnj38rhu\",\n  \"receiverOrganizationId\": \"org_1765126887449_elnj38rhu\",\n  \"transportCompanyId\": \"tc_1765122316449_8rvekk0hh\"\n}"
-[00:07:25.200] Server  ERROR   ❌ Field errors: {}
-[00:07:25.216] Server  ERROR   C:\Users\Danny\Documents\xuji\gaali\.next\dev\server\chunks\ssr\[root-of-the-server]__49770b4e._.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
-[00:07:25.297] Server  ERROR   C:\Users\Danny\Documents\xuji\gaali\node_modules\next\dist\compiled\next-server\app-page-turbo.runtime.dev.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
-[00:07:25.345] Server  ERROR   C:\Users\Danny\Documents\xuji\gaali\.next\dev\server\chunks\ssr\ef5c4_next_dist_6e3e310d._.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
-[00:07:25.385] Server  ERROR   C:\Users\Danny\Documents\xuji\gaali\node_modules\next\dist\server\base-server.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
-[00:07:25.420] Server  ERROR   C:\Users\Danny\Documents\xuji\gaali\node_modules\next\dist\server\next-server.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
-[00:07:25.450] Server  ERROR   C:\Users\Danny\Documents\xuji\gaali\node_modules\next\dist\server\dev\next-dev-server.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
-[00:07:25.478] Server  ERROR   C:\Users\Danny\Documents\xuji\gaali\node_modules\next\dist\trace\trace.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
-[00:07:25.479] Server  ERROR   C:\Users\Danny\Documents\xuji\gaali\node_modules\next\dist\server\lib\router-server.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
-[00:07:25.481] Server  ERROR   C:\Users\Danny\Documents\xuji\gaali\node_modules\next\dist\server\lib\start-server.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
-[00:07:25.485] Server  ERROR   ❌ Error in saveTruckLog: ValidationError: Invalid truck log data: weightKg: Weight is too large
-[00:07:25.499] Server  ERROR   ❌ Error details: {}
-[00:07:25.537] Server  ERROR   C:\Users\Danny\Documents\xuji\gaali\.next\dev\server\chunks\ssr\[root-of-the-server]__49770b4e._.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
-[00:07:25.562] Server  ERROR   C:\Users\Danny\Documents\xuji\gaali\node_modules\next\dist\compiled\next-server\app-page-turbo.runtime.dev.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
-[00:07:25.563] Server  ERROR   C:\Users\Danny\Documents\xuji\gaali\.next\dev\server\chunks\ssr\ef5c4_next_dist_6e3e310d._.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
-[00:07:25.565] Server  ERROR   C:\Users\Danny\Documents\xuji\gaali\node_modules\next\dist\server\base-server.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
-[00:07:25.566] Server  ERROR   C:\Users\Danny\Documents\xuji\gaali\node_modules\next\dist\server\next-server.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
-[00:07:25.567] Server  ERROR   C:\Users\Danny\Documents\xuji\gaali\node_modules\next\dist\server\dev\next-dev-server.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
-[00:07:25.568] Server  ERROR   C:\Users\Danny\Documents\xuji\gaali\node_modules\next\dist\trace\trace.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
-[00:07:25.570] Server  ERROR   C:\Users\Danny\Documents\xuji\gaali\node_modules\next\dist\server\lib\router-server.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
-[00:07:25.576] Server  ERROR   C:\Users\Danny\Documents\xuji\gaali\node_modules\next\dist\server\lib\start-server.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
-[00:07:25.578] Server  ERROR    ⨯ Error: Invalid truck log data: weightKg: Weight is too large
-[00:07:41.956] Browser LOG     %c[Vercel Web Analytics]%c Debug mode is enabled by default in development. No requests will be sent to the server. color: rgb(120, 120, 120) color: inherit
-[00:07:41.956] Browser LOG     %c[Vercel Web Analytics]%c Running queued event color: rgb(120, 120, 120) color: inherit pageview {"path":"/","route":"/"}
-[00:07:41.956] Browser LOG     %c[Vercel Web Analytics]%c [pageview] http://localhost:3000/ color: rgb(120, 120, 120) color: inherit {"dp":"/","o":"http://localhost:3000/","sdkn":"@vercel/analytics/next","sdkv":"1.5.0","sv":"0.1.3","ts":1765432911370}
-[00:08:12.631] Server  LOG     💾 saveTruckLog called with: {}
-[00:08:12.635] Server  LOG     🧹 Cleaned log data: {}
-[00:08:12.637] Server  ERROR   ❌ Validation failed!
-[00:08:12.646] Server  ERROR   ❌ Validation errors: "[\n  {\n    \"code\": \"too_big\",\n    \"maximum\": 1000000,\n    \"type\": \"number\",\n    \"inclusive\": true,\n    \"exact\": false,\n    \"message\": \"Weight is too large\",\n    \"path\": [\n      \"weightKg\"\n    ]\n  }\n]"
-[00:08:12.649] Server  ERROR   ❌ Data that failed validation: "{\n  \"direction\": \"IN\",\n  \"plate\": \"medku\",\n  \"driverId\": \"drv_1765123007572_vdvwb2os4\",\n  \"driverName\": \"danny\",\n  \"cargoType\": \"chemicals\",\n  \"weightKg\": 1123123213,\n  \"comments\": \"sadasdasas\",\n  \"origin\": \"darkhan\",\n  \"destination\": \"erdenet\",\n  \"senderOrganizationId\": \"org_1765126887449_elnj38rhu\",\n  \"receiverOrganizationId\": \"org_1765126887449_elnj38rhu\",\n  \"transportCompanyId\": \"tc_1765127013469_sqzaf1evj\"\n}"
-[00:08:12.650] Server  ERROR   ❌ Field errors: {}
-[00:08:12.652] Server  ERROR   C:\Users\Danny\Documents\xuji\gaali\.next\dev\server\chunks\ssr\[root-of-the-server]__49770b4e._.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
-[00:08:12.666] Server  ERROR   C:\Users\Danny\Documents\xuji\gaali\node_modules\next\dist\compiled\next-server\app-page-turbo.runtime.dev.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
-[00:08:12.669] Server  ERROR   C:\Users\Danny\Documents\xuji\gaali\.next\dev\server\chunks\ssr\ef5c4_next_dist_6e3e310d._.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
-[00:08:12.678] Server  ERROR   C:\Users\Danny\Documents\xuji\gaali\node_modules\next\dist\server\base-server.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
-[00:08:12.681] Server  ERROR   C:\Users\Danny\Documents\xuji\gaali\node_modules\next\dist\server\next-server.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
-[00:08:12.683] Server  ERROR   C:\Users\Danny\Documents\xuji\gaali\node_modules\next\dist\server\dev\next-dev-server.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
-[00:08:12.684] Server  ERROR   C:\Users\Danny\Documents\xuji\gaali\node_modules\next\dist\trace\trace.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
-[00:08:12.687] Server  ERROR   C:\Users\Danny\Documents\xuji\gaali\node_modules\next\dist\server\lib\router-server.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
-[00:08:12.694] Server  ERROR   C:\Users\Danny\Documents\xuji\gaali\node_modules\next\dist\server\lib\start-server.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
-[00:08:12.697] Server  ERROR   ❌ Error in saveTruckLog: ValidationError: Invalid truck log data: weightKg: Weight is too large
-[00:08:12.734] Server  ERROR   ❌ Error details: {}
-[00:08:12.767] Server  ERROR   C:\Users\Danny\Documents\xuji\gaali\.next\dev\server\chunks\ssr\[root-of-the-server]__49770b4e._.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
-[00:08:12.770] Server  ERROR   C:\Users\Danny\Documents\xuji\gaali\node_modules\next\dist\compiled\next-server\app-page-turbo.runtime.dev.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
-[00:08:12.777] Server  ERROR   C:\Users\Danny\Documents\xuji\gaali\.next\dev\server\chunks\ssr\ef5c4_next_dist_6e3e310d._.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
-[00:08:12.778] Server  ERROR   C:\Users\Danny\Documents\xuji\gaali\node_modules\next\dist\server\base-server.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
-[00:08:12.779] Server  ERROR   C:\Users\Danny\Documents\xuji\gaali\node_modules\next\dist\server\next-server.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
-[00:08:12.782] Server  ERROR   C:\Users\Danny\Documents\xuji\gaali\node_modules\next\dist\server\dev\next-dev-server.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
-[00:08:12.783] Server  ERROR   C:\Users\Danny\Documents\xuji\gaali\node_modules\next\dist\trace\trace.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
-[00:08:12.784] Server  ERROR   C:\Users\Danny\Documents\xuji\gaali\node_modules\next\dist\server\lib\router-server.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
-[00:08:12.784] Server  ERROR   C:\Users\Danny\Documents\xuji\gaali\node_modules\next\dist\server\lib\start-server.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
-[00:08:12.786] Server  ERROR    ⨯ Error: Invalid truck log data: weightKg: Weight is too large
-[00:09:13.311] Server  LOG      ✓ Compiled in 458ms
-[00:09:37.621] Server  LOG     💾 saveTruckLog called with: {}
-[00:09:37.625] Server  LOG     🧹 Cleaned log data: {}
-[00:09:37.636] Server  ERROR   ❌ Validation failed!
-[00:09:37.638] Server  ERROR   ❌ Validation errors: "[\n  {\n    \"code\": \"too_big\",\n    \"maximum\": 1000000,\n    \"type\": \"number\",\n    \"inclusive\": true,\n    \"exact\": false,\n    \"message\": \"Weight is too large\",\n    \"path\": [\n      \"weightKg\"\n    ]\n  }\n]"
-[00:09:37.640] Server  ERROR   ❌ Data that failed validation: "{\n  \"direction\": \"IN\",\n  \"plate\": \"medku\",\n  \"driverId\": \"drv_1765123007572_vdvwb2os4\",\n  \"driverName\": \"danny\",\n  \"cargoType\": \"chemicals\",\n  \"weightKg\": 1123123213,\n  \"comments\": \"sadasdasas\",\n  \"origin\": \"darkhan\",\n  \"destination\": \"erdenet\",\n  \"senderOrganizationId\": \"org_1765126887449_elnj38rhu\",\n  \"receiverOrganizationId\": \"org_1765126887449_elnj38rhu\",\n  \"transportCompanyId\": \"tc_1765127013469_sqzaf1evj\"\n}"
-[00:09:37.642] Server  ERROR   ❌ Field errors: {}
-[00:09:37.651] Server  ERROR   C:\Users\Danny\Documents\xuji\gaali\.next\dev\server\chunks\ssr\[root-of-the-server]__49770b4e._.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
-[00:09:37.657] Server  ERROR   C:\Users\Danny\Documents\xuji\gaali\node_modules\next\dist\compiled\next-server\app-page-turbo.runtime.dev.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
-[00:09:37.659] Server  ERROR   C:\Users\Danny\Documents\xuji\gaali\.next\dev\server\chunks\ssr\ef5c4_next_dist_6e3e310d._.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
-[00:09:37.665] Server  ERROR   C:\Users\Danny\Documents\xuji\gaali\node_modules\next\dist\server\base-server.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
-[00:09:37.667] Server  ERROR   C:\Users\Danny\Documents\xuji\gaali\node_modules\next\dist\server\next-server.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
-[00:09:37.668] Server  ERROR   C:\Users\Danny\Documents\xuji\gaali\node_modules\next\dist\server\dev\next-dev-server.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
-[00:09:37.669] Server  ERROR   C:\Users\Danny\Documents\xuji\gaali\node_modules\next\dist\trace\trace.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
-[00:09:37.670] Server  ERROR   C:\Users\Danny\Documents\xuji\gaali\node_modules\next\dist\server\lib\router-server.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
-[00:09:37.673] Server  ERROR   C:\Users\Danny\Documents\xuji\gaali\node_modules\next\dist\server\lib\start-server.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
-[00:09:37.683] Server  ERROR   ❌ Error in saveTruckLog: ValidationError: Invalid truck log data: weightKg: Weight is too large
-[00:09:37.698] Server  ERROR   ❌ Error details: {}
-[00:09:37.733] Server  ERROR   C:\Users\Danny\Documents\xuji\gaali\.next\dev\server\chunks\ssr\[root-of-the-server]__49770b4e._.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
-[00:09:37.740] Server  ERROR   C:\Users\Danny\Documents\xuji\gaali\node_modules\next\dist\compiled\next-server\app-page-turbo.runtime.dev.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
-[00:09:37.743] Server  ERROR   C:\Users\Danny\Documents\xuji\gaali\.next\dev\server\chunks\ssr\ef5c4_next_dist_6e3e310d._.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
-[00:09:37.746] Server  ERROR   C:\Users\Danny\Documents\xuji\gaali\node_modules\next\dist\server\base-server.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
-[00:09:37.748] Server  ERROR   C:\Users\Danny\Documents\xuji\gaali\node_modules\next\dist\server\next-server.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
-[00:09:37.750] Server  ERROR   C:\Users\Danny\Documents\xuji\gaali\node_modules\next\dist\server\dev\next-dev-server.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
-[00:09:37.752] Server  ERROR   C:\Users\Danny\Documents\xuji\gaali\node_modules\next\dist\trace\trace.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
-[00:09:37.753] Server  ERROR   C:\Users\Danny\Documents\xuji\gaali\node_modules\next\dist\server\lib\router-server.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
-[00:09:37.754] Server  ERROR   C:\Users\Danny\Documents\xuji\gaali\node_modules\next\dist\server\lib\start-server.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
-[00:09:37.756] Server  ERROR    ⨯ Error: Invalid truck log data: weightKg: Weight is too large
-[00:09:46.267] Server  LOG     💾 saveTruckLog called with: {}
-[00:09:46.271] Server  LOG     🧹 Cleaned log data: {}
-[00:09:46.273] Server  ERROR   ❌ Validation failed!
-[00:09:46.282] Server  ERROR   ❌ Validation errors: "[\n  {\n    \"code\": \"too_big\",\n    \"maximum\": 1000000,\n    \"type\": \"number\",\n    \"inclusive\": true,\n    \"exact\": false,\n    \"message\": \"Weight is too large\",\n    \"path\": [\n      \"weightKg\"\n    ]\n  }\n]"
-[00:09:46.284] Server  ERROR   ❌ Data that failed validation: "{\n  \"direction\": \"IN\",\n  \"plate\": \"medku\",\n  \"driverId\": \"drv_1765123007572_vdvwb2os4\",\n  \"driverName\": \"danny\",\n  \"cargoType\": \"chemicals\",\n  \"weightKg\": 1123123213,\n  \"comments\": \"sadasdasas\",\n  \"origin\": \"darkhan\",\n  \"destination\": \"erdenet\",\n  \"senderOrganizationId\": \"org_1765126887449_elnj38rhu\",\n  \"receiverOrganizationId\": \"org_1765126887449_elnj38rhu\",\n  \"transportCompanyId\": \"tc_1765127013469_sqzaf1evj\"\n}"
-[00:09:46.286] Server  ERROR   ❌ Field errors: {}
-[00:09:46.288] Server  ERROR   C:\Users\Danny\Documents\xuji\gaali\.next\dev\server\chunks\ssr\[root-of-the-server]__49770b4e._.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
-[00:09:46.297] Server  ERROR   C:\Users\Danny\Documents\xuji\gaali\node_modules\next\dist\compiled\next-server\app-page-turbo.runtime.dev.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
-[00:09:46.298] Server  ERROR   C:\Users\Danny\Documents\xuji\gaali\.next\dev\server\chunks\ssr\ef5c4_next_dist_6e3e310d._.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
-[00:09:46.300] Server  ERROR   C:\Users\Danny\Documents\xuji\gaali\node_modules\next\dist\server\base-server.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
-[00:09:46.301] Server  ERROR   C:\Users\Danny\Documents\xuji\gaali\node_modules\next\dist\server\next-server.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
-[00:09:46.302] Server  ERROR   C:\Users\Danny\Documents\xuji\gaali\node_modules\next\dist\server\dev\next-dev-server.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
-[00:09:46.304] Server  ERROR   C:\Users\Danny\Documents\xuji\gaali\node_modules\next\dist\trace\trace.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
-[00:09:46.313] Server  ERROR   C:\Users\Danny\Documents\xuji\gaali\node_modules\next\dist\server\lib\router-server.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
-[00:09:46.315] Server  ERROR   C:\Users\Danny\Documents\xuji\gaali\node_modules\next\dist\server\lib\start-server.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
-[00:09:46.326] Server  ERROR   ❌ Error in saveTruckLog: ValidationError: Invalid truck log data: weightKg: Weight is too large
-[00:09:46.428] Server  ERROR   ❌ Error details: {}
-[00:09:46.435] Server  ERROR   C:\Users\Danny\Documents\xuji\gaali\.next\dev\server\chunks\ssr\[root-of-the-server]__49770b4e._.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
-[00:09:46.444] Server  ERROR   C:\Users\Danny\Documents\xuji\gaali\node_modules\next\dist\compiled\next-server\app-page-turbo.runtime.dev.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
-[00:09:46.446] Server  ERROR   C:\Users\Danny\Documents\xuji\gaali\.next\dev\server\chunks\ssr\ef5c4_next_dist_6e3e310d._.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
-[00:09:46.450] Server  ERROR   C:\Users\Danny\Documents\xuji\gaali\node_modules\next\dist\server\base-server.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
-[00:09:46.451] Server  ERROR   C:\Users\Danny\Documents\xuji\gaali\node_modules\next\dist\server\next-server.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
-[00:09:46.453] Server  ERROR   C:\Users\Danny\Documents\xuji\gaali\node_modules\next\dist\server\dev\next-dev-server.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
-[00:09:46.454] Server  ERROR   C:\Users\Danny\Documents\xuji\gaali\node_modules\next\dist\trace\trace.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
-[00:09:46.455] Server  ERROR   C:\Users\Danny\Documents\xuji\gaali\node_modules\next\dist\server\lib\router-server.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
-[00:09:46.458] Server  ERROR   C:\Users\Danny\Documents\xuji\gaali\node_modules\next\dist\server\lib\start-server.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
-[00:09:46.462] Server  ERROR    ⨯ Error: Invalid truck log data: weightKg: Weight is too large
-[00:09:50.710] Browser LOG     %c[Vercel Web Analytics]%c Debug mode is enabled by default in development. No requests will be sent to the server. color: rgb(120, 120, 120) color: inherit
-[00:09:50.710] Browser LOG     %c[Vercel Web Analytics]%c Running queued event color: rgb(120, 120, 120) color: inherit pageview {"path":"/","route":"/"}
-[00:09:50.710] Browser LOG     %c[Vercel Web Analytics]%c [pageview] http://localhost:3000/ color: rgb(120, 120, 120) color: inherit {"dp":"/","o":"http://localhost:3000/","sdkn":"@vercel/analytics/next","sdkv":"1.5.0","sv":"0.1.3","ts":1765433040030}
-[00:10:29.415] Server  LOG     💾 saveTruckLog called with: {}
-[00:10:29.419] Server  LOG     🧹 Cleaned log data: {}
-[00:10:29.420] Server  LOG     ✅ Validation passed
-[00:10:29.427] Server  LOG     💾 Inserting log document into database...
-[00:10:29.610] Server  LOG     ✅ Log document inserted successfully
-[00:10:29.612] Server  LOG     ✅ saveTruckLog completed successfully, log ID: "truck-1765433078938-ip0id8wub"
-[00:26:33.781] Server  LOG      ✓ Compiled in 601ms
+[00:00:03.334] Server  LOG      ✓ Ready in 3.1s
+[00:00:30.712] Browser LOG     %c[Vercel Web Analytics]%c Debug mode is enabled by default in development. No requests will be sent to the server. color: rgb(120, 120, 120) color: inherit
+[00:00:30.712] Browser LOG     %c[Vercel Web Analytics]%c Running queued event color: rgb(120, 120, 120) color: inherit pageview {"path":"/","route":"/"}
+[00:00:30.712] Browser LOG     %c[Vercel Web Analytics]%c [pageview] http://localhost:3000/ color: rgb(120, 120, 120) color: inherit {"dp":"/","o":"http://localhost:3000/","r":"","sdkn":"@vercel/analytics/next","sdkv":"1.6.1","sv":"0.1.3","ts":1765534026740}
+[00:03:45.618] Browser LOG     %c[Vercel Web Analytics]%c Debug mode is enabled by default in development. No requests will be sent to the server. color: rgb(120, 120, 120) color: inherit
+[00:03:45.618] Browser LOG     %c[Vercel Web Analytics]%c Running queued event color: rgb(120, 120, 120) color: inherit pageview {"path":"/","route":"/"}
+[00:03:45.618] Browser LOG     %c[Vercel Web Analytics]%c [pageview] http://localhost:3000/ color: rgb(120, 120, 120) color: inherit {"dp":"/","o":"http://localhost:3000/","r":"","sdkn":"@vercel/analytics/next","sdkv":"1.6.1","sv":"0.1.3","ts":1765534221649}
+[00:06:14.888] Server  LOG      ✓ Compiled in 225ms
+[00:07:21.894] Server  LOG      ✓ Compiled in 129ms
+[00:07:43.355] Browser LOG     %c[Vercel Web Analytics]%c Debug mode is enabled by default in development. No requests will be sent to the server. color: rgb(120, 120, 120) color: inherit
+[00:07:43.355] Browser LOG     %c[Vercel Web Analytics]%c Running queued event color: rgb(120, 120, 120) color: inherit pageview {"path":"/","route":"/"}
+[00:07:43.355] Browser LOG     %c[Vercel Web Analytics]%c [pageview] http://localhost:3000/ color: rgb(120, 120, 120) color: inherit {"dp":"/","o":"http://localhost:3000/","r":"","sdkn":"@vercel/analytics/next","sdkv":"1.6.1","sv":"0.1.3","ts":1765534459388}
+[00:09:33.601] Server  LOG      ✓ Compiled in 226ms
+[00:10:48.248] Server  LOG      ✓ Compiled in 210ms
+[00:10:49.690] Server  LOG      ✓ Compiled in 121ms
+[00:10:51.379] Server  LOG      ✓ Compiled in 60ms
+[00:11:55.730] Browser LOG     🔌 Attempting to connect to WebSocket: ws://127.0.0.1:9000/service
+[00:11:55.730] Browser LOG     🔌 Connection attempt #: 1
+[00:11:55.730] Browser LOG     Initial connection attempt failed: Connection already in progress
+[00:11:55.730] Browser LOG     %c[Vercel Web Analytics]%c [pageview] http://localhost:3000/in-session color: rgb(120, 120, 120) color: inherit {"dp":"/in-session","o":"http://localhost:3000/in-session","sdkn":"@vercel/analytics/next","sdkv":"1.6.1","sv":"0.1.3","ts":1765534711614}
+[00:11:55.730] Browser ERROR   WebSocket error: {"isTrusted":true}
+[00:11:55.730] Browser LOG     Initial connection attempt failed: Unable to connect to customs service at ws://127.0.0.1:9000/service. Please check if the 3rd party app is running.
+[00:11:55.730] Browser ERROR   WebSocket error: {"isTrusted":true}
+[00:11:55.730] Browser ERROR   WebSocket error: {"isTrusted":true}
+[00:11:57.718] Browser LOG     Attempting to reconnect...
+[00:11:57.718] Browser LOG     🔌 Attempting to connect to WebSocket: ws://127.0.0.1:9000/service
+[00:11:57.718] Browser LOG     🔌 Connection attempt #: 2
+[00:11:57.718] Browser ERROR   WebSocket error: {"isTrusted":true}
+[00:11:58.737] Browser ERROR   WebSocket error: {"isTrusted":true}
+[00:11:58.737] Browser ERROR   WebSocket error: {"isTrusted":true}
+[00:11:59.732] Browser LOG     Attempting to reconnect...
+[00:11:59.732] Browser LOG     ⚠️ Existing WebSocket is not open, closing it. State: 3
+[00:11:59.732] Browser LOG     🔌 Attempting to connect to WebSocket: ws://127.0.0.1:9000/service
+[00:11:59.732] Browser LOG     🔌 Connection attempt #: 3
+[00:11:59.732] Browser ERROR   WebSocket error: {"isTrusted":true}
+[00:12:01.824] Browser ERROR   WebSocket error: {"isTrusted":true}
+[00:12:01.824] Browser LOG     Attempting to reconnect...
+[00:12:01.824] Browser LOG     ⚠️ Existing WebSocket is not open, closing it. State: 3
+[00:12:01.824] Browser LOG     🔌 Attempting to connect to WebSocket: ws://127.0.0.1:9000/service
+[00:12:01.824] Browser LOG     🔌 Connection attempt #: 4
+[00:12:01.824] Browser ERROR   WebSocket error: {"isTrusted":true}
+[00:12:01.824] Browser ERROR   WebSocket error: {"isTrusted":true}
+[00:12:03.761] Browser LOG     Attempting to reconnect...
+[00:12:03.761] Browser LOG     ⚠️ Existing WebSocket is not open, closing it. State: 3
+[00:12:03.761] Browser LOG     🔌 Attempting to connect to WebSocket: ws://127.0.0.1:9000/service
+[00:12:03.761] Browser LOG     🔌 Connection attempt #: 5
+[00:12:03.899] Browser ERROR   WebSocket error: {"isTrusted":true}
+[00:12:04.981] Browser ERROR   WebSocket error: {"isTrusted":true}
+[00:12:22.432] Server  LOG      ✓ Compiled in 69ms
+[00:28:13.116] Server  LOG      ✓ Compiled in 185ms
+[00:28:13.552] Browser LOG     🔌 Attempting to connect to WebSocket: ws://127.0.0.1:9000/service
+[00:28:13.552] Browser LOG     🔌 Connection attempt #: 1
+[00:28:13.552] Browser ERROR   WebSocket error: {"isTrusted":true}
+[00:28:13.552] Browser ERROR   WebSocket error: {"isTrusted":true}
+[00:28:13.552] Browser LOG     Initial connection attempt failed: Unable to connect to customs service at ws://127.0.0.1:9000/service. Please check if the 3rd party app is running.
+[00:28:13.552] Browser ERROR   Camera polling error: {}
+[00:28:15.285] Server  LOG      ✓ Compiled in 52ms
+[00:28:15.553] Browser ERROR   Camera polling error: {}
+[00:28:15.553] Browser LOG     🔌 Attempting to connect to WebSocket: ws://127.0.0.1:9000/service
+[00:28:15.553] Browser LOG     🔌 Connection attempt #: 2
+[00:28:15.553] Browser ERROR   WebSocket error: {"isTrusted":true}
+[00:28:15.553] Browser LOG     Initial connection attempt failed: Unable to connect to customs service at ws://127.0.0.1:9000/service. Please check if the 3rd party app is running.
+[00:28:17.552] Browser ERROR   WebSocket error: {"isTrusted":true}
+[00:28:18.552] Browser LOG     Attempting to reconnect...
+[00:28:18.552] Browser LOG     ⚠️ Existing WebSocket is not open, closing it. State: 3
+[00:28:18.552] Browser LOG     🔌 Attempting to connect to WebSocket: ws://127.0.0.1:9000/service
+[00:28:18.552] Browser LOG     🔌 Connection attempt #: 3
+[00:28:18.552] Browser ERROR   WebSocket error: {"isTrusted":true}
+[00:28:21.552] Browser LOG     Attempting to reconnect...
+[00:28:21.552] Browser LOG     ⚠️ Existing WebSocket is not open, closing it. State: 3
+[00:28:21.552] Browser LOG     🔌 Attempting to connect to WebSocket: ws://127.0.0.1:9000/service
+[00:28:21.552] Browser LOG     🔌 Connection attempt #: 4
+[00:28:21.552] Browser ERROR   WebSocket error: {"isTrusted":true}
+[00:28:21.552] Browser ERROR   WebSocket error: {"isTrusted":true}
+[00:28:24.552] Browser LOG     Attempting to reconnect...
+[00:28:24.552] Browser LOG     ⚠️ Existing WebSocket is not open, closing it. State: 3
+[00:28:24.552] Browser LOG     🔌 Attempting to connect to WebSocket: ws://127.0.0.1:9000/service
+[00:28:24.552] Browser LOG     🔌 Connection attempt #: 5
+[00:28:24.552] Browser ERROR   WebSocket error: {"isTrusted":true}
+[00:28:24.691] Browser ERROR   WebSocket error: {"isTrusted":true}
+[00:28:27.772] Browser ERROR   WebSocket error: {"isTrusted":true}
+[00:28:32.552] Browser ERROR   WebSocket error: {"isTrusted":true}
+[00:28:46.555] Browser ERROR   Camera polling error: {}
+[00:28:48.551] Browser ERROR   Camera polling error: {}
+[00:29:23.552] Browser ERROR   Camera polling error: {}
+[00:29:26.552] Browser ERROR   Camera polling error: {}
+[00:29:51.275] Server  LOG      ✓ Compiled in 316ms
+[00:30:04.967] Browser ERROR   Camera polling error: {}
+[00:30:06.870] Browser ERROR   Camera polling error: {}
+[00:30:11.355] Browser LOG     🔌 Attempting to connect to WebSocket: ws://127.0.0.1:9000/service
+[00:30:11.355] Browser LOG     🔌 Connection attempt #: 1
+[00:30:11.355] Browser ERROR   Camera polling error: {}
+[00:30:11.355] Browser ERROR   WebSocket error: {"isTrusted":true}
+[00:30:11.355] Browser ERROR   WebSocket error: {"isTrusted":true}
+[00:30:11.355] Browser LOG     Initial connection attempt failed: Unable to connect to customs service at ws://127.0.0.1:9000/service. Please check if the 3rd party app is running.
+[00:30:11.747] Browser LOG     %c[Vercel Web Analytics]%c Debug mode is enabled by default in development. No requests will be sent to the server. color: rgb(120, 120, 120) color: inherit
+[00:30:11.747] Browser LOG     %c[Vercel Web Analytics]%c Running queued event color: rgb(120, 120, 120) color: inherit pageview {"path":"/in-session","route":"/in-session"}
+[00:30:11.747] Browser LOG     %c[Vercel Web Analytics]%c [pageview] http://localhost:3000/in-session color: rgb(120, 120, 120) color: inherit {"dp":"/in-session","o":"http://localhost:3000/in-session","r":"","sdkn":"@vercel/analytics/next","sdkv":"1.6.1","sv":"0.1.3","ts":1765535807653}
+[00:30:13.363] Browser ERROR   Camera polling error: {}
+[00:30:13.363] Browser LOG     Attempting to reconnect...
+[00:30:13.363] Browser LOG     ⚠️ Existing WebSocket is not open, closing it. State: 3
+[00:30:13.363] Browser LOG     🔌 Attempting to connect to WebSocket: ws://127.0.0.1:9000/service
+[00:30:13.363] Browser LOG     🔌 Connection attempt #: 2
+[00:30:13.363] Browser ERROR   WebSocket error: {"isTrusted":true}
+[00:30:14.358] Browser ERROR   WebSocket error: {"isTrusted":true}
+[00:30:15.370] Browser LOG     Attempting to reconnect...
+[00:30:15.370] Browser LOG     ⚠️ Existing WebSocket is not open, closing it. State: 3
+[00:30:15.370] Browser LOG     🔌 Attempting to connect to WebSocket: ws://127.0.0.1:9000/service
+[00:30:15.370] Browser LOG     🔌 Connection attempt #: 3
+[00:30:15.370] Browser ERROR   WebSocket error: {"isTrusted":true}
+[00:30:17.373] Browser ERROR   WebSocket error: {"isTrusted":true}
+[00:30:17.373] Browser LOG     Attempting to reconnect...
+[00:30:17.373] Browser LOG     ⚠️ Existing WebSocket is not open, closing it. State: 3
+[00:30:17.373] Browser LOG     🔌 Attempting to connect to WebSocket: ws://127.0.0.1:9000/service
+[00:30:17.373] Browser LOG     🔌 Connection attempt #: 4
+[00:30:17.373] Browser ERROR   WebSocket error: {"isTrusted":true}
+[00:30:19.375] Browser LOG     Attempting to reconnect...
+[00:30:19.375] Browser LOG     ⚠️ Existing WebSocket is not open, closing it. State: 3
+[00:30:19.375] Browser LOG     🔌 Attempting to connect to WebSocket: ws://127.0.0.1:9000/service
+[00:30:19.375] Browser LOG     🔌 Connection attempt #: 5
+[00:30:19.375] Browser ERROR   WebSocket error: {"isTrusted":true}
+[00:30:20.367] Browser ERROR   WebSocket error: {"isTrusted":true}
+[00:30:24.552] Browser ERROR   WebSocket error: {"isTrusted":true}
+[00:30:28.551] Browser ERROR   WebSocket error: {"isTrusted":true}
+[00:30:39.874] Server  LOG      ✓ Compiled in 86ms
+[00:30:43.786] Server  LOG      ✓ Compiled in 68ms
+[00:30:44.552] Browser LOG     🔌 Attempting to connect to WebSocket: ws://127.0.0.1:9000/service
+[00:30:44.552] Browser LOG     🔌 Connection attempt #: 1
+[00:30:44.552] Browser ERROR   WebSocket error: {"isTrusted":true}
+[00:30:44.552] Browser ERROR   WebSocket error: {"isTrusted":true}
+[00:30:44.552] Browser LOG     Initial connection attempt failed: Unable to connect to customs service at ws://127.0.0.1:9000/service. Please check if the 3rd party app is running.
+[00:30:44.552] Browser ERROR   Camera polling error: {}
+[00:30:47.552] Browser LOG     Attempting to reconnect...
+[00:30:47.552] Browser LOG     ⚠️ Existing WebSocket is not open, closing it. State: 3
+[00:30:47.552] Browser LOG     🔌 Attempting to connect to WebSocket: ws://127.0.0.1:9000/service
+[00:30:47.552] Browser LOG     🔌 Connection attempt #: 2
+[00:30:47.552] Browser ERROR   WebSocket error: {"isTrusted":true}
+[00:30:47.552] Browser ERROR   Camera polling error: {}
+[00:30:48.552] Browser ERROR   WebSocket error: {"isTrusted":true}
+[00:30:50.552] Browser LOG     Attempting to reconnect...
+[00:30:50.552] Browser LOG     ⚠️ Existing WebSocket is not open, closing it. State: 3
+[00:30:50.552] Browser LOG     🔌 Attempting to connect to WebSocket: ws://127.0.0.1:9000/service
+[00:30:50.552] Browser LOG     🔌 Connection attempt #: 3
+[00:30:50.552] Browser ERROR   WebSocket error: {"isTrusted":true}
+[00:30:53.552] Browser ERROR   WebSocket error: {"isTrusted":true}
+[00:30:53.552] Browser LOG     Attempting to reconnect...
+[00:30:53.552] Browser LOG     ⚠️ Existing WebSocket is not open, closing it. State: 3
+[00:30:53.552] Browser LOG     🔌 Attempting to connect to WebSocket: ws://127.0.0.1:9000/service
+[00:30:53.552] Browser LOG     🔌 Connection attempt #: 4
+[00:30:53.552] Browser ERROR   WebSocket error: {"isTrusted":true}
+[00:30:54.821] Server  LOG      ✓ Compiled in 173ms
+[00:30:55.555] Browser ERROR   uncaughtError: ReferenceError: Badge is not defined
+[00:30:59.786] Server  WARN     ⚠ Fast Refresh had to perform a full reload due to a runtime error.
+[00:30:59.929] Server  LOG      ✓ Compiled in 108ms
+[00:31:00.183] Browser LOG     🔌 Attempting to connect to WebSocket: ws://127.0.0.1:9000/service
+[00:31:00.183] Browser LOG     🔌 Connection attempt #: 1
+[00:31:00.183] Browser ERROR   Camera polling error: {}
+[00:31:00.183] Browser LOG     %c[Vercel Web Analytics]%c Debug mode is enabled by default in development. No requests will be sent to the server. color: rgb(120, 120, 120) color: inherit
+[00:31:00.183] Browser LOG     %c[Vercel Web Analytics]%c Running queued event color: rgb(120, 120, 120) color: inherit pageview {"path":"/in-session","route":"/in-session"}
+[00:31:00.183] Browser LOG     %c[Vercel Web Analytics]%c [pageview] http://localhost:3000/in-session color: rgb(120, 120, 120) color: inherit {"dp":"/in-session","o":"http://localhost:3000/in-session","sdkn":"@vercel/analytics/next","sdkv":"1.6.1","sv":"0.1.3","ts":1765535856177}
+[00:31:01.552] Browser ERROR   WebSocket error: {"isTrusted":true}
+[00:31:01.552] Browser ERROR   WebSocket error: {"isTrusted":true}
+[00:31:01.552] Browser LOG     Initial connection attempt failed: Unable to connect to customs service at ws://127.0.0.1:9000/service. Please check if the 3rd party app is running.
+[00:31:03.554] Browser LOG     Attempting to reconnect...
+[00:31:03.554] Browser LOG     ⚠️ Existing WebSocket is not open, closing it. State: 3
+[00:31:03.554] Browser LOG     🔌 Attempting to connect to WebSocket: ws://127.0.0.1:9000/service
+[00:31:03.554] Browser LOG     🔌 Connection attempt #: 2
+[00:31:03.554] Browser ERROR   WebSocket error: {"isTrusted":true}
+[00:31:03.554] Browser ERROR   Camera polling error: {}
+[00:31:04.553] Browser ERROR   WebSocket error: {"isTrusted":true}
+[00:31:06.553] Browser LOG     Attempting to reconnect...
+[00:31:06.553] Browser LOG     ⚠️ Existing WebSocket is not open, closing it. State: 3
+[00:31:06.553] Browser LOG     🔌 Attempting to connect to WebSocket: ws://127.0.0.1:9000/service
+[00:31:06.553] Browser LOG     🔌 Connection attempt #: 3
+[00:31:06.553] Browser ERROR   WebSocket error: {"isTrusted":true}
+[00:31:09.552] Browser ERROR   WebSocket error: {"isTrusted":true}
+[00:31:09.552] Browser LOG     Attempting to reconnect...
+[00:31:09.552] Browser LOG     ⚠️ Existing WebSocket is not open, closing it. State: 3
+[00:31:09.552] Browser LOG     🔌 Attempting to connect to WebSocket: ws://127.0.0.1:9000/service
+[00:31:09.552] Browser LOG     🔌 Connection attempt #: 4
+[00:31:09.552] Browser ERROR   WebSocket error: {"isTrusted":true}
+[00:31:12.551] Browser LOG     Attempting to reconnect...
+[00:31:12.551] Browser LOG     ⚠️ Existing WebSocket is not open, closing it. State: 3
+[00:31:12.551] Browser LOG     🔌 Attempting to connect to WebSocket: ws://127.0.0.1:9000/service
+[00:31:12.551] Browser LOG     🔌 Connection attempt #: 5
+[00:31:12.551] Browser ERROR   WebSocket error: {"isTrusted":true}
+[00:31:12.551] Browser ERROR   WebSocket error: {"isTrusted":true}
+[00:31:16.555] Browser ERROR   WebSocket error: {"isTrusted":true}
+[00:31:20.553] Browser ERROR   WebSocket error: {"isTrusted":true}
+[00:32:11.552] Browser ERROR   Camera polling error: {}
+[00:32:27.078] Server  LOG      ✓ Compiled in 78ms
+[00:32:27.552] Browser LOG     🔌 Attempting to connect to WebSocket: ws://127.0.0.1:9000/service
+[00:32:27.552] Browser LOG     🔌 Connection attempt #: 6
+[00:32:27.552] Browser ERROR   WebSocket error: {"isTrusted":true}
+[00:32:27.552] Browser LOG     Initial connection attempt failed: Unable to connect to customs service at ws://127.0.0.1:9000/service. Please check if the 3rd party app is running.
+[00:52:53.979] Server  LOG      ✓ Compiled in 137ms
+[00:52:54.552] Browser LOG     🔌 Attempting to connect to WebSocket: ws://127.0.0.1:9000/service
+[00:52:54.552] Browser LOG     🔌 Connection attempt #: 7
+[00:52:54.552] Browser LOG     Initial connection attempt failed: Unable to connect to customs service at ws://127.0.0.1:9000/service. Please check if the 3rd party app is running.
+[00:52:58.851] Server  LOG      ✓ Compiled in 46ms
+[00:52:58.923] Browser LOG     🔌 Attempting to connect to WebSocket: ws://127.0.0.1:9000/service
+[00:52:58.923] Browser LOG     🔌 Connection attempt #: 8
+[00:52:58.923] Browser LOG     Initial connection attempt failed: Unable to connect to customs service at ws://127.0.0.1:9000/service. Please check if the 3rd party app is running.
+[00:53:26.024] Server  LOG      ✓ Compiled in 62ms
+[00:53:26.552] Browser LOG     🔌 Attempting to connect to WebSocket: ws://127.0.0.1:9000/service
+[00:53:26.552] Browser LOG     🔌 Connection attempt #: 9
+[00:53:29.734] Server  LOG      ✓ Compiled in 74ms
+[00:53:30.553] Browser LOG     🔌 Attempting to connect to WebSocket: ws://127.0.0.1:9000/service
+[00:53:30.553] Browser LOG     🔌 Connection attempt #: 10
+[00:54:20.782] Browser LOG     🔌 Attempting to connect to WebSocket: ws://127.0.0.1:9000/service
+[00:54:20.782] Browser LOG     🔌 Connection attempt #: 1
+[00:54:20.782] Browser LOG     %c[Vercel Web Analytics]%c [pageview] http://localhost:3000/out-session color: rgb(120, 120, 120) color: inherit {"dp":"/out-session","o":"http://localhost:3000/out-session","sdkn":"@vercel/analytics/next","sdkv":"1.6.1","sv":"0.1.3","ts":1765537256673}
+[00:54:20.782] Browser WARN    WebSocket connection error (this is expected if 3rd party app is not running)
+[00:54:20.782] Browser ERROR   WebSocket error: {"isTrusted":true}
+[00:54:20.782] Browser ERROR   WebSocket error: {"isTrusted":true}
+[00:54:22.775] Browser LOG     🔌 Attempting to connect to WebSocket: ws://127.0.0.1:9000/service
+[00:54:22.775] Browser LOG     🔌 Connection attempt #: 2
+[00:54:23.790] Browser ERROR   WebSocket error: {"isTrusted":true}
+[00:54:23.790] Browser ERROR   WebSocket error: {"isTrusted":true}
+[00:54:26.552] Browser LOG     ⚠️ Existing WebSocket is not open, closing it. State: 3
+[00:54:26.552] Browser LOG     🔌 Attempting to connect to WebSocket: ws://127.0.0.1:9000/service
+[00:54:26.552] Browser LOG     🔌 Connection attempt #: 3
+[00:54:29.552] Browser ERROR   WebSocket error: {"isTrusted":true}
+[00:54:29.552] Browser LOG     ⚠️ Existing WebSocket is not open, closing it. State: 3
+[00:54:29.552] Browser LOG     🔌 Attempting to connect to WebSocket: ws://127.0.0.1:9000/service
+[00:54:29.552] Browser LOG     🔌 Connection attempt #: 4
+[00:54:32.555] Browser LOG     ⚠️ Existing WebSocket is not open, closing it. State: 3
+[00:54:32.555] Browser LOG     🔌 Attempting to connect to WebSocket: ws://127.0.0.1:9000/service
+[00:54:32.555] Browser LOG     🔌 Connection attempt #: 5
+[00:54:32.555] Browser ERROR   WebSocket error: {"isTrusted":true}
+[00:54:44.231] Server  LOG      ✓ Compiled in 184ms
+[00:54:47.378] Server  LOG      ✓ Compiled in 100ms
+[00:54:49.810] Server  LOG      ✓ Compiled in 85ms
+[00:59:28.394] Server  LOG      ✓ Compiled in 328ms
+[00:59:33.944] Server  LOG      ✓ Compiled in 97ms
+[00:59:43.629] Server  LOG      ✓ Compiled in 75ms
+[00:59:50.365] Server  LOG      ✓ Compiled in 91ms
+[01:00:00.319] Server  LOG      ✓ Compiled in 31ms
+[01:00:03.434] Server  LOG      ✓ Compiled in 140ms
+[01:00:11.554] Server  LOG      ✓ Compiled in 113ms
+[01:00:22.549] Server  LOG      ✓ Compiled in 82ms
+[01:00:24.740] Server  LOG      ✓ Compiled in 40ms
+[01:00:40.803] Server  LOG      ✓ Compiled in 83ms
+[01:00:54.984] Server  LOG      ✓ Compiled in 40ms
+[01:01:05.626] Server  LOG      ✓ Compiled in 73ms
+[01:01:10.605] Server  LOG      ✓ Compiled in 112ms
+[01:01:22.994] Server  LOG      ✓ Compiled in 42ms
+[01:01:23.552] Browser LOG     🔌 Attempting to connect to WebSocket: ws://127.0.0.1:9000/service
+[01:01:23.552] Browser LOG     🔌 Connection attempt #: 6
+[01:01:24.686] Server  LOG      ✓ Compiled in 36ms
+[01:01:25.551] Browser LOG     🔌 Attempting to connect to WebSocket: ws://127.0.0.1:9000/service
+[01:01:25.551] Browser LOG     🔌 Connection attempt #: 7
+[01:01:47.106] Server  LOG      ✓ Compiled in 67ms
+[01:01:47.552] Browser LOG     🔌 Attempting to connect to WebSocket: ws://127.0.0.1:9000/service
+[01:01:47.552] Browser LOG     🔌 Connection attempt #: 8
+[01:02:10.112] Server  LOG      ✓ Compiled in 108ms
+[01:02:10.568] Browser LOG     🔌 Attempting to connect to WebSocket: ws://127.0.0.1:9000/service
+[01:02:10.568] Browser LOG     🔌 Connection attempt #: 9
+[01:02:16.154] Server  LOG      ✓ Compiled in 43ms
+[01:02:16.552] Browser LOG     🔌 Attempting to connect to WebSocket: ws://127.0.0.1:9000/service
+[01:02:16.552] Browser LOG     🔌 Connection attempt #: 10
+[01:02:35.480] Server  LOG      ✓ Compiled in 123ms
+[01:02:49.060] Server  LOG      ✓ Compiled in 106ms
+[01:33:23.883] Browser LOG     🔌 Attempting to connect to WebSocket: ws://127.0.0.1:9000/service
+[01:33:23.883] Browser LOG     🔌 Connection attempt #: 1
+[01:33:23.884] Browser LOG     %c[Vercel Web Analytics]%c [pageview] http://localhost:3000/in-session color: rgb(120, 120, 120) color: inherit {"dp":"/in-session","o":"http://localhost:3000/in-session","sdkn":"@vercel/analytics/next","sdkv":"1.6.1","sv":"0.1.3","ts":1765539599754}
+[01:33:23.884] Browser WARN    WebSocket connection error (this is expected if 3rd party app is not running)
+[01:33:23.884] Browser WARN    WebSocket connection error (expected if scale service is not running)
+[01:33:23.884] Browser WARN    WebSocket connection error (expected if scale service is not running)
+[01:33:25.875] Browser LOG     🔌 Attempting to connect to WebSocket: ws://127.0.0.1:9000/service
+[01:33:25.875] Browser LOG     🔌 Connection attempt #: 2
+[01:33:27.879] Browser LOG     ⚠️ Existing WebSocket is not open, closing it. State: 3
+[01:33:27.879] Browser LOG     🔌 Attempting to connect to WebSocket: ws://127.0.0.1:9000/service
+[01:33:27.879] Browser LOG     🔌 Connection attempt #: 3
+[01:33:29.888] Browser LOG     ⚠️ Existing WebSocket is not open, closing it. State: 3
+[01:33:29.888] Browser LOG     🔌 Attempting to connect to WebSocket: ws://127.0.0.1:9000/service
+[01:33:29.888] Browser LOG     🔌 Connection attempt #: 4
+[01:33:31.902] Browser LOG     ⚠️ Existing WebSocket is not open, closing it. State: 3
+[01:33:31.902] Browser LOG     🔌 Attempting to connect to WebSocket: ws://127.0.0.1:9000/service
+[01:33:31.902] Browser LOG     🔌 Connection attempt #: 5
+[01:34:46.307] Server  LOG      ✓ Compiled in 118ms
+[01:34:46.417] Browser LOG     🔌 Attempting to connect to WebSocket: ws://127.0.0.1:9000/service
+[01:34:46.417] Browser LOG     🔌 Connection attempt #: 1
+[01:34:46.417] Browser WARN    WebSocket connection error (this is expected if 3rd party app is not running)
+[01:34:46.417] Browser WARN    WebSocket connection error (expected if scale service is not running)
+[01:34:46.417] Browser WARN    WebSocket connection error (expected if scale service is not running)
+[01:34:48.417] Browser LOG     🔌 Attempting to connect to WebSocket: ws://127.0.0.1:9000/service
+[01:34:48.417] Browser LOG     🔌 Connection attempt #: 2
+[01:34:50.429] Browser LOG     ⚠️ Existing WebSocket is not open, closing it. State: 3
+[01:34:50.429] Browser LOG     🔌 Attempting to connect to WebSocket: ws://127.0.0.1:9000/service
+[01:34:50.429] Browser LOG     🔌 Connection attempt #: 3
+[01:34:53.554] Browser LOG     ⚠️ Existing WebSocket is not open, closing it. State: 3
+[01:34:53.555] Browser LOG     🔌 Attempting to connect to WebSocket: ws://127.0.0.1:9000/service
+[01:34:53.555] Browser LOG     🔌 Connection attempt #: 4
+[01:34:56.555] Browser LOG     ⚠️ Existing WebSocket is not open, closing it. State: 3
+[01:34:56.555] Browser LOG     🔌 Attempting to connect to WebSocket: ws://127.0.0.1:9000/service
+[01:34:56.555] Browser LOG     🔌 Connection attempt #: 5
+[01:35:05.898] Server  LOG      ✓ Compiled in 215ms
+[01:35:13.281] Server  LOG      ✓ Compiled in 95ms
+[01:35:13.552] Browser ERROR   ./Documents/gaali/components/sessions/InSessionForm.tsx:325:6
+Parsing ecmascript source code failed
+  323 |         </div>
+  324 |       </form>
+> 325 |     </div>
+      |      ^^^^^
+  326 |   )
+  327 | }
+  328 |
+
+Unterminated regexp literal
+
+Import traces:
+  Client Component Browser:
+    ./Documents/gaali/components/sessions/InSessionForm.tsx [Client Component Browser]
+    ./Documents/gaali/app/in-session/page.tsx [Client Component Browser]
+    ./Documents/gaali/app/in-session/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./Documents/gaali/components/sessions/InSessionForm.tsx [Client Component SSR]
+    ./Documents/gaali/app/in-session/page.tsx [Client Component SSR]
+    ./Documents/gaali/app/in-session/page.tsx [Server Component]
+[01:35:23.553] Browser ERROR   ./Documents/gaali/components/sessions/InSessionForm.tsx:325:6
+Parsing ecmascript source code failed
+  323 |         </div>
+  324 |       </form>
+> 325 |     </div>
+      |      ^^^^^
+  326 |   )
+  327 | }
+  328 |
+
+Unterminated regexp literal
+
+Import traces:
+  Client Component Browser:
+    ./Documents/gaali/components/sessions/InSessionForm.tsx [Client Component Browser]
+    ./Documents/gaali/app/in-session/page.tsx [Client Component Browser]
+    ./Documents/gaali/app/in-session/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./Documents/gaali/components/sessions/InSessionForm.tsx [Client Component SSR]
+    ./Documents/gaali/app/in-session/page.tsx [Client Component SSR]
+    ./Documents/gaali/app/in-session/page.tsx [Server Component]
+[01:35:23.553] Browser ERROR   ./Documents/gaali/components/sessions/InSessionForm.tsx:325:6
+Parsing ecmascript source code failed
+  323 |         </div>
+  324 |       </form>
+> 325 |     </div>
+      |      ^^^^^
+  326 |   )
+  327 | }
+  328 |
+
+Unterminated regexp literal
+
+Import traces:
+  Client Component Browser:
+    ./Documents/gaali/components/sessions/InSessionForm.tsx [Client Component Browser]
+    ./Documents/gaali/app/in-session/page.tsx [Client Component Browser]
+    ./Documents/gaali/app/in-session/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./Documents/gaali/components/sessions/InSessionForm.tsx [Client Component SSR]
+    ./Documents/gaali/app/in-session/page.tsx [Client Component SSR]
+    ./Documents/gaali/app/in-session/page.tsx [Server Component]
+[01:35:23.553] Browser ERROR   ./Documents/gaali/components/sessions/InSessionForm.tsx:325:6
+Parsing ecmascript source code failed
+  323 |         </div>
+  324 |       </form>
+> 325 |     </div>
+      |      ^^^^^
+  326 |   )
+  327 | }
+  328 |
+
+Unterminated regexp literal
+
+Import traces:
+  Client Component Browser:
+    ./Documents/gaali/components/sessions/InSessionForm.tsx [Client Component Browser]
+    ./Documents/gaali/app/in-session/page.tsx [Client Component Browser]
+    ./Documents/gaali/app/in-session/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./Documents/gaali/components/sessions/InSessionForm.tsx [Client Component SSR]
+    ./Documents/gaali/app/in-session/page.tsx [Client Component SSR]
+    ./Documents/gaali/app/in-session/page.tsx [Server Component]
+[01:35:23.553] Browser ERROR   ./Documents/gaali/components/sessions/InSessionForm.tsx:325:6
+Parsing ecmascript source code failed
+  323 |         </div>
+  324 |       </form>
+> 325 |     </div>
+      |      ^^^^^
+  326 |   )
+  327 | }
+  328 |
+
+Unterminated regexp literal
+
+Import traces:
+  Client Component Browser:
+    ./Documents/gaali/components/sessions/InSessionForm.tsx [Client Component Browser]
+    ./Documents/gaali/app/in-session/page.tsx [Client Component Browser]
+    ./Documents/gaali/app/in-session/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./Documents/gaali/components/sessions/InSessionForm.tsx [Client Component SSR]
+    ./Documents/gaali/app/in-session/page.tsx [Client Component SSR]
+    ./Documents/gaali/app/in-session/page.tsx [Server Component]
+[01:35:23.553] Browser ERROR   Camera polling error: {}
+[01:35:25.608] Browser ERROR   ./Documents/gaali/components/sessions/InSessionForm.tsx:325:6
+Parsing ecmascript source code failed
+  323 |         </div>
+  324 |       </form>
+> 325 |     </div>
+      |      ^^^^^
+  326 |   )
+  327 | }
+  328 |
+
+Unterminated regexp literal
+
+Import traces:
+  Client Component Browser:
+    ./Documents/gaali/components/sessions/InSessionForm.tsx [Client Component Browser]
+    ./Documents/gaali/app/in-session/page.tsx [Client Component Browser]
+    ./Documents/gaali/app/in-session/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./Documents/gaali/components/sessions/InSessionForm.tsx [Client Component SSR]
+    ./Documents/gaali/app/in-session/page.tsx [Client Component SSR]
+    ./Documents/gaali/app/in-session/page.tsx [Server Component]
+[01:35:25.611] Browser ERROR   Camera polling error: {}
+[01:35:28.553] Browser ERROR   ./Documents/gaali/components/sessions/InSessionForm.tsx:325:6
+Parsing ecmascript source code failed
+  323 |         </div>
+  324 |       </form>
+> 325 |     </div>
+      |      ^^^^^
+  326 |   )
+  327 | }
+  328 |
+
+Unterminated regexp literal
+
+Import traces:
+  Client Component Browser:
+    ./Documents/gaali/components/sessions/InSessionForm.tsx [Client Component Browser]
+    ./Documents/gaali/app/in-session/page.tsx [Client Component Browser]
+    ./Documents/gaali/app/in-session/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./Documents/gaali/components/sessions/InSessionForm.tsx [Client Component SSR]
+    ./Documents/gaali/app/in-session/page.tsx [Client Component SSR]
+    ./Documents/gaali/app/in-session/page.tsx [Server Component]
+[01:36:20.237] Server  LOG      ✓ Compiled in 98ms
+[01:36:28.669] Server  LOG      ✓ Compiled in 70ms
+[01:36:39.822] Server  LOG      ✓ Compiled in 54ms
+[01:36:40.552] Browser ERROR   ./Documents/gaali/components/sessions/OutSessionForm.tsx:420:6
+Parsing ecmascript source code failed
+  418 |         </div>
+  419 |       </form>
+> 420 |     </div>
+      |      ^^^^^
+  421 |   )
+  422 | }
+  423 |
+
+Unterminated regexp literal
+
+Import traces:
+  Client Component Browser:
+    ./Documents/gaali/components/sessions/OutSessionForm.tsx [Client Component Browser]
+    ./Documents/gaali/app/out-session/page.tsx [Client Component Browser]
+    ./Documents/gaali/app/out-session/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./Documents/gaali/components/sessions/OutSessionForm.tsx [Client Component SSR]
+    ./Documents/gaali/app/out-session/page.tsx [Client Component SSR]
+    ./Documents/gaali/app/out-session/page.tsx [Server Component]
+[01:37:11.553] Browser ERROR   Camera polling error: {}
+[01:37:11.553] Browser ERROR   ./Documents/gaali/components/sessions/OutSessionForm.tsx:420:6
+Parsing ecmascript source code failed
+  418 |         </div>
+  419 |       </form>
+> 420 |     </div>
+      |      ^^^^^
+  421 |   )
+  422 | }
+  423 |
+
+Unterminated regexp literal
+
+Import traces:
+  Client Component Browser:
+    ./Documents/gaali/components/sessions/OutSessionForm.tsx [Client Component Browser]
+    ./Documents/gaali/app/out-session/page.tsx [Client Component Browser]
+    ./Documents/gaali/app/out-session/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./Documents/gaali/components/sessions/OutSessionForm.tsx [Client Component SSR]
+    ./Documents/gaali/app/out-session/page.tsx [Client Component SSR]
+    ./Documents/gaali/app/out-session/page.tsx [Server Component]
+[01:37:27.645] Server  LOG      ✓ Compiled in 77ms
+[01:38:23.443] Server  LOG      ✓ Compiled in 142ms
+[01:38:24.552] Browser LOG     🔌 Attempting to connect to WebSocket: ws://127.0.0.1:9000/service
+[01:38:24.552] Browser LOG     🔌 Connection attempt #: 1
+[01:38:24.552] Browser WARN    WebSocket connection error (this is expected if 3rd party app is not running)
+[01:38:24.552] Browser WARN    WebSocket connection error (expected if scale service is not running)
+[01:38:24.552] Browser WARN    WebSocket connection error (expected if scale service is not running)
+[01:38:26.558] Browser LOG     🔌 Attempting to connect to WebSocket: ws://127.0.0.1:9000/service
+[01:38:26.558] Browser LOG     🔌 Connection attempt #: 2
+[01:38:29.552] Browser LOG     ⚠️ Existing WebSocket is not open, closing it. State: 3
+[01:38:29.552] Browser LOG     🔌 Attempting to connect to WebSocket: ws://127.0.0.1:9000/service
+[01:38:29.552] Browser LOG     🔌 Connection attempt #: 3
+[01:38:32.554] Browser LOG     ⚠️ Existing WebSocket is not open, closing it. State: 3
+[01:38:32.554] Browser LOG     🔌 Attempting to connect to WebSocket: ws://127.0.0.1:9000/service
+[01:38:32.554] Browser LOG     🔌 Connection attempt #: 4
+[01:38:35.292] Server  LOG      ✓ Compiled in 71ms
+[01:38:35.553] Browser LOG     ⚠️ Existing WebSocket is not open, closing it. State: 3
+[01:38:35.553] Browser LOG     🔌 Attempting to connect to WebSocket: ws://127.0.0.1:9000/service
+[01:38:35.553] Browser LOG     🔌 Connection attempt #: 5
+[01:38:35.553] Browser ERROR   ./Documents/gaali/components/sessions/InSessionForm.tsx:327:1
+Parsing ecmascript source code failed
+  325 |     </form>
+  326 |   )
+> 327 | }
+      | ^
+  328 |
+
+Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+
+Import traces:
+  Client Component Browser:
+    ./Documents/gaali/components/sessions/InSessionForm.tsx [Client Component Browser]
+    ./Documents/gaali/app/in-session/page.tsx [Client Component Browser]
+    ./Documents/gaali/app/in-session/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./Documents/gaali/components/sessions/InSessionForm.tsx [Client Component SSR]
+    ./Documents/gaali/app/in-session/page.tsx [Client Component SSR]
+    ./Documents/gaali/app/in-session/page.tsx [Server Component]
+[01:39:11.553] Browser ERROR   Camera polling error: {}
+[01:39:11.553] Browser ERROR   ./Documents/gaali/components/sessions/InSessionForm.tsx:327:1
+Parsing ecmascript source code failed
+  325 |     </form>
+  326 |   )
+> 327 | }
+      | ^
+  328 |
+
+Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+
+Import traces:
+  Client Component Browser:
+    ./Documents/gaali/components/sessions/InSessionForm.tsx [Client Component Browser]
+    ./Documents/gaali/app/in-session/page.tsx [Client Component Browser]
+    ./Documents/gaali/app/in-session/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./Documents/gaali/components/sessions/InSessionForm.tsx [Client Component SSR]
+    ./Documents/gaali/app/in-session/page.tsx [Client Component SSR]
+    ./Documents/gaali/app/in-session/page.tsx [Server Component]
+[01:39:20.563] Browser LOG     🔌 Attempting to connect to WebSocket: ws://127.0.0.1:9000/service
+[01:39:20.563] Browser LOG     🔌 Connection attempt #: 6
+[01:39:20.563] Browser WARN    WebSocket connection error (expected if scale service is not running)
+[01:39:20.563] Browser WARN    WebSocket connection error (expected if scale service is not running)
+[01:39:20.570] Server  LOG      ✓ Compiled in 40ms
+[01:39:43.707] Server  LOG      ✓ Compiled in 66ms
+[01:40:09.781] Server  LOG      ✓ Compiled in 43ms
+[01:40:29.146] Server  LOG      ✓ Compiled in 56ms
+[01:40:29.553] Browser ERROR   ./Documents/gaali/components/sessions/OutSessionForm.tsx:429:1
+Parsing ecmascript source code failed
+  427 |     </form>
+  428 |   )
+> 429 | }
+      | ^
+  430 |
+
+Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+
+Import traces:
+  Client Component Browser:
+    ./Documents/gaali/components/sessions/OutSessionForm.tsx [Client Component Browser]
+    ./Documents/gaali/app/out-session/page.tsx [Client Component Browser]
+    ./Documents/gaali/app/out-session/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./Documents/gaali/components/sessions/OutSessionForm.tsx [Client Component SSR]
+    ./Documents/gaali/app/out-session/page.tsx [Client Component SSR]
+    ./Documents/gaali/app/out-session/page.tsx [Server Component]
+[01:41:11.553] Browser ERROR   Camera polling error: {}
+[01:41:11.554] Browser ERROR   ./Documents/gaali/components/sessions/OutSessionForm.tsx:429:1
+Parsing ecmascript source code failed
+  427 |     </form>
+  428 |   )
+> 429 | }
+      | ^
+  430 |
+
+Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+
+Import traces:
+  Client Component Browser:
+    ./Documents/gaali/components/sessions/OutSessionForm.tsx [Client Component Browser]
+    ./Documents/gaali/app/out-session/page.tsx [Client Component Browser]
+    ./Documents/gaali/app/out-session/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./Documents/gaali/components/sessions/OutSessionForm.tsx [Client Component SSR]
+    ./Documents/gaali/app/out-session/page.tsx [Client Component SSR]
+    ./Documents/gaali/app/out-session/page.tsx [Server Component]
+[01:41:31.679] Server  LOG      ✓ Compiled in 52ms
+[01:59:49.575] Server  LOG      ✓ Compiled in 196ms
+[01:59:49.681] Browser LOG     🔌 Attempting to connect to WebSocket: ws://127.0.0.1:9000/service
+[01:59:49.681] Browser LOG     🔌 Connection attempt #: 7
+[02:00:13.035] Browser LOG     🔌 Attempting to connect to WebSocket: ws://127.0.0.1:9000/service
+[02:00:13.035] Browser LOG     🔌 Connection attempt #: 1
+[02:00:13.035] Browser WARN    WebSocket connection error (expected if scale service is not running)
+[02:00:13.035] Browser WARN    WebSocket connection error (this is expected if 3rd party app is not running)
+[02:00:13.287] Browser LOG     %c[Vercel Web Analytics]%c Debug mode is enabled by default in development. No requests will be sent to the server. color: rgb(120, 120, 120) color: inherit
+[02:00:13.288] Browser LOG     %c[Vercel Web Analytics]%c Running queued event color: rgb(120, 120, 120) color: inherit pageview {"path":"/in-session","route":"/in-session"}
+[02:00:13.288] Browser LOG     %c[Vercel Web Analytics]%c [pageview] http://localhost:3000/in-session color: rgb(120, 120, 120) color: inherit {"dp":"/in-session","o":"http://localhost:3000/in-session","sdkn":"@vercel/analytics/next","sdkv":"1.6.1","sv":"0.1.3","ts":1765541209096}
+[02:00:15.042] Browser LOG     ⚠️ Existing WebSocket is not open, closing it. State: 3
+[02:00:15.042] Browser LOG     🔌 Attempting to connect to WebSocket: ws://127.0.0.1:9000/service
+[02:00:15.042] Browser LOG     🔌 Connection attempt #: 2
+[02:00:16.037] Browser WARN    WebSocket connection error (expected if scale service is not running)
+[02:00:17.054] Browser LOG     ⚠️ Existing WebSocket is not open, closing it. State: 3
+[02:00:17.054] Browser LOG     🔌 Attempting to connect to WebSocket: ws://127.0.0.1:9000/service
+[02:00:17.054] Browser LOG     🔌 Connection attempt #: 3
+[02:00:19.056] Browser LOG     ⚠️ Existing WebSocket is not open, closing it. State: 3
+[02:00:19.056] Browser LOG     🔌 Attempting to connect to WebSocket: ws://127.0.0.1:9000/service
+[02:00:19.056] Browser LOG     🔌 Connection attempt #: 4
+[02:00:21.172] Browser LOG     ⚠️ Existing WebSocket is not open, closing it. State: 3
+[02:00:21.173] Browser LOG     🔌 Attempting to connect to WebSocket: ws://127.0.0.1:9000/service
+[02:00:21.174] Browser LOG     🔌 Connection attempt #: 5
+[02:00:30.833] Server  LOG      ✓ Compiled in 230ms
+[02:00:31.554] Browser LOG     🔌 Attempting to connect to WebSocket: ws://127.0.0.1:9000/service
+[02:00:31.554] Browser LOG     🔌 Connection attempt #: 6
+[02:00:31.554] Browser WARN    WebSocket connection error (expected if scale service is not running)
+[02:00:31.554] Browser WARN    WebSocket connection error (expected if scale service is not running)
+[02:00:33.026] Server  LOG      ✓ Compiled in 95ms
+[02:00:50.879] Server  LOG      ✓ Compiled in 110ms
+[02:01:54.668] Browser LOG     🔌 Attempting to connect to WebSocket: ws://127.0.0.1:9000/service
+[02:01:54.668] Browser LOG     🔌 Connection attempt #: 1
+[02:01:54.668] Browser LOG     %c[Vercel Web Analytics]%c [pageview] http://localhost:3000/out-session color: rgb(120, 120, 120) color: inherit {"dp":"/out-session","o":"http://localhost:3000/out-session","sdkn":"@vercel/analytics/next","sdkv":"1.6.1","sv":"0.1.3","ts":1765541310460}
+[02:01:54.668] Browser WARN    WebSocket connection error (this is expected if 3rd party app is not running)
+[02:01:54.668] Browser WARN    WebSocket connection error (expected if scale service is not running)
+[02:01:54.838] Browser WARN    WebSocket connection error (expected if scale service is not running)
+[02:01:56.669] Browser LOG     🔌 Attempting to connect to WebSocket: ws://127.0.0.1:9000/service
+[02:01:56.669] Browser LOG     🔌 Connection attempt #: 2
+[02:01:58.790] Browser LOG     ⚠️ Existing WebSocket is not open, closing it. State: 3
+[02:01:58.790] Browser LOG     🔌 Attempting to connect to WebSocket: ws://127.0.0.1:9000/service
+[02:01:58.790] Browser LOG     🔌 Connection attempt #: 3
+[02:02:01.069] Browser LOG     ⚠️ Existing WebSocket is not open, closing it. State: 3
+[02:02:01.069] Browser LOG     🔌 Attempting to connect to WebSocket: ws://127.0.0.1:9000/service
+[02:02:01.069] Browser LOG     🔌 Connection attempt #: 4
+[02:02:03.809] Browser LOG     ⚠️ Existing WebSocket is not open, closing it. State: 3
+[02:02:03.809] Browser LOG     🔌 Attempting to connect to WebSocket: ws://127.0.0.1:9000/service
+[02:02:03.809] Browser LOG     🔌 Connection attempt #: 5
+[02:02:23.121] Server  LOG      ✓ Compiled in 108ms
+[02:02:23.249] Browser LOG     🔌 Attempting to connect to WebSocket: ws://127.0.0.1:9000/service
+[02:02:23.249] Browser LOG     🔌 Connection attempt #: 6
+[02:02:23.249] Browser WARN    WebSocket connection error (expected if scale service is not running)
+[02:02:25.718] Browser WARN    WebSocket connection error (expected if scale service is not running)
+[02:02:36.702] Server  LOG      ✓ Compiled in 55ms
+[02:03:24.564] Server  LOG      ✓ Compiled in 92ms
+[02:03:29.299] Server  LOG      ✓ Compiled in 35ms
+[02:03:36.830] Server  LOG      ✓ Compiled in 39ms
+[02:03:36.921] Browser ERROR   uncaughtError: ReferenceError: lastPlate is not defined
+[02:03:42.384] Server  WARN     ⚠ Fast Refresh had to perform a full reload due to a runtime error.
+[02:03:42.534] Server  LOG      ✓ Compiled in 36ms
+[02:03:42.588] Browser LOG     🔌 Attempting to connect to WebSocket: ws://127.0.0.1:9000/service
+[02:03:42.588] Browser LOG     🔌 Connection attempt #: 1
+[02:03:42.588] Browser LOG     %c[Vercel Web Analytics]%c [pageview] http://localhost:3000/out-session color: rgb(120, 120, 120) color: inherit {"dp":"/out-session","o":"http://localhost:3000/out-session","sdkn":"@vercel/analytics/next","sdkv":"1.6.1","sv":"0.1.3","ts":1765541418316}
+[02:03:46.714] Browser LOG     🔌 Attempting to connect to WebSocket: ws://127.0.0.1:9000/service
+[02:03:46.714] Browser LOG     🔌 Connection attempt #: 1
+[02:03:46.714] Browser LOG     %c[Vercel Web Analytics]%c Debug mode is enabled by default in development. No requests will be sent to the server. color: rgb(120, 120, 120) color: inherit
+[02:03:46.714] Browser LOG     %c[Vercel Web Analytics]%c Running queued event color: rgb(120, 120, 120) color: inherit pageview {"path":"/out-session","route":"/out-session"}
+[02:03:46.714] Browser LOG     %c[Vercel Web Analytics]%c [pageview] http://localhost:3000/out-session color: rgb(120, 120, 120) color: inherit {"dp":"/out-session","o":"http://localhost:3000/out-session","sdkn":"@vercel/analytics/next","sdkv":"1.6.1","sv":"0.1.3","ts":1765541418690}
+[02:03:46.714] Browser WARN    WebSocket connection error (this is expected if 3rd party app is not running)
+[02:03:46.714] Browser WARN    WebSocket connection error (expected if scale service is not running)
+[02:03:47.998] Browser LOG     ⚠️ Existing WebSocket is not open, closing it. State: 3
+[02:03:47.998] Browser LOG     🔌 Attempting to connect to WebSocket: ws://127.0.0.1:9000/service
+[02:03:47.998] Browser LOG     🔌 Connection attempt #: 2
+[02:03:49.887] Browser WARN    WebSocket connection error (expected if scale service is not running)
+[02:03:50.949] Browser LOG     ⚠️ Existing WebSocket is not open, closing it. State: 3
+[02:03:50.949] Browser LOG     🔌 Attempting to connect to WebSocket: ws://127.0.0.1:9000/service
+[02:03:50.949] Browser LOG     🔌 Connection attempt #: 3
+[02:03:55.423] Browser LOG     ⚠️ Existing WebSocket is not open, closing it. State: 3
+[02:03:55.423] Browser LOG     🔌 Attempting to connect to WebSocket: ws://127.0.0.1:9000/service
+[02:03:55.423] Browser LOG     🔌 Connection attempt #: 4
+[02:03:58.934] Browser LOG     ⚠️ Existing WebSocket is not open, closing it. State: 3
+[02:03:58.934] Browser LOG     🔌 Attempting to connect to WebSocket: ws://127.0.0.1:9000/service
+[02:03:58.934] Browser LOG     🔌 Connection attempt #: 5
+[02:22:56.068] Browser LOG     🔌 Attempting to connect to WebSocket: ws://127.0.0.1:9000/service
+[02:22:56.068] Browser LOG     🔌 Connection attempt #: 1
+[02:22:56.068] Browser LOG     %c[Vercel Web Analytics]%c [pageview] http://localhost:3000/in-session color: rgb(120, 120, 120) color: inherit {"dp":"/in-session","o":"http://localhost:3000/in-session","sdkn":"@vercel/analytics/next","sdkv":"1.6.1","sv":"0.1.3","ts":1765542571917}
+[02:22:56.068] Browser WARN    WebSocket connection error (this is expected if 3rd party app is not running)
+[02:22:56.068] Browser WARN    WebSocket connection error (expected if scale service is not running)
+[02:22:56.068] Browser WARN    WebSocket connection error (expected if scale service is not running)
+[02:22:58.073] Browser LOG     🔌 Attempting to connect to WebSocket: ws://127.0.0.1:9000/service
+[02:22:58.073] Browser LOG     🔌 Connection attempt #: 2
+[02:23:01.944] Browser LOG     ⚠️ Existing WebSocket is not open, closing it. State: 3
+[02:23:01.945] Browser LOG     🔌 Attempting to connect to WebSocket: ws://127.0.0.1:9000/service
+[02:23:01.945] Browser LOG     🔌 Connection attempt #: 3
+[02:23:04.944] Browser LOG     ⚠️ Existing WebSocket is not open, closing it. State: 3
+[02:23:04.945] Browser LOG     🔌 Attempting to connect to WebSocket: ws://127.0.0.1:9000/service
+[02:23:04.945] Browser LOG     🔌 Connection attempt #: 4
+[02:23:07.943] Browser LOG     ⚠️ Existing WebSocket is not open, closing it. State: 3
+[02:23:07.943] Browser LOG     🔌 Attempting to connect to WebSocket: ws://127.0.0.1:9000/service
+[02:23:07.943] Browser LOG     🔌 Connection attempt #: 5
+[02:26:15.774] Server  LOG      ✓ Compiled in 126ms
+[02:26:15.944] Browser LOG     🔌 Attempting to connect to WebSocket: ws://127.0.0.1:9000/service
+[02:26:15.944] Browser LOG     🔌 Connection attempt #: 6
+[02:26:30.842] Server  LOG      ✓ Compiled in 40ms
+[02:26:30.944] Browser LOG     🔌 Attempting to connect to WebSocket: ws://127.0.0.1:9000/service
+[02:26:30.944] Browser LOG     🔌 Connection attempt #: 7
+[02:27:03.035] Server  LOG      ✓ Compiled in 70ms
+[02:27:30.035] Server  LOG      ✓ Compiled in 115ms
+[02:50:50.949] Server  LOG      ✓ Compiled in 141ms
+[02:50:51.034] Browser LOG     🔌 Attempting to connect to WebSocket: ws://127.0.0.1:9000/service
+[02:50:51.034] Browser LOG     🔌 Connection attempt #: 8
+[02:51:16.006] Server  LOG      ✓ Compiled in 99ms
+[02:51:16.350] Browser LOG     🔌 Attempting to connect to WebSocket: ws://127.0.0.1:9000/service
+[02:51:16.350] Browser LOG     🔌 Connection attempt #: 1
+[02:51:16.350] Browser WARN    WebSocket connection error (expected if scale service is not running)
+[02:51:16.350] Browser WARN    WebSocket connection error (this is expected if 3rd party app is not running)
+[02:51:19.349] Browser LOG     ⚠️ Existing WebSocket is not open, closing it. State: 3
+[02:51:19.349] Browser LOG     🔌 Attempting to connect to WebSocket: ws://127.0.0.1:9000/service
+[02:51:19.349] Browser LOG     🔌 Connection attempt #: 2
+[02:51:20.349] Browser WARN    WebSocket connection error (expected if scale service is not running)
+[02:51:21.807] Server  LOG      ✓ Compiled in 56ms
+[02:51:22.349] Browser LOG     ⚠️ Existing WebSocket is not open, closing it. State: 3
+[02:51:22.349] Browser LOG     🔌 Attempting to connect to WebSocket: ws://127.0.0.1:9000/service
+[02:51:22.349] Browser LOG     🔌 Connection attempt #: 3
+[02:51:22.349] Browser LOG     🔌 Attempting to connect to WebSocket: ws://127.0.0.1:9000/service
+[02:51:22.349] Browser LOG     🔌 Connection attempt #: 4
+[02:51:25.349] Browser LOG     ⚠️ Existing WebSocket is not open, closing it. State: 3
+[02:51:25.349] Browser LOG     🔌 Attempting to connect to WebSocket: ws://127.0.0.1:9000/service
+[02:51:25.349] Browser LOG     🔌 Connection attempt #: 5
+[02:51:25.592] Server  LOG      ✓ Compiled in 47ms
+[02:51:26.349] Browser LOG     🔌 Attempting to connect to WebSocket: ws://127.0.0.1:9000/service
+[02:51:26.349] Browser LOG     🔌 Connection attempt #: 6
+[02:51:29.285] Server  LOG      ✓ Compiled in 68ms
+[02:51:30.347] Browser LOG     🔌 Attempting to connect to WebSocket: ws://127.0.0.1:9000/service
+[02:51:30.347] Browser LOG     🔌 Connection attempt #: 7
+[02:52:09.352] Server  LOG      ✓ Compiled in 577ms
+[02:52:10.349] Browser LOG     🔌 Attempting to connect to WebSocket: ws://127.0.0.1:9000/service
+[02:52:10.349] Browser LOG     🔌 Connection attempt #: 8
+[02:52:25.336] Server  LOG      ✓ Compiled in 87ms
+[02:52:26.348] Browser LOG     🔌 Attempting to connect to WebSocket: ws://127.0.0.1:9000/service
+[02:52:26.349] Browser LOG     🔌 Connection attempt #: 9
+[02:52:37.626] Server  LOG      ✓ Compiled in 92ms
+[02:52:38.350] Browser LOG     🔌 Attempting to connect to WebSocket: ws://127.0.0.1:9000/service
+[02:52:38.350] Browser LOG     🔌 Connection attempt #: 10
+[02:52:47.158] Server  LOG      ✓ Compiled in 95ms
+[02:52:47.349] Browser LOG     🔌 Attempting to connect to WebSocket: ws://127.0.0.1:9000/service
+[02:52:47.349] Browser LOG     🔌 Connection attempt #: 11
+[02:54:05.980] Server  LOG      ✓ Compiled in 197ms
+[02:54:35.492] Server  LOG      ✓ Compiled in 88ms
+[02:54:42.673] Server  LOG      ✓ Compiled in 86ms
+[02:54:47.197] Server  LOG      ✓ Compiled in 86ms
+[02:54:51.568] Server  LOG      ✓ Compiled in 94ms
+[02:55:22.890] Server  LOG      ✓ Compiled in 580ms
+[03:04:13.833] Browser LOG     🔌 Attempting to connect to WebSocket: ws://127.0.0.1:9000/service
+[03:04:13.833] Browser LOG     🔌 Connection attempt #: 1
+[03:04:13.833] Browser LOG     %c[Vercel Web Analytics]%c [pageview] http://localhost:3000/out-session color: rgb(120, 120, 120) color: inherit {"dp":"/out-session","o":"http://localhost:3000/out-session","sdkn":"@vercel/analytics/next","sdkv":"1.6.1","sv":"0.1.3","ts":1765545049627}
+[03:04:13.833] Browser WARN    WebSocket connection error (this is expected if 3rd party app is not running)
+[03:04:13.833] Browser WARN    WebSocket connection error (expected if scale service is not running)
+[03:04:13.833] Browser WARN    WebSocket connection error (expected if scale service is not running)
+[03:04:15.801] Browser LOG     🔌 Attempting to connect to WebSocket: ws://127.0.0.1:9000/service
+[03:04:15.802] Browser LOG     🔌 Connection attempt #: 2
