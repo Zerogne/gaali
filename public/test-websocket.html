@@ -91,6 +91,57 @@
       border-radius: 4px;
       width: 300px;
     }
+    .form-container {
+      background: #f9f9f9;
+      padding: 20px;
+      border-radius: 8px;
+      margin: 20px 0;
+      border: 1px solid #ddd;
+    }
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr 2fr;
+      gap: 15px;
+      margin-bottom: 15px;
+      align-items: center;
+    }
+    .form-grid label {
+      font-weight: bold;
+      color: #333;
+    }
+    .form-grid input[type="text"],
+    .form-grid input[type="number"] {
+      width: 100%;
+      margin: 0;
+    }
+    .input-with-button {
+      display: flex;
+      gap: 5px;
+      align-items: center;
+    }
+    .input-with-button input {
+      flex: 1;
+    }
+    .input-with-button button {
+      padding: 8px 12px;
+      font-size: 14px;
+      white-space: nowrap;
+      margin: 0;
+    }
+    .radio-group {
+      display: flex;
+      gap: 15px;
+      align-items: center;
+    }
+    .radio-group label {
+      font-weight: normal;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+    .required {
+      color: red;
+    }
   </style>
 </head>
 <body>
@@ -106,11 +157,119 @@
     <div style="margin: 20px 0;">
       <button id="connectBtn" onclick="connect()">Connect</button>
       <button id="disconnectBtn" onclick="disconnect()" disabled>Disconnect</button>
-      <button id="testSendBtn" onclick="testSend()" disabled>Send Test Data</button>
+      <button id="testSendBtn" onclick="testSend()" disabled>Send Data to 3rd Party App</button>
       <button onclick="clearLog()">Clear Log</button>
     </div>
     
     <div id="status" class="status disconnected">Disconnected</div>
+
+    <!-- Form for all input fields -->
+    <div class="form-container">
+      <h2>Cargo Transportation Information</h2>
+      <form id="cargoForm">
+        <div class="form-grid">
+          <label for="packageInput">Баглаа боодол (Package/Packing):</label>
+          <div class="input-with-button">
+            <input type="number" id="packageInput" name="package" step="0.01" value="0.00" />
+            <button type="button" onclick="selectPackage()">Сонгох</button>
+          </div>
+        </div>
+
+        <div class="form-grid">
+          <label for="netInput">Цэвэр жин (Net Weight):</label>
+          <div class="input-with-button">
+            <input type="number" id="netInput" name="net" step="0.01" value="0.00" />
+            <button type="button" id="calculateNetBtn" onclick="calculateNetWeight()">Calculate</button>
+          </div>
+        </div>
+
+        <div class="form-grid">
+          <label for="wgtInput"><span class="required">*</span> Бохир жин (Gross Weight):</label>
+          <div class="input-with-button">
+            <input type="number" id="wgtInput" name="wgt" step="0.01" value="0.00" required />
+            <button type="button">КГ</button>
+          </div>
+        </div>
+
+        <div class="form-grid">
+          <label for="aktInput">Пүүний акт (Company Act / AKT):</label>
+          <input type="text" id="aktInput" name="akt" />
+        </div>
+
+        <div class="form-grid">
+          <label for="lpcInput"><span class="required">*</span> Тээвэрлэгч байгууллагын нэр (Carrier Organization Name / LPC):</label>
+          <input type="text" id="lpcInput" name="lpc" required />
+        </div>
+
+        <div class="form-grid">
+          <label for="drnInput">Жолоочийн нэр (Driver's Name / DRN):</label>
+          <input type="text" id="drnInput" name="drn" />
+        </div>
+
+        <div class="form-grid">
+          <label for="trlInput">Чиргүүлийн дугаар (Trailer Number / TRL):</label>
+          <input type="text" id="trlInput" name="trl" />
+        </div>
+
+        <div class="form-grid">
+          <label for="slnInput">Гаалийн лац ломбын дугаар (Customs Seal Number / SLN):</label>
+          <input type="text" id="slnInput" name="sln" />
+        </div>
+
+        <div class="form-grid">
+          <label for="carInput">CAR (Cargo/Product):</label>
+          <input type="text" id="carInput" name="car" />
+        </div>
+
+        <div class="form-grid">
+          <label for="conInput">CON (Contract):</label>
+          <input type="text" id="conInput" name="con" />
+        </div>
+
+        <div class="form-grid">
+          <label for="upcInput">UPC (Unloading Point Company):</label>
+          <input type="text" id="upcInput" name="upc" />
+        </div>
+
+        <div class="form-grid">
+          <label for="vnoInput">VNO (Vehicle Number / Plate):</label>
+          <input type="text" id="vnoInput" name="vno" />
+        </div>
+
+        <div class="form-grid">
+          <label for="ct1Input">CT1 (Custom Field 1):</label>
+          <input type="text" id="ct1Input" name="ct1" />
+        </div>
+
+        <div class="form-grid">
+          <label for="cmnInput">CMN (Comments/Notes):</label>
+          <input type="text" id="cmnInput" name="cmn" />
+        </div>
+
+        <div class="form-grid">
+          <label>Хил дээрх тээврийн хэрэгслийн дугаар солих эсэх? (Change Vehicle Number at Border?):</label>
+          <div class="radio-group">
+            <label>
+              <input type="radio" name="changeVehicleNumber" value="no" checked />
+              Үгүй (No)
+            </label>
+            <label>
+              <input type="radio" name="changeVehicleNumber" value="yes" />
+              Тийм (Yes)
+            </label>
+          </div>
+        </div>
+      </form>
+    </div>
+
+    <!-- Current Data Preview -->
+    <div class="form-container" style="margin-top: 20px;">
+      <h3>Current Data to Send:</h3>
+      <div id="dataPreview" style="background: #fff; padding: 15px; border: 1px solid #ddd; border-radius: 4px; font-family: monospace; font-size: 12px; max-height: 200px; overflow-y: auto;">
+        <em>Fill in the form above to see data preview...</em>
+      </div>
+      <button type="button" onclick="updateDataPreview()" style="margin-top: 10px; padding: 8px 16px; font-size: 14px;">Refresh Preview</button>
+    </div>
     
     <div>
       <h3>Connection Log:</h3>
@@ -165,7 +324,11 @@
         };
 
         ws.onmessage = (event) => {
-          log(`📥 Received message: ${event.data}`, 'success');
+          log('═══════════════════════════════════════════════════════', 'success');
+          log('📥 MESSAGE RECEIVED FROM 3RD PARTY APP!', 'success');
+          log('═══════════════════════════════════════════════════════', 'success');
+          log(`📥 Response: ${event.data}`, 'success');
+          log('✅ This confirms the 3rd party app received your data', 'success');
         };
 
         ws.onerror = (error) => {
@@ -195,31 +358,147 @@
       }
     }
 
+    // Generate a unique code (8 digits, all numbers)
+    function generateUniqueCode() {
+      const digits = "0123456789";
+      let code = "";
+      for (let i = 0; i < 8; i++) {
+        code += digits.charAt(Math.floor(Math.random() * digits.length));
+      }
+      return code;
+    }
+
+    // Calculate net weight from gross weight
+    function calculateNetWeight() {
+      const wgtInput = document.getElementById('wgtInput');
+      const netInput = document.getElementById('netInput');
+      const packageInput = document.getElementById('packageInput');
+      
+      if (!wgtInput || !netInput) {
+        log('❌ WGT or NET input not found', 'error');
+        return;
+      }
+      
+      const grossWeight = parseFloat(wgtInput.value) || 0;
+      const packageWeight = parseFloat(packageInput.value) || 0;
+      
+      if (grossWeight <= 0) {
+        alert('Please enter a valid gross weight (WGT) first');
+        return;
+      }
+      
+      // Net weight calculation: NET = WGT - Package Weight (Tare)
+      const netWeight = grossWeight - packageWeight;
+      
+      netInput.value = netWeight > 0 ? netWeight.toFixed(2) : 0;
+      log(`✅ Calculated NET: ${netWeight.toFixed(2)} (WGT: ${grossWeight} - Package: ${packageWeight})`, 'success');
+    }
+
+    // Placeholder for package selection
+    function selectPackage() {
+      log('Package selection - implement as needed', 'info');
+      // You can implement a modal or dropdown for package selection here
+    }
+
+    // Get current form data
+    function getFormData() {
+      return {
+        uniqueCode: generateUniqueCode(), // Unrepeatable code for pulling data
+        CAR: document.getElementById('carInput')?.value.trim() || "",
+        CON: document.getElementById('conInput')?.value.trim() || "",
+        DRN: document.getElementById('drnInput')?.value.trim() || "",
+        LPC: document.getElementById('lpcInput')?.value.trim() || "",
+        SLN: document.getElementById('slnInput')?.value.trim() || "",
+        TRL: document.getElementById('trlInput')?.value.trim() || "",
+        UPC: document.getElementById('upcInput')?.value.trim() || "",
+        AKT: document.getElementById('aktInput')?.value.trim() || "",
+        NET: parseFloat(document.getElementById('netInput')?.value) || 0,
+        WGT: parseFloat(document.getElementById('wgtInput')?.value) || 0,
+        VNO: document.getElementById('vnoInput')?.value.trim() || "",
+        CT1: document.getElementById('ct1Input')?.value.trim() || "",
+        CMN: document.getElementById('cmnInput')?.value.trim() || "",
+        // Additional fields
+        PKG: parseFloat(document.getElementById('packageInput')?.value) || 0, // Package/Packing weight
+        CHG_VNO: document.querySelector('input[name="changeVehicleNumber"]:checked')?.value || "no" // Change vehicle number at border
+      };
+    }
+
+    // Update data preview
+    function updateDataPreview() {
+      const previewEl = document.getElementById('dataPreview');
+      if (!previewEl) return;
+
+      const formData = getFormData();
+      const jsonData = JSON.stringify(formData, null, 2);
+      previewEl.textContent = jsonData;
+      previewEl.style.color = '#333';
+    }
+
     function testSend() {
       if (!ws || ws.readyState !== WebSocket.OPEN) {
-        log('❌ WebSocket is not connected', 'error');
+        log('❌ WebSocket is not connected. Current state: ' + (ws ? ws.readyState : 'null'), 'error');
+        log('❌ WebSocket states: CONNECTING=0, OPEN=1, CLOSING=2, CLOSED=3', 'error');
         return;
       }
 
-      const testData = {
-        direction: "IN",
-        plateNumber: "TEST123",
-        driverName: "Test Driver",
-        product: "Test Product",
-        transporterCompany: "Test Company",
-        grossWeightKg: 1000,
-        inTime: new Date().toISOString(),
-        notes: "Test data from WebSocket test page"
-      };
-
-      const jsonData = JSON.stringify(testData, null, 2);
-      log(`📤 Sending test data: ${jsonData}`, 'info');
+      // Get form data from all inputs (fresh read each time)
+      const formData = getFormData();
+      const jsonData = JSON.stringify(formData, null, 2);
+      
+      // Update preview to show what's being sent NOW
+      updateDataPreview();
+      
+      log('═══════════════════════════════════════════════════════', 'info');
+      log('📤 PREPARING TO SEND TEST DATA TO 3RD PARTY APP', 'info');
+      log('═══════════════════════════════════════════════════════', 'info');
+      log(`🔑 Unique Code: ${formData.uniqueCode}`, 'info');
+      log(`📊 WebSocket State: ${ws.readyState} (OPEN=1)`, 'info');
+      log(`📊 WebSocket URL: ${wsUrlInput.value}`, 'info');
+      log(`📦 Data Size: ${jsonData.length} bytes`, 'info');
+      log('', 'info');
+      log('📋 Full JSON Data:', 'info');
+      log(jsonData, 'info');
+      log('', 'info');
       
       try {
+        // Verify connection one more time
+        if (ws.readyState !== WebSocket.OPEN) {
+          log('❌ ERROR: WebSocket closed before send! State: ' + ws.readyState, 'error');
+          return;
+        }
+        
+        // Send the data
         ws.send(jsonData);
-        log('✅ Test data sent successfully!', 'success');
+        
+        log('═══════════════════════════════════════════════════════', 'success');
+        log('✅ DATA SENT SUCCESSFULLY!', 'success');
+        log('═══════════════════════════════════════════════════════', 'success');
+        log(`✅ Message sent via ws.send()`, 'success');
+        log(`✅ Bytes sent: ${jsonData.length}`, 'success');
+        log(`✅ Unique Code sent: ${formData.uniqueCode}`, 'success');
+        log('', 'success');
+        log('💡 Check your 3rd party app to verify it received the data', 'info');
+        log('💡 The app should show this data in its autofill/form', 'info');
+        log('💡 If the app has logs, check them to confirm receipt', 'info');
+        
+        // Check connection after a short delay
+        setTimeout(() => {
+          if (ws && ws.readyState === WebSocket.OPEN) {
+            log('✅ WebSocket still connected after send', 'success');
+          } else {
+            log('⚠️ WebSocket closed after send. State: ' + (ws ? ws.readyState : 'null'), 'error');
+          }
+        }, 100);
+        
       } catch (error) {
-        log(`❌ Error sending data: ${error.message}`, 'error');
+        log('═══════════════════════════════════════════════════════', 'error');
+        log('❌ ERROR SENDING DATA', 'error');
+        log('═══════════════════════════════════════════════════════', 'error');
+        log(`❌ Error: ${error.message}`, 'error');
+        log(`❌ Error type: ${error.name}`, 'error');
+        if (error.stack) {
+          log(`❌ Stack: ${error.stack}`, 'error');
+        }
       }
     }
 
@@ -227,10 +506,21 @@
       logEl.innerHTML = '';
     }
 
+    // Update preview when inputs change
+    function setupFormListeners() {
+      const inputs = document.querySelectorAll('#cargoForm input');
+      inputs.forEach(input => {
+        input.addEventListener('input', updateDataPreview);
+        input.addEventListener('change', updateDataPreview);
+      });
+    }
+
     // Auto-connect on page load
     window.addEventListener('load', () => {
       log('WebSocket Test Page Loaded', 'info');
       log('Click "Connect" to test your WebSocket server', 'info');
+      setupFormListeners();
+      updateDataPreview();
     });
   </script>
 </body>

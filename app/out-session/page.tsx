@@ -42,6 +42,7 @@ export default function OutSessionPage() {
   const [inSession, setInSession] = useState<TruckSession | null>(null)
   const [isLoadingInSession, setIsLoadingInSession] = useState(false)
   const [inSessionError, setInSessionError] = useState<string | null>(null)
+  const [lastSavedUniqueCode, setLastSavedUniqueCode] = useState<string | null>(null)
 
   // Find matching IN session when plate number changes
   useEffect(() => {
@@ -74,18 +75,40 @@ export default function OutSessionPage() {
         const inSessionData = result.session as TruckSession
 
         if (inSessionData) {
+          console.log("✅ IN session found:", {
+            plateNumber: inSessionData.plateNumber,
+            grossWeightKg: inSessionData.grossWeightKg,
+            id: inSessionData.id,
+          })
+          
           setInSession(inSessionData)
           setFormState((prev) => ({
             ...prev,
             inSessionId: inSessionData.id,
           }))
+          
           // Recalculate net weight if out weight is already set
           if (formState.outWeightKg && inSessionData.grossWeightKg) {
-            const netWeight = formState.outWeightKg - inSessionData.grossWeightKg
+            const outWeight = Number(formState.outWeightKg)
+            const inWeight = Number(inSessionData.grossWeightKg)
+            const netWeight = outWeight - inWeight
+            console.log("📊 Recalculating net weight after finding IN session:", {
+              outWeight,
+              inWeight,
+              netWeight,
+            })
+            const calculatedNetWeight = Math.round(netWeight * 100) / 100
             setFormState((prev) => ({
               ...prev,
-              netWeightKg: netWeight > 0 ? netWeight : null,
+              netWeightKg: calculatedNetWeight, // Allow any value for debugging
             }))
+            console.log("✅ Net weight set after finding IN session:", calculatedNetWeight)
+          } else {
+            console.warn("⚠️ Cannot calculate net weight - missing data:", {
+              hasOutWeight: !!formState.outWeightKg,
+              hasGrossWeight: !!inSessionData.grossWeightKg,
+              grossWeightKg: inSessionData.grossWeightKg,
+            })
           }
         } else {
           setInSession(null)
@@ -108,22 +131,110 @@ export default function OutSessionPage() {
 
   // Calculate net weight when outWeightKg or inSession changes
   useEffect(() => {
-    if (formState.outWeightKg && inSession?.grossWeightKg) {
-      const netWeight = formState.outWeightKg - inSession.grossWeightKg
+    console.log("🔄 Net weight calculation triggered", {
+      outWeightKg: formState.outWeightKg,
+      inSessionGrossWeight: inSession?.grossWeightKg,
+      inSession: inSession ? "exists" : "null",
+      inSessionPlateNumber: inSession?.plateNumber,
+      currentPlateNumber: formState.plateNumber,
+      currentNetWeight: formState.netWeightKg,
+    })
+    
+    // Don't clear if we already have a calculated value and all conditions are still met
+    if (formState.netWeightKg !== null && formState.outWeightKg && inSession?.grossWeightKg) {
+      const plateNumbersMatch = inSession && formState.plateNumber.trim().toUpperCase() === inSession.plateNumber.trim().toUpperCase()
+      if (plateNumbersMatch) {
+        console.log("✅ Net weight already calculated, keeping value:", formState.netWeightKg)
+        return // Don't recalculate if value already exists and conditions are met
+      }
+    }
+    
+    // Check if plate numbers match
+    const plateNumbersMatch = inSession && formState.plateNumber.trim().toUpperCase() === inSession.plateNumber.trim().toUpperCase()
+    
+    if (!plateNumbersMatch && inSession) {
+      console.warn("⚠️ Plate numbers don't match:", {
+        formPlate: formState.plateNumber.trim().toUpperCase(),
+        inSessionPlate: inSession.plateNumber.trim().toUpperCase(),
+      })
+    }
+    
+    if (formState.outWeightKg && inSession?.grossWeightKg && plateNumbersMatch) {
+      const outWeight = Number(formState.outWeightKg)
+      const inWeight = Number(inSession.grossWeightKg)
+      
+      // Validate numbers
+      if (isNaN(outWeight) || isNaN(inWeight)) {
+        console.error("❌ Invalid weight values:", { outWeight, inWeight })
+        // Only clear if we don't have a valid calculated value
+        if (formState.netWeightKg === null) {
+          setFormState((prev) => ({ ...prev, netWeightKg: null }))
+        }
+        return
+      }
+      
+      const netWeight = outWeight - inWeight
+      
+      console.log("📊 Calculating net weight:", {
+        outWeight,
+        inWeight,
+        netWeight,
+        calculated: Math.round(netWeight * 100) / 100,
+      })
+      
+      const calculatedNetWeight = Math.round(netWeight * 100) / 100
+      
       setFormState((prev) => ({
         ...prev,
-        netWeightKg: netWeight > 0 ? netWeight : null,
+        netWeightKg: calculatedNetWeight, // Allow any value (even 0 or negative) for debugging
       }))
+      
+      console.log("✅ Net weight set:", calculatedNetWeight)
     } else {
-      setFormState((prev) => ({ ...prev, netWeightKg: null }))
+      // Only clear if we're missing critical data, not if we just have a calculated value
+      const reason = !formState.outWeightKg 
+        ? "missing out weight" 
+        : !inSession?.grossWeightKg 
+          ? "missing IN session gross weight" 
+          : !plateNumbersMatch 
+            ? "plate numbers don't match"
+            : "unknown"
+      console.log("⚠️ Cannot calculate net weight -", reason)
+      
+      // Only clear if we don't have a valid calculated value already
+      if (!formState.outWeightKg || !inSession) {
+        setFormState((prev) => ({ ...prev, netWeightKg: null }))
+      }
     }
-  }, [formState.outWeightKg, inSession])
+  }, [formState.outWeightKg, formState.plateNumber, inSession])
 
   const handleWeightDetected = (weightKg: number) => {
-    setFormState((prev) => ({
-      ...prev,
-      outWeightKg: weightKg,
-    }))
+    console.log("⚖️ Weight detected:", weightKg)
+    setFormState((prev) => {
+      const newState = {
+        ...prev,
+        outWeightKg: weightKg,
+      }
+      
+      // Immediately calculate net weight if IN session is available
+      if (inSession?.grossWeightKg) {
+        const outWeight = Number(weightKg)
+        const inWeight = Number(inSession.grossWeightKg)
+        const netWeight = outWeight - inWeight
+        
+        console.log("📊 Immediate net weight calculation:", {
+          outWeight,
+          inWeight,
+          netWeight,
+        })
+        
+        const calculatedNetWeight = Math.round(netWeight * 100) / 100
+        newState.netWeightKg = calculatedNetWeight // Allow any value for debugging
+        console.log("✅ Net weight set immediately:", calculatedNetWeight)
+      }
+      
+      return newState
+    })
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -194,10 +305,19 @@ export default function OutSessionPage() {
       }
 
       const result = await response.json()
+      const savedSession = result.session
+      
+      // Store the unique code from saved session
+      if (savedSession?.uniqueCode) {
+        setLastSavedUniqueCode(savedSession.uniqueCode)
+      }
       
       toast({
         title: "Амжилттай",
-        description: "ГАРАХ бүртгэл амжилттай хадгалагдлаа",
+        description: savedSession?.uniqueCode 
+          ? `ГАРАХ бүртгэл амжилттай хадгалагдлаа. Код: ${savedSession.uniqueCode}`
+          : "ГАРАХ бүртгэл амжилттай хадгалагдлаа",
+        duration: 5000,
       })
 
       // Reset form
@@ -231,6 +351,7 @@ export default function OutSessionPage() {
     console.log("🎯 Form state:", formState)
     console.log("🎯 In session:", inSession)
     console.log("🎯 Connection status:", isConnected)
+    console.log("🎯 Last saved unique code:", lastSavedUniqueCode)
     
     // Validate form before sending
     if (!formState.plateNumber || !formState.outWeightKg || !formState.netWeightKg || !inSession) {
@@ -243,16 +364,35 @@ export default function OutSessionPage() {
       return
     }
 
-    // Prepare form data to send to 3rd party app
+    // If form hasn't been saved yet, save it first to get unique code
+    let uniqueCode = lastSavedUniqueCode
+    if (!uniqueCode) {
+      toast({
+        title: "Анхаар",
+        description: "Эхлээд бүртгэлийг хадгалаад дараа нь илгээнэ үү",
+        variant: "destructive",
+      })
+      return
+    }
+
+    // Prepare form data in the format expected by 3rd party app (CAR, CON, DRN, etc.)
+    // Format based on the 3rd party app's expected structure
     const formDataToSend = {
-      direction: "OUT",
-      plateNumber: formState.plateNumber.trim().toUpperCase(),
-      outTime: formState.outTime,
-      outWeightKg: formState.outWeightKg,
-      netWeightKg: formState.netWeightKg,
-      inSessionId: formState.inSessionId,
-      inSessionGrossWeight: inSession.grossWeightKg,
-      notes: formState.notes.trim() || undefined,
+      uniqueCode, // Unrepeatable code for pulling data
+      CAR: inSession.product || "", // Cargo/Product (from IN session)
+      CON: "", // Contract (empty if not available)
+      DRN: inSession.driverName || "", // Driver name (from IN session)
+      LPC: inSession.transporterCompany || "", // Loading point company (from IN session)
+      SLN: "", // Seal number (empty if not available)
+      TRL: "", // Trailer (empty if not available)
+      UPC: "", // Unloading point company (empty if not available)
+      AKT: "", // Act number (empty if not available)
+      NET: formState.netWeightKg || 0, // Net weight
+      WGT: formState.outWeightKg || 0, // Gross weight (out weight)
+      VNO: formState.plateNumber.trim().toUpperCase() || "", // Vehicle number (plate)
+      CT1: "", // Custom field 1
+      CMN: formState.notes.trim() || "", // Comments/Notes
+      inSessionUniqueCode: inSession.uniqueCode || "", // Include IN session's unique code too
     }
 
     console.log("🎯 Prepared form data to send:", formDataToSend)
@@ -364,15 +504,38 @@ export default function OutSessionPage() {
                         id="outWeightKg"
                         type="number"
                         value={formState.outWeightKg ?? ""}
-                        onChange={(e) =>
-                          setFormState((prev) => ({
-                            ...prev,
-                            outWeightKg: e.target.value ? parseFloat(e.target.value) : null,
-                          }))
-                        }
-                        readOnly
-                        className="border rounded px-2 py-1 bg-gray-50 border-gray-300 text-gray-700 cursor-not-allowed"
-                        placeholder="Жин (кг) автоматаар оруулах"
+                        onChange={(e) => {
+                          const weightValue = e.target.value ? parseFloat(e.target.value) : null
+                          console.log("📝 Out weight changed manually:", weightValue)
+                          setFormState((prev) => {
+                            const newState = {
+                              ...prev,
+                              outWeightKg: weightValue,
+                            }
+                            
+                            // Immediately calculate net weight if IN session is available
+                            if (weightValue && inSession?.grossWeightKg) {
+                              const outWeight = Number(weightValue)
+                              const inWeight = Number(inSession.grossWeightKg)
+                              const netWeight = outWeight - inWeight
+                              const calculatedNetWeight = Math.round(netWeight * 100) / 100
+                              
+                              console.log("📊 Manual calculation:", {
+                                outWeight,
+                                inWeight,
+                                netWeight: calculatedNetWeight,
+                              })
+                              
+                              newState.netWeightKg = calculatedNetWeight
+                            } else {
+                              newState.netWeightKg = null
+                            }
+                            
+                            return newState
+                          })
+                        }}
+                        className="border rounded px-2 py-1 bg-white border-gray-300 text-gray-700"
+                        placeholder="Жин (кг) оруулах"
                         required
                       />
                     </div>
@@ -386,20 +549,59 @@ export default function OutSessionPage() {
                         (автоматаар тооцоолно)
                       </span>
                     </Label>
-                    <Input
-                      id="netWeightKg"
-                      type="number"
-                      value={formState.netWeightKg ?? ""}
-                      readOnly
-                      className="mt-2 bg-gray-50 border-gray-300 text-gray-700 cursor-not-allowed"
-                      placeholder={
-                        !inSession
-                          ? "ОРОХ бүртгэл олох хэрэгтэй"
-                          : !formState.outWeightKg
-                            ? "Гарах жин оруулах хэрэгтэй"
-                            : "Цэвэр жин автоматаар тооцоологдоно"
-                      }
-                    />
+                    <div className="mt-2 flex gap-2">
+                      <Input
+                        id="netWeightKg"
+                        type="number"
+                        value={formState.netWeightKg ?? ""}
+                        readOnly
+                        className="flex-1 bg-gray-50 border-gray-300 text-gray-700 cursor-not-allowed"
+                        placeholder={
+                          !inSession
+                            ? "ОРОХ бүртгэл олох хэрэгтэй"
+                            : !formState.outWeightKg
+                              ? "Гарах жин оруулах хэрэгтэй"
+                              : "Цэвэр жин автоматаар тооцоологдоно"
+                        }
+                      />
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => {
+                          if (inSession?.grossWeightKg && formState.outWeightKg) {
+                            const outWeight = Number(formState.outWeightKg)
+                            const inWeight = Number(inSession.grossWeightKg)
+                            const netWeight = outWeight - inWeight
+                            const calculatedNetWeight = Math.round(netWeight * 100) / 100
+                            
+                            console.log("🔘 Manual calculate button clicked:", {
+                              outWeight,
+                              inWeight,
+                              netWeight: calculatedNetWeight,
+                            })
+                            
+                            setFormState((prev) => ({
+                              ...prev,
+                              netWeightKg: calculatedNetWeight,
+                            }))
+                          } else {
+                            toast({
+                              title: "Алдаа",
+                              description: !inSession 
+                                ? "ОРОХ бүртгэл олох шаардлагатай" 
+                                : !formState.outWeightKg 
+                                  ? "Гарах жин оруулах шаардлагатай"
+                                  : "IN session-д жин байхгүй байна",
+                              variant: "destructive",
+                            })
+                          }
+                        }}
+                        disabled={!inSession || !formState.outWeightKg}
+                        className="whitespace-nowrap px-4"
+                      >
+                        Тооцоолох
+                      </Button>
+                    </div>
                     {formState.netWeightKg && (
                       <p className="mt-1 text-xs text-gray-500">
                         Тооцоолол: {formState.outWeightKg} кг - {inSession?.grossWeightKg} кг ={" "}
@@ -457,12 +659,28 @@ export default function OutSessionPage() {
                         })
                         setInSession(null)
                         setInSessionError(null)
+                        setLastSavedUniqueCode(null)
                       }}
                       className="border-gray-300 hover:bg-gray-50"
                     >
                       Цэвэрлэх
                     </Button>
                   </div>
+                  {/* Unique Code Display */}
+                  {lastSavedUniqueCode && (
+                    <div className="mt-3 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                      <p className="text-sm font-semibold text-blue-900 mb-1">
+                        🔑 Уникал код (Unrepeatable Code):
+                      </p>
+                      <p className="text-lg font-mono font-bold text-blue-700 mb-2">
+                        {lastSavedUniqueCode}
+                      </p>
+                      <p className="text-xs text-blue-600">
+                        Энэ кодыг ашиглан өгөгдлийг бусад сайтаас татаж авах боломжтой. 
+                        API: <code className="bg-blue-100 px-1 rounded">/api/truck-sessions/by-code/{lastSavedUniqueCode}</code>
+                      </p>
+                    </div>
+                  )}
                   <div className="mt-2 space-y-2">
                     {isConnected ? (
                       <p className="text-xs text-green-600 font-medium">

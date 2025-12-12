@@ -250,6 +250,14 @@ export function useThirdPartyAutofill() {
         console.log("📤 JSON data:", jsonData)
         console.log("📤 WebSocket readyState before send:", connectedWs.readyState)
         console.log("📤 WebSocket URL:", getWebSocketUrl())
+        
+        // Highlight unique code if present
+        if (formData.uniqueCode) {
+          console.log("🔑 Unique Code (unrepeatable code) being sent:", formData.uniqueCode)
+          console.log("🔑 This code can be used to pull data from: /api/truck-sessions/by-code/" + formData.uniqueCode)
+        } else {
+          console.warn("⚠️ WARNING: No uniqueCode found in form data! The 3rd party app needs this code.")
+        }
 
         // Send the form data to the 3rd party app
         // The app will save it as autofill

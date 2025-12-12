@@ -93,7 +93,10 @@
     <input id="aktInput" name="akt" />
     
     <label for="netInput">NET:</label>
-    <input id="netInput" name="net" type="number" />
+    <div style="display: flex; gap: 5px; align-items: center;">
+      <input id="netInput" name="net" type="number" style="flex: 1;" />
+      <button type="button" id="calculateNetBtn" style="padding: 8px 16px; font-size: 14px; grid-column: auto; white-space: nowrap;">Calculate</button>
+    </div>
     
     <label for="wgtInput">WGT:</label>
     <input id="wgtInput" name="wgt" type="number" />
@@ -114,6 +117,43 @@
 
   <!-- Include the scale autofill module -->
   <script type="module" src="/js/scale-autofill.js"></script>
+  
+  <!-- Net Weight Calculation -->
+  <script>
+    function calculateNetWeight() {
+      const wgtInput = document.getElementById('wgtInput');
+      const netInput = document.getElementById('netInput');
+      
+      if (!wgtInput || !netInput) {
+        console.error('WGT or NET input not found');
+        return;
+      }
+      
+      const grossWeight = parseFloat(wgtInput.value);
+      
+      if (isNaN(grossWeight) || grossWeight <= 0) {
+        alert('Please enter a valid gross weight (WGT) first');
+        return;
+      }
+      
+      // Net weight calculation: NET = WGT - Tare
+      // If there's no tare weight specified, you can set a default or use 0
+      // For now, we'll calculate as NET = WGT (assuming tare is 0 or already accounted for)
+      // You can modify this to subtract a tare weight if needed
+      const tareWeight = 0; // Default tare weight, can be modified or read from an input
+      const netWeight = grossWeight - tareWeight;
+      
+      netInput.value = netWeight > 0 ? netWeight.toFixed(2) : 0;
+    }
+    
+    // Attach event listener when DOM is ready
+    document.addEventListener('DOMContentLoaded', () => {
+      const calculateBtn = document.getElementById('calculateNetBtn');
+      if (calculateBtn) {
+        calculateBtn.addEventListener('click', calculateNetWeight);
+      }
+    });
+  </script>
   
   <!-- Alternative: If you want to call it manually -->
   <!--

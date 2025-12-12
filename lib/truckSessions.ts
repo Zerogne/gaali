@@ -23,9 +23,48 @@ const truckSessionSchema = z.object({
   notes: z.string().optional(),
 })
 
+/**
+ * Generate a unique, unrepeatable code (8 characters, uppercase alphanumeric)
+ * Format: A1B2C3D4 (easy to type and share)
+ * 
+ * Uses timestamp + random data to ensure uniqueness:
+ * - Timestamp ensures different codes at different times
+ * - Random component ensures different codes even at the same millisecond
+ * - Database check ensures no duplicates exist (final guarantee)
+ */
+function generateUniqueCode(): string {
+  const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789" // Excludes confusing chars like 0, O, I, 1
+  
+  // Get current timestamp (milliseconds since epoch)
+  const timestamp = Date.now()
+  
+  // Generate multiple random components for better uniqueness
+  const random1 = Math.random() * 1000000
+  const random2 = Math.random() * 1000000
+  const random3 = Math.random() * 1000000
+  
+  // Combine timestamp + multiple random values for maximum uniqueness
+  let code = ""
+  let seed = Math.abs(Math.floor(timestamp + random1 + random2 + random3))
+  
+  // Generate 8 characters using the seed and additional randomness
+  for (let i = 0; i < 8; i++) {
+    // Mix seed-based selection with fresh random for each character
+    const randomIndex = Math.floor(Math.random() * chars.length)
+    const seedIndex = seed % chars.length
+    const index = (seedIndex + randomIndex) % chars.length
+    code += chars.charAt(index)
+    // Rotate seed for next character
+    seed = Math.floor(seed / chars.length) + (i * 1000) + Math.floor(Math.random() * 100)
+  }
+  
+  return code
+}
+
 export interface TruckSession {
   _id?: ObjectId
   id: string // Custom ID for client-side use
+  uniqueCode: string // Unique code for pulling data from external sites
   companyId: string
   direction: SessionDirection
   plateNumber: string
@@ -48,7 +87,7 @@ export interface TruckSession {
  * Includes input validation
  */
 export async function saveTruckSession(
-  sessionData: Omit<TruckSession, "_id" | "id" | "companyId" | "createdAt" | "updatedAt">
+  sessionData: Omit<TruckSession, "_id" | "id" | "uniqueCode" | "companyId" | "createdAt" | "updatedAt">
 ): Promise<TruckSession> {
   try {
     console.log("💾 saveTruckSession called with:", sessionData)
@@ -75,22 +114,51 @@ export async function saveTruckSession(
       "truck_sessions"
     )
 
+    // Generate unique code and ensure it's unique
+    // The code combines timestamp + random data, but we still check database to guarantee uniqueness
+    let uniqueCode: string
+    let attempts = 0
+    const maxAttempts = 10
+    do {
+      uniqueCode = generateUniqueCode()
+      console.log(`🔑 Generated unique code (attempt ${attempts + 1}):`, uniqueCode)
+      
+      // Check if this code already exists in the database
+      const existing = await sessionsCollection.findOne({ uniqueCode })
+      if (!existing) {
+        console.log(`✅ Unique code verified - no duplicates found:`, uniqueCode)
+        break
+      }
+      
+      // If duplicate found, generate a new one
+      console.warn(`⚠️ Duplicate code found, generating new one... (attempt ${attempts + 1})`)
+      attempts++
+      if (attempts >= maxAttempts) {
+        throw new Error("Failed to generate unique code after multiple attempts")
+      }
+    } while (true)
+
     // Create session document
     const now = new Date()
     const sessionDoc: TruckSession = {
       ...validation.data,
       id: `session-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+      uniqueCode,
       companyId,
       createdAt: now,
       updatedAt: now,
+      // Ensure netWeightKg is undefined instead of null
+      netWeightKg: validation.data.netWeightKg === null ? undefined : validation.data.netWeightKg,
     }
 
     // Insert into company's collection
     await sessionsCollection.insertOne(sessionDoc)
+    console.log("✅ Session saved with unique code:", uniqueCode)
 
     // Serialize MongoDB document to plain object
     const serializedSession: TruckSession = {
       id: sessionDoc.id,
+      uniqueCode: sessionDoc.uniqueCode,
       companyId: sessionDoc.companyId,
       direction: sessionDoc.direction,
       plateNumber: sessionDoc.plateNumber,
@@ -188,6 +256,7 @@ export async function getTruckSessions(options?: {
       const { _id, ...session } = doc
       return {
         ...session,
+        uniqueCode: session.uniqueCode || "",
         createdAt: session.createdAt instanceof Date 
           ? session.createdAt 
           : typeof session.createdAt === 'string'
@@ -234,6 +303,7 @@ export async function getTruckSession(sessionId: string): Promise<TruckSession |
     const { _id, ...sessionData } = session
     return {
       ...sessionData,
+      uniqueCode: sessionData.uniqueCode || "",
       createdAt: sessionData.createdAt instanceof Date ? sessionData.createdAt : new Date(sessionData.createdAt),
       updatedAt: sessionData.updatedAt instanceof Date ? sessionData.updatedAt : new Date(sessionData.updatedAt),
     } as TruckSession
@@ -273,6 +343,7 @@ export async function findLatestInSession(
     const { _id, ...sessionData } = inSession
     return {
       ...sessionData,
+      uniqueCode: sessionData.uniqueCode || "",
       createdAt: sessionData.createdAt instanceof Date ? sessionData.createdAt : new Date(sessionData.createdAt),
       updatedAt: sessionData.updatedAt instanceof Date ? sessionData.updatedAt : new Date(sessionData.updatedAt),
     } as TruckSession
@@ -287,7 +358,7 @@ export async function findLatestInSession(
  */
 export async function updateTruckSession(
   sessionId: string,
-  updates: Partial<Omit<TruckSession, "_id" | "id" | "companyId" | "createdAt">>
+  updates: Partial<Omit<TruckSession, "_id" | "id" | "uniqueCode" | "companyId" | "createdAt">>
 ): Promise<TruckSession | null> {
   try {
     const companyId = await getActiveCompany()
@@ -317,7 +388,7 @@ export async function updateTruckSession(
       }
     }
 
-    // Update the session
+    // Update the session (don't allow updating uniqueCode)
     const updateDoc = {
       ...updates,
       updatedAt: new Date(),
@@ -334,6 +405,7 @@ export async function updateTruckSession(
     const { _id, ...sessionData } = updatedSession
     return {
       ...sessionData,
+      uniqueCode: sessionData.uniqueCode || "",
       createdAt: sessionData.createdAt instanceof Date ? sessionData.createdAt : new Date(sessionData.createdAt),
       updatedAt: sessionData.updatedAt instanceof Date ? sessionData.updatedAt : new Date(sessionData.updatedAt),
     } as TruckSession
@@ -358,6 +430,49 @@ export async function deleteTruckSession(sessionId: string): Promise<boolean> {
 
     return result.deletedCount > 0
   } catch (error) {
+    const handled = handleError(error)
+    throw new Error(handled.message)
+  }
+}
+
+/**
+ * Get a truck session by unique code (for external sites to pull data)
+ * This function searches across all companies to find the session
+ */
+export async function getTruckSessionByUniqueCode(uniqueCode: string): Promise<TruckSession | null> {
+  try {
+    const { getDatabase } = await import("@/lib/db/client")
+    const db = await getDatabase()
+    
+    // Search across all company collections
+    // We need to find which company has this unique code
+    const companiesCollection = db.collection("companies")
+    const companies = await companiesCollection.find({}).toArray()
+    
+    const normalizedCode = uniqueCode.toUpperCase().trim()
+    
+    for (const company of companies) {
+      const companyId = company.id || company._id?.toString()
+      if (!companyId) continue
+      
+      const sessionsCollection = db.collection(`company_${companyId}_truck_sessions`)
+      const session = await sessionsCollection.findOne({ uniqueCode: normalizedCode })
+      
+      if (session) {
+        // Serialize MongoDB document to plain object
+        const { _id, ...sessionData } = session
+        return {
+          ...sessionData,
+          uniqueCode: sessionData.uniqueCode || "",
+          createdAt: sessionData.createdAt instanceof Date ? sessionData.createdAt : new Date(sessionData.createdAt),
+          updatedAt: sessionData.updatedAt instanceof Date ? sessionData.updatedAt : new Date(sessionData.updatedAt),
+        } as TruckSession
+      }
+    }
+    
+    return null
+  } catch (error) {
+    console.error("Error getting truck session by unique code:", error)
     const handled = handleError(error)
     throw new Error(handled.message)
   }

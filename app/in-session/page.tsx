@@ -31,6 +31,7 @@ export default function InSessionPage() {
   const [isSaving, setIsSaving] = useState(false)
   const [showDebugPanel, setShowDebugPanel] = useState(false)
   const [sentDataHistory, setSentDataHistory] = useState<Array<{ timestamp: string; data: any }>>([])
+  const [lastSavedUniqueCode, setLastSavedUniqueCode] = useState<string | null>(null)
 
   // Load sent data history from localStorage on mount
   useEffect(() => {
@@ -113,13 +114,22 @@ export default function InSessionPage() {
       }
 
       const result = await response.json()
+      const savedSession = result.session
+      
+      // Store the unique code from saved session
+      if (savedSession?.uniqueCode) {
+        setLastSavedUniqueCode(savedSession.uniqueCode)
+      }
       
       toast({
         title: "Амжилттай",
-        description: "ОРОХ бүртгэл амжилттай хадгалагдлаа",
+        description: savedSession?.uniqueCode 
+          ? `ОРОХ бүртгэл амжилттай хадгалагдлаа. Код: ${savedSession.uniqueCode}`
+          : "ОРОХ бүртгэл амжилттай хадгалагдлаа",
+        duration: 5000,
       })
 
-      // Reset form
+      // Reset form and clear saved unique code
       setFormState({
         plateNumber: "",
         driverName: "",
@@ -129,6 +139,8 @@ export default function InSessionPage() {
         grossWeightKg: null,
         notes: "",
       })
+      // Don't clear lastSavedUniqueCode here - keep it so user can send to 3rd party
+      // It will be cleared when form is manually cleared or new form is saved
 
       // Optionally redirect to history page
       // router.push("/history")
@@ -148,6 +160,7 @@ export default function InSessionPage() {
     console.log("🎯 handleSendToThirdParty called")
     console.log("🎯 Form state:", formState)
     console.log("🎯 Connection status:", isConnected)
+    console.log("🎯 Last saved unique code:", lastSavedUniqueCode)
     
     // Validate form before sending
     if (!formState.plateNumber || !formState.driverName || !formState.product || !formState.transporterCompany || !formState.grossWeightKg) {
@@ -160,16 +173,34 @@ export default function InSessionPage() {
       return
     }
 
-    // Prepare form data to send to 3rd party app
+    // If form hasn't been saved yet, save it first to get unique code
+    let uniqueCode = lastSavedUniqueCode
+    if (!uniqueCode) {
+      toast({
+        title: "Анхаар",
+        description: "Эхлээд бүртгэлийг хадгалаад дараа нь илгээнэ үү",
+        variant: "destructive",
+      })
+      return
+    }
+
+    // Prepare form data in the format expected by 3rd party app (CAR, CON, DRN, etc.)
+    // Format based on the 3rd party app's expected structure
     const formDataToSend = {
-      direction: "IN",
-      plateNumber: formState.plateNumber.trim().toUpperCase(),
-      driverName: formState.driverName.trim(),
-      product: formState.product.trim(),
-      transporterCompany: formState.transporterCompany.trim(),
-      grossWeightKg: formState.grossWeightKg,
-      inTime: formState.inTime,
-      notes: formState.notes.trim() || undefined,
+      uniqueCode, // Unrepeatable code for pulling data
+      CAR: formState.product.trim() || "", // Cargo/Product
+      CON: "", // Contract (empty if not available)
+      DRN: formState.driverName.trim() || "", // Driver name
+      LPC: formState.transporterCompany.trim() || "", // Loading point company
+      SLN: "", // Seal number (empty if not available)
+      TRL: "", // Trailer (empty if not available)
+      UPC: "", // Unloading point company (empty if not available)
+      AKT: "", // Act number (empty if not available)
+      NET: "", // Net weight (empty for IN session)
+      WGT: formState.grossWeightKg || 0, // Gross weight
+      VNO: formState.plateNumber.trim().toUpperCase() || "", // Vehicle number (plate)
+      CT1: "", // Custom field 1
+      CMN: formState.notes.trim() || "", // Comments/Notes
     }
 
     console.log("🎯 Prepared form data to send:", formDataToSend)
@@ -384,11 +415,29 @@ export default function InSessionPage() {
                           grossWeightKg: null,
                           notes: "",
                         })
+                        setLastSavedUniqueCode(null)
                       }}
                       className="border-gray-300 hover:bg-gray-50"
                     >
                       Цэвэрлэх
                     </Button>
+                  </div>
+                  {/* Unique Code Display */}
+                  {lastSavedUniqueCode && (
+                    <div className="mt-3 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                      <p className="text-sm font-semibold text-blue-900 mb-1">
+                        🔑 Уникал код (Unrepeatable Code):
+                      </p>
+                      <p className="text-lg font-mono font-bold text-blue-700 mb-2">
+                        {lastSavedUniqueCode}
+                      </p>
+                      <p className="text-xs text-blue-600">
+                        Энэ кодыг ашиглан өгөгдлийг бусад сайтаас татаж авах боломжтой. 
+                        API: <code className="bg-blue-100 px-1 rounded">/api/truck-sessions/by-code/{lastSavedUniqueCode}</code>
+                      </p>
+                    </div>
+                  )}
+                  <div className="mt-2 space-y-2">
                   </div>
                   <div className="mt-2 space-y-2">
                     {isConnected ? (
