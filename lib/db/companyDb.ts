@@ -83,6 +83,7 @@ export async function ensureCompanyCollections(companyId: string) {
       await collection.createIndex({ plateNumber: 1 })
       await collection.createIndex({ inSessionId: 1 })
       await collection.createIndex({ companyId: 1 })
+      await collection.createIndex({ uniqueCode: 1 }, { unique: true, sparse: true })
     }
   }
 }

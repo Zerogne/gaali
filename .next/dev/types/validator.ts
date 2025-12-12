@@ -335,6 +335,15 @@ type RouteHandlerConfig<Route extends AppRouteHandlerRoutes = AppRouteHandlerRou
   type __Unused = __Check
 }
 
+// Validate ../../../app/api/truck-sessions/by-code/[code]/route.ts
+{
+  type __IsExpected<Specific extends RouteHandlerConfig<"/api/truck-sessions/by-code/[code]">> = Specific
+  const handler = {} as typeof import("../../../app/api/truck-sessions/by-code/[code]/route.js")
+  type __Check = __IsExpected<typeof handler>
+  // @ts-ignore
+  type __Unused = __Check
+}
+
 // Validate ../../../app/api/truck-sessions/find-in/route.ts
 {
   type __IsExpected<Specific extends RouteHandlerConfig<"/api/truck-sessions/find-in">> = Specific
