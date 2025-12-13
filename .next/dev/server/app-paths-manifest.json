@@ -1,12 +1,1 @@
-{
-  "/api/camera/config/route": "app/api/camera/config/route.js",
-  "/api/camera/events/route": "app/api/camera/events/route.js",
-  "/api/drivers/route": "app/api/drivers/route.js",
-  "/api/lpr/latest/route": "app/api/lpr/latest/route.js",
-  "/api/organizations/route": "app/api/organizations/route.js",
-  "/api/products/route": "app/api/products/route.js",
-  "/api/transport-companies/route": "app/api/transport-companies/route.js",
-  "/api/user/route": "app/api/user/route.js",
-  "/in-session/page": "app/in-session/page.js",
-  "/page": "app/page.js"
-}
+{}

@@ -5,11 +5,12 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Camera, Scale, Save } from "lucide-react"
+import { Camera, Scale, Save, Network } from "lucide-react"
+import { WebSocketTestPanel } from "@/components/settings/WebSocketTestPanel"
 export function SettingsPanel() {
   return (
     <Tabs defaultValue="camera" className="space-y-6">
-      <TabsList className="grid w-full grid-cols-2 lg:w-[600px]">
+      <TabsList className="grid w-full grid-cols-3 lg:w-[800px]">
         <TabsTrigger value="camera" className="gap-2">
           <Camera className="w-4 h-4" />
           Camera
@@ -17,6 +18,10 @@ export function SettingsPanel() {
         <TabsTrigger value="weight" className="gap-2">
           <Scale className="w-4 h-4" />
           Weight
+        </TabsTrigger>
+        <TabsTrigger value="websocket" className="gap-2">
+          <Network className="w-4 h-4" />
+          3-р талын апп
         </TabsTrigger>
       </TabsList>
 
@@ -136,6 +141,10 @@ export function SettingsPanel() {
             </Button>
           </div>
         </Card>
+      </TabsContent>
+
+      <TabsContent value="websocket" className="space-y-6">
+        <WebSocketTestPanel />
       </TabsContent>
     </Tabs>
   )

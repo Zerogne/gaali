@@ -15,12 +15,12 @@ import {
 import { handleLogout } from "@/lib/auth/logoutClient"
 
 const menuItems = [
-  { icon: LayoutDashboard, label: "Dashboard", href: "/" },
+  { icon: LayoutDashboard, label: "Хяналтын самбар", href: "/" },
   { icon: Package, label: "Бүтээгдэхүүн", href: "/products" },
   { icon: Truck, label: "Тээврийн компани", href: "/companies" },
   { icon: User, label: "Жолооч", href: "/drivers" },
   { icon: Building2, label: "Байгууллага", href: "/organizations" },
-  { icon: Settings, label: "Settings", href: "/settings" },
+  { icon: Settings, label: "Тохиргоо", href: "/settings" },
 ]
 
 interface UserInfo {
@@ -69,9 +69,9 @@ export function Sidebar() {
       .slice(0, 2)
   }
 
-  const displayName = userInfo?.name || "User"
-  const displayRole = userInfo?.role || "Worker"
-  const initials = userInfo ? getInitials(userInfo.name) : "U"
+  const displayName = userInfo?.name || "Хэрэглэгч"
+  const displayRole = userInfo?.role || "Ажилтан"
+  const initials = userInfo ? getInitials(userInfo.name) : "Х"
 
   return (
     <aside className="w-64 bg-sidebar border-r border-sidebar-border flex flex-col">
@@ -82,9 +82,9 @@ export function Sidebar() {
           </div>
           <div>
             <h1 className="text-lg font-semibold text-sidebar-foreground">
-              {isLoading ? "Loading..." : companyName}
+              {isLoading ? "Уншиж байна..." : companyName}
             </h1>
-            <p className="text-xs text-sidebar-foreground/60">Logistics Platform</p>
+            <p className="text-xs text-sidebar-foreground/60">Логистик платформ</p>
           </div>
         </div>
       </div>
@@ -126,7 +126,7 @@ export function Sidebar() {
               </Avatar>
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-semibold text-sidebar-foreground truncate">
-                  {isLoading ? "Loading..." : displayName}
+                  {isLoading ? "Уншиж байна..." : displayName}
                 </p>
                 <p className="text-xs text-sidebar-foreground/60 truncate">
                   {isLoading ? "..." : displayRole}
@@ -140,7 +140,7 @@ export function Sidebar() {
               onClick={handleLogoutClick}
             >
               <LogOut className="w-4 h-4 mr-2" />
-              Log out
+              Гарах
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

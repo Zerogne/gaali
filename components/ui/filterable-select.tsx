@@ -80,7 +80,7 @@ export function FilterableSelect({
   // Filter and sort options
   const filteredOptions = React.useMemo(() => {
     // Filter out options with invalid labels
-    const validOptions = options.filter((opt) => opt.label != null && opt.label !== "");
+    const validOptions = options.filter((option) => option.label != null && option.label !== "");
     
     if (!searchQuery.trim()) {
       return validOptions;
@@ -91,7 +91,7 @@ export function FilterableSelect({
     const containing: FilterableSelectOption[] = [];
 
     validOptions.forEach((option) => {
-      const label = option.label?.toLowerCase() || "";
+      const label = (option.label || "").toLowerCase();
       if (label.startsWith(query)) {
         matching.push(option);
       } else if (label.includes(query)) {
@@ -185,9 +185,9 @@ export function FilterableSelect({
         // Check if we're editing an existing item (explicitly clicked edit icon)
         if (editingValue && onEdit && editable) {
           const selectedOption = options.find(
-            (opt) => opt.value === editingValue
+            (opt) => opt.value === editingValue && opt.label != null
           );
-          if (selectedOption && selectedOption.label != null && searchQuery.trim() !== selectedOption.label) {
+          if (selectedOption && selectedOption.label && searchQuery.trim() !== selectedOption.label) {
             handleEdit(editingValue, searchQuery.trim());
             return;
       }
@@ -195,8 +195,8 @@ export function FilterableSelect({
 
         // Check if we have a selected value and user typed something different - edit that item
         if (value && onEdit && editable && !hasExactMatch) {
-          const selectedOption = options.find((opt) => opt.value === value);
-          if (selectedOption && selectedOption.label != null && searchQuery.trim() !== selectedOption.label) {
+          const selectedOption = options.find((opt) => opt.value === value && opt.label != null);
+          if (selectedOption && selectedOption.label && searchQuery.trim() !== selectedOption.label) {
             handleEdit(value, searchQuery.trim());
             return;
           }
@@ -340,7 +340,7 @@ export function FilterableSelect({
     []
   );
 
-  const selectedOption = options.find((opt) => opt.value === value);
+  const selectedOption = options.find((opt) => opt.value === value && opt.label != null);
 
   // Direct selection handler that bypasses all guards
   const handleDirectSelect = React.useCallback(
@@ -431,11 +431,11 @@ export function FilterableSelect({
                 value === option.value ? "opacity-100" : "opacity-0"
               )}
             />
-            <span className="flex-1">{option.label || ""}</span>
+            <span className="flex-1">{option.label}</span>
             {editable && onEdit && (
               <button
                 type="button"
-                onClick={handleEditClick(option.value, option.label || "")}
+                onClick={handleEditClick(option.value, option.label)}
                 className="ml-2 opacity-0 group-hover:opacity-100 transition-opacity p-1 hover:bg-accent rounded"
                 title="Edit"
                 onMouseDown={(e) => e.stopPropagation()}
@@ -516,7 +516,7 @@ export function FilterableSelect({
           )}
         >
           <span className="truncate">
-            {selectedOption && selectedOption.label != null ? selectedOption.label : placeholder}
+            {selectedOption && selectedOption.label ? selectedOption.label : placeholder}
           </span>
           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
