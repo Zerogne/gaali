@@ -245,6 +245,24 @@ type RouteHandlerConfig<Route extends AppRouteHandlerRoutes = AppRouteHandlerRou
   type __Unused = __Check
 }
 
+// Validate ../../../app/api/lpr/ingest/route.ts
+{
+  type __IsExpected<Specific extends RouteHandlerConfig<"/api/lpr/ingest">> = Specific
+  const handler = {} as typeof import("../../../app/api/lpr/ingest/route.js")
+  type __Check = __IsExpected<typeof handler>
+  // @ts-ignore
+  type __Unused = __Check
+}
+
+// Validate ../../../app/api/lpr/latest/route.ts
+{
+  type __IsExpected<Specific extends RouteHandlerConfig<"/api/lpr/latest">> = Specific
+  const handler = {} as typeof import("../../../app/api/lpr/latest/route.js")
+  type __Check = __IsExpected<typeof handler>
+  // @ts-ignore
+  type __Unused = __Check
+}
+
 // Validate ../../../app/api/migrate-organizations/route.ts
 {
   type __IsExpected<Specific extends RouteHandlerConfig<"/api/migrate-organizations">> = Specific

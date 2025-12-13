@@ -12,6 +12,7 @@ import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { useCameraPlateAutofill } from "@/hooks/useCameraPlateAutofill";
+import { useLatestLpr } from "@/hooks/useLatestLpr";
 import { useThirdPartyAutofill } from "@/hooks/useThirdPartyAutofill";
 import type {
   Driver,
@@ -59,6 +60,7 @@ export function InSessionForm({
     null
   );
   const cameraAutofill = useCameraPlateAutofill();
+  const { latest: lprLatest } = useLatestLpr(1000); // Poll every 1 second
 
   // Data loading states
   const [products, setProducts] = useState<Product[]>([]);
@@ -274,6 +276,51 @@ export function InSessionForm({
       onPlateChange?.(autoFillPlate);
     }
   }, [autoFillPlate, formState.plateNumber, onPlateChange]);
+
+  // Auto-fill from LPR bridge (latest plate recognition)
+  useEffect(() => {
+    if (lprLatest?.plateNumber && lprLatest?.recognizedAt) {
+      // Only autofill if plate field is empty or matches previous value
+      // This prevents overwriting user input
+      if (
+        !formState.plateNumber ||
+        formState.plateNumber === lprLatest.plateNumber
+      ) {
+        setFormState((prev) => ({
+          ...prev,
+          plateNumber: lprLatest.plateNumber || prev.plateNumber,
+        }));
+        onPlateChange?.(lprLatest.plateNumber);
+      }
+
+      // Auto-fill time if field is empty or matches the default
+      // Convert recognizedAt from "YYYY-MM-DD HH:mm:ss" to "YYYY-MM-DDTHH:mm"
+      if (lprLatest.recognizedAt) {
+        try {
+          const dateTimeStr = lprLatest.recognizedAt
+            .replace(" ", "T")
+            .slice(0, 16);
+          const currentTimeStr = new Date().toISOString().slice(0, 16);
+          // Only update if current time is the default or very recent
+          if (
+            !formState.inTime ||
+            formState.inTime === currentTimeStr ||
+            Math.abs(
+              new Date(formState.inTime).getTime() -
+                new Date(currentTimeStr).getTime()
+            ) < 60000
+          ) {
+            setFormState((prev) => ({
+              ...prev,
+              inTime: dateTimeStr,
+            }));
+          }
+        } catch (e) {
+          // Invalid date format, ignore
+        }
+      }
+    }
+  }, [lprLatest, formState.plateNumber, formState.inTime, onPlateChange]);
 
   const handleWeightDetected = (weightKg: number) => {
     setFormState((prev) => ({

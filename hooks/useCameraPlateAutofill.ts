@@ -97,12 +97,23 @@ export function useCameraPlateAutofill(
     // Stop polling if too many consecutive errors (prevent overload)
     if (consecutiveErrorsRef.current >= 3) {
       const timeSinceLastError = Date.now() - lastErrorTimeRef.current;
-      // Wait 30 seconds before retrying after 3 consecutive errors
-      if (timeSinceLastError < 30000) {
-        return;
+      
+      // For configuration errors (count >= 10), wait much longer (5 minutes)
+      if (consecutiveErrorsRef.current >= 10) {
+        if (timeSinceLastError < 300000) { // 5 minutes
+          return;
+        }
+      } else {
+        // Wait 30 seconds before retrying after 3 consecutive errors
+        if (timeSinceLastError < 30000) {
+          return;
+        }
       }
-      // Reset error count after waiting period
-      consecutiveErrorsRef.current = 0;
+      
+      // Reset error count after waiting period (but only if not a config error)
+      if (consecutiveErrorsRef.current < 10) {
+        consecutiveErrorsRef.current = 0;
+      }
     }
 
     isPollingRef.current = true;
@@ -126,10 +137,17 @@ export function useCameraPlateAutofill(
         // Server returned an error response
         consecutiveErrorsRef.current++;
         lastErrorTimeRef.current = Date.now();
+        const errorMsg = result?.error || `Server error: ${response.status}`;
+        
+        // If camera is not configured, stop polling aggressively
+        if (errorMsg.includes("not configured") || errorMsg.includes("CAMERA_BASE_URL")) {
+          consecutiveErrorsRef.current = 10; // Set high to prevent retries
+        }
+        
         setData((prev) => ({
           ...prev,
           status: "error",
-          error: result?.error || `Server error: ${response.status}`,
+          error: errorMsg,
           rawPayload: result?.raw || null,
         }));
         return;
@@ -159,21 +177,25 @@ export function useCameraPlateAutofill(
       consecutiveErrorsRef.current++;
       lastErrorTimeRef.current = Date.now();
 
-      // Only log errors if not too many consecutive ones
-      if (consecutiveErrorsRef.current < 3) {
-        console.error("Camera polling error:", error);
-      }
-
       // Handle different error types
       let errorMessage = "Unknown error";
       if (error instanceof Error) {
         if (error.name === "AbortError" || error.message.includes("timeout")) {
           errorMessage = "Request timeout";
         } else if (error.message.includes("Failed to fetch")) {
-          errorMessage = "Network error - check camera connection";
+          errorMessage = "Camera not configured or connection error";
         } else {
           errorMessage = error.message;
         }
+      }
+
+      // Only log errors if not too many consecutive ones and error is meaningful
+      // Suppress repeated "Failed to fetch" errors which are likely configuration issues
+      if (consecutiveErrorsRef.current < 3 && errorMessage !== "Camera not configured or connection error") {
+        console.error("Camera polling error:", error);
+      } else if (consecutiveErrorsRef.current === 1 && errorMessage === "Camera not configured or connection error") {
+        // Only log once for configuration errors
+        console.warn("Camera not configured. Set CAMERA_BASE_URL in environment variables to enable camera autofill.");
       }
 
       setData((prev) => ({
