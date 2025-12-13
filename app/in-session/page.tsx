@@ -1,23 +1,47 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import { useRouter } from "next/navigation"
-import { CameraPanel } from "@/components/sessions/CameraPanel"
-import { InSessionForm } from "@/components/sessions/InSessionForm"
-import { useCameraPlateAutofill } from "@/hooks/useCameraPlateAutofill"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { ArrowRight, ArrowLeft } from "lucide-react"
+import { CameraPanel } from "@/components/sessions/CameraPanel";
+import { InSessionForm } from "@/components/sessions/InSessionForm";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { useCameraPlateAutofill } from "@/hooks/useCameraPlateAutofill";
+import { ArrowLeft, ArrowRight } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 
 export default function InSessionPage() {
-  const router = useRouter()
-  const cameraAutofill = useCameraPlateAutofill()
-  const [currentPlate, setCurrentPlate] = useState<string>("")
+  const router = useRouter();
+  const cameraAutofill = useCameraPlateAutofill();
+  const [currentPlate, setCurrentPlate] = useState<string>("");
+  const [streamUrl, setStreamUrl] = useState<string | undefined>(undefined);
+
+  // Fetch camera stream URL from config
+  useEffect(() => {
+    const fetchStreamUrl = async () => {
+      try {
+        const response = await fetch("/api/camera/config");
+        if (response.ok) {
+          const config = await response.json();
+          // Use NEXT_PUBLIC env var if set, otherwise use config streamUrl
+          setStreamUrl(
+            process.env.NEXT_PUBLIC_CAMERA_STREAM_URL ||
+              config.streamUrl ||
+              undefined
+          );
+        }
+      } catch (error) {
+        console.error("Failed to fetch camera stream URL:", error);
+        // Fallback to env var if API fails
+        setStreamUrl(process.env.NEXT_PUBLIC_CAMERA_STREAM_URL);
+      }
+    };
+    fetchStreamUrl();
+  }, []);
 
   // Track if user manually edited the plate field
   const handlePlateChange = (value: string) => {
-    setCurrentPlate(value)
-  }
+    setCurrentPlate(value);
+  };
 
   return (
     <div className="fixed inset-0 h-screen w-screen overflow-hidden bg-gray-50 flex flex-col">
@@ -35,14 +59,21 @@ export default function InSessionPage() {
                 <ArrowLeft className="h-4 w-4" />
               </Button>
               <div className="h-5 w-px bg-gray-300" />
-                  <div>
-                <h1 className="text-lg font-semibold text-gray-900">ОРОХ бүртгэл</h1>
-                <p className="text-xs text-gray-500">Тээврийн хэрэгсэл орох бүртгэл</p>
-                  </div>
-              <Badge variant="outline" className="ml-2 bg-blue-50 text-blue-700 border-blue-200 text-xs">
+              <div>
+                <h1 className="text-lg font-semibold text-gray-900">
+                  ОРОХ бүртгэл
+                </h1>
+                <p className="text-xs text-gray-500">
+                  Тээврийн хэрэгсэл орох бүртгэл
+                </p>
+              </div>
+              <Badge
+                variant="outline"
+                className="ml-2 bg-blue-50 text-blue-700 border-blue-200 text-xs"
+              >
                 IN
               </Badge>
-                  </div>
+            </div>
             <Button
               onClick={() => router.push("/out-session")}
               variant="outline"
@@ -52,8 +83,8 @@ export default function InSessionPage() {
               ГАРАХ бүртгэл
               <ArrowRight className="h-3 w-3" />
             </Button>
-                  </div>
-                  </div>
+          </div>
+        </div>
       </nav>
 
       {/* Main Content - Fills remaining space */}
@@ -63,12 +94,12 @@ export default function InSessionPage() {
             {/* Left Column: Camera (1/3 width on large screens) */}
             <div className="lg:col-span-1 h-full overflow-hidden">
               <CameraPanel
-                streamUrl={undefined}
+                streamUrl={streamUrl}
                 lastPlate={cameraAutofill.plate}
-                lastPayload={cameraAutofill.plate ? { plate: cameraAutofill.plate, ts: cameraAutofill.lastSeenAt } : null}
+                lastPayload={cameraAutofill.rawPayload}
                 status={cameraAutofill.status}
                 onRefresh={() => {
-                  console.log("Refresh camera")
+                  cameraAutofill.refresh();
                 }}
               />
             </div>
@@ -80,9 +111,9 @@ export default function InSessionPage() {
                 onPlateChange={handlePlateChange}
               />
             </div>
-                  </div>
           </div>
+        </div>
       </div>
     </div>
-  )
+  );
 }

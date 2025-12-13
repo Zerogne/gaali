@@ -1,19 +1,19 @@
 {
   "node": {
-    "00db69d86cc3b8562947f5f5012a7dc7936b0621ed": {
+    "00284fe93ad2f15773109f927e7373e31749d9aeda": {
       "workers": {
         "app/products/page": {
-          "moduleId": "[project]/.next-internal/server/app/products/page/actions.js { ACTIONS_MODULE0 => \"[project]/lib/auth/authServer.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "moduleId": "[project]/Documents/gaali/.next-internal/server/app/products/page/actions.js { ACTIONS_MODULE0 => \"[project]/Documents/gaali/lib/auth/authServer.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
           "async": false,
           "exportedName": "logout",
-          "filename": "lib/auth/authServer.ts"
+          "filename": "Documents/gaali/lib/auth/authServer.ts"
         }
       },
       "layer": {
         "app/products/page": "action-browser"
       },
       "exportedName": "logout",
-      "filename": "lib/auth/authServer.ts"
+      "filename": "Documents/gaali/lib/auth/authServer.ts"
     }
   },
   "edge": {}

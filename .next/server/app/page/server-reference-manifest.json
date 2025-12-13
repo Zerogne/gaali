@@ -1,64 +1,64 @@
 {
   "node": {
-    "002aaa44fc4d8d053062b4a4224916d4927773c390": {
+    "002da7132c2c543f49d62accfc32df1567c0395dcf": {
       "workers": {
         "app/page": {
-          "moduleId": 32869,
+          "moduleId": 56683,
           "async": false,
           "exportedName": "logout",
-          "filename": "lib/auth/authServer.ts"
+          "filename": "Documents/gaali/lib/auth/authServer.ts"
         }
       },
       "layer": {
         "app/page": "action-browser"
       },
       "exportedName": "logout",
-      "filename": "lib/auth/authServer.ts"
+      "filename": "Documents/gaali/lib/auth/authServer.ts"
     },
-    "4058b122e308e364a24ba05695bd0c197e19386dfe": {
+    "40e14de2cd98807c14aa494dbc167e534ff18396cf": {
       "workers": {
         "app/page": {
-          "moduleId": 32869,
+          "moduleId": 56683,
           "async": false,
           "exportedName": "saveTruckLog",
-          "filename": "lib/api.ts"
+          "filename": "Documents/gaali/lib/api.ts"
         }
       },
       "layer": {
         "app/page": "action-browser"
       },
       "exportedName": "saveTruckLog",
-      "filename": "lib/api.ts"
+      "filename": "Documents/gaali/lib/api.ts"
     },
-    "40516e7e258a23fbfc95ed115874980e9c4dedda18": {
+    "40fe077cd23f099bf2b9150f26ef155aa0781370e4": {
       "workers": {
         "app/page": {
-          "moduleId": 32869,
+          "moduleId": 56683,
           "async": false,
           "exportedName": "sendTruckLogToCustoms",
-          "filename": "lib/api.ts"
+          "filename": "Documents/gaali/lib/api.ts"
         }
       },
       "layer": {
         "app/page": "action-browser"
       },
       "exportedName": "sendTruckLogToCustoms",
-      "filename": "lib/api.ts"
+      "filename": "Documents/gaali/lib/api.ts"
     },
-    "60cd7b9c1de90cb658d4b00e637cb5c82adeca4656": {
+    "60d18e34e51b7445ba11d8df516ee32cf5642016ba": {
       "workers": {
         "app/page": {
-          "moduleId": 32869,
+          "moduleId": 56683,
           "async": false,
           "exportedName": "getTruckLogs",
-          "filename": "lib/api.ts"
+          "filename": "Documents/gaali/lib/api.ts"
         }
       },
       "layer": {
         "app/page": "action-browser"
       },
       "exportedName": "getTruckLogs",
-      "filename": "lib/api.ts"
+      "filename": "Documents/gaali/lib/api.ts"
     }
   },
   "edge": {}

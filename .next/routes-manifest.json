@@ -67,6 +67,22 @@
         "nxtPid": "nxtPid"
       },
       "namedRegex": "^/api/transport\\-companies/(?<nxtPid>[^/]+?)(?:/)?$"
+    },
+    {
+      "page": "/api/truck-sessions/by-code/[code]",
+      "regex": "^/api/truck\\-sessions/by\\-code/([^/]+?)(?:/)?$",
+      "routeKeys": {
+        "nxtPcode": "nxtPcode"
+      },
+      "namedRegex": "^/api/truck\\-sessions/by\\-code/(?<nxtPcode>[^/]+?)(?:/)?$"
+    },
+    {
+      "page": "/api/truck-sessions/[id]",
+      "regex": "^/api/truck\\-sessions/([^/]+?)(?:/)?$",
+      "routeKeys": {
+        "nxtPid": "nxtPid"
+      },
+      "namedRegex": "^/api/truck\\-sessions/(?<nxtPid>[^/]+?)(?:/)?$"
     }
   ],
   "staticRoutes": [
@@ -87,6 +103,18 @@
       "regex": "^/_not\\-found(?:/)?$",
       "routeKeys": {},
       "namedRegex": "^/_not\\-found(?:/)?$"
+    },
+    {
+      "page": "/api/camera/config",
+      "regex": "^/api/camera/config(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/api/camera/config(?:/)?$"
+    },
+    {
+      "page": "/api/camera/events",
+      "regex": "^/api/camera/events(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/api/camera/events(?:/)?$"
     },
     {
       "page": "/api/companies",
@@ -149,10 +177,28 @@
       "namedRegex": "^/api/transport\\-companies(?:/)?$"
     },
     {
+      "page": "/api/truck-sessions",
+      "regex": "^/api/truck\\-sessions(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/api/truck\\-sessions(?:/)?$"
+    },
+    {
+      "page": "/api/truck-sessions/find-in",
+      "regex": "^/api/truck\\-sessions/find\\-in(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/api/truck\\-sessions/find\\-in(?:/)?$"
+    },
+    {
       "page": "/api/user",
       "regex": "^/api/user(?:/)?$",
       "routeKeys": {},
       "namedRegex": "^/api/user(?:/)?$"
+    },
+    {
+      "page": "/camera-test",
+      "regex": "^/camera\\-test(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/camera\\-test(?:/)?$"
     },
     {
       "page": "/companies",
@@ -167,6 +213,18 @@
       "namedRegex": "^/drivers(?:/)?$"
     },
     {
+      "page": "/history",
+      "regex": "^/history(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/history(?:/)?$"
+    },
+    {
+      "page": "/in-session",
+      "regex": "^/in\\-session(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/in\\-session(?:/)?$"
+    },
+    {
       "page": "/login",
       "regex": "^/login(?:/)?$",
       "routeKeys": {},
@@ -179,10 +237,28 @@
       "namedRegex": "^/organizations(?:/)?$"
     },
     {
+      "page": "/out-session",
+      "regex": "^/out\\-session(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/out\\-session(?:/)?$"
+    },
+    {
       "page": "/products",
       "regex": "^/products(?:/)?$",
       "routeKeys": {},
       "namedRegex": "^/products(?:/)?$"
+    },
+    {
+      "page": "/scale-debug",
+      "regex": "^/scale\\-debug(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/scale\\-debug(?:/)?$"
+    },
+    {
+      "page": "/sessions",
+      "regex": "^/sessions(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/sessions(?:/)?$"
     },
     {
       "page": "/settings",

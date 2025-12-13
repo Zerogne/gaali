@@ -1,15 +1,16 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { useScaleBridge } from "@/app/hooks/useScaleBridge"
-import { Badge } from "@/components/ui/badge"
-import { Input } from "@/components/ui/input"
-import { Button } from "@/components/ui/button"
+import { useScaleBridge } from "@/app/hooks/useScaleBridge";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { useState } from "react";
 
 export function ScaleDebugPanel() {
   const defaultUrl =
-    process.env.NEXT_PUBLIC_SCALE_URL || "https://jsonplaceholder.typicode.com/todos/1"
-  const [scaleUrl, setScaleUrl] = useState<string>(defaultUrl)
+    process.env.NEXT_PUBLIC_SCALE_URL ||
+    "https://jsonplaceholder.typicode.com/todos/1";
+  const [scaleUrl, setScaleUrl] = useState<string>(defaultUrl);
 
   const {
     status,
@@ -18,13 +19,13 @@ export function ScaleDebugPanel() {
     errorMessage,
     isRequestPending,
     requestScaleData,
-  } = useScaleBridge()
+  } = useScaleBridge();
 
   const handleRequest = () => {
     if (status === "connected" && !isRequestPending) {
-      requestScaleData(scaleUrl)
+      requestScaleData(scaleUrl);
     }
-  }
+  };
 
   const getStatusBadge = () => {
     switch (status) {
@@ -33,48 +34,51 @@ export function ScaleDebugPanel() {
           <Badge className="bg-green-50 text-green-700 border-green-200">
             Connected
           </Badge>
-        )
+        );
       case "connecting":
         return (
           <Badge className="bg-yellow-50 text-yellow-700 border-yellow-200">
             Connecting
           </Badge>
-        )
+        );
       case "idle":
         return (
           <Badge className="bg-gray-50 text-gray-700 border-gray-200">
             Idle
           </Badge>
-        )
+        );
       case "error":
         return (
-          <Badge className="bg-red-50 text-red-700 border-red-200">
-            Error
-          </Badge>
-        )
+          <Badge className="bg-red-50 text-red-700 border-red-200">Error</Badge>
+        );
       default:
-        return null
+        return null;
     }
-  }
+  };
 
   const renderResponse = () => {
     if (lastJson !== null && typeof lastJson === "object") {
-      return JSON.stringify(lastJson, null, 2)
+      return JSON.stringify(lastJson, null, 2);
     }
-    return lastRawResponse || "No response yet"
-  }
+    return lastRawResponse || "No response yet";
+  };
 
   return (
     <div className="p-4 border rounded-xl bg-white shadow-sm space-y-4">
       {/* Top row: Title and Status */}
       <div className="flex items-center justify-between">
-        <h3 className="text-sm font-semibold text-gray-900">ScaleServiceApp bridge</h3>
+        <h3 className="text-sm font-semibold text-gray-900">
+          ScaleServiceApp bridge
+        </h3>
         {getStatusBadge()}
       </div>
 
       {/* URL Input */}
       <div className="space-y-2">
-        <label htmlFor="scale-url" className="text-sm font-medium text-gray-700 block">
+        <label
+          htmlFor="scale-url"
+          className="text-sm font-medium text-gray-700 block"
+        >
           Scale API URL
         </label>
         <Input
@@ -118,5 +122,5 @@ export function ScaleDebugPanel() {
         </pre>
       </div>
     </div>
-  )
+  );
 }

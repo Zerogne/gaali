@@ -1,158 +1,172 @@
 {
   "node": {
-    "002aaa44fc4d8d053062b4a4224916d4927773c390": {
+    "002da7132c2c543f49d62accfc32df1567c0395dcf": {
       "workers": {
         "app/companies/page": {
-          "moduleId": 58355,
+          "moduleId": 75501,
           "async": false,
           "exportedName": "logout",
-          "filename": "lib/auth/authServer.ts"
+          "filename": "Documents/gaali/lib/auth/authServer.ts"
         },
         "app/drivers/page": {
-          "moduleId": 82712,
+          "moduleId": 91897,
           "async": false,
           "exportedName": "logout",
-          "filename": "lib/auth/authServer.ts"
+          "filename": "Documents/gaali/lib/auth/authServer.ts"
+        },
+        "app/history/page": {
+          "moduleId": 73805,
+          "async": false,
+          "exportedName": "logout",
+          "filename": "Documents/gaali/lib/auth/authServer.ts"
         },
         "app/organizations/page": {
-          "moduleId": 60162,
+          "moduleId": 9094,
           "async": false,
           "exportedName": "logout",
-          "filename": "lib/auth/authServer.ts"
+          "filename": "Documents/gaali/lib/auth/authServer.ts"
         },
         "app/page": {
-          "moduleId": 32869,
+          "moduleId": 56683,
           "async": false,
           "exportedName": "logout",
-          "filename": "lib/auth/authServer.ts"
+          "filename": "Documents/gaali/lib/auth/authServer.ts"
         },
         "app/products/page": {
-          "moduleId": 75005,
+          "moduleId": 97638,
           "async": false,
           "exportedName": "logout",
-          "filename": "lib/auth/authServer.ts"
+          "filename": "Documents/gaali/lib/auth/authServer.ts"
         },
         "app/settings/page": {
-          "moduleId": 84337,
+          "moduleId": 68547,
           "async": false,
           "exportedName": "logout",
-          "filename": "lib/auth/authServer.ts"
+          "filename": "Documents/gaali/lib/auth/authServer.ts"
         }
       },
       "layer": {
         "app/companies/page": "action-browser",
         "app/drivers/page": "action-browser",
+        "app/history/page": "action-browser",
         "app/organizations/page": "action-browser",
         "app/page": "action-browser",
         "app/products/page": "action-browser",
         "app/settings/page": "action-browser"
       },
-      "filename": "lib/auth/authServer.ts",
+      "filename": "Documents/gaali/lib/auth/authServer.ts",
       "exportedName": "logout"
     },
-    "4058b122e308e364a24ba05695bd0c197e19386dfe": {
+    "40e14de2cd98807c14aa494dbc167e534ff18396cf": {
       "workers": {
         "app/page": {
-          "moduleId": 32869,
+          "moduleId": 56683,
           "async": false,
           "exportedName": "saveTruckLog",
-          "filename": "lib/api.ts"
+          "filename": "Documents/gaali/lib/api.ts"
         }
       },
       "layer": {
         "app/page": "action-browser"
       },
-      "filename": "lib/api.ts",
+      "filename": "Documents/gaali/lib/api.ts",
       "exportedName": "saveTruckLog"
     },
-    "40516e7e258a23fbfc95ed115874980e9c4dedda18": {
+    "40fe077cd23f099bf2b9150f26ef155aa0781370e4": {
       "workers": {
-        "app/page": {
-          "moduleId": 32869,
+        "app/history/page": {
+          "moduleId": 73805,
           "async": false,
           "exportedName": "sendTruckLogToCustoms",
-          "filename": "lib/api.ts"
+          "filename": "Documents/gaali/lib/api.ts"
+        },
+        "app/page": {
+          "moduleId": 56683,
+          "async": false,
+          "exportedName": "sendTruckLogToCustoms",
+          "filename": "Documents/gaali/lib/api.ts"
         }
       },
       "layer": {
+        "app/history/page": "action-browser",
         "app/page": "action-browser"
       },
-      "filename": "lib/api.ts",
+      "filename": "Documents/gaali/lib/api.ts",
       "exportedName": "sendTruckLogToCustoms"
     },
-    "60cd7b9c1de90cb658d4b00e637cb5c82adeca4656": {
+    "60d18e34e51b7445ba11d8df516ee32cf5642016ba": {
       "workers": {
         "app/page": {
-          "moduleId": 32869,
+          "moduleId": 56683,
           "async": false,
           "exportedName": "getTruckLogs",
-          "filename": "lib/api.ts"
+          "filename": "Documents/gaali/lib/api.ts"
         }
       },
       "layer": {
         "app/page": "action-browser"
       },
-      "filename": "lib/api.ts",
+      "filename": "Documents/gaali/lib/api.ts",
       "exportedName": "getTruckLogs"
     },
-    "60c913ff288f0a2422913de5e2c5b09887ef227229": {
+    "6037e2bf9b3c29875c3d54568d1b88255aec2faeaa": {
       "workers": {
         "app/(auth)/login/page": {
-          "moduleId": 37198,
+          "moduleId": 73088,
           "async": false,
           "exportedName": "loginCompany",
-          "filename": "lib/auth/authServer.ts"
+          "filename": "Documents/gaali/lib/auth/authServer.ts"
         }
       },
       "layer": {
         "app/(auth)/login/page": "action-browser"
       },
-      "filename": "lib/auth/authServer.ts",
+      "filename": "Documents/gaali/lib/auth/authServer.ts",
       "exportedName": "loginCompany"
     },
-    "402582b0951a06df0eb131427e865b4473008935b1": {
+    "40a9727726520c5c072f0da4413df85e0128ad3531": {
       "workers": {
         "app/(auth)/login/page": {
-          "moduleId": 37198,
+          "moduleId": 73088,
           "async": false,
           "exportedName": "selectWorker",
-          "filename": "lib/auth/authServer.ts"
+          "filename": "Documents/gaali/lib/auth/authServer.ts"
         }
       },
       "layer": {
         "app/(auth)/login/page": "action-browser"
       },
-      "filename": "lib/auth/authServer.ts",
+      "filename": "Documents/gaali/lib/auth/authServer.ts",
       "exportedName": "selectWorker"
     },
-    "7051d44f51699ad001678871b691d83c1f02e0ae25": {
+    "7043698eb58cce991d8231e8c0e913a71894033115": {
       "workers": {
         "app/(auth)/login/page": {
-          "moduleId": 37198,
+          "moduleId": 73088,
           "async": false,
           "exportedName": "loginWorker",
-          "filename": "lib/auth/authServer.ts"
+          "filename": "Documents/gaali/lib/auth/authServer.ts"
         }
       },
       "layer": {
         "app/(auth)/login/page": "action-browser"
       },
-      "filename": "lib/auth/authServer.ts",
+      "filename": "Documents/gaali/lib/auth/authServer.ts",
       "exportedName": "loginWorker"
     },
-    "4098e4b0dbe81639cb25dc0148a0c46f6b9c53ab00": {
+    "4090beca75ad6edfea81c3c84c70af2b280082b353": {
       "workers": {
         "app/(auth)/login/page": {
-          "moduleId": 37198,
+          "moduleId": 73088,
           "async": false,
           "exportedName": "getCompanyWorkers",
-          "filename": "lib/companies/workers.ts"
+          "filename": "Documents/gaali/lib/companies/workers.ts"
         }
       },
       "layer": {
         "app/(auth)/login/page": "action-browser"
       },
-      "filename": "lib/companies/workers.ts",
+      "filename": "Documents/gaali/lib/companies/workers.ts",
       "exportedName": "getCompanyWorkers"
     }
   },

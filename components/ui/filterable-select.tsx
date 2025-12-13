@@ -79,16 +79,19 @@ export function FilterableSelect({
 
   // Filter and sort options
   const filteredOptions = React.useMemo(() => {
+    // Filter out options with invalid labels
+    const validOptions = options.filter((opt) => opt.label != null && opt.label !== "");
+    
     if (!searchQuery.trim()) {
-      return options;
+      return validOptions;
     }
 
     const query = searchQuery.toLowerCase();
     const matching: FilterableSelectOption[] = [];
     const containing: FilterableSelectOption[] = [];
 
-    options.forEach((option) => {
-      const label = option.label.toLowerCase();
+    validOptions.forEach((option) => {
+      const label = option.label?.toLowerCase() || "";
       if (label.startsWith(query)) {
         matching.push(option);
       } else if (label.includes(query)) {
@@ -103,7 +106,7 @@ export function FilterableSelect({
   const hasExactMatch = React.useMemo(() => {
     if (!searchQuery.trim()) return true;
     const query = searchQuery.toLowerCase().trim();
-    return options.some((opt) => opt.label.toLowerCase() === query);
+    return options.some((opt) => opt.label != null && opt.label.toLowerCase() === query);
   }, [options, searchQuery]);
 
   // Handle editing existing value
@@ -184,7 +187,7 @@ export function FilterableSelect({
           const selectedOption = options.find(
             (opt) => opt.value === editingValue
           );
-          if (selectedOption && searchQuery.trim() !== selectedOption.label) {
+          if (selectedOption && selectedOption.label != null && searchQuery.trim() !== selectedOption.label) {
             handleEdit(editingValue, searchQuery.trim());
             return;
       }
@@ -193,7 +196,7 @@ export function FilterableSelect({
         // Check if we have a selected value and user typed something different - edit that item
         if (value && onEdit && editable && !hasExactMatch) {
           const selectedOption = options.find((opt) => opt.value === value);
-          if (selectedOption && searchQuery.trim() !== selectedOption.label) {
+          if (selectedOption && selectedOption.label != null && searchQuery.trim() !== selectedOption.label) {
             handleEdit(value, searchQuery.trim());
             return;
           }
@@ -428,11 +431,11 @@ export function FilterableSelect({
                 value === option.value ? "opacity-100" : "opacity-0"
               )}
             />
-            <span className="flex-1">{option.label}</span>
+            <span className="flex-1">{option.label || ""}</span>
             {editable && onEdit && (
               <button
                 type="button"
-                onClick={handleEditClick(option.value, option.label)}
+                onClick={handleEditClick(option.value, option.label || "")}
                 className="ml-2 opacity-0 group-hover:opacity-100 transition-opacity p-1 hover:bg-accent rounded"
                 title="Edit"
                 onMouseDown={(e) => e.stopPropagation()}
@@ -513,7 +516,7 @@ export function FilterableSelect({
           )}
         >
           <span className="truncate">
-            {selectedOption ? selectedOption.label : placeholder}
+            {selectedOption && selectedOption.label != null ? selectedOption.label : placeholder}
           </span>
           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>

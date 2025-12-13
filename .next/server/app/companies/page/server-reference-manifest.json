@@ -1,19 +1,19 @@
 {
   "node": {
-    "002aaa44fc4d8d053062b4a4224916d4927773c390": {
+    "002da7132c2c543f49d62accfc32df1567c0395dcf": {
       "workers": {
         "app/companies/page": {
-          "moduleId": 58355,
+          "moduleId": 75501,
           "async": false,
           "exportedName": "logout",
-          "filename": "lib/auth/authServer.ts"
+          "filename": "Documents/gaali/lib/auth/authServer.ts"
         }
       },
       "layer": {
         "app/companies/page": "action-browser"
       },
       "exportedName": "logout",
-      "filename": "lib/auth/authServer.ts"
+      "filename": "Documents/gaali/lib/auth/authServer.ts"
     }
   },
   "edge": {}
