@@ -15,7 +15,8 @@ import { useCameraPlateAutofill } from "@/hooks/useCameraPlateAutofill"
 import { Switch } from "@/components/ui/switch"
 import { Camera, Plus } from "lucide-react"
 import { DriverManager } from "@/components/drivers/DriverManager"
-import type { TransportCompany, Organization, Driver, Product } from "@/lib/types"
+import type { TransportCompany, Organization, Driver } from "@/lib/types"
+import type { Product } from "@/lib/products/products"
 
 interface InSessionFormState {
   plateNumber: string
@@ -142,25 +143,36 @@ export function InSessionForm({ autoFillPlate, onPlateChange }: InSessionFormPro
 
   // Memoize options
   const productOptions = useMemo(() => 
-    products.map((p) => ({ value: p.id, label: p.name })), 
+    products
+      .map((p) => ({ 
+        value: p.id, 
+        label: p.label || p.value || String(p.id) 
+      }))
+      .filter((opt) => opt.label != null && opt.label !== ""), 
     [products]
   )
 
   const transportCompanyOptions = useMemo(() => 
-    transportCompanies.map((c) => ({ value: c.id, label: c.name })), 
+    transportCompanies
+      .filter((c) => c.name != null && c.name !== "")
+      .map((c) => ({ value: c.id, label: c.name })), 
     [transportCompanies]
   )
 
   const driverOptions = useMemo(() => 
-    drivers.map((d) => ({ 
-      value: d.id, 
-      label: `${d.name}${d.phone ? ` (${d.phone})` : ""}` 
-    })), 
+    drivers
+      .filter((d) => d.name != null && d.name !== "")
+      .map((d) => ({ 
+        value: d.id, 
+        label: `${d.name}${d.phone ? ` (${d.phone})` : ""}` 
+      })), 
     [drivers]
   )
 
   const organizationOptions = useMemo(() => 
-    organizations.map((o) => ({ value: o.id, label: o.name })), 
+    organizations
+      .filter((o) => o.name != null && o.name !== "")
+      .map((o) => ({ value: o.id, label: o.name })), 
     [organizations]
   )
 
@@ -170,15 +182,31 @@ export function InSessionForm({ autoFillPlate, onPlateChange }: InSessionFormPro
       const response = await fetch("/api/products", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name }),
+        body: JSON.stringify({ label: name }),
       })
       if (response.ok) {
         const newProduct = await response.json()
         setProducts((prev) => [...prev, newProduct])
+        toast({
+          title: "Амжилттай",
+          description: "Бүтээгдэхүүн амжилттай нэмэгдлээ",
+        })
         return newProduct.id
+      } else {
+        const errorData = await response.json().catch(() => ({ error: "Unknown error" }))
+        toast({
+          title: "Алдаа",
+          description: errorData.error || "Бүтээгдэхүүн нэмэхэд алдаа гарлаа",
+          variant: "destructive",
+        })
       }
     } catch (error) {
       console.error("Error creating product:", error)
+      toast({
+        title: "Алдаа",
+        description: "Бүтээгдэхүүн нэмэхэд алдаа гарлаа",
+        variant: "destructive",
+      })
     }
     return null
   }
