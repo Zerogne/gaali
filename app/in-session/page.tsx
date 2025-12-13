@@ -1,19 +1,38 @@
 "use client";
 
 import { CameraPanel } from "@/components/sessions/CameraPanel";
-import { InSessionForm } from "@/components/sessions/InSessionForm";
+import {
+  InSessionForm,
+  type InSessionFormHandle,
+} from "@/components/sessions/InSessionForm";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useCameraPlateAutofill } from "@/hooks/useCameraPlateAutofill";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 export default function InSessionPage() {
   const router = useRouter();
   const cameraAutofill = useCameraPlateAutofill();
   const [currentPlate, setCurrentPlate] = useState<string>("");
   const [streamUrl, setStreamUrl] = useState<string | undefined>(undefined);
+  const formRef = useRef<InSessionFormHandle>(null);
+  const [showSaveDialog, setShowSaveDialog] = useState(false);
+  const [pendingNavigation, setPendingNavigation] = useState<string | null>(
+    null
+  );
+  const [hasUnsavedData, setHasUnsavedData] = useState(false);
 
   // Fetch camera stream URL from config
   useEffect(() => {
@@ -41,6 +60,36 @@ export default function InSessionPage() {
   // Track if user manually edited the plate field
   const handlePlateChange = (value: string) => {
     setCurrentPlate(value);
+  };
+
+  const handleNavigationClick = (path: string) => {
+    if (hasUnsavedData && formRef.current?.hasUnsavedData()) {
+      setPendingNavigation(path);
+      setShowSaveDialog(true);
+    } else {
+      router.push(path);
+    }
+  };
+
+  const handleSaveAndNavigate = async () => {
+    if (formRef.current) {
+      const success = await formRef.current.triggerSave();
+      if (success) {
+        setShowSaveDialog(false);
+        if (pendingNavigation) {
+          router.push(pendingNavigation);
+          setPendingNavigation(null);
+        }
+      }
+    }
+  };
+
+  const handleCancelAndNavigate = () => {
+    setShowSaveDialog(false);
+    if (pendingNavigation) {
+      router.push(pendingNavigation);
+      setPendingNavigation(null);
+    }
   };
 
   return (
@@ -75,7 +124,7 @@ export default function InSessionPage() {
               </Badge>
             </div>
             <Button
-              onClick={() => router.push("/out-session")}
+              onClick={() => handleNavigationClick("/out-session")}
               variant="outline"
               size="sm"
               className="gap-2 h-8 text-xs"
@@ -107,13 +156,39 @@ export default function InSessionPage() {
             {/* Right Column: Form (2/3 width on large screens) */}
             <div className="lg:col-span-2 h-full overflow-hidden">
               <InSessionForm
+                ref={formRef}
                 autoFillPlate={null}
                 onPlateChange={handlePlateChange}
+                onHasUnsavedDataChange={setHasUnsavedData}
               />
             </div>
           </div>
         </div>
       </div>
+
+      {/* Save Confirmation Dialog */}
+      <AlertDialog open={showSaveDialog} onOpenChange={setShowSaveDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Хадгалаагүй өөрчлөлтүүд</AlertDialogTitle>
+            <AlertDialogDescription>
+              Та зарим өгөгдөл оруулсан байна. Уучлаарай, урьдчилан хадгалж байх
+              уу?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={handleCancelAndNavigate}>
+              Болих
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleSaveAndNavigate}
+              className="bg-blue-600 hover:bg-blue-700"
+            >
+              Хадгалах
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

@@ -15,7 +15,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
-import { Check, ChevronsUpDown, Edit, Search, Loader2 } from "lucide-react";
+import { Check, ChevronsUpDown, Edit, Loader2 } from "lucide-react";
 import * as React from "react";
 
 interface FilterableSelectOption {
@@ -80,8 +80,10 @@ export function FilterableSelect({
   // Filter and sort options
   const filteredOptions = React.useMemo(() => {
     // Filter out options with invalid labels
-    const validOptions = options.filter((option) => option.label != null && option.label !== "");
-    
+    const validOptions = options.filter(
+      (option) => option.label != null && option.label !== ""
+    );
+
     if (!searchQuery.trim()) {
       return validOptions;
     }
@@ -106,20 +108,22 @@ export function FilterableSelect({
   const hasExactMatch = React.useMemo(() => {
     if (!searchQuery.trim()) return true;
     const query = searchQuery.toLowerCase().trim();
-    return options.some((opt) => opt.label != null && opt.label.toLowerCase() === query);
+    return options.some(
+      (opt) => opt.label != null && opt.label.toLowerCase() === query
+    );
   }, [options, searchQuery]);
 
   // Handle editing existing value
   const handleEdit = React.useCallback(
     async (itemValue: string, newLabel: string) => {
-    if (
+      if (
         !onEdit ||
         !newLabel.trim() ||
         isEditing ||
-      isHandlingSelectRef.current
-    ) {
-      return;
-    }
+        isHandlingSelectRef.current
+      ) {
+        return;
+      }
 
       isHandlingSelectRef.current = true;
       setIsEditing(true);
@@ -145,33 +149,37 @@ export function FilterableSelect({
     [onEdit, isEditing]
   );
 
-
   // Handle creating a new item
   const handleCreateNew = React.useCallback(
     async (label: string) => {
-      if (!onCreateNew || !label.trim() || isCreating || isHandlingSelectRef.current) {
+      if (
+        !onCreateNew ||
+        !label.trim() ||
+        isCreating ||
+        isHandlingSelectRef.current
+      ) {
         return;
       }
 
-    isHandlingSelectRef.current = true;
-    setIsCreating(true);
-    try {
+      isHandlingSelectRef.current = true;
+      setIsCreating(true);
+      try {
         const newValue = await onCreateNew(label.trim());
-      if (newValue) {
-        // Use ref to prevent dependency issues
-        onValueChangeRef.current?.(newValue);
-        setOpen(false);
-        setSearchQuery("");
+        if (newValue) {
+          // Use ref to prevent dependency issues
+          onValueChangeRef.current?.(newValue);
+          setOpen(false);
+          setSearchQuery("");
+        }
+      } catch (error) {
+        console.error("Error creating new value:", error);
+      } finally {
+        setIsCreating(false);
+        // Reset the ref after a short delay to allow state updates to complete
+        setTimeout(() => {
+          isHandlingSelectRef.current = false;
+        }, 100);
       }
-    } catch (error) {
-      console.error("Error creating new value:", error);
-    } finally {
-      setIsCreating(false);
-      // Reset the ref after a short delay to allow state updates to complete
-      setTimeout(() => {
-        isHandlingSelectRef.current = false;
-      }, 100);
-    }
     },
     [onCreateNew, isCreating]
   );
@@ -187,16 +195,26 @@ export function FilterableSelect({
           const selectedOption = options.find(
             (opt) => opt.value === editingValue && opt.label != null
           );
-          if (selectedOption && selectedOption.label && searchQuery.trim() !== selectedOption.label) {
+          if (
+            selectedOption &&
+            selectedOption.label &&
+            searchQuery.trim() !== selectedOption.label
+          ) {
             handleEdit(editingValue, searchQuery.trim());
             return;
-      }
+          }
         }
 
         // Check if we have a selected value and user typed something different - edit that item
         if (value && onEdit && editable && !hasExactMatch) {
-          const selectedOption = options.find((opt) => opt.value === value && opt.label != null);
-          if (selectedOption && selectedOption.label && searchQuery.trim() !== selectedOption.label) {
+          const selectedOption = options.find(
+            (opt) => opt.value === value && opt.label != null
+          );
+          if (
+            selectedOption &&
+            selectedOption.label &&
+            searchQuery.trim() !== selectedOption.label
+          ) {
             handleEdit(value, searchQuery.trim());
             return;
           }
@@ -255,7 +273,6 @@ export function FilterableSelect({
       // Use requestAnimationFrame to ensure this runs after any pending renders
       requestAnimationFrame(() => {
         try {
-
           // Find the option
           const option = options.find((opt) => opt.value === selectedValue);
           if (!option) {
@@ -304,10 +321,7 @@ export function FilterableSelect({
         }
       });
     },
-    [
-      options,
-      value,
-    ]
+    [options, value]
   );
 
   // Store handler in ref for stable reference
@@ -340,26 +354,25 @@ export function FilterableSelect({
     []
   );
 
-  const selectedOption = options.find((opt) => opt.value === value && opt.label != null);
+  const selectedOption = options.find(
+    (opt) => opt.value === value && opt.label != null
+  );
 
   // Direct selection handler that bypasses all guards
-  const handleDirectSelect = React.useCallback(
-    (optionValue: string) => {
-      if (!isHandlingSelectRef.current) {
-        // Direct selection should always work, bypass prevent flags
-        preventSelectRef.current = false;
-        isTypingRef.current = false;
-        
-        // Use a direct call to ensure it executes
-        Promise.resolve().then(() => {
-          if (!isHandlingSelectRef.current) {
-            handleOptionSelectRef.current?.(optionValue);
-          }
-        });
-      }
-    },
-    []
-  );
+  const handleDirectSelect = React.useCallback((optionValue: string) => {
+    if (!isHandlingSelectRef.current) {
+      // Direct selection should always work, bypass prevent flags
+      preventSelectRef.current = false;
+      isTypingRef.current = false;
+
+      // Use a direct call to ensure it executes
+      Promise.resolve().then(() => {
+        if (!isHandlingSelectRef.current) {
+          handleOptionSelectRef.current?.(optionValue);
+        }
+      });
+    }
+  }, []);
 
   // Click handler for regular options - bypass cmdk's onSelect
   const handleOptionClick = React.useCallback(
@@ -399,9 +412,10 @@ export function FilterableSelect({
   // Memoize the command list content to prevent cmdk from re-rendering unnecessarily
   const commandListContent = React.useMemo(() => {
     // Show create new option if no exact match and onCreateNew is provided
-    const showCreateNew = !hasExactMatch && 
-      searchQuery.trim() && 
-      onCreateNew && 
+    const showCreateNew =
+      !hasExactMatch &&
+      searchQuery.trim() &&
+      onCreateNew &&
       !isCreating &&
       !editingValue;
 
@@ -417,7 +431,10 @@ export function FilterableSelect({
             value={option.value}
             onSelect={(selectedValue) => {
               // Handle onSelect as fallback when onClick doesn't fire
-              if (selectedValue === option.value && !isHandlingSelectRef.current) {
+              if (
+                selectedValue === option.value &&
+                !isHandlingSelectRef.current
+              ) {
                 handleDirectSelect(option.value);
               }
             }}
@@ -463,11 +480,11 @@ export function FilterableSelect({
             className="cursor-pointer text-blue-600 font-medium"
           >
             <span className="flex-1">
-              {createNewLabel ? createNewLabel.replace("...", `"${searchQuery.trim()}"`) : `+ Нэмэх "${searchQuery.trim()}"`}
+              {createNewLabel
+                ? createNewLabel.replace("...", `"${searchQuery.trim()}"`)
+                : `+ Нэмэх "${searchQuery.trim()}"`}
             </span>
-            {isCreating && (
-              <Loader2 className="h-4 w-4 animate-spin ml-2" />
-            )}
+            {isCreating && <Loader2 className="h-4 w-4 animate-spin ml-2" />}
           </CommandItem>
         )}
       </CommandGroup>
@@ -516,7 +533,9 @@ export function FilterableSelect({
           )}
         >
           <span className="truncate">
-            {selectedOption && selectedOption.label ? selectedOption.label : placeholder}
+            {selectedOption && selectedOption.label
+              ? selectedOption.label
+              : placeholder}
           </span>
           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
@@ -528,30 +547,26 @@ export function FilterableSelect({
         sideOffset={4}
       >
         <Command shouldFilter={false}>
-          <div className="flex items-center border-b px-3">
-            <Search className="mr-2 h-4 w-4 shrink-0 opacity-50" />
-            <CommandInput
-              placeholder={searchPlaceholder}
-              value={searchQuery}
-              onValueChange={(newValue) => {
-                // Set typing flag immediately and prevent selections
-                isTypingRef.current = true;
-                preventSelectRef.current = true;
-                setSearchQuery(newValue);
-                // Reset typing flag after user stops typing
-                clearTimeout((window as any).__filterableSelectTypingTimeout);
-                (window as any).__filterableSelectTypingTimeout = setTimeout(
-                  () => {
-                    isTypingRef.current = false;
-                    preventSelectRef.current = false;
-                  },
-                  500
-                );
-              }}
-              onKeyDown={handleKeyDown}
-              className="border-0 focus:ring-0"
-            />
-          </div>
+          <CommandInput
+            placeholder={searchPlaceholder}
+            value={searchQuery}
+            onValueChange={(newValue) => {
+              // Set typing flag immediately and prevent selections
+              isTypingRef.current = true;
+              preventSelectRef.current = true;
+              setSearchQuery(newValue);
+              // Reset typing flag after user stops typing
+              clearTimeout((window as any).__filterableSelectTypingTimeout);
+              (window as any).__filterableSelectTypingTimeout = setTimeout(
+                () => {
+                  isTypingRef.current = false;
+                  preventSelectRef.current = false;
+                },
+                500
+              );
+            }}
+            onKeyDown={handleKeyDown}
+          />
           <CommandList>{commandListContent}</CommandList>
         </Command>
       </PopoverContent>
