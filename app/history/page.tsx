@@ -34,11 +34,23 @@ export default function HistoryPage() {
 
   // Filter state
   const [plateFilter, setPlateFilter] = useState("")
+  const [driverNameFilter, setDriverNameFilter] = useState("")
+  const [driverPhoneFilter, setDriverPhoneFilter] = useState("")
+  const [originFilter, setOriginFilter] = useState("")
+  const [destinationFilter, setDestinationFilter] = useState("")
+  const [productFilter, setProductFilter] = useState("")
   const [directionFilter, setDirectionFilter] = useState<SessionDirection>("ALL")
   const [timePeriod, setTimePeriod] = useState<TimePeriod>("all")
   const [customStartDate, setCustomStartDate] = useState("")
   const [customEndDate, setCustomEndDate] = useState("")
+  
+  // Applied filters (used for actual filtering)
   const [appliedPlateFilter, setAppliedPlateFilter] = useState("")
+  const [appliedDriverNameFilter, setAppliedDriverNameFilter] = useState("")
+  const [appliedDriverPhoneFilter, setAppliedDriverPhoneFilter] = useState("")
+  const [appliedOriginFilter, setAppliedOriginFilter] = useState("")
+  const [appliedDestinationFilter, setAppliedDestinationFilter] = useState("")
+  const [appliedProductFilter, setAppliedProductFilter] = useState("")
   const [appliedDirectionFilter, setAppliedDirectionFilter] = useState<SessionDirection>("ALL")
   const [appliedStartDate, setAppliedStartDate] = useState<string | null>(null)
   const [appliedEndDate, setAppliedEndDate] = useState<string | null>(null)
@@ -93,8 +105,35 @@ export default function HistoryPage() {
       // Apply client-side filters
       if (appliedPlateFilter) {
         filteredLogs = filteredLogs.filter((log: TruckLog) =>
-          log.plate.toLowerCase().includes(appliedPlateFilter.toLowerCase()) ||
-          log.driverName.toLowerCase().includes(appliedPlateFilter.toLowerCase())
+          log.plate.toLowerCase().includes(appliedPlateFilter.toLowerCase())
+        )
+      }
+      if (appliedDriverNameFilter) {
+        filteredLogs = filteredLogs.filter((log: TruckLog) =>
+          log.driverName?.toLowerCase().includes(appliedDriverNameFilter.toLowerCase()) || false
+        )
+      }
+      if (appliedDriverPhoneFilter) {
+        // Note: Driver phone might not be directly in log, checking if available
+        filteredLogs = filteredLogs.filter((log: TruckLog) => {
+          // Check if there's a driverPhone field or similar in the log
+          const driverPhone = (log as any).driverPhone || ""
+          return driverPhone.toLowerCase().includes(appliedDriverPhoneFilter.toLowerCase())
+        })
+      }
+      if (appliedOriginFilter) {
+        filteredLogs = filteredLogs.filter((log: TruckLog) =>
+          log.origin?.toLowerCase().includes(appliedOriginFilter.toLowerCase()) || false
+        )
+      }
+      if (appliedDestinationFilter) {
+        filteredLogs = filteredLogs.filter((log: TruckLog) =>
+          log.destination?.toLowerCase().includes(appliedDestinationFilter.toLowerCase()) || false
+        )
+      }
+      if (appliedProductFilter) {
+        filteredLogs = filteredLogs.filter((log: TruckLog) =>
+          log.cargoType?.toLowerCase().includes(appliedProductFilter.toLowerCase()) || false
         )
       }
       if (appliedDirectionFilter !== "ALL") {
@@ -129,7 +168,19 @@ export default function HistoryPage() {
   // Load logs when filters or page changes
   useEffect(() => {
     loadLogs(currentPage)
-  }, [isCheckingAuth, appliedPlateFilter, appliedDirectionFilter, appliedStartDate, appliedEndDate, currentPage])
+  }, [
+    isCheckingAuth, 
+    appliedPlateFilter, 
+    appliedDriverNameFilter,
+    appliedDriverPhoneFilter,
+    appliedOriginFilter,
+    appliedDestinationFilter,
+    appliedProductFilter,
+    appliedDirectionFilter, 
+    appliedStartDate, 
+    appliedEndDate, 
+    currentPage
+  ])
 
   const getDateRange = (period: TimePeriod): { start: string | null; end: string | null } => {
     const now = new Date()
@@ -167,6 +218,11 @@ export default function HistoryPage() {
 
   const handleApplyFilters = () => {
     setAppliedPlateFilter(plateFilter)
+    setAppliedDriverNameFilter(driverNameFilter)
+    setAppliedDriverPhoneFilter(driverPhoneFilter)
+    setAppliedOriginFilter(originFilter)
+    setAppliedDestinationFilter(destinationFilter)
+    setAppliedProductFilter(productFilter)
     setAppliedDirectionFilter(directionFilter)
     
     const dateRange = getDateRange(timePeriod)
@@ -174,6 +230,31 @@ export default function HistoryPage() {
     setAppliedEndDate(dateRange.end)
     
     setCurrentPage(1) // Reset to first page when filters change
+  }
+
+  const handleClearFilters = () => {
+    setPlateFilter("")
+    setDriverNameFilter("")
+    setDriverPhoneFilter("")
+    setOriginFilter("")
+    setDestinationFilter("")
+    setProductFilter("")
+    setDirectionFilter("ALL")
+    setTimePeriod("all")
+    setCustomStartDate("")
+    setCustomEndDate("")
+    
+    setAppliedPlateFilter("")
+    setAppliedDriverNameFilter("")
+    setAppliedDriverPhoneFilter("")
+    setAppliedOriginFilter("")
+    setAppliedDestinationFilter("")
+    setAppliedProductFilter("")
+    setAppliedDirectionFilter("ALL")
+    setAppliedStartDate(null)
+    setAppliedEndDate(null)
+    
+    setCurrentPage(1)
   }
 
   const handleEdit = (log: TruckLog) => {
@@ -287,11 +368,25 @@ export default function HistoryPage() {
 
                 {/* Filter Bar */}
                 <div className="space-y-3">
-                  <div className="flex items-center gap-2 mb-2">
-                    <Search className="w-4 h-4 text-gray-400" />
-                    <span className="text-sm font-medium text-gray-700">Хайлт ба шүүлт</span>
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center gap-2">
+                      <Search className="w-4 h-4 text-gray-400" />
+                      <span className="text-sm font-medium text-gray-700">Хайлт ба шүүлт</span>
+                    </div>
+                    {(plateFilter || driverNameFilter || driverPhoneFilter || originFilter || destinationFilter || productFilter || directionFilter !== "ALL" || timePeriod !== "all") && (
+                      <Button
+                        onClick={handleClearFilters}
+                        variant="outline"
+                        size="sm"
+                        className="text-xs"
+                      >
+                        Цэвэрлэх
+                      </Button>
+                    )}
                   </div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
+                  
+                  {/* First row of filters */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
                     <div className="relative">
                       <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                       <Input
@@ -306,6 +401,84 @@ export default function HistoryPage() {
                         className="pl-10 bg-gray-50 border-gray-300 focus:bg-white focus:border-blue-500"
                       />
                     </div>
+                    <div className="relative">
+                      <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                      <Input
+                        placeholder="Жолоочийн нэр хайх..."
+                        value={driverNameFilter}
+                        onChange={(e) => setDriverNameFilter(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter") {
+                            handleApplyFilters()
+                          }
+                        }}
+                        className="pl-10 bg-gray-50 border-gray-300 focus:bg-white focus:border-blue-500"
+                      />
+                    </div>
+                    <div className="relative">
+                      <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                      <Input
+                        placeholder="Жолоочийн утас хайх..."
+                        value={driverPhoneFilter}
+                        onChange={(e) => setDriverPhoneFilter(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter") {
+                            handleApplyFilters()
+                          }
+                        }}
+                        className="pl-10 bg-gray-50 border-gray-300 focus:bg-white focus:border-blue-500"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Second row of filters */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                    <div className="relative">
+                      <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                      <Input
+                        placeholder="Хаанаас хайх..."
+                        value={originFilter}
+                        onChange={(e) => setOriginFilter(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter") {
+                            handleApplyFilters()
+                          }
+                        }}
+                        className="pl-10 bg-gray-50 border-gray-300 focus:bg-white focus:border-blue-500"
+                      />
+                    </div>
+                    <div className="relative">
+                      <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                      <Input
+                        placeholder="Хаашаа хайх..."
+                        value={destinationFilter}
+                        onChange={(e) => setDestinationFilter(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter") {
+                            handleApplyFilters()
+                          }
+                        }}
+                        className="pl-10 bg-gray-50 border-gray-300 focus:bg-white focus:border-blue-500"
+                      />
+                    </div>
+                    <div className="relative">
+                      <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                      <Input
+                        placeholder="Бүтээгдэхүүн хайх..."
+                        value={productFilter}
+                        onChange={(e) => setProductFilter(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter") {
+                            handleApplyFilters()
+                          }
+                        }}
+                        className="pl-10 bg-gray-50 border-gray-300 focus:bg-white focus:border-blue-500"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Third row: Direction, Time Period, Apply Button */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
                     <div className="flex items-center gap-2">
                       <span className="text-sm text-gray-600 whitespace-nowrap">Чиглэл:</span>
                       <Select
@@ -342,7 +515,7 @@ export default function HistoryPage() {
                     </div>
                     <Button
                       onClick={handleApplyFilters}
-                      className="bg-blue-600 text-white hover:bg-blue-700 w-full"
+                      className="bg-blue-600 text-white hover:bg-blue-700 w-full lg:col-span-2"
                     >
                       Шүүлт хэрэглэх
                     </Button>

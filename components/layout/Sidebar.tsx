@@ -1,64 +1,74 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import { Truck, Settings, LayoutDashboard, LogOut, User, Package, Building2 } from "lucide-react"
-import { cn } from "@/lib/utils"
-import Link from "next/link"
-import { usePathname } from "next/navigation"
-import { Avatar, AvatarFallback } from "@/components/ui/avatar"
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-import { handleLogout } from "@/lib/auth/logoutClient"
+} from "@/components/ui/dropdown-menu";
+import { handleLogout } from "@/lib/auth/logoutClient";
+import { cn } from "@/lib/utils";
+import {
+  Building2,
+  History,
+  LayoutDashboard,
+  LogOut,
+  Package,
+  Settings,
+  Truck,
+  User,
+} from "lucide-react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { useEffect, useState } from "react";
 
 const menuItems = [
   { icon: LayoutDashboard, label: "Хяналтын самбар", href: "/" },
+  { icon: History, label: "Бүртгэлийн түүх", href: "/history" },
   { icon: Package, label: "Бүтээгдэхүүн", href: "/products" },
   { icon: Truck, label: "Тээврийн компани", href: "/companies" },
   { icon: User, label: "Жолооч", href: "/drivers" },
   { icon: Building2, label: "Байгууллага", href: "/organizations" },
   { icon: Settings, label: "Тохиргоо", href: "/settings" },
-]
+];
 
 interface UserInfo {
-  name: string
-  role: string
-  companyName?: string
+  name: string;
+  role: string;
+  companyName?: string;
 }
 
 export function Sidebar() {
-  const pathname = usePathname()
-  const [companyName, setCompanyName] = useState<string>("XP Agency")
-  const [userInfo, setUserInfo] = useState<UserInfo | null>(null)
-  const [isLoading, setIsLoading] = useState(true)
+  const pathname = usePathname();
+  const [companyName, setCompanyName] = useState<string>("XP Agency");
+  const [userInfo, setUserInfo] = useState<UserInfo | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     async function loadData() {
       try {
-        const response = await fetch("/api/user")
+        const response = await fetch("/api/user");
         if (response.ok) {
-          const data: UserInfo = await response.json()
-          setUserInfo(data)
+          const data: UserInfo = await response.json();
+          setUserInfo(data);
           if (data.companyName) {
-            setCompanyName(data.companyName)
+            setCompanyName(data.companyName);
           }
         }
       } catch (error) {
-        console.error("Error loading data:", error)
+        console.error("Error loading data:", error);
       } finally {
-        setIsLoading(false)
+        setIsLoading(false);
       }
     }
 
-    loadData()
-  }, [])
+    loadData();
+  }, []);
 
   const handleLogoutClick = async () => {
-    await handleLogout()
-  }
+    await handleLogout();
+  };
 
   const getInitials = (name: string) => {
     return name
@@ -66,12 +76,12 @@ export function Sidebar() {
       .map((n) => n[0])
       .join("")
       .toUpperCase()
-      .slice(0, 2)
-  }
+      .slice(0, 2);
+  };
 
-  const displayName = userInfo?.name || "Хэрэглэгч"
-  const displayRole = userInfo?.role || "Ажилтан"
-  const initials = userInfo ? getInitials(userInfo.name) : "Х"
+  const displayName = userInfo?.name || "Хэрэглэгч";
+  const displayRole = userInfo?.role || "Ажилтан";
+  const initials = userInfo ? getInitials(userInfo.name) : "Х";
 
   return (
     <aside className="w-64 bg-white border-r border-gray-200 flex flex-col">
@@ -92,8 +102,8 @@ export function Sidebar() {
       <nav className="flex-1 p-4 overflow-y-auto">
         <ul className="space-y-2">
           {menuItems.map((item) => {
-            const Icon = item.icon
-            const isActive = pathname === item.href
+            const Icon = item.icon;
+            const isActive = pathname === item.href;
             return (
               <li key={item.label}>
                 <Link
@@ -102,14 +112,14 @@ export function Sidebar() {
                     "flex items-center gap-3 px-3 py-2 rounded-lg transition-colors text-sm",
                     isActive
                       ? "bg-blue-50 text-blue-700 font-medium"
-                      : "text-gray-700 hover:bg-gray-100",
+                      : "text-gray-700 hover:bg-gray-100"
                   )}
                 >
                   <Icon className="w-5 h-5" />
                   {item.label}
                 </Link>
               </li>
-            )
+            );
           })}
         </ul>
       </nav>
@@ -135,7 +145,7 @@ export function Sidebar() {
             </button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-56 bg-white">
-            <DropdownMenuItem 
+            <DropdownMenuItem
               className="cursor-pointer text-red-600 focus:text-red-600"
               onClick={handleLogoutClick}
             >
@@ -146,5 +156,5 @@ export function Sidebar() {
         </DropdownMenu>
       </div>
     </aside>
-  )
+  );
 }

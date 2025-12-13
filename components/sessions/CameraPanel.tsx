@@ -1,18 +1,17 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { Card } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { Separator } from "@/components/ui/separator"
-import { Camera, RefreshCw, AlertCircle } from "lucide-react"
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { Camera, Check, ChevronDown, ChevronUp, Copy } from "lucide-react";
+import { useState } from "react";
 
 interface CameraPanelProps {
-  streamUrl?: string
-  lastPlate?: string | null
-  lastPayload?: any
-  status?: "idle" | "polling" | "error"
-  onRefresh?: () => void
+  streamUrl?: string;
+  lastPlate?: string | null;
+  lastPayload?: any;
+  status?: "idle" | "polling" | "error";
+  onRefresh?: () => void;
 }
 
 export function CameraPanel({
@@ -22,49 +21,41 @@ export function CameraPanel({
   status = "idle",
   onRefresh,
 }: CameraPanelProps) {
-  const [selectedCamera, setSelectedCamera] = useState("Camera 1")
+  const [isJsonExpanded, setIsJsonExpanded] = useState(false);
+  const [copied, setCopied] = useState(false);
 
   const statusConfig = {
     idle: { label: "Idle", variant: "secondary" as const },
     polling: { label: "Polling", variant: "default" as const },
     error: { label: "Error", variant: "destructive" as const },
-  }
+  };
 
-  const currentStatus = statusConfig[status]
+  const currentStatus = statusConfig[status];
+
+  const handleCopyJson = () => {
+    if (lastPayload) {
+      navigator.clipboard.writeText(JSON.stringify(lastPayload, null, 2));
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    }
+  };
 
   return (
     <Card className="h-full flex flex-col overflow-hidden">
       {/* Header */}
       <div className="p-2 border-b border-gray-200 shrink-0">
-        <div className="flex items-center justify-between mb-1">
-          <h3 className="text-[10px] font-semibold text-gray-900">Камерын харагдац</h3>
-          <Badge 
-            variant={currentStatus.variant} 
+        <div className="flex items-center justify-between">
+          <h3 className="text-[10px] font-semibold text-gray-900">
+            Камерын харагдац
+          </h3>
+          <Badge
+            variant={currentStatus.variant}
             className={`text-[9px] ${
               status === "polling" ? "animate-pulse" : ""
             }`}
           >
             {currentStatus.label}
           </Badge>
-        </div>
-        <div className="flex items-center gap-1.5">
-          <select
-            value={selectedCamera}
-            onChange={(e) => setSelectedCamera(e.target.value)}
-            className="flex-1 text-[10px] border border-gray-300 rounded-md px-1.5 py-1 bg-white focus:ring-1 focus:ring-blue-500 focus:border-blue-500 h-7"
-          >
-            <option>Camera 1</option>
-            <option>Camera 2</option>
-            <option>Camera 3</option>
-          </select>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={onRefresh}
-            className="h-7 px-1.5"
-          >
-            <RefreshCw className="h-2.5 w-2.5" />
-          </Button>
         </div>
       </div>
 
@@ -97,24 +88,66 @@ export function CameraPanel({
       </div>
 
       {/* Plate Detection Info */}
-      <div className="p-2 border-t border-gray-200 bg-gray-50 shrink-0">
-        <div className="space-y-1">
+      <div className="p-2 border-t border-gray-200 bg-gray-50 shrink-0 max-h-[40%] flex flex-col overflow-hidden">
+        <div className="space-y-1.5 overflow-y-auto">
           <div>
-            <p className="text-[9px] font-medium text-gray-500 mb-0.5">Танигдсан дугаар</p>
+            <p className="text-[9px] font-medium text-gray-500 mb-0.5">
+              Танигдсан дугаар
+            </p>
             <p className="text-xs font-mono font-semibold text-gray-900">
               {lastPlate || <span className="text-gray-400">—</span>}
             </p>
           </div>
           {lastPayload && (
             <div>
-              <p className="text-[9px] font-medium text-gray-500 mb-0.5">JSON</p>
-              <code className="block text-[9px] text-gray-600 font-mono bg-white p-1 rounded border border-gray-200 truncate">
-                {JSON.stringify(lastPayload).slice(0, 40) + "..."}
-              </code>
+              <div className="flex items-center justify-between mb-0.5">
+                <p className="text-[9px] font-medium text-gray-500">
+                  Camera JSON Data
+                </p>
+                <div className="flex items-center gap-1">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={handleCopyJson}
+                    className="h-4 w-4 p-0 hover:bg-gray-200"
+                    title="Copy JSON"
+                  >
+                    {copied ? (
+                      <Check className="h-3 w-3 text-green-600" />
+                    ) : (
+                      <Copy className="h-3 w-3 text-gray-500" />
+                    )}
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setIsJsonExpanded(!isJsonExpanded)}
+                    className="h-4 w-4 p-0 hover:bg-gray-200"
+                    title={isJsonExpanded ? "Collapse" : "Expand"}
+                  >
+                    {isJsonExpanded ? (
+                      <ChevronUp className="h-3 w-3 text-gray-500" />
+                    ) : (
+                      <ChevronDown className="h-3 w-3 text-gray-500" />
+                    )}
+                  </Button>
+                </div>
+              </div>
+              <div className="bg-white rounded border border-gray-200 overflow-hidden">
+                <pre
+                  className={`text-[8px] text-gray-700 font-mono p-1.5 overflow-auto ${
+                    isJsonExpanded ? "max-h-32" : "max-h-6"
+                  }`}
+                >
+                  {isJsonExpanded
+                    ? JSON.stringify(lastPayload, null, 2)
+                    : JSON.stringify(lastPayload).slice(0, 50) + "..."}
+                </pre>
+              </div>
             </div>
           )}
         </div>
       </div>
     </Card>
-  )
+  );
 }

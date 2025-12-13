@@ -1,63 +1,80 @@
-"use client"
+"use client";
 
-import { useState, useEffect, useMemo } from "react"
-import { Card } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
-import { Button } from "@/components/ui/button"
-import { Checkbox } from "@/components/ui/checkbox"
-import { FilterableSelect } from "@/components/ui/filterable-select"
-import { InSessionWeightConnector } from "@/components/scale/InSessionWeightConnector"
-import { useToast } from "@/hooks/use-toast"
-import { useThirdPartyAutofill } from "@/hooks/useThirdPartyAutofill"
-import { useCameraPlateAutofill } from "@/hooks/useCameraPlateAutofill"
-import { Switch } from "@/components/ui/switch"
-import { Camera } from "lucide-react"
-import { DriverManager } from "@/components/drivers/DriverManager"
-import type { TruckSession } from "@/lib/truckSessions"
-import type { TransportCompany, Organization, Driver, Product } from "@/lib/types"
+import { DriverManager } from "@/components/drivers/DriverManager";
+import { InSessionWeightConnector } from "@/components/scale/InSessionWeightConnector";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { Checkbox } from "@/components/ui/checkbox";
+import { FilterableSelect } from "@/components/ui/filterable-select";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
+import { Textarea } from "@/components/ui/textarea";
+import { useToast } from "@/hooks/use-toast";
+import { useCameraPlateAutofill } from "@/hooks/useCameraPlateAutofill";
+import { useThirdPartyAutofill } from "@/hooks/useThirdPartyAutofill";
+import type { TruckSession } from "@/lib/truckSessions";
+import type {
+  Driver,
+  Organization,
+  Product,
+  TransportCompany,
+} from "@/lib/types";
+import { ArrowRight, Camera } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
 
 interface OutSessionFormState {
-  plateNumber: string
-  driverId: string
-  driverName: string
-  productId: string
-  transporterCompanyId: string
-  origin: string
-  destination: string
-  senderOrganizationId: string
-  receiverOrganizationId: string
-  outTime: string
-  outWeightKg: number | null
-  netWeightKg: number | null
-  sealNumber: string
-  hasTrailer: boolean
-  notes: string
-  inSessionId?: string
+  plateNumber: string;
+  driverId: string;
+  driverName: string;
+  productId: string;
+  transporterCompanyId: string;
+  origin: string;
+  destination: string;
+  senderOrganizationId: string;
+  receiverOrganizationId: string;
+  outTime: string;
+  outWeightKg: number | null;
+  netWeightKg: number | null;
+  sealNumber: string;
+  hasTrailer: boolean;
+  trailerNumber: string;
+  notes: string;
+  inSessionId?: string;
 }
 
 interface OutSessionFormProps {
-  autoFillPlate?: string | null
-  onPlateChange?: (plate: string) => void
+  autoFillPlate?: string | null;
+  onPlateChange?: (plate: string) => void;
 }
 
-export function OutSessionForm({ autoFillPlate, onPlateChange }: OutSessionFormProps) {
-  const { toast } = useToast()
-  const { sendFormData, isSending: isSendingToThirdParty, isConnected } = useThirdPartyAutofill()
-  const [isSaving, setIsSaving] = useState(false)
-  const [plateInputRef, setPlateInputRef] = useState<HTMLInputElement | null>(null)
-  const cameraAutofill = useCameraPlateAutofill()
+export function OutSessionForm({
+  autoFillPlate,
+  onPlateChange,
+}: OutSessionFormProps) {
+  const { toast } = useToast();
+  const {
+    sendFormData,
+    isSending: isSendingToThirdParty,
+    isConnected,
+  } = useThirdPartyAutofill();
+  const [isSaving, setIsSaving] = useState(false);
+  const [plateInputRef, setPlateInputRef] = useState<HTMLInputElement | null>(
+    null
+  );
+  const cameraAutofill = useCameraPlateAutofill();
 
   // Data loading states
-  const [products, setProducts] = useState<Product[]>([])
-  const [isLoadingProducts, setIsLoadingProducts] = useState(true)
-  const [transportCompanies, setTransportCompanies] = useState<TransportCompany[]>([])
-  const [isLoadingCompanies, setIsLoadingCompanies] = useState(true)
-  const [drivers, setDrivers] = useState<Driver[]>([])
-  const [isLoadingDrivers, setIsLoadingDrivers] = useState(true)
-  const [organizations, setOrganizations] = useState<Organization[]>([])
-  const [isLoadingOrganizations, setIsLoadingOrganizations] = useState(true)
+  const [products, setProducts] = useState<Product[]>([]);
+  const [isLoadingProducts, setIsLoadingProducts] = useState(true);
+  const [transportCompanies, setTransportCompanies] = useState<
+    TransportCompany[]
+  >([]);
+  const [isLoadingCompanies, setIsLoadingCompanies] = useState(true);
+  const [drivers, setDrivers] = useState<Driver[]>([]);
+  const [isLoadingDrivers, setIsLoadingDrivers] = useState(true);
+  const [organizations, setOrganizations] = useState<Organization[]>([]);
+  const [isLoadingOrganizations, setIsLoadingOrganizations] = useState(true);
 
   const [formState, setFormState] = useState<OutSessionFormState>({
     plateNumber: "",
@@ -74,124 +91,142 @@ export function OutSessionForm({ autoFillPlate, onPlateChange }: OutSessionFormP
     netWeightKg: null,
     sealNumber: "",
     hasTrailer: false,
+    trailerNumber: "",
     notes: "",
     inSessionId: undefined,
-  })
+  });
 
-  const [inSession, setInSession] = useState<TruckSession | null>(null)
-  const [isLoadingInSession, setIsLoadingInSession] = useState(false)
-  const [inSessionError, setInSessionError] = useState<string | null>(null)
+  const [inSession, setInSession] = useState<TruckSession | null>(null);
+  const [isLoadingInSession, setIsLoadingInSession] = useState(false);
+  const [inSessionError, setInSessionError] = useState<string | null>(null);
 
   // Load all dropdown data
   const loadData = async () => {
     // Load products
     try {
-      setIsLoadingProducts(true)
-      const response = await fetch("/api/products")
+      setIsLoadingProducts(true);
+      const response = await fetch("/api/products");
       if (response.ok) {
-        const data = await response.json()
-        setProducts(data)
+        const data = await response.json();
+        setProducts(data);
       }
     } catch (error) {
-      console.error("Error loading products:", error)
+      console.error("Error loading products:", error);
     } finally {
-      setIsLoadingProducts(false)
+      setIsLoadingProducts(false);
     }
 
     // Load transport companies
     try {
-      setIsLoadingCompanies(true)
-      const response = await fetch("/api/transport-companies")
+      setIsLoadingCompanies(true);
+      const response = await fetch("/api/transport-companies");
       if (response.ok) {
-        const data = await response.json()
-        setTransportCompanies(data)
+        const data = await response.json();
+        setTransportCompanies(data);
       }
     } catch (error) {
-      console.error("Error loading transport companies:", error)
+      console.error("Error loading transport companies:", error);
     } finally {
-      setIsLoadingCompanies(false)
+      setIsLoadingCompanies(false);
     }
 
     // Load drivers
     try {
-      setIsLoadingDrivers(true)
-      const response = await fetch("/api/drivers")
+      setIsLoadingDrivers(true);
+      const response = await fetch("/api/drivers");
       if (response.ok) {
-        const data = await response.json()
-        setDrivers(data)
+        const data = await response.json();
+        setDrivers(data);
       }
     } catch (error) {
-      console.error("Error loading drivers:", error)
+      console.error("Error loading drivers:", error);
     } finally {
-      setIsLoadingDrivers(false)
+      setIsLoadingDrivers(false);
     }
 
     // Load organizations
     try {
-      setIsLoadingOrganizations(true)
-      const response = await fetch("/api/organizations")
+      setIsLoadingOrganizations(true);
+      const response = await fetch("/api/organizations");
       if (response.ok) {
-        const data = await response.json()
-        setOrganizations(data)
+        const data = await response.json();
+        setOrganizations(data);
       }
     } catch (error) {
-      console.error("Error loading organizations:", error)
+      console.error("Error loading organizations:", error);
     } finally {
-      setIsLoadingOrganizations(false)
+      setIsLoadingOrganizations(false);
     }
-  }
+  };
 
   useEffect(() => {
-    loadData()
-  }, [])
+    loadData();
+  }, []);
 
   // Handle driver added/updated
   const handleDriverAdded = async () => {
-    await loadData()
-  }
+    await loadData();
+  };
 
   // Memoize options
-  const productOptions = useMemo(() => 
-    products.map((p) => ({ value: p.id, label: p.name })), 
+  const productOptions = useMemo(
+    () => products.map((p) => ({ value: p.id, label: p.label })),
     [products]
-  )
+  );
 
-  const transportCompanyOptions = useMemo(() => 
-    transportCompanies.map((c) => ({ value: c.id, label: c.name })), 
+  const transportCompanyOptions = useMemo(
+    () => transportCompanies.map((c) => ({ value: c.id, label: c.name })),
     [transportCompanies]
-  )
+  );
 
-  const driverOptions = useMemo(() => 
-    drivers.map((d) => ({ 
-      value: d.id, 
-      label: `${d.name}${d.phone ? ` (${d.phone})` : ""}` 
-    })), 
+  const driverOptions = useMemo(
+    () =>
+      drivers.map((d) => ({
+        value: d.id,
+        label: `${d.name}${d.phone ? ` (${d.phone})` : ""}`,
+      })),
     [drivers]
-  )
+  );
 
-  const organizationOptions = useMemo(() => 
-    organizations.map((o) => ({ value: o.id, label: o.name })), 
+  const organizationOptions = useMemo(
+    () => organizations.map((o) => ({ value: o.id, label: o.name })),
     [organizations]
-  )
+  );
 
   // Handle creating new items
-  const handleCreateProduct = async (name: string) => {
+  const handleCreateProduct = async (label: string) => {
     try {
       const response = await fetch("/api/products", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name }),
-      })
+        body: JSON.stringify({ label }),
+      });
       if (response.ok) {
-        const newProduct = await response.json()
-        setProducts((prev) => [...prev, newProduct])
-        return newProduct.id
+        const newProduct = await response.json();
+        setProducts((prev) => [...prev, newProduct]);
+        toast({
+          title: "Амжилттай",
+          description: "Бүтээгдэхүүн нэмэгдлээ",
+        });
+        return newProduct.id;
+      } else {
+        const errorData = await response.json();
+        toast({
+          title: "Алдаа",
+          description: errorData.error || "Бүтээгдэхүүн нэмэхэд алдаа гарлаа",
+          variant: "destructive",
+        });
       }
     } catch (error) {
-      console.error("Error creating product:", error)
+      console.error("Error creating product:", error);
+      toast({
+        title: "Алдаа",
+        description: "Бүтээгдэхүүн нэмэхэд алдаа гарлаа",
+        variant: "destructive",
+      });
     }
-    return null
-  }
+    return null;
+  };
 
   const handleCreateTransportCompany = async (name: string) => {
     try {
@@ -199,17 +234,17 @@ export function OutSessionForm({ autoFillPlate, onPlateChange }: OutSessionFormP
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name }),
-      })
+      });
       if (response.ok) {
-        const newCompany = await response.json()
-        setTransportCompanies((prev) => [...prev, newCompany])
-        return newCompany.id
+        const newCompany = await response.json();
+        setTransportCompanies((prev) => [...prev, newCompany]);
+        return newCompany.id;
       }
     } catch (error) {
-      console.error("Error creating transport company:", error)
+      console.error("Error creating transport company:", error);
     }
-    return null
-  }
+    return null;
+  };
 
   const handleCreateOrganization = async (name: string) => {
     try {
@@ -217,17 +252,17 @@ export function OutSessionForm({ autoFillPlate, onPlateChange }: OutSessionFormP
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name }),
-      })
+      });
       if (response.ok) {
-        const newOrg = await response.json()
-        setOrganizations((prev) => [...prev, newOrg])
-        return newOrg.id
+        const newOrg = await response.json();
+        setOrganizations((prev) => [...prev, newOrg]);
+        return newOrg.id;
       }
     } catch (error) {
-      console.error("Error creating organization:", error)
+      console.error("Error creating organization:", error);
     }
-    return null
-  }
+    return null;
+  };
 
   // Bind camera autofill to plate input
   useEffect(() => {
@@ -235,115 +270,130 @@ export function OutSessionForm({ autoFillPlate, onPlateChange }: OutSessionFormP
       cameraAutofill.bindToInput({
         getValue: () => formState.plateNumber,
         setValue: (value: string) => {
-          setFormState((prev) => ({ ...prev, plateNumber: value }))
+          setFormState((prev) => ({ ...prev, plateNumber: value }));
         },
         isFocused: () => document.activeElement === plateInputRef,
-      })
+      });
     }
-  }, [plateInputRef, cameraAutofill, formState.plateNumber])
+  }, [plateInputRef, cameraAutofill, formState.plateNumber]);
 
   // Auto-fill plate from camera
   useEffect(() => {
     if (autoFillPlate && !formState.plateNumber) {
-      setFormState((prev) => ({ ...prev, plateNumber: autoFillPlate }))
-      onPlateChange?.(autoFillPlate)
+      setFormState((prev) => ({ ...prev, plateNumber: autoFillPlate }));
+      onPlateChange?.(autoFillPlate);
     }
-  }, [autoFillPlate, formState.plateNumber, onPlateChange])
+  }, [autoFillPlate, formState.plateNumber, onPlateChange]);
 
   // Find matching IN session when plate number changes
   useEffect(() => {
     const findInSession = async () => {
       if (!formState.plateNumber.trim()) {
-        setInSession(null)
-        setInSessionError(null)
-        setFormState((prev) => ({ ...prev, inSessionId: undefined, netWeightKg: null }))
-        return
+        setInSession(null);
+        setInSessionError(null);
+        setFormState((prev) => ({
+          ...prev,
+          inSessionId: undefined,
+          netWeightKg: null,
+        }));
+        return;
       }
 
-      setIsLoadingInSession(true)
-      setInSessionError(null)
+      setIsLoadingInSession(true);
+      setInSessionError(null);
 
       try {
         const response = await fetch(
-          `/api/truck-sessions/find-in?plateNumber=${encodeURIComponent(formState.plateNumber.trim())}`
-        )
+          `/api/truck-sessions/find-in?plateNumber=${encodeURIComponent(
+            formState.plateNumber.trim()
+          )}`
+        );
 
         if (response.status === 404) {
-          setInSession(null)
-          setInSessionError("Энэ улсын дугаартай ОРОХ бүртгэл олдсонгүй")
-          setFormState((prev) => ({ ...prev, inSessionId: undefined, netWeightKg: null }))
-          return
+          setInSession(null);
+          setInSessionError("Энэ улсын дугаартай ОРОХ бүртгэл олдсонгүй");
+          setFormState((prev) => ({
+            ...prev,
+            inSessionId: undefined,
+            netWeightKg: null,
+          }));
+          return;
         }
 
         if (!response.ok) {
-          throw new Error("Failed to fetch IN session")
+          throw new Error("Failed to fetch IN session");
         }
 
-        const result = await response.json()
-        const inSessionData = result.session as TruckSession
+        const result = await response.json();
+        const inSessionData = result.session as TruckSession;
 
         if (inSessionData) {
-          setInSession(inSessionData)
+          setInSession(inSessionData);
           setFormState((prev) => ({
             ...prev,
             inSessionId: inSessionData.id,
-          }))
+          }));
           // Recalculate net weight if out weight is already set
           if (formState.outWeightKg && inSessionData.grossWeightKg) {
-            const netWeight = formState.outWeightKg - inSessionData.grossWeightKg
+            const netWeight =
+              formState.outWeightKg - inSessionData.grossWeightKg;
             setFormState((prev) => ({
               ...prev,
               netWeightKg: netWeight > 0 ? netWeight : null,
-            }))
+            }));
           }
         } else {
-          setInSession(null)
-          setInSessionError("Энэ улсын дугаартай ОРОХ бүртгэл олдсонгүй")
-          setFormState((prev) => ({ ...prev, inSessionId: undefined, netWeightKg: null }))
+          setInSession(null);
+          setInSessionError("Энэ улсын дугаартай ОРОХ бүртгэл олдсонгүй");
+          setFormState((prev) => ({
+            ...prev,
+            inSessionId: undefined,
+            netWeightKg: null,
+          }));
         }
       } catch (error) {
-        console.error("Error finding IN session:", error)
-        setInSessionError("ОРОХ бүртгэл хайхад алдаа гарлаа")
-        setInSession(null)
+        console.error("Error finding IN session:", error);
+        setInSessionError("ОРОХ бүртгэл хайхад алдаа гарлаа");
+        setInSession(null);
       } finally {
-        setIsLoadingInSession(false)
+        setIsLoadingInSession(false);
       }
-    }
+    };
 
-    const timeoutId = setTimeout(findInSession, 500)
-    return () => clearTimeout(timeoutId)
-  }, [formState.plateNumber])
+    const timeoutId = setTimeout(findInSession, 500);
+    return () => clearTimeout(timeoutId);
+  }, [formState.plateNumber]);
 
   // Calculate net weight when outWeightKg or inSession changes
   useEffect(() => {
     if (formState.outWeightKg && inSession?.grossWeightKg) {
-      const netWeight = formState.outWeightKg - inSession.grossWeightKg
+      const netWeight = formState.outWeightKg - inSession.grossWeightKg;
       setFormState((prev) => ({
         ...prev,
         netWeightKg: netWeight > 0 ? netWeight : null,
-      }))
+      }));
     } else {
-      setFormState((prev) => ({ ...prev, netWeightKg: null }))
+      setFormState((prev) => ({ ...prev, netWeightKg: null }));
     }
-  }, [formState.outWeightKg, inSession])
+  }, [formState.outWeightKg, inSession]);
 
   const handleWeightDetected = (weightKg: number) => {
     setFormState((prev) => ({
       ...prev,
       outWeightKg: weightKg,
-    }))
-  }
+    }));
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
+    e.preventDefault();
 
     if (!formState.outWeightKg) {
       toast({
         title: "Алдаа",
         description: "Гарах жин оруулах шаардлагатай",
         variant: "destructive",
-      })
-      return
+      });
+      return;
     }
 
     if (!inSession) {
@@ -351,8 +401,8 @@ export function OutSessionForm({ autoFillPlate, onPlateChange }: OutSessionFormP
         title: "Алдаа",
         description: "ОРОХ бүртгэл олох шаардлагатай",
         variant: "destructive",
-      })
-      return
+      });
+      return;
     }
 
     if (!formState.netWeightKg) {
@@ -360,11 +410,11 @@ export function OutSessionForm({ autoFillPlate, onPlateChange }: OutSessionFormP
         title: "Алдаа",
         description: "Цэвэр жин тооцоолох шаардлагатай",
         variant: "destructive",
-      })
-      return
+      });
+      return;
     }
 
-    setIsSaving(true)
+    setIsSaving(true);
     try {
       const requestData = {
         direction: "OUT",
@@ -383,24 +433,25 @@ export function OutSessionForm({ autoFillPlate, onPlateChange }: OutSessionFormP
         outTime: formState.outTime ? formState.outTime : undefined,
         sealNumber: formState.sealNumber.trim() || undefined,
         hasTrailer: formState.hasTrailer || undefined,
+        trailerNumber: formState.trailerNumber.trim() || undefined,
         notes: formState.notes.trim() || undefined,
-      }
+      };
 
       const response = await fetch("/api/truck-sessions", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(requestData),
-      })
+      });
 
       if (!response.ok) {
-        const errorData = await response.json()
-        throw new Error(errorData.error || "Failed to save session")
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Failed to save session");
       }
 
       toast({
         title: "Амжилттай",
         description: "ГАРАХ бүртгэл амжилттай хадгалагдлаа",
-      })
+      });
 
       // Reset form
       setFormState({
@@ -418,75 +469,33 @@ export function OutSessionForm({ autoFillPlate, onPlateChange }: OutSessionFormP
         netWeightKg: null,
         sealNumber: "",
         hasTrailer: false,
+        trailerNumber: "",
         notes: "",
         inSessionId: undefined,
-      })
-      setInSession(null)
-      setInSessionError(null)
+      });
+      setInSession(null);
+      setInSessionError(null);
     } catch (error) {
-      console.error("Error saving session:", error)
+      console.error("Error saving session:", error);
       toast({
         title: "Алдаа",
-        description: error instanceof Error ? error.message : "Бүртгэл хадгалахад алдаа гарлаа",
+        description:
+          error instanceof Error
+            ? error.message
+            : "Бүртгэл хадгалахад алдаа гарлаа",
         variant: "destructive",
-      })
+      });
     } finally {
-      setIsSaving(false)
+      setIsSaving(false);
     }
-  }
+  };
 
   return (
     <div className="h-full flex flex-col overflow-hidden">
-      <form onSubmit={handleSubmit} className="h-full flex flex-col overflow-hidden">
-        {/* Form Header - Fixed */}
-        <div className="flex items-center justify-between mb-2 shrink-0">
-          <div>
-            <h2 className="text-sm font-semibold text-gray-900">Бүртгэлийн мэдээлэл</h2>
-            <p className="text-[10px] text-gray-500">Шаардлагатай талбаруудыг бөглөнө үү</p>
-          </div>
-          <div className="flex items-center gap-2">
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={() => {
-                setFormState({
-                  plateNumber: "",
-                  driverId: "",
-                  driverName: "",
-                  productId: "",
-                  transporterCompanyId: "",
-                  origin: "",
-                  destination: "",
-                  senderOrganizationId: "",
-                  receiverOrganizationId: "",
-                  outTime: new Date().toISOString().slice(0, 16),
-                  outWeightKg: null,
-                  netWeightKg: null,
-                  sealNumber: "",
-                  hasTrailer: false,
-                  notes: "",
-                  inSessionId: undefined,
-                })
-                setInSession(null)
-                setInSessionError(null)
-              }}
-              className="h-7 px-2 text-[10px]"
-            >
-              Цэвэрлэх
-            </Button>
-            <Button
-              type="submit"
-              size="sm"
-              onClick={handleSubmit}
-              disabled={!inSession || !formState.netWeightKg || isSaving}
-              className="bg-green-600 hover:bg-green-700 disabled:opacity-50 h-7 px-3 text-[10px]"
-            >
-              {isSaving ? "Хадгалж байна..." : "Хадгалах"}
-            </Button>
-          </div>
-        </div>
-
+      <form
+        onSubmit={handleSubmit}
+        className="h-full flex flex-col overflow-hidden"
+      >
         {/* Form Content - No Scroll, Grid Layout */}
         <div className="flex-1 min-h-0 overflow-hidden">
           <div className="grid grid-cols-2 gap-2 h-full">
@@ -495,7 +504,10 @@ export function OutSessionForm({ autoFillPlate, onPlateChange }: OutSessionFormP
               {/* Plate Number */}
               <Card className="p-3 flex-shrink-0">
                 <div className="flex items-center justify-between mb-2">
-                  <Label htmlFor="plateNumber" className="text-xs font-semibold text-gray-900">
+                  <Label
+                    htmlFor="plateNumber"
+                    className="text-xs font-semibold text-gray-900"
+                  >
                     Улсын дугаар *
                   </Label>
                   <div className="flex items-center gap-2">
@@ -511,12 +523,15 @@ export function OutSessionForm({ autoFillPlate, onPlateChange }: OutSessionFormP
                   id="plateNumber"
                   value={formState.plateNumber}
                   onChange={(e) => {
-                    cameraAutofill.trackTyping()
-                    setFormState((prev) => ({ ...prev, plateNumber: e.target.value }))
-                    onPlateChange?.(e.target.value)
+                    cameraAutofill.trackTyping();
+                    setFormState((prev) => ({
+                      ...prev,
+                      plateNumber: e.target.value,
+                    }));
+                    onPlateChange?.(e.target.value);
                   }}
                   onFocus={() => cameraAutofill.trackTyping()}
-                  className="h-10 text-sm font-mono font-semibold"
+                  className="h-8 text-xs font-mono font-semibold"
                   placeholder="ABC1234"
                   required
                 />
@@ -528,7 +543,10 @@ export function OutSessionForm({ autoFillPlate, onPlateChange }: OutSessionFormP
                 )}
                 {cameraAutofill.plate && cameraAutofill.lastSeenAt && (
                   <p className="text-xs text-gray-500 mt-1.5">
-                    Сүүлд: <span className="font-mono font-semibold text-blue-600">{cameraAutofill.plate}</span>
+                    Сүүлд:{" "}
+                    <span className="font-mono font-semibold text-blue-600">
+                      {cameraAutofill.plate}
+                    </span>
                   </p>
                 )}
                 {isLoadingInSession && (
@@ -546,168 +564,274 @@ export function OutSessionForm({ autoFillPlate, onPlateChange }: OutSessionFormP
                 )}
                 {inSessionError && (
                   <div className="mt-2 p-2 bg-red-50 border border-red-200 rounded">
-                    <p className="text-xs text-red-700 font-medium">{inSessionError}</p>
+                    <p className="text-xs text-red-700 font-medium">
+                      {inSessionError}
+                    </p>
                   </div>
                 )}
               </Card>
 
               {/* Basic Info */}
-              <Card className="p-3 flex-1 min-h-0 flex flex-col overflow-y-auto">
-                <h3 className="text-xs font-semibold text-gray-900 mb-2">Үндсэн мэдээлэл</h3>
-                <div className="flex-1 min-h-0 flex flex-col gap-2">
+              <Card className="p-2.5 flex-shrink-0">
+                <div className="flex flex-col gap-1.5">
                   <div>
-                    <Label htmlFor="transporterCompanyId" className="text-xs font-medium text-gray-700 mb-1 block">
+                    <Label
+                      htmlFor="transporterCompanyId"
+                      className="text-xs font-medium text-gray-700 mb-0.5 block"
+                    >
                       Тээврийн компани
                     </Label>
                     <FilterableSelect
                       options={transportCompanyOptions}
                       value={formState.transporterCompanyId}
                       onValueChange={(value) => {
-                        setFormState((prev) => ({ ...prev, transporterCompanyId: value }))
+                        setFormState((prev) => ({
+                          ...prev,
+                          transporterCompanyId: value,
+                        }));
                       }}
                       disabled={isLoadingCompanies}
-                      placeholder={isLoadingCompanies ? "Уншиж байна..." : "Тээврийн компани сонгох"}
+                      placeholder={
+                        isLoadingCompanies
+                          ? "Уншиж байна..."
+                          : "Тээврийн компани сонгох"
+                      }
                       searchPlaceholder="Тээврийн компани хайх..."
                       onCreateNew={handleCreateTransportCompany}
                       createNewLabel="+ Нэмэх ..."
                     />
                   </div>
-                  <div className="grid grid-cols-2 gap-2">
-                    <div>
-                      <Label htmlFor="origin" className="text-xs font-medium text-gray-700 mb-1 block">
+                  <div className="flex items-end gap-1.5">
+                    <div className="flex-1">
+                      <Label
+                        htmlFor="origin"
+                        className="text-xs font-medium text-gray-700 mb-0.5 block"
+                      >
                         Хаанаас
                       </Label>
                       <Input
                         id="origin"
                         value={formState.origin}
                         onChange={(e) =>
-                          setFormState((prev) => ({ ...prev, origin: e.target.value }))
+                          setFormState((prev) => ({
+                            ...prev,
+                            origin: e.target.value,
+                          }))
                         }
-                        className="h-9 text-sm"
+                        className="h-8 text-xs"
                         placeholder="Гарах газар"
                       />
                     </div>
-                    <div>
-                      <Label htmlFor="destination" className="text-xs font-medium text-gray-700 mb-1 block">
+                    <div className="flex-shrink-0 pb-0.5">
+                      <ArrowRight className="h-4 w-4 text-gray-400" />
+                    </div>
+                    <div className="flex-1">
+                      <Label
+                        htmlFor="destination"
+                        className="text-xs font-medium text-gray-700 mb-0.5 block"
+                      >
                         Хаашаа
                       </Label>
                       <Input
                         id="destination"
                         value={formState.destination}
                         onChange={(e) =>
-                          setFormState((prev) => ({ ...prev, destination: e.target.value }))
+                          setFormState((prev) => ({
+                            ...prev,
+                            destination: e.target.value,
+                          }))
                         }
-                        className="h-9 text-sm"
+                        className="h-8 text-xs"
                         placeholder="Очих газар"
                       />
                     </div>
                   </div>
                   <div>
-                    <Label htmlFor="productId" className="text-xs font-medium text-gray-700 mb-1 block">
+                    <Label
+                      htmlFor="productId"
+                      className="text-xs font-medium text-gray-700 mb-0.5 block"
+                    >
                       Бүтээгдэхүүн
                     </Label>
                     <FilterableSelect
                       options={productOptions}
                       value={formState.productId}
                       onValueChange={(value) => {
-                        setFormState((prev) => ({ ...prev, productId: value }))
+                        setFormState((prev) => ({ ...prev, productId: value }));
                       }}
                       disabled={isLoadingProducts}
-                      placeholder={isLoadingProducts ? "Уншиж байна..." : "Бүтээгдэхүүн сонгох"}
+                      placeholder={
+                        isLoadingProducts
+                          ? "Уншиж байна..."
+                          : "Бүтээгдэхүүн сонгох"
+                      }
                       searchPlaceholder="Бүтээгдэхүүн хайх..."
                       onCreateNew={handleCreateProduct}
                       createNewLabel="+ Нэмэх ..."
                     />
                   </div>
                   <div>
-                    <Label htmlFor="senderOrganizationId" className="text-xs font-medium text-gray-700 mb-1 block">
+                    <Label
+                      htmlFor="senderOrganizationId"
+                      className="text-xs font-medium text-gray-700 mb-0.5 block"
+                    >
                       Илгээч байгууллага
                     </Label>
                     <FilterableSelect
                       options={organizationOptions}
                       value={formState.senderOrganizationId}
                       onValueChange={(value) => {
-                        setFormState((prev) => ({ ...prev, senderOrganizationId: value }))
+                        setFormState((prev) => ({
+                          ...prev,
+                          senderOrganizationId: value,
+                        }));
                       }}
                       disabled={isLoadingOrganizations}
-                      placeholder={isLoadingOrganizations ? "Уншиж байна..." : "Илгээч байгууллага сонгох"}
+                      placeholder={
+                        isLoadingOrganizations
+                          ? "Уншиж байна..."
+                          : "Илгээч байгууллага сонгох"
+                      }
                       searchPlaceholder="Илгээч байгууллага хайх..."
                       onCreateNew={handleCreateOrganization}
                       createNewLabel="+ Нэмэх ..."
                     />
                   </div>
                   <div>
-                    <Label htmlFor="receiverOrganizationId" className="text-xs font-medium text-gray-700 mb-1 block">
+                    <Label
+                      htmlFor="receiverOrganizationId"
+                      className="text-xs font-medium text-gray-700 mb-0.5 block"
+                    >
                       Хүлээн авагч байгууллага
                     </Label>
                     <FilterableSelect
                       options={organizationOptions}
                       value={formState.receiverOrganizationId}
                       onValueChange={(value) => {
-                        setFormState((prev) => ({ ...prev, receiverOrganizationId: value }))
+                        setFormState((prev) => ({
+                          ...prev,
+                          receiverOrganizationId: value,
+                        }));
                       }}
                       disabled={isLoadingOrganizations}
-                      placeholder={isLoadingOrganizations ? "Уншиж байна..." : "Хүлээн авагч байгууллага сонгох"}
+                      placeholder={
+                        isLoadingOrganizations
+                          ? "Уншиж байна..."
+                          : "Хүлээн авагч байгууллага сонгох"
+                      }
                       searchPlaceholder="Хүлээн авагч байгууллага хайх..."
                       onCreateNew={handleCreateOrganization}
                       createNewLabel="+ Нэмэх ..."
                     />
                   </div>
-                  <div>
-                    <div className="flex items-center justify-between mb-1">
-                      <Label htmlFor="driverId" className="text-xs font-medium text-gray-700">
+                  <div className="mt-3">
+                    <div className="flex items-center justify-between mb-2">
+                      <Label
+                        htmlFor="driverId"
+                        className="text-xs font-medium text-gray-700"
+                      >
                         Жолооч
                       </Label>
-                      <DriverManager
-                        drivers={drivers}
-                        onDriverAdded={handleDriverAdded}
-                        onDriverUpdated={handleDriverAdded}
-                      />
+                      <div className="flex items-center gap-2">
+                        <DriverManager
+                          drivers={drivers}
+                          onDriverAdded={handleDriverAdded}
+                          onDriverUpdated={handleDriverAdded}
+                        />
+                      </div>
                     </div>
                     <FilterableSelect
                       options={driverOptions}
                       value={formState.driverId}
                       onValueChange={(value) => {
-                        const selectedDriver = drivers.find((d) => d.id === value)
-                        setFormState((prev) => ({ 
-                          ...prev, 
+                        const selectedDriver = drivers.find(
+                          (d) => d.id === value
+                        );
+                        setFormState((prev) => ({
+                          ...prev,
                           driverId: value,
-                          driverName: selectedDriver?.name || ""
-                        }))
+                          driverName: selectedDriver?.name || "",
+                        }));
                       }}
                       disabled={isLoadingDrivers}
-                      placeholder={isLoadingDrivers ? "Уншиж байна..." : "Жолооч сонгох"}
+                      placeholder={
+                        isLoadingDrivers ? "Уншиж байна..." : "Жолооч сонгох"
+                      }
                       searchPlaceholder="Жолооч хайх..."
                     />
                   </div>
                   <div>
-                    <Label htmlFor="sealNumber" className="text-xs font-medium text-gray-700 mb-1 block">
+                    <Label
+                      htmlFor="sealNumber"
+                      className="text-xs font-medium text-gray-700 mb-0.5 block"
+                    >
                       Лацны дугаар
                     </Label>
                     <Input
                       id="sealNumber"
                       value={formState.sealNumber}
                       onChange={(e) =>
-                        setFormState((prev) => ({ ...prev, sealNumber: e.target.value }))
+                        setFormState((prev) => ({
+                          ...prev,
+                          sealNumber: e.target.value,
+                        }))
                       }
-                      className="h-9 text-sm"
+                      className="h-8 text-xs"
                       placeholder="Лацны дугаар оруулах"
                     />
                   </div>
-                  <div className="flex items-center gap-2">
-                    <Checkbox
-                      id="hasTrailer"
-                      checked={formState.hasTrailer}
-                      onCheckedChange={(checked) => {
-                        setFormState((prev) => ({ ...prev, hasTrailer: checked === true }))
-                      }}
-                    />
-                    <Label htmlFor="hasTrailer" className="text-xs font-medium text-gray-700 cursor-pointer">
-                      Чиргүүлтэй
-                    </Label>
+                  <div>
+                    <div className="flex items-center gap-2 mb-1.5">
+                      <Checkbox
+                        id="hasTrailer"
+                        checked={formState.hasTrailer}
+                        onCheckedChange={(checked) => {
+                          const isChecked = checked === true;
+                          setFormState((prev) => ({
+                            ...prev,
+                            hasTrailer: isChecked,
+                            trailerNumber:
+                              isChecked && !prev.trailerNumber
+                                ? prev.plateNumber
+                                : prev.trailerNumber,
+                          }));
+                        }}
+                      />
+                      <Label
+                        htmlFor="hasTrailer"
+                        className="text-xs font-medium text-gray-700 cursor-pointer"
+                      >
+                        Чиргүүлтэй
+                      </Label>
+                    </div>
+                    {formState.hasTrailer && (
+                      <div>
+                        <Label
+                          htmlFor="trailerNumber"
+                          className="text-xs font-medium text-gray-700 mb-0.5 block"
+                        >
+                          Чиргүүлийн улсын дугаар
+                        </Label>
+                        <Input
+                          id="trailerNumber"
+                          value={formState.trailerNumber}
+                          onChange={(e) =>
+                            setFormState((prev) => ({
+                              ...prev,
+                              trailerNumber: e.target.value,
+                            }))
+                          }
+                          className="h-8 text-xs font-mono"
+                          placeholder="Улсын дугаар"
+                        />
+                      </div>
+                    )}
                   </div>
                   <div>
-                    <Label htmlFor="outTime" className="text-xs font-medium text-gray-700 mb-1 block">
+                    <Label
+                      htmlFor="outTime"
+                      className="text-xs font-medium text-gray-700 mb-0.5 block"
+                    >
                       Гарах цаг *
                     </Label>
                     <Input
@@ -715,9 +839,12 @@ export function OutSessionForm({ autoFillPlate, onPlateChange }: OutSessionFormP
                       type="datetime-local"
                       value={formState.outTime}
                       onChange={(e) =>
-                        setFormState((prev) => ({ ...prev, outTime: e.target.value }))
+                        setFormState((prev) => ({
+                          ...prev,
+                          outTime: e.target.value,
+                        }))
                       }
-                      className="h-9 text-sm"
+                      className="h-8 text-xs"
                       required
                     />
                   </div>
@@ -728,46 +855,72 @@ export function OutSessionForm({ autoFillPlate, onPlateChange }: OutSessionFormP
             {/* Right Column */}
             <div className="flex flex-col gap-2 overflow-hidden">
               {/* Weight Section */}
-              <Card className="p-3 border-2 border-green-200 bg-green-50/30 flex-1 min-h-0 flex flex-col">
-                <h3 className="text-xs font-semibold text-gray-900 mb-2">Жингийн мэдээлэл</h3>
-                <div className="flex-1 min-h-0 flex flex-col gap-2">
-                  <InSessionWeightConnector onWeightDetected={handleWeightDetected} />
+              <Card className="p-2 border-2 border-green-200 bg-green-50/30 flex-1 min-h-0 flex flex-col">
+                <h3 className="text-xs font-semibold text-gray-900 mb-1.5">
+                  Жингийн мэдээлэл
+                </h3>
+                <div className="flex-1 min-h-0 flex flex-col gap-1.5">
+                  <InSessionWeightConnector
+                    onWeightDetected={handleWeightDetected}
+                  />
                   <div>
-                    <Label htmlFor="outWeightKg" className="text-xs font-medium text-gray-700 mb-1 block">
+                    <Label
+                      htmlFor="outWeightKg"
+                      className="text-xs font-medium text-gray-700 mb-0.5 block"
+                    >
                       Гарах жин (кг) *
                     </Label>
                     <Input
                       id="outWeightKg"
                       type="number"
                       value={formState.outWeightKg ?? ""}
-                      readOnly
-                      className="bg-white font-semibold text-sm cursor-not-allowed h-9"
-                      placeholder="Жин автоматаар оруулах"
+                      onChange={(e) => {
+                        const value =
+                          e.target.value === ""
+                            ? null
+                            : parseFloat(e.target.value);
+                        setFormState((prev) => ({
+                          ...prev,
+                          outWeightKg: value,
+                        }));
+                      }}
+                      className="bg-white font-semibold text-xs cursor-text h-8"
+                      placeholder="Жин оруулах (кг)"
                       required
                     />
                   </div>
                   <div>
-                    <Label htmlFor="netWeightKg" className="text-xs font-medium text-gray-700 mb-1 block">
-                      Цэвэр жин (кг) <span className="text-xs font-normal text-gray-500">(автоматаар)</span>
+                    <Label
+                      htmlFor="netWeightKg"
+                      className="text-xs font-medium text-gray-700 mb-0.5 block"
+                    >
+                      Цэвэр жин (кг){" "}
+                      <span className="text-xs font-normal text-gray-500">
+                        (автоматаар)
+                      </span>
                     </Label>
                     <Input
                       id="netWeightKg"
                       type="number"
                       value={formState.netWeightKg ?? ""}
                       readOnly
-                      className="bg-white font-semibold text-sm cursor-not-allowed h-9"
+                      className="bg-white font-semibold text-xs cursor-not-allowed h-8"
                       placeholder={
                         !inSession
                           ? "ОРОХ бүртгэл олох хэрэгтэй"
                           : !formState.outWeightKg
-                            ? "Гарах жин оруулах хэрэгтэй"
-                            : "Цэвэр жин автоматаар тооцоологдоно"
+                          ? "Гарах жин оруулах хэрэгтэй"
+                          : "Цэвэр жин автоматаар тооцоологдоно"
                       }
                     />
                     {formState.netWeightKg && (
                       <div className="mt-2 p-2 bg-white rounded border border-green-200">
                         <p className="text-xs text-gray-700">
-                          {formState.outWeightKg} - {inSession?.grossWeightKg} = <span className="font-bold text-green-700">{formState.netWeightKg}</span> кг
+                          {formState.outWeightKg} - {inSession?.grossWeightKg} ={" "}
+                          <span className="font-bold text-green-700">
+                            {formState.netWeightKg}
+                          </span>{" "}
+                          кг
                         </p>
                       </div>
                     )}
@@ -776,22 +929,74 @@ export function OutSessionForm({ autoFillPlate, onPlateChange }: OutSessionFormP
               </Card>
 
               {/* Notes */}
-              <Card className="p-3 flex-1 min-h-0 flex flex-col">
-                <h3 className="text-xs font-semibold text-gray-900 mb-2">Нэмэлт мэдээлэл</h3>
-                <Textarea
-                  id="notes"
-                  value={formState.notes}
-                  onChange={(e) =>
-                    setFormState((prev) => ({ ...prev, notes: e.target.value }))
-                  }
-                  className="text-sm flex-1 min-h-0 resize-none"
-                  placeholder="Нэмэлт мэдээлэл..."
-                />
+              <Card className="p-2.5 flex-1 min-h-0 flex flex-col">
+                <div className="flex flex-col gap-1.5 flex-1 min-h-0">
+                  <div className="flex-1 min-h-0 flex flex-col">
+                    <Label
+                      htmlFor="notes"
+                      className="text-xs font-medium text-gray-700 mb-0.5 block"
+                    >
+                      Нэмэлт мэдээлэл
+                    </Label>
+                    <Textarea
+                      id="notes"
+                      value={formState.notes}
+                      onChange={(e) =>
+                        setFormState((prev) => ({
+                          ...prev,
+                          notes: e.target.value,
+                        }))
+                      }
+                      className="text-xs resize-none flex-1 min-h-0"
+                      placeholder="Нэмэлт мэдээлэл..."
+                    />
+                  </div>
+                </div>
+                <div className="flex items-center gap-2 mt-3 pt-2 border-t border-gray-200">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => {
+                      setFormState({
+                        plateNumber: "",
+                        driverId: "",
+                        driverName: "",
+                        productId: "",
+                        transporterCompanyId: "",
+                        origin: "",
+                        destination: "",
+                        senderOrganizationId: "",
+                        receiverOrganizationId: "",
+                        outTime: new Date().toISOString().slice(0, 16),
+                        outWeightKg: null,
+                        netWeightKg: null,
+                        sealNumber: "",
+                        hasTrailer: false,
+                        trailerNumber: "",
+                        notes: "",
+                        inSessionId: undefined,
+                      });
+                      setInSession(null);
+                      setInSessionError(null);
+                    }}
+                    className="h-9 px-4 text-xs"
+                  >
+                    Цэвэрлэх
+                  </Button>
+                  <Button
+                    type="submit"
+                    onClick={handleSubmit}
+                    disabled={!inSession || !formState.netWeightKg || isSaving}
+                    className="bg-green-600 hover:bg-green-700 disabled:opacity-50 h-9 px-4 text-xs flex-1"
+                  >
+                    {isSaving ? "Хадгалж байна..." : "Хадгалах"}
+                  </Button>
+                </div>
               </Card>
             </div>
           </div>
         </div>
       </form>
     </div>
-  )
+  );
 }
