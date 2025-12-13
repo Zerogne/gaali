@@ -15,16 +15,13 @@ export function WebSocketTestPanel() {
   const logRef = useRef<HTMLDivElement>(null)
 
   const generateUniqueCode = () => {
-    const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"
+    // Generate 8-digit numeric code
     const timestamp = Date.now()
-    const random1 = Math.random() * 1000000
-    const random2 = Math.random() * 1000000
-    const combined = Math.floor(timestamp + random1 + random2).toString()
-    let code = ""
-    for (let i = 0; i < 8; i++) {
-      const index = parseInt(combined[i % combined.length]) + (i * 7)
-      code += chars[index % chars.length]
-    }
+    const random = Math.floor(Math.random() * 1000000)
+    // Combine timestamp and random to ensure uniqueness
+    const combined = (timestamp + random).toString()
+    // Take last 8 digits, pad with zeros if needed
+    const code = combined.slice(-8).padStart(8, '0')
     return code
   }
 
