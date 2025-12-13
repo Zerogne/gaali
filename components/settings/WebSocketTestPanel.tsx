@@ -14,6 +14,46 @@ export function WebSocketTestPanel() {
   const [logs, setLogs] = useState<string[]>([])
   const logRef = useRef<HTMLDivElement>(null)
 
+  const generateUniqueCode = () => {
+    const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"
+    const timestamp = Date.now()
+    const random1 = Math.random() * 1000000
+    const random2 = Math.random() * 1000000
+    const combined = Math.floor(timestamp + random1 + random2).toString()
+    let code = ""
+    for (let i = 0; i < 8; i++) {
+      const index = parseInt(combined[i % combined.length]) + (i * 7)
+      code += chars[index % chars.length]
+    }
+    return code
+  }
+
+  // Generate sample data for testing
+  const generateSampleData = () => {
+    const uniqueCode = generateUniqueCode()
+    const randomNum = Math.floor(Math.random() * 10000)
+    
+    return {
+      uniqueCode,
+      LPC: `Тээвэрлэгч компани ${randomNum}`,
+      PERMIT_NUMBER: `PERMIT-${randomNum}`,
+      TRANSPORT_DOC_NUMBER: `DOC-${randomNum}`,
+      DISPATCH_VEHICLE_NUMBER: `ABC${randomNum}`,
+      CHANGE_VEHICLE_AT_BORDER: Math.random() > 0.5 ? "yes" : "no",
+      FOREIGN_TRADE_AGREEMENT: `FTA-${randomNum}`,
+      BORDER_VEHICLE_NUMBER: `XYZ${randomNum}`,
+      DRN: `Жолооч ${randomNum}`,
+      DRIVER_ID: `${randomNum}${randomNum}${randomNum}${randomNum}`,
+      TRL: `TRL${randomNum}`,
+      CONTAINER_NUMBERS: [`AABCD${randomNum}`, `BABCD${randomNum + 1}`],
+      SLN: `SLN${randomNum}`,
+      PKG: Math.floor(Math.random() * 5000) + 1000,
+      NET: Math.floor(Math.random() * 20000) + 10000,
+      WGT: Math.floor(Math.random() * 25000) + 15000,
+      TRANSPORT_AGREEMENT: `TA-${randomNum}`,
+    }
+  }
+
   useEffect(() => {
     if (logRef.current) {
       logRef.current.scrollTop = logRef.current.scrollHeight
@@ -82,33 +122,35 @@ export function WebSocketTestPanel() {
     }
   }
 
+  const [sampleData, setSampleData] = useState(generateSampleData())
+
   const testSend = () => {
     if (!ws || ws.readyState !== WebSocket.OPEN) {
       addLog("❌ WebSocket холбогдоогүй байна", "error")
       return
     }
 
-    const testMessage = {
-      type: "test",
-      message: "Тест мэссэж",
-      timestamp: new Date().toISOString(),
-    }
-    const jsonData = JSON.stringify(testMessage, null, 2)
+    // Generate new sample data with different unique code each time
+    const data = generateSampleData()
+    setSampleData(data)
+    const jsonData = JSON.stringify(data, null, 2)
 
     addLog("═══════════════════════════════════════════════════════", "info")
-    addLog("📤 3-Р ТАЛЫН АПП РУУ ТЕСТ МЭССЭЖ ИЛГЭЭЖ БАЙНА", "info")
+    addLog("📤 3-Р ТАЛЫН АПП РУУ ТЕСТ ӨГӨГДӨЛ ИЛГЭЭЖ БАЙНА", "info")
     addLog("═══════════════════════════════════════════════════════", "info")
-    addLog(`📦 Мэссэжийн хэмжээ: ${jsonData.length} байт`, "info")
-    addLog("📋 JSON мэссэж:", "info")
+    addLog(`🔑 Уникал код: ${data.uniqueCode}`, "info")
+    addLog(`📦 Өгөгдлийн хэмжээ: ${jsonData.length} байт`, "info")
+    addLog("📋 JSON өгөгдөл:", "info")
     addLog(jsonData, "info")
 
     try {
       ws.send(jsonData)
       addLog("═══════════════════════════════════════════════════════", "success")
-      addLog("✅ МЭССЭЖ АМЖИЛТТАЙ ИЛГЭЭГДЛЭЭ!", "success")
+      addLog("✅ ӨГӨГДӨЛ АМЖИЛТТАЙ ИЛГЭЭГДЛЭЭ!", "success")
       addLog("═══════════════════════════════════════════════════════", "success")
       addLog(`✅ Илгээсэн байт: ${jsonData.length}`, "success")
-      addLog("💡 3-р талын апп-аас мэссэж хүлээн авсныг шалгана уу", "info")
+      addLog(`✅ Уникал код: ${data.uniqueCode}`, "success")
+      addLog("💡 3-р талын апп-аас өгөгдөл хүлээн авсныг шалгана уу", "info")
     } catch (error: any) {
       addLog(`❌ Илгээхэд алдаа гарлаа: ${error.message}`, "error")
     }
@@ -159,11 +201,22 @@ export function WebSocketTestPanel() {
               Холболт таслах
             </Button>
             <Button onClick={testSend} disabled={status !== "connected"}>
-              Тест мэссэж илгээх
+              3-р талын апп руу илгээх
             </Button>
             <Button onClick={clearLog} variant="outline">
               Лог цэвэрлэх
             </Button>
+          </div>
+
+          {/* Data Preview */}
+          <div className="border-t pt-6">
+            <h3 className="text-lg font-semibold mb-4">Илгээх өгөгдөл (автоматаар үүсгэгдсэн):</h3>
+            <p className="text-sm text-gray-600 mb-2">
+              Дараагийн удаа илгээхэд шинэ уникал код үүсгэгдэнэ
+            </p>
+            <pre className="bg-gray-50 rounded-lg p-4 text-xs max-h-64 overflow-auto font-mono">
+              {JSON.stringify(sampleData, null, 2)}
+            </pre>
           </div>
 
           {/* Connection Log */}
