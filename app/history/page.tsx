@@ -370,8 +370,8 @@ export default function HistoryPage() {
                 <div className="space-y-3">
                   <div className="flex items-center justify-between mb-2">
                     <div className="flex items-center gap-2">
-                      <Search className="w-4 h-4 text-gray-400" />
-                      <span className="text-sm font-medium text-gray-700">Хайлт ба шүүлт</span>
+                    <Search className="w-4 h-4 text-gray-400" />
+                    <span className="text-sm font-medium text-gray-700">Хайлт ба шүүлт</span>
                     </div>
                     {(plateFilter || driverNameFilter || driverPhoneFilter || originFilter || destinationFilter || productFilter || directionFilter !== "ALL" || timePeriod !== "all") && (
                       <Button
