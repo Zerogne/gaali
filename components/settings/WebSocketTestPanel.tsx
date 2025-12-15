@@ -25,30 +25,34 @@ export function WebSocketTestPanel() {
     return code
   }
 
-  // Generate sample data for testing
+  // Generate sample data for testing - matches exact 3rd party app format
   const generateSampleData = () => {
     const uniqueCode = generateUniqueCode()
     const randomNum = Math.floor(Math.random() * 10000)
+    const year = new Date().getFullYear()
+    const month = String(new Date().getMonth() + 1).padStart(2, '0')
+    const permitNum = Math.floor(Math.random() * 100)
     
-    return {
-      uniqueCode,
-      LPC: `Тээвэрлэгч компани ${randomNum}`,
-      PERMIT_NUMBER: `PERMIT-${randomNum}`,
-      TRANSPORT_DOC_NUMBER: `DOC-${randomNum}`,
-      DISPATCH_VEHICLE_NUMBER: `ABC${randomNum}`,
-      CHANGE_VEHICLE_AT_BORDER: Math.random() > 0.5 ? "yes" : "no",
-      FOREIGN_TRADE_AGREEMENT: `FTA-${randomNum}`,
-      BORDER_VEHICLE_NUMBER: `XYZ${randomNum}`,
-      DRN: `Жолооч ${randomNum}`,
-      DRIVER_ID: `${randomNum}${randomNum}${randomNum}${randomNum}`,
-      TRL: `TRL${randomNum}`,
-      CONTAINER_NUMBERS: [`AABCD${randomNum}`, `BABCD${randomNum + 1}`],
-      SLN: `SLN${randomNum}`,
-      PKG: Math.floor(Math.random() * 5000) + 1000,
-      NET: Math.floor(Math.random() * 20000) + 10000,
-      WGT: Math.floor(Math.random() * 25000) + 15000,
-      TRANSPORT_AGREEMENT: `TA-${randomNum}`,
-    }
+    // Generate data in exact format required by 3rd party app
+    const data = [
+      {
+        CAR: "Цайны зам",
+        CON: `${year}/${month}-${permitNum}`,
+        DRN: `Б.ЭНХБАТ ЕТ74102419 ${96650888 + randomNum}`,
+        LPC: "ПАТРИКЕЙН ХХК",
+        SLN: `ZW${String(341369 + randomNum).padStart(7, '0')}-ZW${String(341381 + randomNum).padStart(7, '0')}`,
+        TRL: `${1330 + randomNum}СЧ`,
+        UPC: "Erlian",
+        AKT: `${String(year)}${String(month)}${String(permitNum).padStart(2, '0')}${uniqueCode}`,
+        NET: Math.floor(Math.random() * 20000) + 10000,
+        WGT: Math.floor(Math.random() * 25000) + 15000,
+        VNO: `${3826 + randomNum}ДГН`,
+        CT1: "",
+        CMN: "",
+      }
+    ]
+    
+    return { uniqueCode, data }
   }
 
   useEffect(() => {
@@ -128,16 +132,18 @@ export function WebSocketTestPanel() {
     }
 
     // Generate new sample data with different unique code each time
-    const data = generateSampleData()
-    setSampleData(data)
+    const { uniqueCode, data } = generateSampleData()
+    setSampleData({ uniqueCode, data })
+    
+    // Send data WITHOUT unique code - unique code is only for display/logging
     const jsonData = JSON.stringify(data, null, 2)
 
     addLog("═══════════════════════════════════════════════════════", "info")
     addLog("📤 3-Р ТАЛЫН АПП РУУ ТЕСТ ӨГӨГДӨЛ ИЛГЭЭЖ БАЙНА", "info")
     addLog("═══════════════════════════════════════════════════════", "info")
-    addLog(`🔑 Уникал код: ${data.uniqueCode}`, "info")
+    addLog(`🔑 Уникал код: ${uniqueCode}`, "info")
     addLog(`📦 Өгөгдлийн хэмжээ: ${jsonData.length} байт`, "info")
-    addLog("📋 JSON өгөгдөл:", "info")
+    addLog("📋 JSON өгөгдөл (3-р талын апп руу илгээх):", "info")
     addLog(jsonData, "info")
 
     try {
@@ -146,7 +152,7 @@ export function WebSocketTestPanel() {
       addLog("✅ ӨГӨГДӨЛ АМЖИЛТТАЙ ИЛГЭЭГДЛЭЭ!", "success")
       addLog("═══════════════════════════════════════════════════════", "success")
       addLog(`✅ Илгээсэн байт: ${jsonData.length}`, "success")
-      addLog(`✅ Уникал код: ${data.uniqueCode}`, "success")
+      addLog(`✅ Уникал код: ${uniqueCode} (энэ код зөвхөн лог-д харагдана)`, "success")
       addLog("💡 3-р талын апп-аас өгөгдөл хүлээн авсныг шалгана уу", "info")
     } catch (error: any) {
       addLog(`❌ Илгээхэд алдаа гарлаа: ${error.message}`, "error")
@@ -209,10 +215,14 @@ export function WebSocketTestPanel() {
           <div className="border-t pt-6">
             <h3 className="text-lg font-semibold mb-4">Илгээх өгөгдөл (автоматаар үүсгэгдсэн):</h3>
             <p className="text-sm text-gray-600 mb-2">
-              Дараагийн удаа илгээхэд шинэ уникал код үүсгэгдэнэ
+              Дараагийн удаа илгээхэд шинэ уникал код үүсгэгдэнэ. Уникал код зөвхөн лог-д харагдана, 3-р талын апп руу илгээгдэхгүй.
             </p>
+            <div className="mb-2">
+              <span className="text-sm font-medium">🔑 Уникал код: </span>
+              <span className="text-sm font-mono bg-blue-50 px-2 py-1 rounded">{sampleData.uniqueCode}</span>
+            </div>
             <pre className="bg-gray-50 rounded-lg p-4 text-xs max-h-64 overflow-auto font-mono">
-              {JSON.stringify(sampleData, null, 2)}
+              {JSON.stringify(sampleData.data, null, 2)}
             </pre>
           </div>
 

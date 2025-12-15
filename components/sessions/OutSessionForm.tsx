@@ -444,8 +444,17 @@ export function OutSessionForm({
       });
 
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || "Failed to save session");
+        let errorMessage = "Failed to save session";
+        try {
+          const errorData = await response.json();
+          console.error("❌ API Error:", errorData);
+          errorMessage = errorData.error || errorData.message || JSON.stringify(errorData);
+        } catch (parseError) {
+          const text = await response.text();
+          console.error("❌ API Error (non-JSON):", text);
+          errorMessage = text || errorMessage;
+        }
+        throw new Error(errorMessage);
       }
 
       toast({
@@ -879,10 +888,19 @@ export function OutSessionForm({
                           e.target.value === ""
                             ? null
                             : parseFloat(e.target.value);
-                        setFormState((prev) => ({
-                          ...prev,
-                          outWeightKg: value,
-                        }));
+                        setFormState((prev) => {
+                          // Calculate net weight immediately if we have inSession
+                          let netWeight = null;
+                          if (value !== null && inSession?.grossWeightKg) {
+                            const calculated = value - inSession.grossWeightKg;
+                            netWeight = calculated > 0 ? calculated : null;
+                          }
+                          return {
+                            ...prev,
+                            outWeightKg: value,
+                            netWeightKg: netWeight,
+                          };
+                        });
                       }}
                       className="bg-white font-semibold text-xs cursor-text h-8"
                       placeholder="Жин оруулах (кг)"
