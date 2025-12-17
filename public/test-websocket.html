@@ -148,9 +148,9 @@
     <div class="sample-data-preview">
       <strong>Sample Data to Send:</strong>
       <div style="margin-bottom: 10px; padding: 10px; background: #fff3cd; border: 1px solid #ffc107; border-radius: 4px;">
-        <strong>🔑 Unique Code:</strong> <code id="uniqueCodeDisplay" style="font-size: 14px; font-weight: bold; color: #856404;"></code>
+        <strong>🔑 AKT (Unique Code):</strong> <code id="aktDisplay" style="font-size: 14px; font-weight: bold; color: #856404;"></code>
         <p style="margin: 5px 0 0 0; font-size: 11px; color: #856404;">
-          This code can be used to pull data from: <code>/api/truck-sessions/by-code/{uniqueCode}</code>
+          The 3rd party app will pull data from: <code id="apiUrlDisplay" style="word-break: break-all;"></code>
         </p>
       </div>
       <pre id="sampleDataPreview"></pre>
@@ -192,29 +192,31 @@
       return code;
     }
 
-    // Sample data from the image
-    const sampleData = [
-      {
-        "uniqueCode": generateUniqueCode(), // Unique code for pulling data
-        "CAR": "Цайны зам",
-        "CON": "2025/08-92",
-        "DRN": "Б.ЭНХБАТ ЕТ74102419 96650888",
-        "LPC": "ПАТРИКЕЙН ХХК",
-        "SLN": "ZW0341369-ZW0341381",
-        "TRL": "1330СЧ",
-        "UPC": "Erlian",
-        "AKT": "11112025102800063",
-        "NET": 28750,
-        "WGT": 43950,
-        "VNO": "3826ДГН",
-        "CT1": "",
-        "CMN": ""
-      }
-    ];
+    // Sample data - AKT is the unique code (same thing)
+    const sampleData = {
+      "AKT": "11112025102800063", // Unique code / Company Act (same thing)
+      "CAR": "Цайны зам",
+      "CON": "2025/08-92",
+      "DRN": "Б.ЭНХБАТ ЕТ74102419 96650888",
+      "LPC": "ПАТРИКЕЙН ХХК",
+      "SLN": "ZW0341369-ZW0341381",
+      "TRL": "1330СЧ",
+      "UPC": "Erlian",
+      "NET": 28750,
+      "WGT": 43950,
+      "VNO": "3826ДГН",
+      "CT1": "",
+      "CMN": ""
+    };
 
     // Display sample data on load
     document.getElementById('sampleDataPreview').textContent = JSON.stringify(sampleData, null, 2);
-    document.getElementById('uniqueCodeDisplay').textContent = sampleData[0].uniqueCode;
+    document.getElementById('aktDisplay').textContent = sampleData.AKT;
+    
+    // Build the API URL that the 3rd party app will fetch from
+    const baseUrl = window.location.origin;
+    const apiUrl = `${baseUrl}/api/truck-sessions/by-code/${sampleData.AKT}?format=thirdparty`;
+    document.getElementById('apiUrlDisplay').textContent = apiUrl;
 
     function log(message, type = 'info') {
       const entry = document.createElement('div');
@@ -280,16 +282,23 @@
         return;
       }
 
-      const jsonData = JSON.stringify(sampleData, null, 2);
+      // Build the API URL that the 3rd party app will fetch from
+      // The app expects a URL string, not JSON data
+      const baseUrl = window.location.origin;
+      const apiUrl = `${baseUrl}/api/truck-sessions/by-code/${sampleData.AKT}?format=thirdparty`;
       
       log('═══════════════════════════════════════════════════════', 'info');
-      log('📤 PREPARING TO SEND SAMPLE DATA TO 3RD PARTY APP', 'info');
+      log('📤 PREPARING TO SEND URL TO 3RD PARTY APP', 'info');
       log('═══════════════════════════════════════════════════════', 'info');
       log(`📊 WebSocket State: ${ws.readyState} (OPEN=1)`, 'info');
-      log(`📦 Data Size: ${jsonData.length} bytes`, 'info');
+      log(`📦 URL Length: ${apiUrl.length} bytes`, 'info');
       log('', 'info');
-      log('📋 Sample Data:', 'info');
-      log(jsonData, 'info');
+      log('📋 URL to send:', 'info');
+      log(apiUrl, 'info');
+      log('', 'info');
+      log('💡 The 3rd party app will fetch data from this URL', 'info');
+      log('💡 Sample data preview:', 'info');
+      log(JSON.stringify(sampleData, null, 2), 'info');
       log('', 'info');
       
       try {
@@ -299,17 +308,17 @@
           return;
         }
         
-        // Send the sample data as JSON
-        ws.send(jsonData);
+        // Send the URL string (not JSON!)
+        ws.send(apiUrl);
         
         log('═══════════════════════════════════════════════════════', 'success');
-        log('✅ SAMPLE DATA SENT SUCCESSFULLY!', 'success');
+        log('✅ URL SENT SUCCESSFULLY!', 'success');
         log('═══════════════════════════════════════════════════════', 'success');
         log(`✅ Message sent via ws.send()`, 'success');
-        log(`✅ Bytes sent: ${jsonData.length}`, 'success');
+        log(`✅ Bytes sent: ${apiUrl.length}`, 'success');
         log('', 'success');
-        log('💡 Check your 3rd party app to verify it received the data', 'info');
-        log('💡 The app should show this data in its autofill/form', 'info');
+        log('💡 The 3rd party app will fetch from this URL and return JSON data', 'info');
+        log('💡 Check your 3rd party app to verify it received and fetched the data', 'info');
         
         // Check connection after a short delay
         setTimeout(() => {
