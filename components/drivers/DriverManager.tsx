@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect, useRef, useCallback } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -42,6 +42,7 @@ export function DriverManager({
   const [isDeleting, setIsDeleting] = useState<string | null>(null)
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [driverToDelete, setDriverToDelete] = useState<string | null>(null)
+  const addButtonRef = useRef<HTMLButtonElement>(null)
 
   const handleAdd = () => {
     setEditingDriver(null)
@@ -65,7 +66,7 @@ export function DriverManager({
     setIsDialogOpen(true)
   }
 
-  const handleSave = async () => {
+  const handleSave = useCallback(async () => {
     if (!driverData.name.trim()) {
       toast({
         title: "Алдаа",
@@ -126,7 +127,7 @@ export function DriverManager({
     } finally {
       setIsSaving(false)
     }
-  }
+  }, [driverData, editingDriver, toast, onDriverAdded, onDriverUpdated])
 
   const handleDeleteClick = (driverId: string) => {
     setDriverToDelete(driverId)
@@ -167,6 +168,40 @@ export function DriverManager({
       setDriverToDelete(null)
     }
   }
+
+  // Add event listener for Enter key to trigger Add button
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Only trigger if dialog is open and Enter key is pressed
+      if (e.key === "Enter" && isDialogOpen && !isSaving) {
+        const activeElement = document.activeElement
+        
+        // Allow Enter to submit if:
+        // 1. No input is focused, OR
+        // 2. The name field is focused (to allow quick submit after typing name)
+        // Don't trigger if user is in phone, registration, or textarea fields
+        const isNameField = activeElement?.id === "driver-name"
+        const isTextarea = activeElement?.tagName === "TEXTAREA"
+        const isOtherInput = activeElement?.tagName === "INPUT" && !isNameField
+        
+        if (!isTextarea && !isOtherInput) {
+          // Prevent default form submission
+          e.preventDefault()
+          e.stopPropagation()
+          
+          // Check if form is valid (name is required)
+          if (driverData.name.trim()) {
+            handleSave()
+          }
+        }
+      }
+    }
+
+    window.addEventListener("keydown", handleKeyDown)
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown)
+    }
+  }, [isDialogOpen, isSaving, driverData.name, handleSave])
 
   return (
     <>
@@ -303,7 +338,12 @@ export function DriverManager({
             >
               Цуцлах
             </Button>
-            <Button onClick={handleSave} disabled={isSaving}>
+            <Button 
+              ref={addButtonRef}
+              onClick={handleSave} 
+              disabled={isSaving || !driverData.name.trim()}
+              className="bg-blue-600 hover:bg-blue-700 text-white"
+            >
               {isSaving ? "Хадгалж байна..." : editingDriver ? "Засах" : "Нэмэх"}
             </Button>
           </DialogFooter>

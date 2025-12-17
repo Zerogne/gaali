@@ -90,11 +90,12 @@ export async function saveTruckSession(
   sessionData: Omit<TruckSession, "_id" | "id" | "uniqueCode" | "companyId" | "createdAt" | "updatedAt">
 ): Promise<TruckSession> {
   try {
-    console.log("💾 saveTruckSession called with:", sessionData)
+    console.log("💾 saveTruckSession called with:", JSON.stringify(sessionData, null, 2))
     
     // Validate input (data should already be cleaned by API route)
     const validation = truckSessionSchema.safeParse(sessionData)
     if (!validation.success) {
+      console.error("❌ Validation failed:", JSON.stringify(validation.error.issues, null, 2))
       throw new ValidationError(
         "Invalid truck session data",
         validation.error.issues.reduce((acc, issue) => {
@@ -104,15 +105,33 @@ export async function saveTruckSession(
         }, {} as Record<string, string>)
       )
     }
+    console.log("✅ Validation passed")
 
     // Get active company from session
-    const companyId = await getActiveCompany()
+    let companyId: string
+    try {
+      companyId = await getActiveCompany()
+      console.log("✅ Active company ID:", companyId)
+      if (!companyId) {
+        throw new Error("No active company found")
+      }
+    } catch (error) {
+      console.error("❌ Error getting active company:", error)
+      throw new Error("Authentication required. Please log in.")
+    }
 
     // Get company-scoped sessions collection
-    const sessionsCollection = await getCompanyCollection<TruckSession>(
-      companyId,
-      "truck_sessions"
-    )
+    let sessionsCollection
+    try {
+      sessionsCollection = await getCompanyCollection<TruckSession>(
+        companyId,
+        "truck_sessions"
+      )
+      console.log("✅ Got sessions collection for company:", companyId)
+    } catch (error) {
+      console.error("❌ Error getting sessions collection:", error)
+      throw new Error(`Failed to access database: ${error instanceof Error ? error.message : String(error)}`)
+    }
 
     // Generate unique code and ensure it's unique
     // The code combines timestamp + random data, but we still check database to guarantee uniqueness
@@ -123,18 +142,23 @@ export async function saveTruckSession(
       uniqueCode = generateUniqueCode()
       console.log(`🔑 Generated unique code (attempt ${attempts + 1}):`, uniqueCode)
       
-      // Check if this code already exists in the database
-      const existing = await sessionsCollection.findOne({ uniqueCode })
-      if (!existing) {
-        console.log(`✅ Unique code verified - no duplicates found:`, uniqueCode)
-        break
-      }
-      
-      // If duplicate found, generate a new one
-      console.warn(`⚠️ Duplicate code found, generating new one... (attempt ${attempts + 1})`)
-      attempts++
-      if (attempts >= maxAttempts) {
-        throw new Error("Failed to generate unique code after multiple attempts")
+      try {
+        // Check if this code already exists in the database
+        const existing = await sessionsCollection.findOne({ uniqueCode })
+        if (!existing) {
+          console.log(`✅ Unique code verified - no duplicates found:`, uniqueCode)
+          break
+        }
+        
+        // If duplicate found, generate a new one
+        console.warn(`⚠️ Duplicate code found, generating new one... (attempt ${attempts + 1})`)
+        attempts++
+        if (attempts >= maxAttempts) {
+          throw new Error("Failed to generate unique code after multiple attempts")
+        }
+      } catch (error) {
+        console.error("❌ Error checking for duplicate code:", error)
+        throw new Error(`Database error: ${error instanceof Error ? error.message : String(error)}`)
       }
     } while (true)
 
@@ -152,8 +176,25 @@ export async function saveTruckSession(
     }
 
     // Insert into company's collection
-    await sessionsCollection.insertOne(sessionDoc)
-    console.log("✅ Session saved with unique code:", uniqueCode)
+    console.log("💾 Attempting to insert session document:", JSON.stringify(sessionDoc, null, 2))
+    let insertResult
+    try {
+      insertResult = await sessionsCollection.insertOne(sessionDoc)
+      console.log("📝 Insert result:", insertResult)
+    } catch (error) {
+      console.error("❌ Error inserting session:", error)
+      if (error instanceof Error) {
+        console.error("❌ Error message:", error.message)
+        console.error("❌ Error stack:", error.stack)
+      }
+      throw new Error(`Failed to insert session into database: ${error instanceof Error ? error.message : String(error)}`)
+    }
+    
+    if (!insertResult.insertedId) {
+      console.error("❌ Insert result has no insertedId:", insertResult)
+      throw new Error("Failed to insert session into database - no insertedId returned")
+    }
+    console.log("✅ Session saved with unique code:", uniqueCode, "insertedId:", insertResult.insertedId)
 
     // Serialize MongoDB document to plain object
     const serializedSession: TruckSession = {

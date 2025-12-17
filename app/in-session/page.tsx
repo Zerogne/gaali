@@ -1,543 +1,194 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
-import { Button } from "@/components/ui/button"
-import { InSessionWeightConnector } from "@/components/scale/InSessionWeightConnector"
-import { Sidebar } from "@/components/layout/Sidebar"
-import { AlertBanner } from "@/components/layout/AlertBanner"
-import { useToast } from "@/hooks/use-toast"
-import { useRouter } from "next/navigation"
-import { useThirdPartyAutofill } from "@/hooks/useThirdPartyAutofill"
-import { Send, Eye, EyeOff } from "lucide-react"
-
-interface InSessionFormState {
-  plateNumber: string
-  driverName: string
-  product: string
-  transporterCompany: string
-  inTime: string // ISO string or hh:mm
-  grossWeightKg: number | null
-  notes: string
-}
+import { CameraPanel } from "@/components/sessions/CameraPanel";
+import {
+  InSessionForm,
+  type InSessionFormHandle,
+} from "@/components/sessions/InSessionForm";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { useCameraPlateAutofill } from "@/hooks/useCameraPlateAutofill";
+import { ArrowLeft, ArrowRight } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useEffect, useRef, useState } from "react";
 
 export default function InSessionPage() {
-  const { toast } = useToast()
-  const router = useRouter()
-  const { sendFormData, isSending: isSendingToThirdParty, isConnected, getSentDataHistory } = useThirdPartyAutofill()
-  const [isSaving, setIsSaving] = useState(false)
-  const [showDebugPanel, setShowDebugPanel] = useState(false)
-  const [sentDataHistory, setSentDataHistory] = useState<Array<{ timestamp: string; data: any }>>([])
-  const [lastSavedUniqueCode, setLastSavedUniqueCode] = useState<string | null>(null)
+  const router = useRouter();
+  const cameraAutofill = useCameraPlateAutofill();
+  const [currentPlate, setCurrentPlate] = useState<string>("");
+  const [streamUrl, setStreamUrl] = useState<string | undefined>(undefined);
+  const formRef = useRef<InSessionFormHandle>(null);
+  const [showSaveDialog, setShowSaveDialog] = useState(false);
+  const [pendingNavigation, setPendingNavigation] = useState<string | null>(
+    null
+  );
+  const [hasUnsavedData, setHasUnsavedData] = useState(false);
 
-  // Load sent data history from localStorage on mount
+  // Fetch camera stream URL from config
   useEffect(() => {
-    if (typeof window !== "undefined") {
-      const history = localStorage.getItem("thirdPartyAutofillHistory")
-      if (history) {
-        try {
-          setSentDataHistory(JSON.parse(history))
-        } catch (e) {
-          console.error("Failed to parse sent data history:", e)
+    const fetchStreamUrl = async () => {
+      try {
+        const response = await fetch("/api/camera/config");
+        if (response.ok) {
+          const config = await response.json();
+          // Use NEXT_PUBLIC env var if set, otherwise use config streamUrl
+          setStreamUrl(
+            process.env.NEXT_PUBLIC_CAMERA_STREAM_URL ||
+              config.streamUrl ||
+              undefined
+          );
         }
+      } catch (error) {
+        console.error("Failed to fetch camera stream URL:", error);
+        // Fallback to env var if API fails
+        setStreamUrl(process.env.NEXT_PUBLIC_CAMERA_STREAM_URL);
       }
-    }
-  }, [])
-  const [formState, setFormState] = useState<InSessionFormState>({
-    plateNumber: "",
-    driverName: "",
-    product: "",
-    transporterCompany: "",
-    inTime: new Date().toISOString().slice(0, 16), // Default to current date/time
-    grossWeightKg: null,
-    notes: "",
-  })
+    };
+    fetchStreamUrl();
+  }, []);
 
-  const handleWeightDetected = (weightKg: number) => {
-    setFormState((prev) => ({
-      ...prev,
-      grossWeightKg: weightKg,
-    }))
-  }
+  // Track if user manually edited the plate field
+  const handlePlateChange = (value: string) => {
+    setCurrentPlate(value);
+  };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-
-    if (!formState.grossWeightKg) {
-      toast({
-        title: "Алдаа",
-        description: "Бүрэн жин оруулах шаардлагатай",
-        variant: "destructive",
-      })
-      return
-    }
-
-    setIsSaving(true)
-    try {
-      const requestData = {
-        direction: "IN",
-        plateNumber: formState.plateNumber.trim().toUpperCase(),
-        driverName: formState.driverName.trim() || undefined,
-        product: formState.product.trim() || undefined,
-        transporterCompany: formState.transporterCompany.trim() || undefined,
-        grossWeightKg: formState.grossWeightKg,
-        inTime: formState.inTime ? formState.inTime : undefined,
-        notes: formState.notes.trim() || undefined,
-      }
-      
-      console.log("💾 Saving session with data:", requestData)
-      
-      const response = await fetch("/api/truck-sessions", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(requestData),
-      })
-
-      if (!response.ok) {
-        const errorData = await response.json()
-        // Show detailed validation errors if available
-        let errorMessage = errorData.error || "Failed to save session"
-        
-        // If there are validation errors, format them nicely
-        if (errorData.errors && typeof errorData.errors === 'object') {
-          const validationErrors = Object.entries(errorData.errors)
-            .map(([field, message]) => `${field}: ${message}`)
-            .join(', ')
-          errorMessage = `Validation error: ${validationErrors}`
-        }
-        
-        console.error("Save error details:", errorData)
-        throw new Error(errorMessage)
-      }
-
-      const result = await response.json()
-      const savedSession = result.session
-      
-      // Store the unique code from saved session
-      if (savedSession?.uniqueCode) {
-        setLastSavedUniqueCode(savedSession.uniqueCode)
-      }
-      
-      toast({
-        title: "Амжилттай",
-        description: savedSession?.uniqueCode 
-          ? `ОРОХ бүртгэл амжилттай хадгалагдлаа. Код: ${savedSession.uniqueCode}`
-          : "ОРОХ бүртгэл амжилттай хадгалагдлаа",
-        duration: 5000,
-      })
-
-      // Reset form and clear saved unique code
-      setFormState({
-        plateNumber: "",
-        driverName: "",
-        product: "",
-        transporterCompany: "",
-        inTime: new Date().toISOString().slice(0, 16),
-        grossWeightKg: null,
-        notes: "",
-      })
-      // Don't clear lastSavedUniqueCode here - keep it so user can send to 3rd party
-      // It will be cleared when form is manually cleared or new form is saved
-
-      // Optionally redirect to history page
-      // router.push("/history")
-    } catch (error) {
-      console.error("Error saving session:", error)
-      toast({
-        title: "Алдаа",
-        description: error instanceof Error ? error.message : "Бүртгэл хадгалахад алдаа гарлаа",
-        variant: "destructive",
-      })
-    } finally {
-      setIsSaving(false)
-    }
-  }
-
-  const handleSendToThirdParty = async () => {
-    console.log("🎯 handleSendToThirdParty called")
-    console.log("🎯 Form state:", formState)
-    console.log("🎯 Connection status:", isConnected)
-    console.log("🎯 Last saved unique code:", lastSavedUniqueCode)
-    
-    // Validate form before sending
-    if (!formState.plateNumber || !formState.driverName || !formState.product || !formState.transporterCompany || !formState.grossWeightKg) {
-      console.warn("⚠️ Validation failed - missing required fields")
-      toast({
-        title: "Алдаа",
-        description: "Бүх шаардлагатай талбаруудыг бөглөнө үү",
-        variant: "destructive",
-      })
-      return
-    }
-
-    // If form hasn't been saved yet, save it first to get unique code
-    let uniqueCode = lastSavedUniqueCode
-    if (!uniqueCode) {
-      toast({
-        title: "Анхаар",
-        description: "Эхлээд бүртгэлийг хадгалаад дараа нь илгээнэ үү",
-        variant: "destructive",
-      })
-      return
-    }
-
-    // Prepare form data in the format expected by 3rd party app (CAR, CON, DRN, etc.)
-    // Format based on the 3rd party app's expected structure
-    const formDataToSend = {
-      uniqueCode, // Unrepeatable code for pulling data
-      CAR: formState.product.trim() || "", // Cargo/Product
-      CON: "", // Contract (empty if not available)
-      DRN: formState.driverName.trim() || "", // Driver name
-      LPC: formState.transporterCompany.trim() || "", // Loading point company
-      SLN: "", // Seal number (empty if not available)
-      TRL: "", // Trailer (empty if not available)
-      UPC: "", // Unloading point company (empty if not available)
-      AKT: "", // Act number (empty if not available)
-      NET: "", // Net weight (empty for IN session)
-      WGT: formState.grossWeightKg || 0, // Gross weight
-      VNO: formState.plateNumber.trim().toUpperCase() || "", // Vehicle number (plate)
-      CT1: "", // Custom field 1
-      CMN: formState.notes.trim() || "", // Comments/Notes
-    }
-
-    console.log("🎯 Prepared form data to send:", formDataToSend)
-    console.log("🎯 Calling sendFormData...")
-    
-    const result = await sendFormData(formDataToSend)
-    
-    console.log("🎯 sendFormData result:", result)
-
-    if (result.success) {
-      // Log to console for debugging
-      console.log("✅ Successfully sent form data:", formDataToSend)
-      console.log("📋 Check browser console (F12) to see the sent data")
-      console.log("📋 Check your 3rd party app to verify it received the data")
-      
-      // Refresh history in debug panel
-      const updatedHistory = JSON.parse(localStorage.getItem("thirdPartyAutofillHistory") || "[]")
-      setSentDataHistory(updatedHistory)
-      
-      toast({
-        title: "✅ Амжилттай илгээгдлээ",
-        description: "Форм өгөгдөл 3-р талын апп руу илгээгдлээ. 3-р талын апп дээрх форм нээхэд энэ өгөгдөл автоматаар бөглөгдөнө. Илгээсэн өгөгдөл харах: Debug товч дарна уу",
-        duration: 8000,
-      })
+  const handleNavigationClick = (path: string) => {
+    if (hasUnsavedData && formRef.current?.hasUnsavedData()) {
+      setPendingNavigation(path);
+      setShowSaveDialog(true);
     } else {
-      // Show more detailed error message
-      const errorMsg = result.error || "3-р талын апп руу илгээхэд алдаа гарлаа"
-      toast({
-        title: "Холболтын алдаа",
-        description: errorMsg.includes("Unable to connect") || errorMsg.includes("unable to connect")
-          ? "3-р талын апптай холбогдох боломжгүй байна. Апп ажиллаж байгаа эсэхийг шалгана уу."
-          : errorMsg,
-        variant: "destructive",
-        duration: 5000, // Show for 5 seconds
-      })
+      router.push(path);
     }
-  }
+  };
+
+  const handleSaveAndNavigate = async () => {
+    if (formRef.current) {
+      const success = await formRef.current.triggerSave();
+      if (success) {
+        setShowSaveDialog(false);
+        if (pendingNavigation) {
+          router.push(pendingNavigation);
+          setPendingNavigation(null);
+        }
+      }
+    }
+  };
+
+  const handleCancelAndNavigate = () => {
+    setShowSaveDialog(false);
+    if (pendingNavigation) {
+      router.push(pendingNavigation);
+      setPendingNavigation(null);
+    }
+  };
 
   return (
-    <div className="flex h-screen bg-gray-50">
-      <Sidebar />
-      <div className="flex-1 flex flex-col overflow-hidden">
-        <AlertBanner />
-        <main className="flex-1 overflow-auto">
-          <div className="max-w-4xl mx-auto p-6 lg:p-8">
-            <Card className="border-gray-200 bg-white shadow-sm">
-              <CardHeader>
-                <CardTitle className="text-xl font-bold text-gray-900">
+    <div className="fixed inset-0 h-screen w-screen overflow-hidden bg-gray-50 flex flex-col">
+      {/* Top Navigation - Fixed */}
+      <nav className="bg-white border-b border-gray-200 shrink-0 z-50">
+        <div className="max-w-full mx-auto px-6 py-3">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <Button
+                onClick={() => router.push("/")}
+                variant="ghost"
+                size="sm"
+                className="h-8 w-8 p-0"
+              >
+                <ArrowLeft className="h-4 w-4" />
+              </Button>
+              <div className="h-5 w-px bg-gray-300" />
+              <div>
+                <h1 className="text-lg font-semibold text-gray-900">
+                  ОРОХ бүртгэл
+                </h1>
+                <p className="text-xs text-gray-500">
                   Тээврийн хэрэгсэл орох бүртгэл
-                </CardTitle>
-                <p className="text-sm text-gray-600 mt-1">
-                  Тээврийн хэрэгсэл орох үед бүртгэл хийх
                 </p>
-              </CardHeader>
-              <CardContent>
-                <form onSubmit={handleSubmit} className="space-y-6">
-                  {/* Plate Number */}
-                  <div>
-                    <Label htmlFor="plateNumber" className="text-sm font-medium text-gray-700">
-                      Улсын дугаар *
-                    </Label>
-                    <Input
-                      id="plateNumber"
-                      value={formState.plateNumber}
-                      onChange={(e) =>
-                        setFormState((prev) => ({ ...prev, plateNumber: e.target.value }))
-                      }
-                      className="mt-2 bg-white border-gray-300 focus:border-blue-500 focus:ring-blue-500"
-                      placeholder="Улсын дугаар оруулах"
-                      required
-                    />
-                  </div>
-
-                  {/* Driver Name */}
-                  <div>
-                    <Label htmlFor="driverName" className="text-sm font-medium text-gray-700">
-                      Жолооч *
-                    </Label>
-                    <Input
-                      id="driverName"
-                      value={formState.driverName}
-                      onChange={(e) =>
-                        setFormState((prev) => ({ ...prev, driverName: e.target.value }))
-                      }
-                      className="mt-2 bg-white border-gray-300 focus:border-blue-500 focus:ring-blue-500"
-                      placeholder="Жолоочийн нэр оруулах"
-                      required
-                    />
-                  </div>
-
-                  {/* Product */}
-                  <div>
-                    <Label htmlFor="product" className="text-sm font-medium text-gray-700">
-                      Бүтээгдэхүүн *
-                    </Label>
-                    <Input
-                      id="product"
-                      value={formState.product}
-                      onChange={(e) =>
-                        setFormState((prev) => ({ ...prev, product: e.target.value }))
-                      }
-                      className="mt-2 bg-white border-gray-300 focus:border-blue-500 focus:ring-blue-500"
-                      placeholder="Бүтээгдэхүүн оруулах"
-                      required
-                    />
-                  </div>
-
-                  {/* Transporter Company */}
-                  <div>
-                    <Label htmlFor="transporterCompany" className="text-sm font-medium text-gray-700">
-                      Тээврийн компани *
-                    </Label>
-                    <Input
-                      id="transporterCompany"
-                      value={formState.transporterCompany}
-                      onChange={(e) =>
-                        setFormState((prev) => ({ ...prev, transporterCompany: e.target.value }))
-                      }
-                      className="mt-2 bg-white border-gray-300 focus:border-blue-500 focus:ring-blue-500"
-                      placeholder="Тээврийн компани оруулах"
-                      required
-                    />
-                  </div>
-
-                  {/* In Time */}
-                  <div>
-                    <Label htmlFor="inTime" className="text-sm font-medium text-gray-700">
-                      Орох цаг *
-                    </Label>
-                    <Input
-                      id="inTime"
-                      type="datetime-local"
-                      value={formState.inTime}
-                      onChange={(e) =>
-                        setFormState((prev) => ({ ...prev, inTime: e.target.value }))
-                      }
-                      className="mt-2 bg-white border-gray-300 focus:border-blue-500 focus:ring-blue-500"
-                      required
-                    />
-                  </div>
-
-                  {/* Gross Weight with Scale Connector */}
-                  <div>
-                    <Label htmlFor="grossWeightKg" className="text-sm font-medium text-gray-700">
-                      Бүрэн жин (кг) *
-                    </Label>
-                    <div className="mt-2 space-y-2">
-                      <InSessionWeightConnector onWeightDetected={handleWeightDetected} />
-                      <Input
-                        id="grossWeightKg"
-                        type="number"
-                        value={formState.grossWeightKg ?? ""}
-                        onChange={(e) =>
-                          setFormState((prev) => ({
-                            ...prev,
-                            grossWeightKg: e.target.value ? parseFloat(e.target.value) : null,
-                          }))
-                        }
-                        readOnly
-                        className="border rounded px-2 py-1 bg-gray-50 border-gray-300 text-gray-700 cursor-not-allowed"
-                        placeholder="Жин (кг) автоматаар оруулах"
-                        required
-                      />
-                    </div>
-                  </div>
-
-                  {/* Notes */}
-                  <div>
-                    <Label htmlFor="notes" className="text-sm font-medium text-gray-700">
-                      Нэмэлт мэдээлэл
-                    </Label>
-                    <Textarea
-                      id="notes"
-                      value={formState.notes}
-                      onChange={(e) =>
-                        setFormState((prev) => ({ ...prev, notes: e.target.value }))
-                      }
-                      className="mt-2 bg-white border-gray-300 focus:border-blue-500 focus:ring-blue-500"
-                      placeholder="Нэмэлт мэдээлэл оруулах"
-                      rows={3}
-                    />
-                  </div>
-
-                  {/* Submit Buttons */}
-                  <div className="flex gap-3 pt-4">
-                    <Button
-                      type="submit"
-                      className="flex-1 bg-blue-600 text-white hover:bg-blue-700"
-                      disabled={isSaving}
-                    >
-                      {isSaving ? "Хадгалж байна..." : "Бүртгэл хадгалах"}
-                    </Button>
-                    <Button
-                      type="button"
-                      onClick={handleSendToThirdParty}
-                      className="flex-1 bg-green-600 text-white hover:bg-green-700"
-                      disabled={isSendingToThirdParty || isSaving}
-                    >
-                      <Send className="h-4 w-4 mr-2" />
-                      {isSendingToThirdParty ? "Илгээж байна..." : "3-р талын апп руу илгээх"}
-                    </Button>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      onClick={() => {
-                        setFormState({
-                          plateNumber: "",
-                          driverName: "",
-                          product: "",
-                          transporterCompany: "",
-                          inTime: new Date().toISOString().slice(0, 16),
-                          grossWeightKg: null,
-                          notes: "",
-                        })
-                        setLastSavedUniqueCode(null)
-                      }}
-                      className="border-gray-300 hover:bg-gray-50"
-                    >
-                      Цэвэрлэх
-                    </Button>
-                  </div>
-                  {/* Unique Code Display */}
-                  {lastSavedUniqueCode && (
-                    <div className="mt-3 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-                      <p className="text-sm font-semibold text-blue-900 mb-1">
-                        🔑 Уникал код (Unrepeatable Code):
-                      </p>
-                      <p className="text-lg font-mono font-bold text-blue-700 mb-2">
-                        {lastSavedUniqueCode}
-                      </p>
-                      <p className="text-xs text-blue-600">
-                        Энэ кодыг ашиглан өгөгдлийг бусад сайтаас татаж авах боломжтой. 
-                        API: <code className="bg-blue-100 px-1 rounded">/api/truck-sessions/by-code/{lastSavedUniqueCode}</code>
-                      </p>
-                    </div>
-                  )}
-                  <div className="mt-2 space-y-2">
-                  </div>
-                  <div className="mt-2 space-y-2">
-                    {isConnected ? (
-                      <p className="text-xs text-green-600 font-medium">
-                        ✓ 3-р талын апптай холбогдсон
-                      </p>
-                    ) : (
-                      <div className="space-y-1">
-                        <p className="text-xs text-yellow-600 font-medium">
-                          ⚠️ 3-р талын апптай холбогдоогүй байна
-                        </p>
-                        <p className="text-xs text-gray-500">
-                          Апп ажиллаж байгаа эсэхийг шалгана уу (ws://127.0.0.1:9000/service)
-                        </p>
-                      </div>
-                    )}
-                    
-                    {/* Debug Panel Toggle */}
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => setShowDebugPanel(!showDebugPanel)}
-                      className="text-xs h-7"
-                    >
-                      {showDebugPanel ? (
-                        <>
-                          <EyeOff className="h-3 w-3 mr-1" />
-                          Debug нуух
-                        </>
-                      ) : (
-                        <>
-                          <Eye className="h-3 w-3 mr-1" />
-                          Илгээсэн өгөгдөл харах (Debug)
-                        </>
-                      )}
-                    </Button>
-                    
-                    {/* Debug Panel */}
-                    {showDebugPanel && (
-                      <div className="mt-2 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                        <div className="mb-3">
-                          <h4 className="font-semibold text-sm text-gray-800 mb-1">
-                            📤 Илгээсэн өгөгдлийн түүх
-                          </h4>
-                          <p className="text-xs text-gray-600 mb-2">
-                            Эдгээр өгөгдлүүд 3-р талын апп руу илгээгдсэн. Апп дээрх форм нээхэд автоматаар бөглөгдөнө.
-                          </p>
-                        </div>
-                        {sentDataHistory.length === 0 ? (
-                          <div className="p-3 bg-white border border-gray-200 rounded text-center">
-                            <p className="text-gray-500 italic text-sm">Одоогоор илгээсэн өгөгдөл байхгүй</p>
-                            <p className="text-xs text-gray-400 mt-1">
-                              "3-р талын апп руу илгээх" товч дарснаар энд харагдана
-                            </p>
-                          </div>
-                        ) : (
-                          <div className="space-y-3 max-h-80 overflow-y-auto">
-                            {sentDataHistory.map((entry: any, index: number) => (
-                              <div key={index} className="p-3 bg-white border border-gray-200 rounded shadow-sm">
-                                <div className="flex items-center justify-between mb-2">
-                                  <p className="text-xs text-gray-500 font-medium">
-                                    {new Date(entry.timestamp).toLocaleString("mn-MN", {
-                                      year: "numeric",
-                                      month: "2-digit",
-                                      day: "2-digit",
-                                      hour: "2-digit",
-                                      minute: "2-digit",
-                                      second: "2-digit",
-                                    })}
-                                  </p>
-                                  <span className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded">
-                                    ✓ Илгээгдсэн
-                                  </span>
-                                </div>
-                                <pre className="text-xs overflow-x-auto text-gray-700 bg-gray-50 p-2 rounded border">
-                                  {JSON.stringify(entry.data, null, 2)}
-                                </pre>
-                              </div>
-                            ))}
-                          </div>
-                        )}
-                        <div className="mt-3 p-2 bg-yellow-50 border border-yellow-200 rounded text-xs">
-                          <p className="text-yellow-800 font-medium mb-1">💡 Хэрхэн ажилладаг вэ?</p>
-                          <ol className="list-decimal list-inside space-y-1 text-yellow-700">
-                            <li>Та эндээс "3-р талын апп руу илгээх" товч дарна</li>
-                            <li>Өгөгдөл WebSocket-аар 3-р талын апп руу илгээгднэ</li>
-                            <li>3-р талын апп өгөгдлийг хадгална (autofill)</li>
-                            <li>3-р талын апп дээрх форм нээхэд автоматаар бөглөгдөнө</li>
-                          </ol>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                </form>
-              </CardContent>
-            </Card>
+              </div>
+              <Badge
+                variant="outline"
+                className="ml-2 bg-blue-50 text-blue-700 border-blue-200 text-xs"
+              >
+                IN
+              </Badge>
+            </div>
+            <Button
+              onClick={() => handleNavigationClick("/out-session")}
+              variant="outline"
+              size="sm"
+              className="gap-2 h-8 text-xs"
+            >
+              ГАРАХ бүртгэл
+              <ArrowRight className="h-3 w-3" />
+            </Button>
           </div>
-        </main>
+        </div>
+      </nav>
+
+      {/* Main Content - Fills remaining space */}
+      <div className="flex-1 min-h-0 overflow-hidden">
+        <div className="h-full max-w-full mx-auto px-3 py-2">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-2 h-full">
+            {/* Left Column: Camera (1/3 width on large screens) */}
+            <div className="lg:col-span-1 h-full overflow-hidden">
+              <CameraPanel
+                streamUrl={streamUrl}
+                lastPlate={cameraAutofill.plate}
+                lastPayload={cameraAutofill.rawPayload}
+                status={cameraAutofill.status}
+                onRefresh={() => {
+                  cameraAutofill.refresh();
+                }}
+              />
+            </div>
+
+            {/* Right Column: Form (2/3 width on large screens) */}
+            <div className="lg:col-span-2 h-full overflow-hidden">
+              <InSessionForm
+                ref={formRef}
+                autoFillPlate={null}
+                onPlateChange={handlePlateChange}
+                onHasUnsavedDataChange={setHasUnsavedData}
+              />
+            </div>
+          </div>
+        </div>
       </div>
+
+      {/* Save Confirmation Dialog */}
+      <AlertDialog open={showSaveDialog} onOpenChange={setShowSaveDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Хадгалаагүй өөрчлөлтүүд</AlertDialogTitle>
+            <AlertDialogDescription>
+              Та зарим өгөгдөл оруулсан байна. Уучлаарай, урьдчилан хадгалж байх
+              уу?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={handleCancelAndNavigate}>
+              Болих
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleSaveAndNavigate}
+              className="bg-blue-600 hover:bg-blue-700"
+            >
+              Хадгалах
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
-  )
+  );
 }

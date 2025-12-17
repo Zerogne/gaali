@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect, useMemo } from "react"
+import { useRouter } from "next/navigation"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -34,6 +35,7 @@ interface TruckSectionProps {
 }
 
 export function TruckSection({ direction, onSave, onSend }: TruckSectionProps) {
+  const router = useRouter()
   const { toast } = useToast()
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
@@ -685,7 +687,14 @@ export function TruckSection({ direction, onSave, onSend }: TruckSectionProps) {
               </p>
             </div>
             <Button
-              onClick={() => setIsDialogOpen(true)}
+              onClick={() => {
+                // Redirect to the appropriate session page
+                if (direction === "IN") {
+                  router.push("/in-session")
+                } else {
+                  router.push("/out-session")
+                }
+              }}
               className={`shadow-md hover:shadow-lg transition-all px-6 py-3 ${
                 direction === "IN"
                   ? "bg-blue-600 hover:bg-blue-700 text-white"

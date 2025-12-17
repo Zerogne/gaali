@@ -8,8 +8,8 @@ export default function SettingsPage() {
       <div className="flex-1 flex flex-col overflow-hidden">
         <main className="flex-1 overflow-auto p-6">
           <div className="mb-6">
-            <h1 className="text-3xl font-bold text-foreground mb-2">Settings</h1>
-            <p className="text-muted-foreground">Configure system preferences and integrations</p>
+            <h1 className="text-3xl font-bold text-foreground mb-2">Тохиргоо</h1>
+            <p className="text-muted-foreground">Системийн тохиргоо болон интеграци тохируулах</p>
           </div>
           <SettingsPanel />
         </main>

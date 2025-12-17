@@ -96,7 +96,7 @@ export function InSessionWeightConnector(props: InSessionWeightConnectorProps) {
       <Button
         onClick={handleReadWeight}
         disabled={isButtonDisabled}
-        className="px-3 py-1 rounded bg-blue-600 text-white text-sm disabled:opacity-50 hover:bg-blue-700"
+        className="px-2 py-1 h-7 rounded bg-blue-600 text-white text-xs disabled:opacity-50 hover:bg-blue-700"
       >
         Read weight from scale
       </Button>
