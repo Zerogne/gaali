@@ -217,7 +217,8 @@ export function useThirdPartyAutofill() {
 
   /**
    * Sends form data to the 3rd party app via WebSocket
-   * The app will save this data as autofill
+   * Based on reverse engineering, the app expects a URL string, not JSON
+   * The app will fetch data from that URL and return it via WebSocket
    */
   const sendFormData = useCallback(
     async (formData: Record<string, any>): Promise<SendFormDataResult> => {
@@ -242,25 +243,32 @@ export function useThirdPartyAutofill() {
           }
         }
 
-        // Convert form data to JSON string
-        const jsonData = JSON.stringify(formData, null, 2)
-
-        // Log the data being sent for debugging
-        console.log("📤 Sending form data to 3rd party app:", formData)
-        console.log("📤 JSON data:", jsonData)
-        console.log("📤 WebSocket readyState before send:", connectedWs.readyState)
-        console.log("📤 WebSocket URL:", getWebSocketUrl())
-        
-        // Highlight unique code if present
-        if (formData.uniqueCode) {
-          console.log("🔑 Unique Code (unrepeatable code) being sent:", formData.uniqueCode)
-          console.log("🔑 This code can be used to pull data from: /api/truck-sessions/by-code/" + formData.uniqueCode)
-        } else {
-          console.warn("⚠️ WARNING: No uniqueCode found in form data! The 3rd party app needs this code.")
+        // Check for unique code - required for URL-based approach
+        if (!formData.uniqueCode) {
+          console.warn("⚠️ WARNING: No uniqueCode found in form data!")
+          return {
+            success: false,
+            error: "uniqueCode is required to send data to 3rd party app",
+          }
         }
 
-        // Send the form data to the 3rd party app
-        // The app will save it as autofill
+        // Build the API URL that the 3rd party app will fetch from
+        // The app expects a URL string, not JSON data
+        const baseUrl = typeof window !== "undefined" 
+          ? window.location.origin 
+          : process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"
+        
+        const apiUrl = `${baseUrl}/api/truck-sessions/by-code/${formData.uniqueCode}?format=thirdparty`
+        
+        console.log("📤 Preparing to send URL to 3rd party app")
+        console.log("📤 API URL:", apiUrl)
+        console.log("📤 WebSocket readyState before send:", connectedWs.readyState)
+        console.log("📤 WebSocket URL:", getWebSocketUrl())
+        console.log("🔑 Unique Code:", formData.uniqueCode)
+        console.log("💡 The 3rd party app will fetch data from this URL and return it via WebSocket")
+
+        // Send the URL string to the 3rd party app
+        // Based on reverse engineering: PuuHandler expects a URL, fetches from it, and returns JSON
         try {
           // Verify connection is still open right before sending
           if (connectedWs.readyState !== WebSocket.OPEN) {
@@ -271,16 +279,17 @@ export function useThirdPartyAutofill() {
             }
           }
           
-          // Send the data
-          connectedWs.send(jsonData)
-          console.log("✅ Data sent via WebSocket.send() successfully")
-          console.log("✅ Message length:", jsonData.length, "bytes")
-          console.log("✅ Full JSON being sent:", jsonData)
+          // Send the URL string (not JSON!)
+          connectedWs.send(apiUrl)
+          console.log("✅ URL sent via WebSocket.send() successfully")
+          console.log("✅ URL length:", apiUrl.length, "bytes")
+          console.log("✅ URL being sent:", apiUrl)
           
           // Log to help verify data was sent
           console.log("=".repeat(50))
-          console.log("📤 DATA SENT TO 3RD PARTY APP:")
-          console.log(JSON.stringify(formData, null, 2))
+          console.log("📤 URL SENT TO 3RD PARTY APP:")
+          console.log(apiUrl)
+          console.log("💡 The app will fetch from this URL and return JSON data")
           console.log("=".repeat(50))
           
           // Verify connection is still open after sending
