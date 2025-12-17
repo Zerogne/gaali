@@ -13,46 +13,72 @@ export function WebSocketTestPanel() {
   const [status, setStatus] = useState<"disconnected" | "connecting" | "connected">("disconnected")
   const [logs, setLogs] = useState<string[]>([])
   const logRef = useRef<HTMLDivElement>(null)
+  
+  // Store sequential number per day (resets when date changes)
+  // Use refs to avoid re-renders and ensure sequential number only increments on send
+  const sequentialNumberRef = useRef(1)
+  const lastDateRef = useRef(new Date().toISOString().slice(0, 10))
 
-  const generateUniqueCode = () => {
-    // Generate 8-digit numeric code
-    const timestamp = Date.now()
-    const random = Math.floor(Math.random() * 1000000)
-    // Combine timestamp and random to ensure uniqueness
-    const combined = (timestamp + random).toString()
-    // Take last 8 digits, pad with zeros if needed
-    const code = combined.slice(-8).padStart(8, '0')
-    return code
+  // Generate customs act number (AKT) in format: {customsCode}{date}{sequentialNumber}
+  // Format: 311001202401180001
+  // - 311001: Customs office code (6 digits)
+  // - 20240118: Date YYYYMMDD (8 digits)
+  // - 000001: Sequential number for that day (6 digits)
+  // increment: if true, increments the sequential number for next call
+  const generateActNumber = (increment: boolean = false): string => {
+    const customsCode = "311001" // Example customs office code
+    const now = new Date()
+    const dateStr = now.toISOString().slice(0, 10).replace(/-/g, "") // YYYYMMDD
+    
+    // Check if date changed, reset sequential number if so
+    const currentDate = now.toISOString().slice(0, 10)
+    if (currentDate !== lastDateRef.current) {
+      lastDateRef.current = currentDate
+      sequentialNumberRef.current = 1
+    }
+    
+    const seqNum = sequentialNumberRef.current.toString().padStart(6, '0')
+    const actNumber = `${customsCode}${dateStr}${seqNum}`
+    
+    // Only increment when actually sending (not for preview)
+    if (increment) {
+      sequentialNumberRef.current += 1
+    }
+    
+    return actNumber
   }
 
-  // Generate sample data for testing - matches exact 3rd party app format
-  const generateSampleData = () => {
-    const uniqueCode = generateUniqueCode()
+  // Generate sample data for testing - matches exact requirements
+  const generateSampleData = (incrementActNumber: boolean = false) => {
     const randomNum = Math.floor(Math.random() * 10000)
     const year = new Date().getFullYear()
     const month = String(new Date().getMonth() + 1).padStart(2, '0')
-    const permitNum = Math.floor(Math.random() * 100)
+    const day = String(new Date().getDate()).padStart(2, '0')
     
-    // Generate data in exact format required by 3rd party app
+    // Generate act number (only increment when actually sending)
+    const aktNumber = generateActNumber(incrementActNumber)
+    
+    // Generate all required fields according to specification
     const data = [
       {
-        CAR: "Цайны зам",
-        CON: `${year}/${month}-${permitNum}`,
-        DRN: `Б.ЭНХБАТ ЕТ74102419 ${96650888 + randomNum}`,
-        LPC: "ПАТРИКЕЙН ХХК",
-        SLN: `ZW${String(341369 + randomNum).padStart(7, '0')}-ZW${String(341381 + randomNum).padStart(7, '0')}`,
-        TRL: `${1330 + randomNum}СЧ`,
-        UPC: "Erlian",
-        AKT: `${String(year)}${String(month)}${String(permitNum).padStart(2, '0')}${uniqueCode}`,
-        NET: Math.floor(Math.random() * 20000) + 10000,
-        WGT: Math.floor(Math.random() * 25000) + 15000,
-        VNO: `${3826 + randomNum}ДГН`,
-        CT1: "",
-        CMN: "",
+        CAR: "Цайны зам", // Тээвэрлэгч байгууллагын нэр
+        CON: `${year}/${month}-${randomNum}`, // Гэрээний дугаар
+        DRN: `Б.ЭНХБАТ ЕТ74102419 ${96650888 + randomNum}`, // Жолоочийн нэр
+        LPC: "ПАТРИКЕЙН ХХК", // Ачих газар код (гаалиас асуух)
+        PRM: `PRM${String(1000 + randomNum).padStart(6, '0')}`, // Улс хоорондын тээвэр гүйцэтгэх зөвшөөрлийн дугаар
+        SLN: `ZW${String(341369 + randomNum).padStart(7, '0')}-ZW${String(341381 + randomNum).padStart(7, '0')}`, // Гаалийн лац, ломбын дугаар
+        TRL: `${1330 + randomNum}СЧ`, // Чиргүүлийн дугаар
+        UPC: "Erlian", // Хүлээн авах газар код (гаалиас асуух)
+        AKT: aktNumber, // Актын дугаар (формат: 311001202401180001)
+        NET: Math.floor(Math.random() * 20000) + 10000, // Цэвэр жин
+        WGT: Math.floor(Math.random() * 25000) + 15000, // Бохир жин
+        VNO: `${3826 + randomNum}ДГН`, // Тээврийн хэрэгслийн дугаар
+        TID: `TID${String(5000000 + randomNum).padStart(10, '0')}`, // Тээврийн хэрэгслийн RFID дугаар (TID)
+        CMN: `CMN${String(6000 + randomNum).padStart(8, '0')}`, // Convoy manifest number
       }
     ]
     
-    return { uniqueCode, data }
+    return { aktNumber, data }
   }
 
   useEffect(() => {
@@ -123,39 +149,86 @@ export function WebSocketTestPanel() {
     }
   }
 
-  const [sampleData, setSampleData] = useState(generateSampleData())
+  // Initialize sample data (preview only, doesn't increment counter)
+  const [sampleData, setSampleData] = useState(() => {
+    const { aktNumber, data } = generateSampleData(false)
+    return { aktNumber, data }
+  })
 
-  const testSend = () => {
+  const testSend = async () => {
     if (!ws || ws.readyState !== WebSocket.OPEN) {
       addLog("❌ WebSocket холбогдоогүй байна", "error")
       return
     }
 
-    // Generate new sample data with different unique code each time
-    const { uniqueCode, data } = generateSampleData()
-    setSampleData({ uniqueCode, data })
-    
-    // Send data WITHOUT unique code - unique code is only for display/logging
-    const jsonData = JSON.stringify(data, null, 2)
-
-    addLog("═══════════════════════════════════════════════════════", "info")
-    addLog("📤 3-Р ТАЛЫН АПП РУУ ТЕСТ ӨГӨГДӨЛ ИЛГЭЭЖ БАЙНА", "info")
-    addLog("═══════════════════════════════════════════════════════", "info")
-    addLog(`🔑 Уникал код: ${uniqueCode}`, "info")
-    addLog(`📦 Өгөгдлийн хэмжээ: ${jsonData.length} байт`, "info")
-    addLog("📋 JSON өгөгдөл (3-р талын апп руу илгээх):", "info")
-    addLog(jsonData, "info")
-
     try {
-      ws.send(jsonData)
+      // Step 1: Generate new sample data with new act number each time (increment counter)
+      const { aktNumber, data } = generateSampleData(true)
+      setSampleData({ aktNumber, data })
+      
+      const jsonData = JSON.stringify(data, null, 2)
+
+      addLog("═══════════════════════════════════════════════════════", "info")
+      addLog("📤 3-Р ТАЛЫН АПП РУУ ТЕСТ ӨГӨГДӨЛ ИЛГЭЭЖ БАЙНА", "info")
+      addLog("═══════════════════════════════════════════════════════", "info")
+      addLog(`🔑 Пүүний актын дугаар (AKT): ${aktNumber}`, "info")
+      addLog(`📦 Өгөгдлийн хэмжээ: ${jsonData.length} байт`, "info")
+      addLog("📋 JSON өгөгдөл:", "info")
+      addLog(jsonData, "info")
+
+      // Step 2: Save data to file-like storage
+      addLog("💾 Өгөгдөл файлд хадгалж байна...", "info")
+      const appBaseUrl = typeof window !== "undefined" 
+        ? window.location.origin 
+        : "https://gaali.vercel.app"
+      
+      const saveResponse = await fetch(`${appBaseUrl}/api/third-party/save`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          uniqueCode: aktNumber, // Use AKT as unique code
+          data: data,
+        }),
+      })
+
+      if (!saveResponse.ok) {
+        const errorData = await saveResponse.json().catch(() => ({}))
+        throw new Error(errorData.error || `Файл хадгалахад алдаа гарлаа: ${saveResponse.statusText}`)
+      }
+
+      const saveResult = await saveResponse.json()
+      const fileUrl = saveResult.url
+      const uniqueCode = saveResult.code
+      const dataBaseUrl = `${appBaseUrl}/api/third-party/data`
+
+      addLog("✅ Өгөгдөл файлд амжилттай хадгалагдлаа", "success")
+      addLog(`🔑 Уникал код: ${uniqueCode}`, "info")
+      addLog(`📁 Файлын URL: ${fileUrl}`, "info")
+      addLog(`📁 Base URL (3-р талын апп-д тохируулах): ${dataBaseUrl}`, "info")
+
+      // Step 3: Send full URL via WebSocket (3rd party app expects URL string)
+      // The 3rd party app will fetch data from this URL and can forward to another site
+      const dataUrl = `${dataBaseUrl}/${uniqueCode}`
+      addLog("📤 URL-г WebSocket-оор илгээж байна...", "info")
+      addLog(`🔑 Уникал код: ${uniqueCode}`, "info")
+      addLog(`📁 Бүтэн URL: ${dataUrl}`, "info")
+      addLog(`💡 3-р талын апп энэ URL-аас өгөгдөл татна`, "info")
+      addLog(`💡 3-р талын апп өгөгдлийг өөр сайт руу дамжуулна`, "info")
+
+      ws.send(dataUrl)
+      
       addLog("═══════════════════════════════════════════════════════", "success")
-      addLog("✅ ӨГӨГДӨЛ АМЖИЛТТАЙ ИЛГЭЭГДЛЭЭ!", "success")
+      addLog("✅ URL АМЖИЛТТАЙ ИЛГЭЭГДЛЭЭ!", "success")
       addLog("═══════════════════════════════════════════════════════", "success")
-      addLog(`✅ Илгээсэн байт: ${jsonData.length}`, "success")
-      addLog(`✅ Уникал код: ${uniqueCode} (энэ код зөвхөн лог-д харагдана)`, "success")
-      addLog("💡 3-р талын апп-аас өгөгдөл хүлээн авсныг шалгана уу", "info")
+      addLog(`✅ Илгээсэн URL: ${dataUrl}`, "success")
+      addLog(`✅ Пүүний актын дугаар: ${aktNumber}`, "success")
+      addLog(`🔑 Уникал код: ${uniqueCode}`, "info")
+      addLog(`💡 3-р талын апп энэ URL-аас өгөгдөл татна`, "info")
+      addLog(`💡 3-р талын апп өгөгдлийг өөр сайт руу дамжуулна`, "info")
     } catch (error: any) {
-      addLog(`❌ Илгээхэд алдаа гарлаа: ${error.message}`, "error")
+      addLog(`❌ Алдаа гарлаа: ${error.message}`, "error")
     }
   }
 
@@ -215,12 +288,15 @@ export function WebSocketTestPanel() {
           <div className="border-t pt-6">
             <h3 className="text-lg font-semibold mb-4">Илгээх өгөгдөл (автоматаар үүсгэгдсэн):</h3>
             <p className="text-sm text-gray-600 mb-2">
-              Дараагийн удаа илгээхэд шинэ уникал код үүсгэгдэнэ. Уникал код зөвхөн лог-д харагдана, 3-р талын апп руу илгээгдэхгүй.
+              Дараагийн удаа илгээхэд шинэ пүүний актын дугаар үүсгэгдэнэ. Актын дугаар нь өдөр бүр дарааллаар нэмэгддэг.
             </p>
             <div className="mb-2">
-              <span className="text-sm font-medium">🔑 Уникал код: </span>
-              <span className="text-sm font-mono bg-blue-50 px-2 py-1 rounded">{sampleData.uniqueCode}</span>
+              <span className="text-sm font-medium">🔑 Пүүний актын дугаар (AKT): </span>
+              <span className="text-sm font-mono bg-blue-50 px-2 py-1 rounded">{sampleData.aktNumber}</span>
             </div>
+            <p className="text-xs text-gray-500 mb-2">
+              Формат: [Гаалийн код 6 орон][Огноо YYYYMMDD 8 орон][Дарааллын дугаар 6 орон]
+            </p>
             <pre className="bg-gray-50 rounded-lg p-4 text-xs max-h-64 overflow-auto font-mono">
               {JSON.stringify(sampleData.data, null, 2)}
             </pre>

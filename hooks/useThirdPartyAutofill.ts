@@ -25,6 +25,10 @@ const getWebSocketUrl = () => {
 interface SendFormDataResult {
   success: boolean
   error?: string
+  fileUrl?: string
+  uniqueCode?: string
+  baseUrl?: string
+  dataUrl?: string
 }
 
 /**
@@ -224,18 +228,75 @@ export function useThirdPartyAutofill() {
 
   /**
    * Sends form data to the 3rd party app via WebSocket
-   * Based on reverse engineering, the app expects a URL string, not JSON
-   * The app will fetch data from that URL and return it via WebSocket
+   * First saves data to a file-like storage, then sends the file URL
+   * The 3rd party app will fetch the data from that URL
    */
   const sendFormData = useCallback(
     async (formData: Record<string, any>): Promise<SendFormDataResult> => {
       console.log("🚀 sendFormData called with:", formData)
       setIsSending(true)
       try {
-        console.log("🔌 Attempting to connect WebSocket...")
+        // Step 1: Transform formData to 3rd party app format
+        // Format: Array with single object containing CAR, CON, DRN, etc.
+        const thirdPartyData = [
+          {
+            CAR: formData.product || formData.cargoType || "", // Тээвэрлэгч байгууллагын нэр / Бүтээгдэхүүн
+            CON: formData.contractNumber || "", // Гэрээний дугаар
+            DRN: formData.driverName || "", // Жолоочийн нэр
+            LPC: formData.transporterCompany || formData.origin || "", // Ачих газар код
+            PRM: formData.permitNumber || "", // Улс хоорондын тээвэр гүйцэтгэх зөвшөөрлийн дугаар
+            SLN: formData.sealNumber || "", // Гаалийн лац, ломбын дугаар
+            TRL: formData.trailerNumber || formData.trailerPlate || "", // Чиргүүлийн дугаар
+            UPC: formData.destination || formData.receiverOrganization || "", // Хүлээн авах газар код
+            AKT: formData.aktNumber || formData.uniqueCode || "", // Актын дугаар
+            NET: formData.netWeightKg || formData.netWeight || 0, // Цэвэр жин
+            WGT: formData.grossWeightKg || formData.weightKg || formData.weight || 0, // Бохир жин
+            VNO: formData.plateNumber || formData.plate || "", // Тээврийн хэрэгслийн дугаар
+            CT1: formData.container1 || "", // Чингэлэг 1
+            CT2: formData.container2 || "", // Чингэлэг 2
+            CT3: formData.container3 || "", // Чингэлэг 3
+            CT4: formData.container4 || "", // Чингэлэг 4
+            TID: formData.rfidNumber || formData.tid || "", // Тээврийн хэрэгслийн RFID дугаар
+            CMN: formData.convoyManifestNumber || formData.cmn || "", // Convoy manifest number
+          }
+        ]
+
+        console.log("💾 Step 1: Saving data to file-like storage...")
+        console.log("📋 Data to save:", JSON.stringify(thirdPartyData, null, 2))
+
+        // Step 2: Save data to file-like storage (database)
+        const baseUrl = typeof window !== "undefined" 
+          ? window.location.origin 
+          : process.env.NEXT_PUBLIC_APP_URL || "https://gaali.vercel.app"
+        
+        const saveResponse = await fetch(`${baseUrl}/api/third-party/save`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            uniqueCode: formData.uniqueCode,
+            data: thirdPartyData,
+          }),
+        })
+
+        if (!saveResponse.ok) {
+          const errorData = await saveResponse.json().catch(() => ({}))
+          throw new Error(errorData.error || `Failed to save data: ${saveResponse.statusText}`)
+        }
+
+        const saveResult = await saveResponse.json()
+        const fileUrl = saveResult.url
+        const uniqueCode = saveResult.code
+
+        console.log("✅ Step 2: Data saved successfully")
+        console.log("🔑 Unique Code:", uniqueCode)
+        console.log("📁 File URL:", fileUrl)
+
+        // Step 3: Connect WebSocket
+        console.log("🔌 Step 3: Connecting WebSocket...")
         console.log("🔌 Current WebSocket state:", ws ? `readyState: ${ws.readyState} (OPEN=${WebSocket.OPEN})` : "null")
         
-        // Ensure WebSocket is connected
         const connectedWs = await connectWebSocket()
         console.log("✅ WebSocket connection established")
         console.log("✅ Connected WebSocket readyState:", connectedWs.readyState)
@@ -250,32 +311,18 @@ export function useThirdPartyAutofill() {
           }
         }
 
-        // Check for unique code - required for URL-based approach
-        if (!formData.uniqueCode) {
-          console.warn("⚠️ WARNING: No uniqueCode found in form data!")
-          return {
-            success: false,
-            error: "uniqueCode is required to send data to 3rd party app",
-          }
-        }
-
-        // Build the API URL that the 3rd party app will fetch from
-        // The app expects a URL string, not JSON data
-        const baseUrl = typeof window !== "undefined" 
-          ? window.location.origin 
-          : process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"
-        
-        const apiUrl = `${baseUrl}/api/truck-sessions/by-code/${formData.uniqueCode}?format=thirdparty`
-        
-        console.log("📤 Preparing to send URL to 3rd party app")
-        console.log("📤 API URL:", apiUrl)
+        // Step 4: Send full URL to 3rd party app
+        // The 3rd party app expects a URL string (not just a code)
+        // It will fetch data from that URL and can forward to another site
+        const dataUrl = `${baseUrl}/api/third-party/data/${uniqueCode}`
+        console.log("📤 Step 4: Sending URL to 3rd party app")
         console.log("📤 WebSocket readyState before send:", connectedWs.readyState)
         console.log("📤 WebSocket URL:", getWebSocketUrl())
-        console.log("🔑 Unique Code:", formData.uniqueCode)
-        console.log("💡 The 3rd party app will fetch data from this URL and return it via WebSocket")
+        console.log("🔑 Unique Code:", uniqueCode)
+        console.log("📁 Full URL to send:", dataUrl)
+        console.log("💡 3rd party app will fetch data from this URL")
+        console.log("💡 3rd party app can forward data to another site")
 
-        // Send the URL string to the 3rd party app
-        // Based on reverse engineering: PuuHandler expects a URL, fetches from it, and returns JSON
         try {
           // Verify connection is still open right before sending
           if (connectedWs.readyState !== WebSocket.OPEN) {
@@ -286,17 +333,18 @@ export function useThirdPartyAutofill() {
             }
           }
           
-          // Send the URL string (not JSON!)
-          connectedWs.send(apiUrl)
+          // Send the full URL (3rd party app expects URL string, will fetch and can forward)
+          connectedWs.send(dataUrl)
           console.log("✅ URL sent via WebSocket.send() successfully")
-          console.log("✅ URL length:", apiUrl.length, "bytes")
-          console.log("✅ URL being sent:", apiUrl)
+          console.log("✅ URL:", dataUrl)
           
           // Log to help verify data was sent
           console.log("=".repeat(50))
           console.log("📤 URL SENT TO 3RD PARTY APP:")
-          console.log(apiUrl)
-          console.log("💡 The app will fetch from this URL and return JSON data")
+          console.log(dataUrl)
+          console.log("🔑 Unique Code:", uniqueCode)
+          console.log("💡 3rd party app will fetch data from this URL")
+          console.log("💡 3rd party app can forward data to another site")
           console.log("=".repeat(50))
           
           // Verify connection is still open after sending
@@ -325,6 +373,9 @@ export function useThirdPartyAutofill() {
             sentDataHistory.unshift({
               timestamp: new Date().toISOString(),
               data: formData,
+              fileUrl: fileUrl,
+              uniqueCode: uniqueCode,
+              savedData: thirdPartyData,
             })
             // Keep only last 5 entries
             const trimmedHistory = sentDataHistory.slice(0, 5)
@@ -338,8 +389,13 @@ export function useThirdPartyAutofill() {
         }
 
         console.log("✅ Successfully sent form data to 3rd party app")
+        const dataBaseUrl = `${baseUrl}/api/third-party/data`
         return {
           success: true,
+          fileUrl: fileUrl,
+          uniqueCode: uniqueCode,
+          baseUrl: dataBaseUrl, // Base URL to configure in 3rd party app
+          dataUrl: dataUrl, // Full URL that was sent
         }
       } catch (error) {
         console.error("❌ Error sending form data to 3rd party app:", error)

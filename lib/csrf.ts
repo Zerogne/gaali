@@ -14,7 +14,7 @@ export function validateCSRF(request: Request): boolean {
   // Get allowed origin from environment
   const allowedOrigin = process.env.NEXT_PUBLIC_APP_URL || process.env.VERCEL_URL
     ? `https://${process.env.VERCEL_URL}`
-    : 'http://localhost:3000'
+    : 'https://gaali.vercel.app'
   
   // For same-origin requests (no Origin header), check Referer
   if (!origin) {
