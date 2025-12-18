@@ -148,9 +148,12 @@
     <div class="sample-data-preview">
       <strong>Sample Data to Send:</strong>
       <div style="margin-bottom: 10px; padding: 10px; background: #fff3cd; border: 1px solid #ffc107; border-radius: 4px;">
-        <strong>🔑 Unique Code:</strong> <code id="uniqueCodeDisplay" style="font-size: 14px; font-weight: bold; color: #856404;"></code>
+        <strong>🔑 Пүүний актын дугаар (AKT):</strong> <code id="aktNumberDisplay" style="font-size: 14px; font-weight: bold; color: #856404;"></code>
         <p style="margin: 5px 0 0 0; font-size: 11px; color: #856404;">
-          This code can be used to pull data from: <code>/api/truck-sessions/by-code/{uniqueCode}</code>
+          Формат: [Гаалийн код 6 орон][Огноо YYYYMMDD 8 орон][Дарааллын дугаар 6 орон]
+        </p>
+        <p style="margin: 5px 0 0 0; font-size: 11px; color: #856404;">
+          Дараагийн удаа илгээхэд шинэ актын дугаар үүсгэгдэнэ. Актын дугаар нь өдөр бүр дарааллаар нэмэгддэг.
         </p>
       </div>
       <pre id="sampleDataPreview"></pre>
@@ -170,51 +173,81 @@
     const sendSampleBtn = document.getElementById('sendSampleBtn');
     const wsUrl = 'ws://127.0.0.1:9000/service';
 
-    // Generate a unique code (8 characters, uppercase alphanumeric)
-    function generateUniqueCode() {
-      const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"; // Excludes confusing chars like 0, O, I, 1
-      const timestamp = Date.now();
-      const random1 = Math.random() * 1000000;
-      const random2 = Math.random() * 1000000;
-      const random3 = Math.random() * 1000000;
+    // Store sequential number per day (resets when date changes)
+    let sequentialNumber = 1;
+    let lastDate = new Date().toISOString().slice(0, 10);
+
+    // Generate customs act number (AKT) in format: {customsCode}{date}{sequentialNumber}
+    // Format: 311001202401180001
+    // - 311001: Customs office code (6 digits)
+    // - 20240118: Date YYYYMMDD (8 digits)
+    // - 000001: Sequential number for that day (6 digits)
+    function generateActNumber() {
+      const customsCode = "311001"; // Example customs office code
+      const now = new Date();
+      const dateStr = now.toISOString().slice(0, 10).replace(/-/g, ""); // YYYYMMDD
       
-      let code = "";
-      let seed = Math.abs(Math.floor(timestamp + random1 + random2 + random3));
-      
-      for (let i = 0; i < 8; i++) {
-        const randomIndex = Math.floor(Math.random() * chars.length);
-        const seedIndex = seed % chars.length;
-        const index = (seedIndex + randomIndex) % chars.length;
-        code += chars.charAt(index);
-        seed = Math.floor(seed / chars.length) + (i * 1000) + Math.floor(Math.random() * 100);
+      // Check if date changed, reset sequential number if so
+      const currentDate = now.toISOString().slice(0, 10);
+      if (currentDate !== lastDate) {
+        lastDate = currentDate;
+        sequentialNumber = 1;
       }
       
-      return code;
+      const seqNum = String(sequentialNumber).padStart(6, '0');
+      const actNumber = `${customsCode}${dateStr}${seqNum}`;
+      
+      // Increment for next call
+      sequentialNumber += 1;
+      
+      return actNumber;
     }
 
-    // Sample data from the image
-    const sampleData = [
-      {
-        "uniqueCode": generateUniqueCode(), // Unique code for pulling data
-        "CAR": "Цайны зам",
-        "CON": "2025/08-92",
-        "DRN": "Б.ЭНХБАТ ЕТ74102419 96650888",
-        "LPC": "ПАТРИКЕЙН ХХК",
-        "SLN": "ZW0341369-ZW0341381",
-        "TRL": "1330СЧ",
-        "UPC": "Erlian",
-        "AKT": "11112025102800063",
-        "NET": 28750,
-        "WGT": 43950,
-        "VNO": "3826ДГН",
-        "CT1": "",
-        "CMN": ""
-      }
-    ];
+    // Generate sample data - matches exact requirements
+    function generateSampleData() {
+      const randomNum = Math.floor(Math.random() * 10000);
+      const year = new Date().getFullYear();
+      const month = String(new Date().getMonth() + 1).padStart(2, '0');
+      
+      // Generate act number
+      const aktNumber = generateActNumber();
+      
+      // Generate all required fields according to specification
+      return [
+        {
+          "CAR": "Цайны зам", // Тээвэрлэгч байгууллагын нэр
+          "CON": `${year}/${month}-${randomNum}`, // Гэрээний дугаар
+          "DRN": `Б.ЭНХБАТ ЕТ74102419 ${96650888 + randomNum}`, // Жолоочийн нэр
+          "LPC": "ПАТРИКЕЙН ХХК", // Ачих газар код (гаалиас асуух)
+          "PRM": `PRM${String(1000 + randomNum).padStart(6, '0')}`, // Улс хоорондын тээвэр гүйцэтгэх зөвшөөрлийн дугаар
+          "SLN": `ZW${String(341369 + randomNum).padStart(7, '0')}-ZW${String(341381 + randomNum).padStart(7, '0')}`, // Гаалийн лац, ломбын дугаар
+          "TRL": `${1330 + randomNum}СЧ`, // Чиргүүлийн дугаар
+          "UPC": "Erlian", // Хүлээн авах газар код (гаалиас асуух)
+          "AKT": aktNumber, // Актын дугаар (формат: 311001202401180001)
+          "NET": Math.floor(Math.random() * 20000) + 10000, // Цэвэр жин
+          "WGT": Math.floor(Math.random() * 25000) + 15000, // Бохир жин
+          "VNO": `${3826 + randomNum}ДГН`, // Тээврийн хэрэгслийн дугаар
+          "CT1": `CTN${String(1000 + randomNum).padStart(7, '0')}`, // Чингэлэг 1
+          "CT2": `CTN${String(2000 + randomNum).padStart(7, '0')}`, // Чингэлэг 2
+          "CT3": `CTN${String(3000 + randomNum).padStart(7, '0')}`, // Чингэлэг 3
+          "CT4": `CTN${String(4000 + randomNum).padStart(7, '0')}`, // Чингэлэг 4
+          "TID": `TID${String(5000000 + randomNum).padStart(10, '0')}`, // Тээврийн хэрэгслийн RFID дугаар (TID)
+          "CMN": `CMN${String(6000 + randomNum).padStart(8, '0')}` // Convoy manifest number
+        }
+      ];
+    }
+
+    // Generate initial sample data
+    let sampleData = generateSampleData();
+
+    // Update display function
+    function updateSampleDataDisplay() {
+      document.getElementById('sampleDataPreview').textContent = JSON.stringify(sampleData, null, 2);
+      document.getElementById('aktNumberDisplay').textContent = sampleData[0].AKT;
+    }
 
     // Display sample data on load
-    document.getElementById('sampleDataPreview').textContent = JSON.stringify(sampleData, null, 2);
-    document.getElementById('uniqueCodeDisplay').textContent = sampleData[0].uniqueCode;
+    updateSampleDataDisplay();
 
     function log(message, type = 'info') {
       const entry = document.createElement('div');
@@ -280,17 +313,19 @@
         return;
       }
 
+      // Generate new sample data with new act number each time
+      sampleData = generateSampleData();
+      updateSampleDataDisplay();
+
       const jsonData = JSON.stringify(sampleData, null, 2);
       
       log('═══════════════════════════════════════════════════════', 'info');
-      log('📤 PREPARING TO SEND SAMPLE DATA TO 3RD PARTY APP', 'info');
+      log('📤 3-Р ТАЛЫН АПП РУУ ТЕСТ ӨГӨГДӨЛ ИЛГЭЭЖ БАЙНА', 'info');
       log('═══════════════════════════════════════════════════════', 'info');
-      log(`📊 WebSocket State: ${ws.readyState} (OPEN=1)`, 'info');
-      log(`📦 Data Size: ${jsonData.length} bytes`, 'info');
-      log('', 'info');
-      log('📋 Sample Data:', 'info');
+      log(`🔑 Пүүний актын дугаар (AKT): ${sampleData[0].AKT}`, 'info');
+      log(`📦 Өгөгдлийн хэмжээ: ${jsonData.length} байт`, 'info');
+      log('📋 JSON өгөгдөл (3-р талын апп руу илгээх):', 'info');
       log(jsonData, 'info');
-      log('', 'info');
       
       try {
         // Verify connection one more time
@@ -303,13 +338,11 @@
         ws.send(jsonData);
         
         log('═══════════════════════════════════════════════════════', 'success');
-        log('✅ SAMPLE DATA SENT SUCCESSFULLY!', 'success');
+        log('✅ ӨГӨГДӨЛ АМЖИЛТТАЙ ИЛГЭЭГДЛЭЭ!', 'success');
         log('═══════════════════════════════════════════════════════', 'success');
-        log(`✅ Message sent via ws.send()`, 'success');
-        log(`✅ Bytes sent: ${jsonData.length}`, 'success');
-        log('', 'success');
-        log('💡 Check your 3rd party app to verify it received the data', 'info');
-        log('💡 The app should show this data in its autofill/form', 'info');
+        log(`✅ Илгээсэн байт: ${jsonData.length}`, 'success');
+        log(`✅ Пүүний актын дугаар: ${sampleData[0].AKT}`, 'success');
+        log('💡 3-р талын апп-аас өгөгдөл хүлээн авсныг шалгана уу', 'info');
         
         // Check connection after a short delay
         setTimeout(() => {

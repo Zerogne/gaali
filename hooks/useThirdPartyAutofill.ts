@@ -263,7 +263,7 @@ export function useThirdPartyAutofill() {
         // The app expects a URL string, not JSON data
         const baseUrl = typeof window !== "undefined" 
           ? window.location.origin 
-          : process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"
+          : process.env.NEXT_PUBLIC_APP_URL || "https://gaali.vercel.app"
         
         const apiUrl = `${baseUrl}/api/truck-sessions/by-code/${formData.uniqueCode}?format=thirdparty`
         
