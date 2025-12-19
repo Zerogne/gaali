@@ -159,37 +159,73 @@ export function WebSocketTestPanel() {
     return { aktNumber, data }
   })
 
-  const testSend = () => {
+  const testSend = async () => {
     if (!ws || ws.readyState !== WebSocket.OPEN) {
       addLog("❌ WebSocket холбогдоогүй байна", "error")
       return
     }
 
-    // Generate new sample data with new act number each time (increment counter)
-    const { aktNumber, data } = generateSampleData(true)
-    setSampleData({ aktNumber, data })
-    
-    // Send data via WebSocket
-    const jsonData = JSON.stringify(data, null, 2)
-
-    addLog("═══════════════════════════════════════════════════════", "info")
-    addLog("📤 3-Р ТАЛЫН АПП РУУ ТЕСТ ӨГӨГДӨЛ ИЛГЭЭЖ БАЙНА", "info")
-    addLog("═══════════════════════════════════════════════════════", "info")
-    addLog(`🔑 Пүүний актын дугаар (AKT): ${aktNumber}`, "info")
-    addLog(`📦 Өгөгдлийн хэмжээ: ${jsonData.length} байт`, "info")
-    addLog("📋 JSON өгөгдөл (3-р талын апп руу илгээх):", "info")
-    addLog(jsonData, "info")
-
     try {
-      ws.send(jsonData)
+      // Step 1: Generate new sample data with new act number each time (increment counter)
+      const { aktNumber, data } = generateSampleData(true)
+      setSampleData({ aktNumber, data })
+      
+      const jsonData = JSON.stringify(data, null, 2)
+
+      addLog("═══════════════════════════════════════════════════════", "info")
+      addLog("📤 3-Р ТАЛЫН АПП РУУ ТЕСТ ӨГӨГДӨЛ ИЛГЭЭЖ БАЙНА", "info")
+      addLog("═══════════════════════════════════════════════════════", "info")
+      addLog(`🔑 Пүүний актын дугаар (AKT): ${aktNumber}`, "info")
+      addLog(`📦 Өгөгдлийн хэмжээ: ${jsonData.length} байт`, "info")
+      addLog("📋 JSON өгөгдөл:", "info")
+      addLog(jsonData, "info")
+
+      // Step 2: Save data to file-like storage
+      addLog("💾 Өгөгдөл файлд хадгалж байна...", "info")
+      const baseUrl = typeof window !== "undefined" 
+        ? window.location.origin 
+        : "https://gaali.vercel.app"
+      
+      const saveResponse = await fetch(`${baseUrl}/api/third-party/save`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          uniqueCode: aktNumber, // Use AKT as unique code
+          data: data,
+        }),
+      })
+
+      if (!saveResponse.ok) {
+        const errorData = await saveResponse.json().catch(() => ({}))
+        throw new Error(errorData.error || `Файл хадгалахад алдаа гарлаа: ${saveResponse.statusText}`)
+      }
+
+      const saveResult = await saveResponse.json()
+      const fileUrl = saveResult.url
+      const uniqueCode = saveResult.code
+
+      addLog("✅ Өгөгдөл файлд амжилттай хадгалагдлаа", "success")
+      addLog(`🔑 Уникал код: ${uniqueCode}`, "info")
+      addLog(`📁 Файлын URL: ${fileUrl}`, "info")
+
+      // Step 3: Send file URL via WebSocket
+      addLog("📤 Файлын URL-ийг WebSocket-оор илгээж байна...", "info")
+      addLog(`📁 Илгээх URL: ${fileUrl}`, "info")
+      addLog("💡 3-р талын апп энэ URL-аас өгөгдөл татана", "info")
+
+      ws.send(fileUrl)
+      
       addLog("═══════════════════════════════════════════════════════", "success")
-      addLog("✅ ӨГӨГДӨЛ АМЖИЛТТАЙ ИЛГЭЭГДЛЭЭ!", "success")
+      addLog("✅ ФАЙЛЫН URL АМЖИЛТТАЙ ИЛГЭЭГДЛЭЭ!", "success")
       addLog("═══════════════════════════════════════════════════════", "success")
-      addLog(`✅ Илгээсэн байт: ${jsonData.length}`, "success")
+      addLog(`✅ Илгээсэн URL: ${fileUrl}`, "success")
+      addLog(`✅ Уникал код: ${uniqueCode}`, "success")
       addLog(`✅ Пүүний актын дугаар: ${aktNumber}`, "success")
       addLog("💡 3-р талын апп-аас өгөгдөл хүлээн авсныг шалгана уу", "info")
     } catch (error: any) {
-      addLog(`❌ Илгээхэд алдаа гарлаа: ${error.message}`, "error")
+      addLog(`❌ Алдаа гарлаа: ${error.message}`, "error")
     }
   }
 

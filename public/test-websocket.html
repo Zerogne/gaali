@@ -306,41 +306,75 @@
       }
     }
 
-    function sendSampleData() {
+    async function sendSampleData() {
       if (!ws || ws.readyState !== WebSocket.OPEN) {
         log('❌ WebSocket is not connected. Current state: ' + (ws ? ws.readyState : 'null'), 'error');
         log('❌ WebSocket states: CONNECTING=0, OPEN=1, CLOSING=2, CLOSED=3', 'error');
         return;
       }
 
-      // Generate new sample data with new act number each time
-      sampleData = generateSampleData();
-      updateSampleDataDisplay();
-
-      const jsonData = JSON.stringify(sampleData, null, 2);
-      
-      log('═══════════════════════════════════════════════════════', 'info');
-      log('📤 3-Р ТАЛЫН АПП РУУ ТЕСТ ӨГӨГДӨЛ ИЛГЭЭЖ БАЙНА', 'info');
-      log('═══════════════════════════════════════════════════════', 'info');
-      log(`🔑 Пүүний актын дугаар (AKT): ${sampleData[0].AKT}`, 'info');
-      log(`📦 Өгөгдлийн хэмжээ: ${jsonData.length} байт`, 'info');
-      log('📋 JSON өгөгдөл (3-р талын апп руу илгээх):', 'info');
-      log(jsonData, 'info');
-      
       try {
+        // Step 1: Generate new sample data with new act number each time
+        sampleData = generateSampleData();
+        updateSampleDataDisplay();
+
+        const jsonData = JSON.stringify(sampleData, null, 2);
+        
+        log('═══════════════════════════════════════════════════════', 'info');
+        log('📤 3-Р ТАЛЫН АПП РУУ ТЕСТ ӨГӨГДӨЛ ИЛГЭЭЖ БАЙНА', 'info');
+        log('═══════════════════════════════════════════════════════', 'info');
+        log(`🔑 Пүүний актын дугаар (AKT): ${sampleData[0].AKT}`, 'info');
+        log(`📦 Өгөгдлийн хэмжээ: ${jsonData.length} байт`, 'info');
+        log('📋 JSON өгөгдөл:', 'info');
+        log(jsonData, 'info');
+
+        // Step 2: Save data to file-like storage
+        log('💾 Өгөгдөл файлд хадгалж байна...', 'info');
+        const baseUrl = window.location.origin;
+        
+        const saveResponse = await fetch(`${baseUrl}/api/third-party/save`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            uniqueCode: sampleData[0].AKT, // Use AKT as unique code
+            data: sampleData,
+          }),
+        });
+
+        if (!saveResponse.ok) {
+          const errorData = await saveResponse.json().catch(() => ({}));
+          throw new Error(errorData.error || `Файл хадгалахад алдаа гарлаа: ${saveResponse.statusText}`);
+        }
+
+        const saveResult = await saveResponse.json();
+        const fileUrl = saveResult.url;
+        const uniqueCode = saveResult.code;
+
+        log('✅ Өгөгдөл файлд амжилттай хадгалагдлаа', 'success');
+        log(`🔑 Уникал код: ${uniqueCode}`, 'info');
+        log(`📁 Файлын URL: ${fileUrl}`, 'info');
+
+        // Step 3: Send file URL via WebSocket
+        log('📤 Файлын URL-ийг WebSocket-оор илгээж байна...', 'info');
+        log(`📁 Илгээх URL: ${fileUrl}`, 'info');
+        log('💡 3-р талын апп энэ URL-аас өгөгдөл татана', 'info');
+        
         // Verify connection one more time
         if (ws.readyState !== WebSocket.OPEN) {
           log('❌ ERROR: WebSocket closed before send! State: ' + ws.readyState, 'error');
           return;
         }
         
-        // Send the sample data as JSON
-        ws.send(jsonData);
+        // Send the file URL (not JSON data!)
+        ws.send(fileUrl);
         
         log('═══════════════════════════════════════════════════════', 'success');
-        log('✅ ӨГӨГДӨЛ АМЖИЛТТАЙ ИЛГЭЭГДЛЭЭ!', 'success');
+        log('✅ ФАЙЛЫН URL АМЖИЛТТАЙ ИЛГЭЭГДЛЭЭ!', 'success');
         log('═══════════════════════════════════════════════════════', 'success');
-        log(`✅ Илгээсэн байт: ${jsonData.length}`, 'success');
+        log(`✅ Илгээсэн URL: ${fileUrl}`, 'success');
+        log(`✅ Уникал код: ${uniqueCode}`, 'success');
         log(`✅ Пүүний актын дугаар: ${sampleData[0].AKT}`, 'success');
         log('💡 3-р талын апп-аас өгөгдөл хүлээн авсныг шалгана уу', 'info');
         
