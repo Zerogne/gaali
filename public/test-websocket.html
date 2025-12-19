@@ -330,9 +330,9 @@
 
         // Step 2: Save data to file-like storage
         log('💾 Өгөгдөл файлд хадгалж байна...', 'info');
-        const baseUrl = window.location.origin;
+        const appBaseUrl = window.location.origin;
         
-        const saveResponse = await fetch(`${baseUrl}/api/third-party/save`, {
+        const saveResponse = await fetch(`${appBaseUrl}/api/third-party/save`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -351,15 +351,17 @@
         const saveResult = await saveResponse.json();
         const fileUrl = saveResult.url;
         const uniqueCode = saveResult.code;
+        const dataBaseUrl = `${appBaseUrl}/api/third-party/data`;
 
         log('✅ Өгөгдөл файлд амжилттай хадгалагдлаа', 'success');
         log(`🔑 Уникал код: ${uniqueCode}`, 'info');
         log(`📁 Файлын URL: ${fileUrl}`, 'info');
+        log(`📁 Base URL (3-р талын апп-д тохируулах): ${dataBaseUrl}`, 'info');
 
-        // Step 3: Send file URL via WebSocket
-        log('📤 Файлын URL-ийг WebSocket-оор илгээж байна...', 'info');
-        log(`📁 Илгээх URL: ${fileUrl}`, 'info');
-        log('💡 3-р талын апп энэ URL-аас өгөгдөл татана', 'info');
+        // Step 3: Send code via WebSocket (3rd party app will append to base URL)
+        log('📤 Кодыг WebSocket-оор илгээж байна...', 'info');
+        log(`🔑 Илгээх код: ${uniqueCode}`, 'info');
+        log(`💡 3-р талын апп татана: ${dataBaseUrl}/${uniqueCode}`, 'info');
         
         // Verify connection one more time
         if (ws.readyState !== WebSocket.OPEN) {
@@ -367,16 +369,16 @@
           return;
         }
         
-        // Send the file URL (not JSON data!)
-        ws.send(fileUrl);
+        // Send the code (3rd party app will append to base URL)
+        ws.send(uniqueCode);
         
         log('═══════════════════════════════════════════════════════', 'success');
-        log('✅ ФАЙЛЫН URL АМЖИЛТТАЙ ИЛГЭЭГДЛЭЭ!', 'success');
+        log('✅ КОД АМЖИЛТТАЙ ИЛГЭЭГДЛЭЭ!', 'success');
         log('═══════════════════════════════════════════════════════', 'success');
-        log(`✅ Илгээсэн URL: ${fileUrl}`, 'success');
-        log(`✅ Уникал код: ${uniqueCode}`, 'success');
+        log(`✅ Илгээсэн код: ${uniqueCode}`, 'success');
         log(`✅ Пүүний актын дугаар: ${sampleData[0].AKT}`, 'success');
-        log('💡 3-р талын апп-аас өгөгдөл хүлээн авсныг шалгана уу', 'info');
+        log(`📁 Base URL: ${dataBaseUrl}`, 'info');
+        log(`💡 3-р талын апп татана: ${dataBaseUrl}/${uniqueCode}`, 'info');
         
         // Check connection after a short delay
         setTimeout(() => {

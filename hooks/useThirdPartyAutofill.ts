@@ -27,6 +27,7 @@ interface SendFormDataResult {
   error?: string
   fileUrl?: string
   uniqueCode?: string
+  baseUrl?: string
 }
 
 /**
@@ -309,12 +310,17 @@ export function useThirdPartyAutofill() {
           }
         }
 
-        // Step 4: Send file URL via WebSocket
-        console.log("📤 Step 4: Sending file URL to 3rd party app")
+        // Step 4: Send code to 3rd party app
+        // The app has the base URL configured: https://gaali.vercel.app/api/third-party/data
+        // The app will fetch: {baseUrl}/{code}
+        const dataBaseUrl = `${baseUrl}/api/third-party/data`
+        console.log("📤 Step 4: Sending code to 3rd party app")
         console.log("📤 WebSocket readyState before send:", connectedWs.readyState)
         console.log("📤 WebSocket URL:", getWebSocketUrl())
-        console.log("📁 File URL to send:", fileUrl)
-        console.log("💡 The 3rd party app will fetch data from this URL")
+        console.log("📁 Base URL (configured in 3rd party app):", dataBaseUrl)
+        console.log("🔑 Unique Code to send:", uniqueCode)
+        console.log("💡 The 3rd party app will fetch from: {baseUrl}/{code}")
+        console.log(`💡 Full URL: ${dataBaseUrl}/${uniqueCode}`)
 
         try {
           // Verify connection is still open right before sending
@@ -326,17 +332,17 @@ export function useThirdPartyAutofill() {
             }
           }
           
-          // Send the file URL (not JSON data!)
-          connectedWs.send(fileUrl)
-          console.log("✅ File URL sent via WebSocket.send() successfully")
-          console.log("✅ URL length:", fileUrl.length, "bytes")
+          // Send the code (3rd party app will append to base URL)
+          connectedWs.send(uniqueCode)
+          console.log("✅ Code sent via WebSocket.send() successfully")
+          console.log("✅ Code:", uniqueCode)
           
           // Log to help verify data was sent
           console.log("=".repeat(50))
-          console.log("📤 FILE URL SENT TO 3RD PARTY APP:")
-          console.log(fileUrl)
-          console.log("💡 The app will fetch data from this URL")
-          console.log("🔑 Unique Code:", uniqueCode)
+          console.log("📤 CODE SENT TO 3RD PARTY APP:")
+          console.log(uniqueCode)
+          console.log("📁 Base URL (configured in app):", dataBaseUrl)
+          console.log("💡 The app will fetch from:", `${dataBaseUrl}/${uniqueCode}`)
           console.log("=".repeat(50))
           
           // Verify connection is still open after sending
@@ -385,6 +391,7 @@ export function useThirdPartyAutofill() {
           success: true,
           fileUrl: fileUrl,
           uniqueCode: uniqueCode,
+          baseUrl: dataBaseUrl, // Base URL to configure in 3rd party app
         }
       } catch (error) {
         console.error("❌ Error sending form data to 3rd party app:", error)

@@ -9,10 +9,12 @@ import { getActiveCompany } from "@/lib/auth/session"
  */
 export async function GET(
   request: Request,
-  { params }: { params: { code: string } }
+  { params }: { params: Promise<{ code: string }> | { code: string } }
 ) {
   try {
-    const code = params.code
+    // Handle both sync and async params (Next.js 13+ vs 15+)
+    const resolvedParams = params instanceof Promise ? await params : params
+    const code = resolvedParams.code
     console.log("📥 Fetching third-party data for code:", code)
 
     if (!code) {

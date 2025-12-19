@@ -182,11 +182,11 @@ export function WebSocketTestPanel() {
 
       // Step 2: Save data to file-like storage
       addLog("💾 Өгөгдөл файлд хадгалж байна...", "info")
-      const baseUrl = typeof window !== "undefined" 
+      const appBaseUrl = typeof window !== "undefined" 
         ? window.location.origin 
         : "https://gaali.vercel.app"
       
-      const saveResponse = await fetch(`${baseUrl}/api/third-party/save`, {
+      const saveResponse = await fetch(`${appBaseUrl}/api/third-party/save`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -205,25 +205,27 @@ export function WebSocketTestPanel() {
       const saveResult = await saveResponse.json()
       const fileUrl = saveResult.url
       const uniqueCode = saveResult.code
+      const dataBaseUrl = `${appBaseUrl}/api/third-party/data`
 
       addLog("✅ Өгөгдөл файлд амжилттай хадгалагдлаа", "success")
       addLog(`🔑 Уникал код: ${uniqueCode}`, "info")
       addLog(`📁 Файлын URL: ${fileUrl}`, "info")
+      addLog(`📁 Base URL (3-р талын апп-д тохируулах): ${dataBaseUrl}`, "info")
 
-      // Step 3: Send file URL via WebSocket
-      addLog("📤 Файлын URL-ийг WebSocket-оор илгээж байна...", "info")
-      addLog(`📁 Илгээх URL: ${fileUrl}`, "info")
-      addLog("💡 3-р талын апп энэ URL-аас өгөгдөл татана", "info")
+      // Step 3: Send code via WebSocket (3rd party app will append to base URL)
+      addLog("📤 Кодыг WebSocket-оор илгээж байна...", "info")
+      addLog(`🔑 Илгээх код: ${uniqueCode}`, "info")
+      addLog(`💡 3-р талын апп татана: ${dataBaseUrl}/${uniqueCode}`, "info")
 
-      ws.send(fileUrl)
+      ws.send(uniqueCode)
       
       addLog("═══════════════════════════════════════════════════════", "success")
-      addLog("✅ ФАЙЛЫН URL АМЖИЛТТАЙ ИЛГЭЭГДЛЭЭ!", "success")
+      addLog("✅ КОД АМЖИЛТТАЙ ИЛГЭЭГДЛЭЭ!", "success")
       addLog("═══════════════════════════════════════════════════════", "success")
-      addLog(`✅ Илгээсэн URL: ${fileUrl}`, "success")
-      addLog(`✅ Уникал код: ${uniqueCode}`, "success")
+      addLog(`✅ Илгээсэн код: ${uniqueCode}`, "success")
       addLog(`✅ Пүүний актын дугаар: ${aktNumber}`, "success")
-      addLog("💡 3-р талын апп-аас өгөгдөл хүлээн авсныг шалгана уу", "info")
+      addLog(`📁 Base URL: ${dataBaseUrl}`, "info")
+      addLog(`💡 3-р талын апп татана: ${dataBaseUrl}/${uniqueCode}`, "info")
     } catch (error: any) {
       addLog(`❌ Алдаа гарлаа: ${error.message}`, "error")
     }
