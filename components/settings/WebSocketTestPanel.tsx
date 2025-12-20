@@ -212,25 +212,25 @@ export function WebSocketTestPanel() {
       addLog(`📁 Файлын URL: ${fileUrl}`, "info")
       addLog(`📁 Base URL (3-р талын апп-д тохируулах): ${dataBaseUrl}`, "info")
 
-      // Step 3: Send code via WebSocket (3rd party app forwards to other site)
-      // Other site is configured with base URL: gaali.vercel.app/api/third-party/data
-      // Other site will fetch: {baseUrl}/{code}
-      addLog("📤 Кодыг WebSocket-оор илгээж байна...", "info")
+      // Step 3: Send full URL via WebSocket (3rd party app expects URL string)
+      // The 3rd party app will fetch data from this URL and can forward to another site
+      const dataUrl = `${dataBaseUrl}/${uniqueCode}`
+      addLog("📤 URL-г WebSocket-оор илгээж байна...", "info")
       addLog(`🔑 Уникал код: ${uniqueCode}`, "info")
-      addLog(`📁 Base URL (өөр сайт дээр тохируулсан): ${dataBaseUrl}`, "info")
-      addLog(`💡 3-р талын апп код-ыг өөр сайт руу дамжуулна`, "info")
-      addLog(`💡 Өөр сайт татана: ${dataBaseUrl}/${uniqueCode}`, "info")
+      addLog(`📁 Бүтэн URL: ${dataUrl}`, "info")
+      addLog(`💡 3-р талын апп энэ URL-аас өгөгдөл татна`, "info")
+      addLog(`💡 3-р талын апп өгөгдлийг өөр сайт руу дамжуулна`, "info")
 
-      ws.send(uniqueCode)
+      ws.send(dataUrl)
       
       addLog("═══════════════════════════════════════════════════════", "success")
-      addLog("✅ КОД АМЖИЛТТАЙ ИЛГЭЭГДЛЭЭ!", "success")
+      addLog("✅ URL АМЖИЛТТАЙ ИЛГЭЭГДЛЭЭ!", "success")
       addLog("═══════════════════════════════════════════════════════", "success")
-      addLog(`✅ Илгээсэн код: ${uniqueCode}`, "success")
+      addLog(`✅ Илгээсэн URL: ${dataUrl}`, "success")
       addLog(`✅ Пүүний актын дугаар: ${aktNumber}`, "success")
-      addLog(`📁 Base URL: ${dataBaseUrl}`, "info")
-      addLog(`💡 3-р талын апп код-ыг өөр сайт руу дамжуулна`, "info")
-      addLog(`💡 Өөр сайт татана: ${dataBaseUrl}/${uniqueCode}`, "info")
+      addLog(`🔑 Уникал код: ${uniqueCode}`, "info")
+      addLog(`💡 3-р талын апп энэ URL-аас өгөгдөл татна`, "info")
+      addLog(`💡 3-р талын апп өгөгдлийг өөр сайт руу дамжуулна`, "info")
     } catch (error: any) {
       addLog(`❌ Алдаа гарлаа: ${error.message}`, "error")
     }

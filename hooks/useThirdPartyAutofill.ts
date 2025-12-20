@@ -28,6 +28,7 @@ interface SendFormDataResult {
   fileUrl?: string
   uniqueCode?: string
   baseUrl?: string
+  dataUrl?: string
 }
 
 /**
@@ -310,18 +311,17 @@ export function useThirdPartyAutofill() {
           }
         }
 
-        // Step 4: Send code to 3rd party app
-        // The 3rd party app forwards the code to another site
-        // The other site is configured with base URL: gaali.vercel.app/api/third-party/data
-        // The other site will fetch: {baseUrl}/{code}
-        const dataBaseUrl = `${baseUrl}/api/third-party/data`
-        console.log("📤 Step 4: Sending code to 3rd party app")
+        // Step 4: Send full URL to 3rd party app
+        // The 3rd party app expects a URL string (not just a code)
+        // It will fetch data from that URL and can forward to another site
+        const dataUrl = `${baseUrl}/api/third-party/data/${uniqueCode}`
+        console.log("📤 Step 4: Sending URL to 3rd party app")
         console.log("📤 WebSocket readyState before send:", connectedWs.readyState)
         console.log("📤 WebSocket URL:", getWebSocketUrl())
-        console.log("🔑 Unique Code to send:", uniqueCode)
-        console.log("📁 Base URL (configured in other site):", dataBaseUrl)
-        console.log("💡 3rd party app will forward code to other site")
-        console.log("💡 Other site will fetch from:", `${dataBaseUrl}/${uniqueCode}`)
+        console.log("🔑 Unique Code:", uniqueCode)
+        console.log("📁 Full URL to send:", dataUrl)
+        console.log("💡 3rd party app will fetch data from this URL")
+        console.log("💡 3rd party app can forward data to another site")
 
         try {
           // Verify connection is still open right before sending
@@ -333,18 +333,18 @@ export function useThirdPartyAutofill() {
             }
           }
           
-          // Send the code (3rd party app forwards to other site, which fetches from our API)
-          connectedWs.send(uniqueCode)
-          console.log("✅ Code sent via WebSocket.send() successfully")
-          console.log("✅ Code:", uniqueCode)
+          // Send the full URL (3rd party app expects URL string, will fetch and can forward)
+          connectedWs.send(dataUrl)
+          console.log("✅ URL sent via WebSocket.send() successfully")
+          console.log("✅ URL:", dataUrl)
           
           // Log to help verify data was sent
           console.log("=".repeat(50))
-          console.log("📤 CODE SENT TO 3RD PARTY APP:")
-          console.log(uniqueCode)
-          console.log("📁 Base URL (configured in other site):", dataBaseUrl)
-          console.log("💡 3rd party app forwards code to other site")
-          console.log("💡 Other site fetches from:", `${dataBaseUrl}/${uniqueCode}`)
+          console.log("📤 URL SENT TO 3RD PARTY APP:")
+          console.log(dataUrl)
+          console.log("🔑 Unique Code:", uniqueCode)
+          console.log("💡 3rd party app will fetch data from this URL")
+          console.log("💡 3rd party app can forward data to another site")
           console.log("=".repeat(50))
           
           // Verify connection is still open after sending
@@ -389,11 +389,13 @@ export function useThirdPartyAutofill() {
         }
 
         console.log("✅ Successfully sent form data to 3rd party app")
+        const dataBaseUrl = `${baseUrl}/api/third-party/data`
         return {
           success: true,
           fileUrl: fileUrl,
           uniqueCode: uniqueCode,
           baseUrl: dataBaseUrl, // Base URL to configure in 3rd party app
+          dataUrl: dataUrl, // Full URL that was sent
         }
       } catch (error) {
         console.error("❌ Error sending form data to 3rd party app:", error)
