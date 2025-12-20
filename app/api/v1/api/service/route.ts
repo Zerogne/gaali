@@ -39,7 +39,8 @@ export async function GET(request: Request) {
   
   try {
     const { searchParams } = new URL(request.url)
-    const code = searchParams.get("code")
+    // Support "number" parameter (required by spec) as well as "code" and "akt"
+    const code = searchParams.get("number") || searchParams.get("code") || searchParams.get("akt")
     const plateNumber = searchParams.get("plate") || searchParams.get("vno") // Support both 'plate' and 'vno' params
     const akt = searchParams.get("akt")
     const latest = searchParams.get("latest") // If 'latest=true', return most recent
@@ -303,7 +304,8 @@ export async function POST(request: Request) {
     console.log("📥 Content-Type:", contentType)
     console.log("📥 Request body:", JSON.stringify(body))
     
-    const code = body.code || body.uniqueCode || body.akt || body.code || null
+    // Support "number" parameter (required by spec) as well as "code", "uniqueCode", and "akt"
+    const code = body.number || body.code || body.uniqueCode || body.akt || null
     const plateNumber = body.plate || body.vno || null
     const akt = body.akt || null
     
