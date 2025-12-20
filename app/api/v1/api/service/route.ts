@@ -4,6 +4,27 @@ import { getActiveCompany } from "@/lib/auth/session"
 import { captureRequestMetadata } from "@/lib/request-monitor"
 
 /**
+ * CORS headers helper
+ */
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+  "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Requested-With",
+  "Access-Control-Max-Age": "86400", // 24 hours
+}
+
+/**
+ * OPTIONS /api/v1/api/service
+ * Handle CORS preflight requests
+ */
+export async function OPTIONS(request: Request) {
+  return NextResponse.json({}, {
+    status: 200,
+    headers: corsHeaders,
+  })
+}
+
+/**
  * GET /api/v1/api/service?code={code}
  * POST /api/v1/api/service
  * 
@@ -133,7 +154,10 @@ export async function GET(request: Request) {
           receivedAkt: trimmedAkt,
           sampleCodes: sampleCodes.length > 0 ? sampleCodes : undefined
         },
-        { status: 404 }
+        { 
+          status: 404,
+          headers: corsHeaders,
+        }
       )
       
       // Capture request metadata
@@ -168,7 +192,7 @@ export async function GET(request: Request) {
       status: 200,
       headers: {
         "Content-Type": "application/json",
-        "Access-Control-Allow-Origin": "*",
+        ...corsHeaders,
       },
     })
     
@@ -203,7 +227,10 @@ export async function GET(request: Request) {
         error: "Failed to fetch data",
         message: error,
       },
-      { status: 500 }
+      { 
+        status: 500,
+        headers: corsHeaders,
+      }
     )
   }
 }
@@ -405,7 +432,10 @@ export async function POST(request: Request) {
           receivedAkt: trimmedAkt,
           sampleCodes: sampleCodes.length > 0 ? sampleCodes : undefined
         },
-        { status: 404 }
+        { 
+          status: 404,
+          headers: corsHeaders,
+        }
       )
       
       // Capture request metadata
@@ -439,7 +469,7 @@ export async function POST(request: Request) {
       status: 200,
       headers: {
         "Content-Type": "application/json",
-        "Access-Control-Allow-Origin": "*",
+        ...corsHeaders,
       },
     })
     
@@ -474,7 +504,10 @@ export async function POST(request: Request) {
         error: "Failed to fetch data",
         message: error,
       },
-      { status: 500 }
+      { 
+        status: 500,
+        headers: corsHeaders,
+      }
     )
   }
 }
