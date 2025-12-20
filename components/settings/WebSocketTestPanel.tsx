@@ -212,20 +212,21 @@ export function WebSocketTestPanel() {
       addLog(`📁 Файлын URL: ${fileUrl}`, "info")
       addLog(`📁 Base URL (3-р талын апп-д тохируулах): ${dataBaseUrl}`, "info")
 
-      // Step 3: Send code via WebSocket (3rd party app will append to base URL)
-      addLog("📤 Кодыг WebSocket-оор илгээж байна...", "info")
-      addLog(`🔑 Илгээх код: ${uniqueCode}`, "info")
-      addLog(`💡 3-р талын апп татана: ${dataBaseUrl}/${uniqueCode}`, "info")
+      // Step 3: Send actual JSON data via WebSocket (3rd party app can forward to another site)
+      addLog("📤 JSON өгөгдөлийг WebSocket-оор илгээж байна...", "info")
+      addLog(`🔑 Уникал код: ${uniqueCode}`, "info")
+      addLog(`💡 3-р талын апп энэ өгөгдлийг өөр сайт руу дамжуулна`, "info")
 
-      ws.send(uniqueCode)
+      const jsonDataToSend = JSON.stringify(data)
+      ws.send(jsonDataToSend)
       
       addLog("═══════════════════════════════════════════════════════", "success")
-      addLog("✅ КОД АМЖИЛТТАЙ ИЛГЭЭГДЛЭЭ!", "success")
+      addLog("✅ JSON ӨГӨГДӨЛ АМЖИЛТТАЙ ИЛГЭЭГДЛЭЭ!", "success")
       addLog("═══════════════════════════════════════════════════════", "success")
-      addLog(`✅ Илгээсэн код: ${uniqueCode}`, "success")
+      addLog(`✅ Илгээсэн өгөгдөл: ${jsonDataToSend}`, "success")
       addLog(`✅ Пүүний актын дугаар: ${aktNumber}`, "success")
-      addLog(`📁 Base URL: ${dataBaseUrl}`, "info")
-      addLog(`💡 3-р талын апп татана: ${dataBaseUrl}/${uniqueCode}`, "info")
+      addLog(`🔑 Уникал код: ${uniqueCode}`, "info")
+      addLog(`💡 3-р талын апп энэ өгөгдлийг өөр сайт руу дамжуулна`, "info")
     } catch (error: any) {
       addLog(`❌ Алдаа гарлаа: ${error.message}`, "error")
     }

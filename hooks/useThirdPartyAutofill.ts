@@ -310,17 +310,15 @@ export function useThirdPartyAutofill() {
           }
         }
 
-        // Step 4: Send code to 3rd party app
-        // The app has the base URL configured: https://gaali.vercel.app/api/third-party/data
-        // The app will fetch: {baseUrl}/{code}
+        // Step 4: Send actual JSON data to 3rd party app
+        // The 3rd party app needs the actual data to forward to another site
         const dataBaseUrl = `${baseUrl}/api/third-party/data`
-        console.log("📤 Step 4: Sending code to 3rd party app")
+        console.log("📤 Step 4: Sending JSON data to 3rd party app")
         console.log("📤 WebSocket readyState before send:", connectedWs.readyState)
         console.log("📤 WebSocket URL:", getWebSocketUrl())
-        console.log("📁 Base URL (configured in 3rd party app):", dataBaseUrl)
-        console.log("🔑 Unique Code to send:", uniqueCode)
-        console.log("💡 The 3rd party app will fetch from: {baseUrl}/{code}")
-        console.log(`💡 Full URL: ${dataBaseUrl}/${uniqueCode}`)
+        console.log("📋 Data to send:", JSON.stringify(thirdPartyData, null, 2))
+        console.log("🔑 Unique Code:", uniqueCode)
+        console.log("💡 3rd party app will forward this data to another site")
 
         try {
           // Verify connection is still open right before sending
@@ -332,17 +330,18 @@ export function useThirdPartyAutofill() {
             }
           }
           
-          // Send the code (3rd party app will append to base URL)
-          connectedWs.send(uniqueCode)
-          console.log("✅ Code sent via WebSocket.send() successfully")
-          console.log("✅ Code:", uniqueCode)
+          // Send the actual JSON data (3rd party app can forward this to another site)
+          const dataToSend = JSON.stringify(thirdPartyData)
+          connectedWs.send(dataToSend)
+          console.log("✅ JSON data sent via WebSocket.send() successfully")
+          console.log("✅ Data:", dataToSend)
           
           // Log to help verify data was sent
           console.log("=".repeat(50))
-          console.log("📤 CODE SENT TO 3RD PARTY APP:")
-          console.log(uniqueCode)
-          console.log("📁 Base URL (configured in app):", dataBaseUrl)
-          console.log("💡 The app will fetch from:", `${dataBaseUrl}/${uniqueCode}`)
+          console.log("📤 JSON DATA SENT TO 3RD PARTY APP:")
+          console.log(dataToSend)
+          console.log("🔑 Unique Code:", uniqueCode)
+          console.log("💡 3rd party app can forward this data to another site")
           console.log("=".repeat(50))
           
           // Verify connection is still open after sending

@@ -358,10 +358,10 @@
         log(`📁 Файлын URL: ${fileUrl}`, 'info');
         log(`📁 Base URL (3-р талын апп-д тохируулах): ${dataBaseUrl}`, 'info');
 
-        // Step 3: Send code via WebSocket (3rd party app will append to base URL)
-        log('📤 Кодыг WebSocket-оор илгээж байна...', 'info');
-        log(`🔑 Илгээх код: ${uniqueCode}`, 'info');
-        log(`💡 3-р талын апп татана: ${dataBaseUrl}/${uniqueCode}`, 'info');
+        // Step 3: Send actual JSON data via WebSocket (3rd party app can forward to another site)
+        log('📤 JSON өгөгдлийг WebSocket-оор илгээж байна...', 'info');
+        log(`🔑 Уникал код: ${uniqueCode}`, 'info');
+        log(`💡 3-р талын апп энэ өгөгдлийг өөр сайт руу дамжуулна`, 'info');
         
         // Verify connection one more time
         if (ws.readyState !== WebSocket.OPEN) {
@@ -369,16 +369,17 @@
           return;
         }
         
-        // Send the code (3rd party app will append to base URL)
-        ws.send(uniqueCode);
+        // Send the actual JSON data (3rd party app can forward this to another site)
+        const jsonDataToSend = JSON.stringify(sampleData);
+        ws.send(jsonDataToSend);
         
         log('═══════════════════════════════════════════════════════', 'success');
-        log('✅ КОД АМЖИЛТТАЙ ИЛГЭЭГДЛЭЭ!', 'success');
+        log('✅ JSON ӨГӨГДӨЛ АМЖИЛТТАЙ ИЛГЭЭГДЛЭЭ!', 'success');
         log('═══════════════════════════════════════════════════════', 'success');
-        log(`✅ Илгээсэн код: ${uniqueCode}`, 'success');
+        log(`✅ Илгээсэн өгөгдөл: ${jsonDataToSend}`, 'success');
         log(`✅ Пүүний актын дугаар: ${sampleData[0].AKT}`, 'success');
-        log(`📁 Base URL: ${dataBaseUrl}`, 'info');
-        log(`💡 3-р талын апп татана: ${dataBaseUrl}/${uniqueCode}`, 'info');
+        log(`🔑 Уникал код: ${uniqueCode}`, 'info');
+        log(`💡 3-р талын апп энэ өгөгдлийг өөр сайт руу дамжуулна`, 'info');
         
         // Check connection after a short delay
         setTimeout(() => {
