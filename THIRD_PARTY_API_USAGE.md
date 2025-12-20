@@ -1,6 +1,8 @@
 # Third Party API Usage Guide
 
-## Endpoint: `/api/third-party/data`
+## Available Endpoints
+
+### 1. `/api/third-party/data` (Recommended)
 
 This endpoint serves third-party data and supports **two URL formats**:
 
@@ -93,15 +95,59 @@ Both formats return the same JSON data:
 
 The endpoint includes `Access-Control-Allow-Origin: *` header, so it can be accessed from any domain.
 
+### 2. `/api/v1/api/service` (For etos.ojus compatibility)
+
+This endpoint provides the same functionality but uses the `/v1/api/service` path format that some other sites expect.
+
+**Query Parameter Format:**
+```
+GET https://gaali.vercel.app/api/v1/api/service?code={CODE}
+```
+
+**POST Format:**
+```
+POST https://gaali.vercel.app/api/v1/api/service
+Content-Type: application/json
+
+{
+  "code": "311001202401180001"
+}
+```
+
+**Example:**
+```bash
+# GET with query parameter
+curl "https://gaali.vercel.app/api/v1/api/service?code=311001202401180001"
+
+# POST with body
+curl -X POST "https://gaali.vercel.app/api/v1/api/service" \
+  -H "Content-Type: application/json" \
+  -d '{"code": "311001202401180001"}'
+```
+
+**For Other Sites Configuration:**
+- If the other site expects `etos.ojus/v1/api/service`, configure it as:
+  - Base URL: `https://gaali.vercel.app`
+  - Path: `v1/api/service` (or full: `api/v1/api/service`)
+  - Code parameter: `?code={CODE}` for GET, or in request body for POST
+
 ## Testing
 
-You can test the endpoint using curl:
+You can test the endpoints using curl:
 
 ```bash
-# Query parameter format
+# Query parameter format (recommended endpoint)
 curl "https://gaali.vercel.app/api/third-party/data?code=311001202401180001"
 
 # Path parameter format
 curl "https://gaali.vercel.app/api/third-party/data/311001202401180001"
+
+# v1/api/service format (GET)
+curl "https://gaali.vercel.app/api/v1/api/service?code=311001202401180001"
+
+# v1/api/service format (POST)
+curl -X POST "https://gaali.vercel.app/api/v1/api/service" \
+  -H "Content-Type: application/json" \
+  -d '{"code": "311001202401180001"}'
 ```
 
