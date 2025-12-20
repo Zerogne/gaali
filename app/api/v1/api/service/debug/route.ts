@@ -51,17 +51,15 @@ export async function OPTIONS(request: Request) {
  */
 export async function GET(request: Request) {
   try {
-    // Require authentication
+    // Try to get authentication, but don't require it for viewing logs
+    // This allows cross-origin access while still being useful
+    let companyId: string | null = null
     try {
-      await getActiveCompany()
+      companyId = await getActiveCompany()
     } catch (error) {
-      return NextResponse.json(
-        { error: "Authentication required" },
-        { 
-          status: 401,
-          headers: getCorsHeaders(request),
-        }
-      )
+      // Not authenticated - that's okay, we'll still return logs
+      // This allows viewing from other domains
+      console.log("⚠️ Debug endpoint accessed without authentication (cross-origin)")
     }
 
     const { searchParams } = new URL(request.url)
