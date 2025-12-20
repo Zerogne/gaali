@@ -14,12 +14,23 @@ export async function GET(
   try {
     // Handle both sync and async params (Next.js 13+ vs 15+)
     const resolvedParams = params instanceof Promise ? await params : params
-    const code = resolvedParams.code
-    console.log("📥 Fetching third-party data for code:", code)
+    let code = resolvedParams.code
+    
+    // Trim whitespace and decode URL encoding
+    code = code ? decodeURIComponent(code.trim()) : null
+    
+    console.log("📥 Fetching third-party data (path format)")
+    console.log("📥 Code from path param:", resolvedParams.code)
+    console.log("📥 Final code (trimmed & decoded):", code)
 
-    if (!code) {
+    if (!code || code === "" || code === "null" || code === "undefined") {
       return NextResponse.json(
-        { error: "Code is required" },
+        { 
+          error: "Code is required",
+          message: "Please provide a code in the URL path. Usage: /api/third-party/data/YOUR_CODE",
+          example: "https://gaali.vercel.app/api/third-party/data/311001202401180001",
+          receivedCode: code
+        },
         { status: 400 }
       )
     }
@@ -37,24 +48,61 @@ export async function GET(
     const db = await getDatabase()
     const collection = db.collection("third_party_data")
 
-    // Find document by code
-    const query: any = { code: code }
+    // Find document by code (try exact match first)
+    let query: any = { code: code }
     if (companyId) {
       // If authenticated, prefer company-scoped data
       query.companyId = companyId
     }
 
-    const document = await collection.findOne(query)
+    console.log("🔍 Searching for document with query:", JSON.stringify(query))
+    let document = await collection.findOne(query)
 
     if (!document) {
       // Try without company filter if not found (for 3rd party access)
-      const publicDoc = await collection.findOne({ code: code })
+      console.log("🔍 Trying without company filter...")
+      const publicQuery = { code: code }
+      console.log("🔍 Public query:", JSON.stringify(publicQuery))
+      const publicDoc = await collection.findOne(publicQuery)
+      
       if (!publicDoc) {
-        return NextResponse.json(
-          { error: "Data not found for code: " + code },
-          { status: 404 }
-        )
+        // Try case-insensitive search as last resort
+        console.log("🔍 Trying case-insensitive search...")
+        const caseInsensitiveDoc = await collection.findOne({
+          $or: [
+            { code: code },
+            { code: { $regex: new RegExp(`^${code}$`, "i") } }
+          ]
+        })
+        
+        if (!caseInsensitiveDoc) {
+          console.log("❌ No document found for code:", code)
+          // List some available codes for debugging (limit to 5)
+          const sampleDocs = await collection.find({}).limit(5).toArray()
+          const sampleCodes = sampleDocs.map(doc => doc.code)
+          console.log("📋 Sample codes in database:", sampleCodes)
+          
+          return NextResponse.json(
+            { 
+              error: "Data not found for code: " + code,
+              message: "The code you provided does not exist in the database.",
+              receivedCode: code,
+              codeLength: code.length,
+              sampleCodes: sampleCodes.length > 0 ? sampleCodes : undefined
+            },
+            { status: 404 }
+          )
+        }
+        
+        document = caseInsensitiveDoc
+        console.log("✅ Found document with case-insensitive search")
+      } else {
+        document = publicDoc
+        console.log("✅ Found document without company filter")
       }
+    } else {
+      console.log("✅ Found document with company filter")
+    }
       // Update access stats
       await collection.updateOne(
         { code: code },

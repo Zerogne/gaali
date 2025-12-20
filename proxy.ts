@@ -19,6 +19,7 @@ export default async function proxy(request: Request) {
     pathname.startsWith('/api/reset-passwords') || // Allow password reset endpoint
     pathname.startsWith('/api/debug') || // Allow debug endpoints (protected by auth in route itself)
     pathname.startsWith('/api/third-party/data') || // Allow public access to third-party data (for 3rd party apps) - supports both /data?code= and /data/{code}
+    pathname.startsWith('/api/third-party/debug') || // Allow debug endpoint for troubleshooting
     pathname.match(/\.(ico|png|jpg|jpeg|svg|gif|webp|css|js|woff|woff2|ttf|eot)$/)
   ) {
     return NextResponse.next()
