@@ -124,9 +124,9 @@ export async function saveTruckSession(
     let sessionsCollection
     try {
       sessionsCollection = await getCompanyCollection<TruckSession>(
-        companyId,
-        "truck_sessions"
-      )
+      companyId,
+      "truck_sessions"
+    )
       console.log("✅ Got sessions collection for company:", companyId)
     } catch (error) {
       console.error("❌ Error getting sessions collection:", error)
@@ -143,18 +143,18 @@ export async function saveTruckSession(
       console.log(`🔑 Generated unique code (attempt ${attempts + 1}):`, uniqueCode)
       
       try {
-        // Check if this code already exists in the database
-        const existing = await sessionsCollection.findOne({ uniqueCode })
-        if (!existing) {
-          console.log(`✅ Unique code verified - no duplicates found:`, uniqueCode)
-          break
-        }
-        
-        // If duplicate found, generate a new one
-        console.warn(`⚠️ Duplicate code found, generating new one... (attempt ${attempts + 1})`)
-        attempts++
-        if (attempts >= maxAttempts) {
-          throw new Error("Failed to generate unique code after multiple attempts")
+      // Check if this code already exists in the database
+      const existing = await sessionsCollection.findOne({ uniqueCode })
+      if (!existing) {
+        console.log(`✅ Unique code verified - no duplicates found:`, uniqueCode)
+        break
+      }
+      
+      // If duplicate found, generate a new one
+      console.warn(`⚠️ Duplicate code found, generating new one... (attempt ${attempts + 1})`)
+      attempts++
+      if (attempts >= maxAttempts) {
+        throw new Error("Failed to generate unique code after multiple attempts")
         }
       } catch (error) {
         console.error("❌ Error checking for duplicate code:", error)

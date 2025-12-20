@@ -229,8 +229,8 @@
           "VNO": `${3826 + randomNum}ДГН`, // Тээврийн хэрэгслийн дугаар
           "TID": `TID${String(5000000 + randomNum).padStart(10, '0')}`, // Тээврийн хэрэгслийн RFID дугаар (TID)
           "CMN": `CMN${String(6000 + randomNum).padStart(8, '0')}` // Convoy manifest number
-        }
-      ];
+      }
+    ];
     }
 
     // Generate initial sample data
@@ -314,15 +314,15 @@
         sampleData = generateSampleData();
         updateSampleDataDisplay();
 
-        const jsonData = JSON.stringify(sampleData, null, 2);
-        
-        log('═══════════════════════════════════════════════════════', 'info');
+      const jsonData = JSON.stringify(sampleData, null, 2);
+      
+      log('═══════════════════════════════════════════════════════', 'info');
         log('📤 3-Р ТАЛЫН АПП РУУ ТЕСТ ӨГӨГДӨЛ ИЛГЭЭЖ БАЙНА', 'info');
-        log('═══════════════════════════════════════════════════════', 'info');
+      log('═══════════════════════════════════════════════════════', 'info');
         log(`🔑 Пүүний актын дугаар (AKT): ${sampleData[0].AKT}`, 'info');
         log(`📦 Өгөгдлийн хэмжээ: ${jsonData.length} байт`, 'info');
         log('📋 JSON өгөгдөл:', 'info');
-        log(jsonData, 'info');
+      log(jsonData, 'info');
 
         // Step 2: Save data to file-like storage
         log('💾 Өгөгдөл файлд хадгалж байна...', 'info');

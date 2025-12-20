@@ -145,7 +145,7 @@ export function Sidebar() {
             </button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-56 bg-white">
-            <DropdownMenuItem
+            <DropdownMenuItem 
               className="cursor-pointer text-red-600 focus:text-red-600"
               onClick={handleLogoutClick}
             >

@@ -73,7 +73,7 @@ export const InSessionForm = forwardRef<
     );
     const cameraAutofill = useCameraPlateAutofill();
 
-    // Data loading states
+  // Data loading states
     const [products, setProducts] = useState<Product[]>([]);
     const [isLoadingProducts, setIsLoadingProducts] = useState(true);
     const [transportCompanies, setTransportCompanies] = useState<
@@ -86,92 +86,92 @@ export const InSessionForm = forwardRef<
     const [isLoadingOrganizations, setIsLoadingOrganizations] = useState(true);
     const [isDriverDialogOpen, setIsDriverDialogOpen] = useState(false);
 
-    const [formState, setFormState] = useState<InSessionFormState>({
-      plateNumber: "",
-      driverId: "",
-      driverName: "",
-      productId: "",
-      transporterCompanyId: "",
-      origin: "",
-      destination: "",
-      senderOrganizationId: "",
-      receiverOrganizationId: "",
-      inTime: new Date().toISOString().slice(0, 16),
-      grossWeightKg: null,
-      hasTrailer: false,
+  const [formState, setFormState] = useState<InSessionFormState>({
+    plateNumber: "",
+    driverId: "",
+    driverName: "",
+    productId: "",
+    transporterCompanyId: "",
+    origin: "",
+    destination: "",
+    senderOrganizationId: "",
+    receiverOrganizationId: "",
+    inTime: new Date().toISOString().slice(0, 16),
+    grossWeightKg: null,
+    hasTrailer: false,
       trailerNumber: "",
-      notes: "",
+    notes: "",
     });
 
-    // Load all dropdown data
-    const loadData = async () => {
-      // Load products
-      try {
+  // Load all dropdown data
+  const loadData = async () => {
+    // Load products
+    try {
         setIsLoadingProducts(true);
         const response = await fetch("/api/products");
-        if (response.ok) {
+      if (response.ok) {
           const data = await response.json();
           setProducts(data);
-        }
-      } catch (error) {
-        console.error("Error loading products:", error);
-      } finally {
-        setIsLoadingProducts(false);
       }
+    } catch (error) {
+        console.error("Error loading products:", error);
+    } finally {
+        setIsLoadingProducts(false);
+    }
 
-      // Load transport companies
-      try {
+    // Load transport companies
+    try {
         setIsLoadingCompanies(true);
         const response = await fetch("/api/transport-companies");
-        if (response.ok) {
+      if (response.ok) {
           const data = await response.json();
           setTransportCompanies(data);
-        }
-      } catch (error) {
-        console.error("Error loading transport companies:", error);
-      } finally {
-        setIsLoadingCompanies(false);
       }
+    } catch (error) {
+        console.error("Error loading transport companies:", error);
+    } finally {
+        setIsLoadingCompanies(false);
+    }
 
-      // Load drivers
-      try {
+    // Load drivers
+    try {
         setIsLoadingDrivers(true);
         const response = await fetch("/api/drivers");
-        if (response.ok) {
+      if (response.ok) {
           const data = await response.json();
           setDrivers(data);
-        }
-      } catch (error) {
-        console.error("Error loading drivers:", error);
-      } finally {
-        setIsLoadingDrivers(false);
       }
+    } catch (error) {
+        console.error("Error loading drivers:", error);
+    } finally {
+        setIsLoadingDrivers(false);
+    }
 
-      // Load organizations
-      try {
+    // Load organizations
+    try {
         setIsLoadingOrganizations(true);
         const response = await fetch("/api/organizations");
-        if (response.ok) {
+      if (response.ok) {
           const data = await response.json();
           setOrganizations(data);
-        }
-      } catch (error) {
-        console.error("Error loading organizations:", error);
-      } finally {
-        setIsLoadingOrganizations(false);
       }
+    } catch (error) {
+        console.error("Error loading organizations:", error);
+    } finally {
+        setIsLoadingOrganizations(false);
+    }
     };
 
-    useEffect(() => {
+  useEffect(() => {
       loadData();
     }, []);
 
-    // Handle driver added/updated
-    const handleDriverAdded = async () => {
+  // Handle driver added/updated
+  const handleDriverAdded = async () => {
       await loadData();
     };
 
-    // Memoize options
+  // Memoize options
     const productOptions = useMemo(
       () =>
         products
@@ -180,7 +180,7 @@ export const InSessionForm = forwardRef<
             label: p.label || p.value || String(p.id),
           }))
           .filter((opt) => opt.label != null && opt.label !== ""),
-      [products]
+    [products]
     );
 
     const transportCompanyOptions = useMemo(
@@ -188,7 +188,7 @@ export const InSessionForm = forwardRef<
         transportCompanies
           .filter((c) => c.name != null && c.name !== "")
           .map((c) => ({ value: c.id, label: c.name })),
-      [transportCompanies]
+    [transportCompanies]
     );
 
     const driverOptions = useMemo(
@@ -196,10 +196,10 @@ export const InSessionForm = forwardRef<
         drivers
           .filter((d) => d.name != null && d.name !== "")
           .map((d) => ({
-            value: d.id,
+      value: d.id, 
             label: `${d.name}${d.phone ? ` (${d.phone})` : ""}`,
-          })),
-      [drivers]
+    })), 
+    [drivers]
     );
 
     const organizationOptions = useMemo(
@@ -207,18 +207,18 @@ export const InSessionForm = forwardRef<
         organizations
           .filter((o) => o.name != null && o.name !== "")
           .map((o) => ({ value: o.id, label: o.name })),
-      [organizations]
+    [organizations]
     );
 
-    // Handle creating new items
-    const handleCreateProduct = async (name: string) => {
-      try {
-        const response = await fetch("/api/products", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
+  // Handle creating new items
+  const handleCreateProduct = async (name: string) => {
+    try {
+      const response = await fetch("/api/products", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ label: name }),
         });
-        if (response.ok) {
+      if (response.ok) {
           const newProduct = await response.json();
           setProducts((prev) => [...prev, newProduct]);
           toast({
@@ -235,79 +235,79 @@ export const InSessionForm = forwardRef<
             description: errorData.error || "Бүтээгдэхүүн нэмэхэд алдаа гарлаа",
             variant: "destructive",
           });
-        }
-      } catch (error) {
+      }
+    } catch (error) {
         console.error("Error creating product:", error);
         toast({
           title: "Алдаа",
           description: "Бүтээгдэхүүн нэмэхэд алдаа гарлаа",
           variant: "destructive",
         });
-      }
+    }
       return null;
     };
 
-    const handleCreateTransportCompany = async (name: string) => {
-      try {
-        const response = await fetch("/api/transport-companies", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ name }),
+  const handleCreateTransportCompany = async (name: string) => {
+    try {
+      const response = await fetch("/api/transport-companies", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name }),
         });
-        if (response.ok) {
+      if (response.ok) {
           const newCompany = await response.json();
           setTransportCompanies((prev) => [...prev, newCompany]);
           return newCompany.id;
-        }
-      } catch (error) {
-        console.error("Error creating transport company:", error);
       }
+    } catch (error) {
+        console.error("Error creating transport company:", error);
+    }
       return null;
     };
 
-    const handleCreateOrganization = async (name: string) => {
-      try {
-        const response = await fetch("/api/organizations", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ name }),
+  const handleCreateOrganization = async (name: string) => {
+    try {
+      const response = await fetch("/api/organizations", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name }),
         });
-        if (response.ok) {
+      if (response.ok) {
           const newOrg = await response.json();
           setOrganizations((prev) => [...prev, newOrg]);
           return newOrg.id;
-        }
-      } catch (error) {
-        console.error("Error creating organization:", error);
       }
+    } catch (error) {
+        console.error("Error creating organization:", error);
+    }
       return null;
     };
 
-    // Bind camera autofill to plate input
-    useEffect(() => {
-      if (plateInputRef) {
-        cameraAutofill.bindToInput({
-          getValue: () => formState.plateNumber,
-          setValue: (value: string) => {
+  // Bind camera autofill to plate input
+  useEffect(() => {
+    if (plateInputRef) {
+      cameraAutofill.bindToInput({
+        getValue: () => formState.plateNumber,
+        setValue: (value: string) => {
             setFormState((prev) => ({ ...prev, plateNumber: value }));
-          },
-          isFocused: () => document.activeElement === plateInputRef,
+        },
+        isFocused: () => document.activeElement === plateInputRef,
         });
-      }
+    }
     }, [plateInputRef, cameraAutofill, formState.plateNumber]);
 
-    // Auto-fill plate from camera
-    useEffect(() => {
-      if (autoFillPlate && !formState.plateNumber) {
+  // Auto-fill plate from camera
+  useEffect(() => {
+    if (autoFillPlate && !formState.plateNumber) {
         setFormState((prev) => ({ ...prev, plateNumber: autoFillPlate }));
         onPlateChange?.(autoFillPlate);
-      }
+    }
     }, [autoFillPlate, formState.plateNumber, onPlateChange]);
 
-    const handleWeightDetected = (weightKg: number) => {
-      setFormState((prev) => ({
-        ...prev,
-        grossWeightKg: weightKg,
+  const handleWeightDetected = (weightKg: number) => {
+    setFormState((prev) => ({
+      ...prev,
+      grossWeightKg: weightKg,
       }));
     };
 
@@ -344,14 +344,14 @@ export const InSessionForm = forwardRef<
             return true;
           }
 
-          if (!formState.grossWeightKg) {
-            toast({
-              title: "Алдаа",
-              description: "Бүрэн жин оруулах шаардлагатай",
-              variant: "destructive",
+    if (!formState.grossWeightKg) {
+      toast({
+        title: "Алдаа",
+        description: "Бүрэн жин оруулах шаардлагатай",
+        variant: "destructive",
             });
             return false;
-          }
+    }
 
           return await performSave();
         },
@@ -361,35 +361,35 @@ export const InSessionForm = forwardRef<
 
     const performSave = async (): Promise<boolean> => {
       setIsSaving(true);
-      try {
-        const requestData = {
-          direction: "IN",
-          plateNumber: formState.plateNumber.trim().toUpperCase(),
-          driverId: formState.driverId || undefined,
-          driverName: formState.driverName.trim() || undefined,
-          productId: formState.productId || undefined,
-          transporterCompanyId: formState.transporterCompanyId || undefined,
-          origin: formState.origin.trim() || undefined,
-          destination: formState.destination.trim() || undefined,
-          senderOrganizationId: formState.senderOrganizationId || undefined,
-          receiverOrganizationId: formState.receiverOrganizationId || undefined,
-          grossWeightKg: formState.grossWeightKg,
-          inTime: formState.inTime ? formState.inTime : undefined,
-          hasTrailer: formState.hasTrailer || undefined,
+    try {
+      const requestData = {
+        direction: "IN",
+        plateNumber: formState.plateNumber.trim().toUpperCase(),
+        driverId: formState.driverId || undefined,
+        driverName: formState.driverName.trim() || undefined,
+        productId: formState.productId || undefined,
+        transporterCompanyId: formState.transporterCompanyId || undefined,
+        origin: formState.origin.trim() || undefined,
+        destination: formState.destination.trim() || undefined,
+        senderOrganizationId: formState.senderOrganizationId || undefined,
+        receiverOrganizationId: formState.receiverOrganizationId || undefined,
+        grossWeightKg: formState.grossWeightKg,
+        inTime: formState.inTime ? formState.inTime : undefined,
+        hasTrailer: formState.hasTrailer || undefined,
           trailerNumber:
             formState.hasTrailer && formState.trailerNumber.trim()
               ? formState.trailerNumber.trim().toUpperCase()
               : undefined,
-          notes: formState.notes.trim() || undefined,
+        notes: formState.notes.trim() || undefined,
         };
 
-        const response = await fetch("/api/truck-sessions", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(requestData),
+      const response = await fetch("/api/truck-sessions", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(requestData),
         });
 
-        if (!response.ok) {
+      if (!response.ok) {
           let errorMessage = "Failed to save session";
           try {
             const errorData = await response.json();
@@ -401,46 +401,46 @@ export const InSessionForm = forwardRef<
             errorMessage = text || errorMessage;
           }
           throw new Error(errorMessage);
-        }
+      }
 
-        toast({
-          title: "Амжилттай",
-          description: "ОРОХ бүртгэл амжилттай хадгалагдлаа",
+      toast({
+        title: "Амжилттай",
+        description: "ОРОХ бүртгэл амжилттай хадгалагдлаа",
         });
 
-        // Reset form
-        setFormState({
-          plateNumber: "",
-          driverId: "",
-          driverName: "",
-          productId: "",
-          transporterCompanyId: "",
-          origin: "",
-          destination: "",
-          senderOrganizationId: "",
-          receiverOrganizationId: "",
-          inTime: new Date().toISOString().slice(0, 16),
-          grossWeightKg: null,
-          hasTrailer: false,
+      // Reset form
+      setFormState({
+        plateNumber: "",
+        driverId: "",
+        driverName: "",
+        productId: "",
+        transporterCompanyId: "",
+        origin: "",
+        destination: "",
+        senderOrganizationId: "",
+        receiverOrganizationId: "",
+        inTime: new Date().toISOString().slice(0, 16),
+        grossWeightKg: null,
+        hasTrailer: false,
           trailerNumber: "",
-          notes: "",
+        notes: "",
         });
 
         return true;
-      } catch (error) {
+    } catch (error) {
         console.error("Error saving session:", error);
-        toast({
-          title: "Алдаа",
+      toast({
+        title: "Алдаа",
           description:
             error instanceof Error
               ? error.message
               : "Бүртгэл хадгалахад алдаа гарлаа",
-          variant: "destructive",
+        variant: "destructive",
         });
         return false;
-      } finally {
+    } finally {
         setIsSaving(false);
-      }
+    }
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -458,221 +458,221 @@ export const InSessionForm = forwardRef<
       await performSave();
     };
 
-    return (
-      <div className="h-full flex flex-col overflow-hidden">
+  return (
+    <div className="h-full flex flex-col overflow-hidden">
         <form
           onSubmit={handleSubmit}
           className="h-full flex flex-col overflow-hidden"
         >
-          {/* Form Content - No Scroll, Grid Layout */}
-          <div className="flex-1 min-h-0 overflow-hidden">
-            <div className="grid grid-cols-2 gap-2 h-full">
-              {/* Left Column */}
-              <div className="flex flex-col gap-2 overflow-hidden">
-                {/* Plate Number */}
-                <Card className="p-3 flex-shrink-0">
-                  <div className="flex items-center justify-between mb-2">
+        {/* Form Content - No Scroll, Grid Layout */}
+        <div className="flex-1 min-h-0 overflow-hidden">
+          <div className="grid grid-cols-2 gap-2 h-full">
+            {/* Left Column */}
+            <div className="flex flex-col gap-2 overflow-hidden">
+              {/* Plate Number */}
+              <Card className="p-3 flex-shrink-0">
+                <div className="flex items-center justify-between mb-2">
                     <Label
                       htmlFor="plateNumber"
                       className="text-xs font-semibold text-gray-900"
                     >
-                      Улсын дугаар *
-                    </Label>
-                    <div className="flex items-center gap-2">
-                      <Switch
-                        checked={cameraAutofill.isEnabled}
-                        onCheckedChange={cameraAutofill.toggleEnabled}
-                      />
-                      <span className="text-xs text-gray-600">Камера</span>
-                    </div>
+                    Улсын дугаар *
+                  </Label>
+                  <div className="flex items-center gap-2">
+                    <Switch
+                      checked={cameraAutofill.isEnabled}
+                      onCheckedChange={cameraAutofill.toggleEnabled}
+                    />
+                    <span className="text-xs text-gray-600">Камера</span>
                   </div>
-                  <Input
-                    ref={setPlateInputRef}
-                    id="plateNumber"
-                    value={formState.plateNumber}
-                    onChange={(e) => {
+                </div>
+                <Input
+                  ref={setPlateInputRef}
+                  id="plateNumber"
+                  value={formState.plateNumber}
+                  onChange={(e) => {
                       cameraAutofill.trackTyping();
                       setFormState((prev) => ({
                         ...prev,
                         plateNumber: e.target.value,
                       }));
                       onPlateChange?.(e.target.value);
-                    }}
-                    onFocus={() => cameraAutofill.trackTyping()}
-                    className="h-10 text-sm font-mono font-semibold"
+                  }}
+                  onFocus={() => cameraAutofill.trackTyping()}
+                  className="h-10 text-sm font-mono font-semibold"
                     placeholder="УБ1234"
-                    required
-                  />
-                  {cameraAutofill.status === "polling" && (
-                    <div className="mt-2 flex items-center gap-1.5 text-xs text-blue-600">
-                      <Camera className="h-3 w-3 animate-pulse" />
-                      <span>Камера холбогдож байна...</span>
-                    </div>
-                  )}
-                  {cameraAutofill.plate && cameraAutofill.lastSeenAt && (
-                    <p className="text-xs text-gray-500 mt-1.5">
+                  required
+                />
+                {cameraAutofill.status === "polling" && (
+                  <div className="mt-2 flex items-center gap-1.5 text-xs text-blue-600">
+                    <Camera className="h-3 w-3 animate-pulse" />
+                    <span>Камера холбогдож байна...</span>
+                  </div>
+                )}
+                {cameraAutofill.plate && cameraAutofill.lastSeenAt && (
+                  <p className="text-xs text-gray-500 mt-1.5">
                       Сүүлд:{" "}
                       <span className="font-mono font-semibold text-blue-600">
                         {cameraAutofill.plate}
                       </span>
-                    </p>
-                  )}
-                </Card>
+                  </p>
+                )}
+              </Card>
 
-                {/* Basic Info */}
-                <Card className="p-3 flex-1 min-h-0 flex flex-col overflow-y-auto">
-                  <div className="flex-1 min-h-0 flex flex-col gap-2">
-                    <div>
+              {/* Basic Info */}
+              <Card className="p-3 flex-1 min-h-0 flex flex-col overflow-y-auto">
+                <div className="flex-1 min-h-0 flex flex-col gap-2">
+                  <div>
                       <Label
                         htmlFor="transporterCompanyId"
                         className="text-xs font-medium text-gray-700 mb-1 block"
                       >
-                        Тээврийн компани *
-                      </Label>
-                      <FilterableSelect
-                        options={transportCompanyOptions}
-                        value={formState.transporterCompanyId}
-                        onValueChange={(value) => {
+                      Тээврийн компани *
+                    </Label>
+                    <FilterableSelect
+                      options={transportCompanyOptions}
+                      value={formState.transporterCompanyId}
+                      onValueChange={(value) => {
                           setFormState((prev) => ({
                             ...prev,
                             transporterCompanyId: value,
                           }));
-                        }}
-                        disabled={isLoadingCompanies}
+                      }}
+                      disabled={isLoadingCompanies}
                         placeholder={
                           isLoadingCompanies
                             ? "Уншиж байна..."
                             : "Тээврийн компани сонгох"
                         }
-                        searchPlaceholder="Тээврийн компани хайх..."
-                        onCreateNew={handleCreateTransportCompany}
-                        createNewLabel="+ Нэмэх ..."
-                      />
-                    </div>
-                    <div className="grid grid-cols-2 gap-2">
-                      <div>
+                      searchPlaceholder="Тээврийн компани хайх..."
+                      onCreateNew={handleCreateTransportCompany}
+                      createNewLabel="+ Нэмэх ..."
+                    />
+                  </div>
+                  <div className="grid grid-cols-2 gap-2">
+                    <div>
                         <Label
                           htmlFor="origin"
                           className="text-xs font-medium text-gray-700 mb-1 block"
                         >
-                          Хаанаас
-                        </Label>
-                        <Input
-                          id="origin"
-                          value={formState.origin}
-                          onChange={(e) =>
+                        Хаанаас
+                      </Label>
+                      <Input
+                        id="origin"
+                        value={formState.origin}
+                        onChange={(e) =>
                             setFormState((prev) => ({
                               ...prev,
                               origin: e.target.value,
                             }))
-                          }
-                          className="h-9 text-sm"
-                          placeholder="Гарах газар"
-                        />
-                      </div>
-                      <div>
+                        }
+                        className="h-9 text-sm"
+                        placeholder="Гарах газар"
+                      />
+                    </div>
+                    <div>
                         <Label
                           htmlFor="destination"
                           className="text-xs font-medium text-gray-700 mb-1 block"
                         >
-                          Хаашаа
-                        </Label>
-                        <Input
-                          id="destination"
-                          value={formState.destination}
-                          onChange={(e) =>
+                        Хаашаа
+                      </Label>
+                      <Input
+                        id="destination"
+                        value={formState.destination}
+                        onChange={(e) =>
                             setFormState((prev) => ({
                               ...prev,
                               destination: e.target.value,
                             }))
-                          }
-                          className="h-9 text-sm"
-                          placeholder="Очих газар"
-                        />
-                      </div>
+                        }
+                        className="h-9 text-sm"
+                        placeholder="Очих газар"
+                      />
                     </div>
-                    <div>
+                  </div>
+                  <div>
                       <Label
                         htmlFor="productId"
                         className="text-xs font-medium text-gray-700 mb-1 block"
                       >
-                        Бүтээгдэхүүн *
-                      </Label>
-                      <FilterableSelect
-                        options={productOptions}
-                        value={formState.productId}
-                        onValueChange={(value) => {
+                      Бүтээгдэхүүн *
+                    </Label>
+                    <FilterableSelect
+                      options={productOptions}
+                      value={formState.productId}
+                      onValueChange={(value) => {
                           setFormState((prev) => ({
                             ...prev,
                             productId: value,
                           }));
-                        }}
-                        disabled={isLoadingProducts}
+                      }}
+                      disabled={isLoadingProducts}
                         placeholder={
                           isLoadingProducts
                             ? "Уншиж байна..."
                             : "Бүтээгдэхүүн сонгох"
                         }
-                        searchPlaceholder="Бүтээгдэхүүн хайх..."
-                        onCreateNew={handleCreateProduct}
-                        createNewLabel="+ Нэмэх ..."
-                      />
-                    </div>
-                    <div>
+                      searchPlaceholder="Бүтээгдэхүүн хайх..."
+                      onCreateNew={handleCreateProduct}
+                      createNewLabel="+ Нэмэх ..."
+                    />
+                  </div>
+                  <div>
                       <Label
                         htmlFor="senderOrganizationId"
                         className="text-xs font-medium text-gray-700 mb-1 block"
                       >
-                        Илгээч байгууллага
-                      </Label>
-                      <FilterableSelect
-                        options={organizationOptions}
-                        value={formState.senderOrganizationId}
-                        onValueChange={(value) => {
+                      Илгээч байгууллага
+                    </Label>
+                    <FilterableSelect
+                      options={organizationOptions}
+                      value={formState.senderOrganizationId}
+                      onValueChange={(value) => {
                           setFormState((prev) => ({
                             ...prev,
                             senderOrganizationId: value,
                           }));
-                        }}
-                        disabled={isLoadingOrganizations}
+                      }}
+                      disabled={isLoadingOrganizations}
                         placeholder={
                           isLoadingOrganizations
                             ? "Уншиж байна..."
                             : "Илгээч байгууллага сонгох"
                         }
-                        searchPlaceholder="Илгээч байгууллага хайх..."
-                        onCreateNew={handleCreateOrganization}
-                        createNewLabel="+ Нэмэх ..."
-                      />
-                    </div>
-                    <div>
+                      searchPlaceholder="Илгээч байгууллага хайх..."
+                      onCreateNew={handleCreateOrganization}
+                      createNewLabel="+ Нэмэх ..."
+                    />
+                  </div>
+                  <div>
                       <Label
                         htmlFor="receiverOrganizationId"
                         className="text-xs font-medium text-gray-700 mb-1 block"
                       >
-                        Хүлээн авагч байгууллага
-                      </Label>
-                      <FilterableSelect
-                        options={organizationOptions}
-                        value={formState.receiverOrganizationId}
-                        onValueChange={(value) => {
+                      Хүлээн авагч байгууллага
+                    </Label>
+                    <FilterableSelect
+                      options={organizationOptions}
+                      value={formState.receiverOrganizationId}
+                      onValueChange={(value) => {
                           setFormState((prev) => ({
                             ...prev,
                             receiverOrganizationId: value,
                           }));
-                        }}
-                        disabled={isLoadingOrganizations}
+                      }}
+                      disabled={isLoadingOrganizations}
                         placeholder={
                           isLoadingOrganizations
                             ? "Уншиж байна..."
                             : "Хүлээн авагч байгууллага сонгох"
                         }
-                        searchPlaceholder="Хүлээн авагч байгууллага хайх..."
-                        onCreateNew={handleCreateOrganization}
-                        createNewLabel="+ Нэмэх ..."
-                      />
-                    </div>
-                    <div>
+                      searchPlaceholder="Хүлээн авагч байгууллага хайх..."
+                      onCreateNew={handleCreateOrganization}
+                      createNewLabel="+ Нэмэх ..."
+                    />
+                  </div>
+                  <div>
                       <Label
                         htmlFor="driverId"
                         className="text-xs font-medium text-gray-700 mb-1 block"
@@ -709,12 +709,12 @@ export const InSessionForm = forwardRef<
                           onDriverUpdated={handleDriverAdded}
                         />
                       </div>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Checkbox
-                        id="hasTrailer"
-                        checked={formState.hasTrailer}
-                        onCheckedChange={(checked) => {
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Checkbox
+                      id="hasTrailer"
+                      checked={formState.hasTrailer}
+                      onCheckedChange={(checked) => {
                           const isChecked = checked === true;
                           setFormState((prev) => ({
                             ...prev,
@@ -724,14 +724,14 @@ export const InSessionForm = forwardRef<
                                 ? prev.plateNumber
                                 : prev.trailerNumber,
                           }));
-                        }}
-                      />
+                      }}
+                    />
                       <Label
                         htmlFor="hasTrailer"
                         className="text-xs font-medium text-gray-700 cursor-pointer"
                       >
-                        Чиргүүлтэй
-                      </Label>
+                      Чиргүүлтэй
+                    </Label>
                       {formState.hasTrailer && (
                         <Input
                           id="trailerNumber"
@@ -746,54 +746,54 @@ export const InSessionForm = forwardRef<
                           placeholder="УБ1234"
                         />
                       )}
-                    </div>
-                    <div>
+                  </div>
+                  <div>
                       <Label
                         htmlFor="inTime"
                         className="text-xs font-medium text-gray-700 mb-1 block"
                       >
-                        Орох цаг *
-                      </Label>
-                      <Input
-                        id="inTime"
-                        type="datetime-local"
-                        value={formState.inTime}
-                        onChange={(e) =>
+                      Орох цаг *
+                    </Label>
+                    <Input
+                      id="inTime"
+                      type="datetime-local"
+                      value={formState.inTime}
+                      onChange={(e) =>
                           setFormState((prev) => ({
                             ...prev,
                             inTime: e.target.value,
                           }))
-                        }
-                        className="h-9 text-sm"
-                        required
-                      />
-                    </div>
+                      }
+                      className="h-9 text-sm"
+                      required
+                    />
                   </div>
-                </Card>
-              </div>
+                </div>
+              </Card>
+            </div>
 
-              {/* Right Column */}
-              <div className="flex flex-col gap-2 overflow-hidden">
-                {/* Weight Section */}
-                <Card className="p-3 border-2 border-green-200 bg-green-50/30 flex-1 min-h-0 flex flex-col">
+            {/* Right Column */}
+            <div className="flex flex-col gap-2 overflow-hidden">
+              {/* Weight Section */}
+              <Card className="p-3 border-2 border-green-200 bg-green-50/30 flex-1 min-h-0 flex flex-col">
                   <h3 className="text-xs font-semibold text-gray-900 mb-2">
                     Жингийн мэдээлэл
                   </h3>
-                  <div className="flex-1 min-h-0 flex flex-col gap-2">
+                <div className="flex-1 min-h-0 flex flex-col gap-2">
                     <InSessionWeightConnector
                       onWeightDetected={handleWeightDetected}
                     />
-                    <div>
+                  <div>
                       <Label
                         htmlFor="grossWeightKg"
                         className="text-xs font-medium text-gray-700 mb-1 block"
                       >
-                        Бүрэн жин (кг) *
-                      </Label>
-                      <Input
-                        id="grossWeightKg"
-                        type="number"
-                        value={formState.grossWeightKg ?? ""}
+                      Бүрэн жин (кг) *
+                    </Label>
+                    <Input
+                      id="grossWeightKg"
+                      type="number"
+                      value={formState.grossWeightKg ?? ""}
                         onChange={(e) => {
                           const value =
                             e.target.value === ""
@@ -806,14 +806,14 @@ export const InSessionForm = forwardRef<
                         }}
                         className="bg-white font-semibold text-sm cursor-text h-9"
                         placeholder="Жин оруулах (кг)"
-                        required
-                      />
-                    </div>
+                      required
+                    />
                   </div>
-                </Card>
+                </div>
+              </Card>
 
-                {/* Notes */}
-                <Card className="p-3 flex-1 min-h-0 flex flex-col">
+              {/* Notes */}
+              <Card className="p-3 flex-1 min-h-0 flex flex-col">
                   <div className="flex flex-col gap-1.5 flex-1 min-h-0">
                     <div className="flex-1 min-h-0 flex flex-col">
                       <Label
@@ -822,18 +822,18 @@ export const InSessionForm = forwardRef<
                       >
                         Нэмэлт мэдээлэл
                       </Label>
-                      <Textarea
-                        id="notes"
-                        value={formState.notes}
-                        onChange={(e) =>
+                <Textarea
+                  id="notes"
+                  value={formState.notes}
+                  onChange={(e) =>
                           setFormState((prev) => ({
                             ...prev,
                             notes: e.target.value,
                           }))
-                        }
+                  }
                         className="text-xs resize-none flex-1 min-h-0"
-                        placeholder="Нэмэлт мэдээлэл..."
-                      />
+                  placeholder="Нэмэлт мэдээлэл..."
+                />
                     </div>
                   </div>
                   <div className="flex items-center gap-2 mt-3 pt-2 border-t border-gray-200">
@@ -871,14 +871,14 @@ export const InSessionForm = forwardRef<
                       {isSaving ? "Хадгалж байна..." : "Хадгалах"}
                     </Button>
                   </div>
-                </Card>
-              </div>
+              </Card>
             </div>
           </div>
-        </form>
-      </div>
+        </div>
+      </form>
+    </div>
     );
-  }
+}
 );
 
 InSessionForm.displayName = "InSessionForm";
