@@ -3,13 +3,34 @@ import { getRequestLogs, getRequestLogsByPath } from "@/lib/request-monitor"
 import { getActiveCompany } from "@/lib/auth/session"
 
 /**
- * CORS headers helper
+ * Get CORS headers based on request origin
+ * When credentials are included, we must specify the origin (not *)
  */
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Methods": "GET, OPTIONS",
-  "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Requested-With",
-  "Access-Control-Max-Age": "86400", // 24 hours
+function getCorsHeaders(request: Request) {
+  const origin = request.headers.get("origin")
+  
+  // If origin is provided and is from our domains, allow it with credentials
+  if (origin && (
+    origin.includes("gaali.vercel.app") || 
+    origin.includes("ceps.gaali.mn") ||
+    origin.includes("localhost")
+  )) {
+    return {
+      "Access-Control-Allow-Origin": origin,
+      "Access-Control-Allow-Methods": "GET, OPTIONS",
+      "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Requested-With",
+      "Access-Control-Allow-Credentials": "true",
+      "Access-Control-Max-Age": "86400",
+    }
+  }
+  
+  // Default: allow all origins (for requests without credentials)
+  return {
+    "Access-Control-Allow-Origin": "*",
+    "Access-Control-Allow-Methods": "GET, OPTIONS",
+    "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Requested-With",
+    "Access-Control-Max-Age": "86400",
+  }
 }
 
 /**
@@ -19,7 +40,7 @@ const corsHeaders = {
 export async function OPTIONS(request: Request) {
   return NextResponse.json({}, {
     status: 200,
-    headers: corsHeaders,
+    headers: getCorsHeaders(request),
   })
 }
 
@@ -38,7 +59,7 @@ export async function GET(request: Request) {
         { error: "Authentication required" },
         { 
           status: 401,
-          headers: corsHeaders,
+          headers: getCorsHeaders(request),
         }
       )
     }
@@ -73,7 +94,7 @@ export async function GET(request: Request) {
         error: log.error,
       })),
     }, {
-      headers: corsHeaders,
+      headers: getCorsHeaders(request),
     })
   } catch (error) {
     console.error("Error fetching request logs:", error)
@@ -84,7 +105,7 @@ export async function GET(request: Request) {
       },
       { 
         status: 500,
-        headers: corsHeaders,
+        headers: getCorsHeaders(request),
       }
     )
   }
