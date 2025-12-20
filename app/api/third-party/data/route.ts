@@ -114,26 +114,28 @@ export async function GET(request: Request) {
     } else {
       console.log("✅ Found document with company filter")
     }
-      // Update access stats
-      await collection.updateOne(
-        { code: code },
-        {
-          $set: { accessedAt: new Date() },
-          $inc: { accessCount: 1 },
-        }
-      )
-      return NextResponse.json(publicDoc.data, {
-        status: 200,
-        headers: {
-          "Content-Type": "application/json",
-          "Access-Control-Allow-Origin": "*", // Allow 3rd party app to fetch
+
+    // At this point, document should be set
+    if (!document) {
+      console.log("❌ No document found after all search attempts")
+      const sampleDocs = await collection.find({}).limit(5).toArray()
+      const sampleCodes = sampleDocs.map(doc => doc.code)
+      
+      return NextResponse.json(
+        { 
+          error: "Data not found for code: " + code,
+          message: "The code you provided does not exist in the database.",
+          receivedCode: code,
+          codeLength: code.length,
+          sampleCodes: sampleCodes.length > 0 ? sampleCodes : undefined
         },
-      })
+        { status: 404 }
+      )
     }
 
     // Update access stats
     await collection.updateOne(
-      { code: code, companyId: companyId },
+      { code: code },
       {
         $set: { accessedAt: new Date() },
         $inc: { accessCount: 1 },
