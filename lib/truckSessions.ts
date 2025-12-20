@@ -32,33 +32,51 @@ const truckSessionSchema = z.object({
  * - Random component ensures different codes even at the same millisecond
  * - Database check ensures no duplicates exist (final guarantee)
  */
-function generateUniqueCode(): string {
-  const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789" // Excludes confusing chars like 0, O, I, 1
+/**
+ * Generate unique AKT code for truck session
+ * Format: 312025121700009 (15 digits)
+ * - 31: Company-specific prefix (2 digits)
+ * - 20251217: Date YYYYMMDD (8 digits)
+ * - 00009: Sequential number for that day (5 digits)
+ * 
+ * Sequential numbers are unique per day and queried from database
+ * to ensure each IN and OUT session gets a different number
+ */
+async function generateUniqueCode(
+  companyId: string,
+  sessionsCollection: any
+): Promise<string> {
+  const companyPrefix = "31"
+  const now = new Date()
+  const dateStr = now.toISOString().slice(0, 10).replace(/-/g, "") // YYYYMMDD
   
-  // Get current timestamp (milliseconds since epoch)
-  const timestamp = Date.now()
+  // Find the highest sequential number for today
+  // Extract date part from uniqueCode: 31 + YYYYMMDD + XXXXX
+  const todayPrefix = `${companyPrefix}${dateStr}`
+  const todaySessions = await sessionsCollection
+    .find({
+      uniqueCode: { $regex: `^${todayPrefix}` }
+    })
+    .sort({ uniqueCode: -1 })
+    .limit(1)
+    .toArray()
   
-  // Generate multiple random components for better uniqueness
-  const random1 = Math.random() * 1000000
-  const random2 = Math.random() * 1000000
-  const random3 = Math.random() * 1000000
-  
-  // Combine timestamp + multiple random values for maximum uniqueness
-  let code = ""
-  let seed = Math.abs(Math.floor(timestamp + random1 + random2 + random3))
-  
-  // Generate 8 characters using the seed and additional randomness
-  for (let i = 0; i < 8; i++) {
-    // Mix seed-based selection with fresh random for each character
-    const randomIndex = Math.floor(Math.random() * chars.length)
-    const seedIndex = seed % chars.length
-    const index = (seedIndex + randomIndex) % chars.length
-    code += chars.charAt(index)
-    // Rotate seed for next character
-    seed = Math.floor(seed / chars.length) + (i * 1000) + Math.floor(Math.random() * 100)
+  let seqNum = 1
+  if (todaySessions.length > 0 && todaySessions[0].uniqueCode) {
+    // Extract sequential number from existing code
+    const existingCode = todaySessions[0].uniqueCode
+    const existingSeqStr = existingCode.slice(todayPrefix.length) // Get last 5 digits
+    const existingSeq = parseInt(existingSeqStr, 10)
+    if (!isNaN(existingSeq)) {
+      seqNum = existingSeq + 1
+    }
   }
   
-  return code
+  // Format: 31 + YYYYMMDD + 00009 (5 digits) = 15 digits total
+  const seqNumStr = seqNum.toString().padStart(5, '0')
+  const aktNumber = `${companyPrefix}${dateStr}${seqNumStr}`
+  
+  return aktNumber
 }
 
 export interface TruckSession {
@@ -133,34 +151,15 @@ export async function saveTruckSession(
       throw new Error(`Failed to access database: ${error instanceof Error ? error.message : String(error)}`)
     }
 
-    // Generate unique code and ensure it's unique
-    // The code combines timestamp + random data, but we still check database to guarantee uniqueness
-    let uniqueCode: string
-    let attempts = 0
-    const maxAttempts = 10
-    do {
-      uniqueCode = generateUniqueCode()
-      console.log(`🔑 Generated unique code (attempt ${attempts + 1}):`, uniqueCode)
-      
-      try {
-      // Check if this code already exists in the database
-      const existing = await sessionsCollection.findOne({ uniqueCode })
-      if (!existing) {
-        console.log(`✅ Unique code verified - no duplicates found:`, uniqueCode)
-        break
-      }
-      
-      // If duplicate found, generate a new one
-      console.warn(`⚠️ Duplicate code found, generating new one... (attempt ${attempts + 1})`)
-      attempts++
-      if (attempts >= maxAttempts) {
-        throw new Error("Failed to generate unique code after multiple attempts")
-        }
-      } catch (error) {
-        console.error("❌ Error checking for duplicate code:", error)
-        throw new Error(`Database error: ${error instanceof Error ? error.message : String(error)}`)
-      }
-    } while (true)
+    // Generate unique code based on database (ensures each IN and OUT session gets different sequential number)
+    const uniqueCode = await generateUniqueCode(companyId, sessionsCollection)
+    console.log(`🔑 Generated unique code:`, uniqueCode)
+    
+    // Verify it doesn't exist (shouldn't happen, but double-check)
+    const existing = await sessionsCollection.findOne({ uniqueCode })
+    if (existing) {
+      throw new Error("Generated code already exists - this should not happen")
+    }
 
     // Create session document
     const now = new Date()

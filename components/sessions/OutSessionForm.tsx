@@ -300,6 +300,73 @@ export const OutSessionForm = forwardRef<
         }));
     };
 
+  // Auto-find IN session and calculate net weight when plate number and out weight are filled
+  useEffect(() => {
+    const findInSessionAndCalculateNet = async () => {
+      // Only calculate if we have plate number and out weight is set (can be 0)
+      if (!formState.plateNumber.trim() || formState.outWeightKg === null || formState.outWeightKg === undefined) {
+        return;
+      }
+
+      try {
+        // Find the latest IN session for this plate number
+        const response = await fetch(
+          `/api/truck-sessions?direction=IN&plateNumber=${encodeURIComponent(formState.plateNumber.trim())}&limit=1`
+        );
+        
+        if (response.ok) {
+          const data = await response.json();
+          if (data.sessions && data.sessions.length > 0) {
+            const inSession = data.sessions[0]; // Get the latest IN session
+            
+            // Calculate net weight: IN weight - OUT weight (cargo weight that was unloaded)
+            // If truck came in with 25000 kg and goes out with 0 kg, net = 25000 - 0 = 25000 kg (cargo unloaded)
+            const inWeight = inSession.grossWeightKg || 0;
+            const outWeight = formState.outWeightKg || 0;
+            const netWeight = inWeight - outWeight; // This is the cargo weight
+            
+            // Never show negative net weight - show 0 or empty instead
+            const displayNetWeight = netWeight < 0 ? 0 : netWeight;
+            
+            // Update form state with IN session ID and calculated net weight
+            setFormState((prev) => ({
+              ...prev,
+              inSessionId: inSession.id,
+              netWeightKg: displayNetWeight, // Never negative - shows 0 if calculation is negative
+            }));
+            
+            // Auto-fill other fields from IN session if not already filled
+            if (!formState.driverId && inSession.driverName) {
+              const matchingDriver = drivers.find(d => d.name === inSession.driverName);
+              if (matchingDriver) {
+                setFormState((prev) => ({
+                  ...prev,
+                  driverId: matchingDriver.id,
+                  driverName: matchingDriver.name,
+                }));
+              }
+            }
+            
+            if (!formState.productId && inSession.product) {
+              const matchingProduct = products.find(p => p.label === inSession.product);
+              if (matchingProduct) {
+                setFormState((prev) => ({
+                  ...prev,
+                  productId: matchingProduct.id,
+                }));
+              }
+            }
+          }
+        }
+      } catch (error) {
+        console.error("Error finding IN session:", error);
+        // Don't show error - just silently fail
+      }
+    };
+
+    findInSessionAndCalculateNet();
+  }, [formState.plateNumber, formState.outWeightKg, drivers, products]);
+
     // Check if form has unsaved data
     const hasUnsavedData = (): boolean => {
       return !!(
@@ -399,10 +466,41 @@ export const OutSessionForm = forwardRef<
           throw new Error(errorMessage);
       }
 
+      const savedSession = await response.json()
+      
       toast({
         title: "Амжилттай",
         description: "ГАРАХ бүртгэл амжилттай хадгалагдлаа",
       });
+
+      // Send to 3rd party app via WebSocket
+      if (savedSession.session && savedSession.session.uniqueCode) {
+        try {
+          const formDataForThirdParty = {
+            aktNumber: savedSession.session.uniqueCode,
+            uniqueCode: savedSession.session.uniqueCode,
+            plateNumber: formState.plateNumber.trim().toUpperCase(),
+            driverName: formState.driverName.trim(),
+            product: formState.productId ? products.find(p => p.id === formState.productId)?.label : "",
+            transporterCompany: formState.transporterCompanyId ? transportCompanies.find(t => t.id === formState.transporterCompanyId)?.name : "",
+            origin: formState.origin.trim(),
+            destination: formState.destination.trim(),
+            grossWeightKg: formState.outWeightKg,
+            netWeightKg: formState.netWeightKg,
+            trailerNumber: formState.hasTrailer ? formState.trailerNumber.trim().toUpperCase() : "",
+            sealNumber: formState.sealNumber.trim(),
+          }
+          
+          await sendFormData(formDataForThirdParty)
+          toast({
+            title: "Амжилттай",
+            description: "3-р талын програм руу илгээгдлээ",
+          })
+        } catch (sendError) {
+          console.error("Error sending to 3rd party:", sendError)
+          // Don't show error toast - session is already saved
+        }
+      }
 
       // Reset form
       setFormState({
@@ -851,12 +949,13 @@ export const OutSessionForm = forwardRef<
                     <Input
                       id="netWeightKg"
                       type="number"
-                      value={formState.netWeightKg ?? ""}
+                      min="0"
+                      value={formState.netWeightKg !== null && formState.netWeightKg >= 0 ? formState.netWeightKg : ""}
                         onChange={(e) => {
                           const value =
                             e.target.value === ""
                               ? null
-                              : parseFloat(e.target.value);
+                              : Math.max(0, parseFloat(e.target.value) || 0); // Never allow negative
                           setFormState((prev) => ({
                             ...prev,
                             netWeightKg: value,

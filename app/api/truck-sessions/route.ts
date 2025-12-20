@@ -123,6 +123,55 @@ export async function POST(request: Request) {
     const session = await saveTruckSession(cleanedBody)
     console.log("✅ Session saved successfully:", session.id)
 
+    // Send data to 3rd party app after saving
+    try {
+      // Transform session data to 3rd party format (exact format as specified)
+      const thirdPartyData = [
+        {
+          AKT: session.uniqueCode, // Актын дугаар (уникаль код)
+          CAR: session.product || "", // Тээвэрлэгч байгууллагын нэр / Бүтээгдэхүүн
+          CMN: "", // Convoy manifest number
+          CON: "", // Гэрээний дугаар (can be empty)
+          CT1: "", // Чингэлэг 1
+          DRN: session.driverName || "", // Жолоочийн нэр
+          LPC: session.transporterCompany || body.origin || "", // Ачих газар код
+          NET: session.netWeightKg || 0, // Цэвэр жин
+          SLN: body.sealNumber || "", // Гаалийн лац, ломбын дугаар
+          TRL: body.trailerNumber || body.trailerPlate || "", // Чиргүүлийн дугаар
+          UPC: body.destination || receiverOrgName || "", // Хүлээн авах газар код
+          VNO: session.plateNumber || "", // Тээврийн хэрэгслийн дугаар
+          WGT: session.grossWeightKg || 0, // Бохир жин
+        }
+      ]
+
+      // Save to third-party storage (direct database call)
+      const { getDatabase } = await import("@/lib/db/client")
+      const db = await getDatabase()
+      const collection = db.collection("third_party_data")
+      
+      const document = {
+        code: session.uniqueCode,
+        companyId: companyId,
+        data: thirdPartyData,
+        createdAt: new Date(),
+        accessedAt: new Date(),
+        accessCount: 0,
+      }
+      
+      await collection.updateOne(
+        { code: session.uniqueCode, companyId: companyId },
+        { $set: document },
+        { upsert: true }
+      )
+      
+      console.log("✅ Data saved to 3rd party storage with code:", session.uniqueCode)
+      
+      // Note: WebSocket sending is handled by client-side hook (useThirdPartyAutofill)
+    } catch (thirdPartyError) {
+      // Log error but don't fail the request - session is already saved
+      console.error("⚠️ Error sending to 3rd party app (session still saved):", thirdPartyError)
+    }
+
     // Also create a log entry for history
     try {
       // Ensure cargoType is not empty (required by schema)

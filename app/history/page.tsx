@@ -15,6 +15,7 @@ import { Separator } from "@/components/ui/separator"
 import { EditLogDialog } from "@/components/history/EditLogDialog"
 import { exportLogToPDF } from "@/lib/pdf-export"
 import { sendTruckLogToCustoms } from "@/lib/api"
+import { useThirdPartyAutofill } from "@/hooks/useThirdPartyAutofill"
 import { useToast } from "@/hooks/use-toast"
 import type { TruckLog, Direction } from "@/lib/types"
 
@@ -24,6 +25,7 @@ type TimePeriod = "all" | "today" | "week" | "month" | "custom"
 export default function HistoryPage() {
   const router = useRouter()
   const { toast } = useToast()
+  const { sendFormData, isConnected } = useThirdPartyAutofill()
   const [logs, setLogs] = useState<TruckLog[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [isCheckingAuth, setIsCheckingAuth] = useState(true)
@@ -284,25 +286,109 @@ export default function HistoryPage() {
   const handleSend = async (log: TruckLog) => {
     setSendingIds((prev) => new Set(prev).add(log.id))
     try {
-      const result = await sendTruckLogToCustoms(log.id)
+      // Check if WebSocket is connected
+      if (!isConnected) {
+        toast({
+          title: "Алдаа",
+          description: "3-р талын програмтай холбогдоогүй байна. Тохиргоо хэсэгт холбогдоно уу.",
+          variant: "destructive",
+        })
+        return
+      }
+
+      // Find the corresponding session to get the uniqueCode (AKT)
+      const sessionsResponse = await fetch(
+        `/api/truck-sessions?direction=${log.direction}&plateNumber=${encodeURIComponent(log.plate)}&limit=10`
+      )
+      
+      if (!sessionsResponse.ok) {
+        throw new Error("Failed to find session")
+      }
+      
+      const sessionsData = await sessionsResponse.json()
+      // Find session that matches the log's date/time (closest match)
+      const session = sessionsData.sessions?.find((s: any) => {
+        const sessionDate = new Date(s.createdAt)
+        const logDate = new Date(log.createdAt)
+        // Match if within 1 hour of each other
+        return Math.abs(sessionDate.getTime() - logDate.getTime()) < 3600000
+      }) || sessionsData.sessions?.[0] // Fallback to first session
+      
+      if (!session || !session.uniqueCode) {
+        toast({
+          title: "Алдаа",
+          description: "Холбогдох сессийн мэдээлэл олдсонгүй",
+          variant: "destructive",
+        })
+        return
+      }
+      
+      // Get product name if productId exists
+      let productName = log.cargoType || ""
+      if (log.cargoType && !productName) {
+        try {
+          const productsResponse = await fetch("/api/products")
+          if (productsResponse.ok) {
+            const products = await productsResponse.json()
+            const product = products.find((p: any) => p.label === log.cargoType)
+            if (product) productName = product.label
+          }
+        } catch (e) {
+          // Ignore error
+        }
+      }
+      
+      // Get transport company name if transportCompanyId exists
+      let transportCompanyName = ""
+      if (log.transportCompanyId) {
+        try {
+          const companiesResponse = await fetch("/api/transport-companies")
+          if (companiesResponse.ok) {
+            const companies = await companiesResponse.json()
+            const company = companies.find((c: any) => c.id === log.transportCompanyId)
+            if (company) transportCompanyName = company.name
+          }
+        } catch (e) {
+          // Ignore error
+        }
+      }
+      
+      // Send to 3rd party app using the session data
+      const formDataForThirdParty = {
+        aktNumber: session.uniqueCode,
+        uniqueCode: session.uniqueCode,
+        plateNumber: log.plate,
+        driverName: log.driverName || "",
+        product: productName,
+        transporterCompany: transportCompanyName,
+        origin: log.origin || "",
+        destination: log.destination || "",
+        grossWeightKg: log.weightKg || 0,
+        netWeightKg: log.netWeightKg || 0,
+        trailerNumber: log.trailerPlate || "",
+        sealNumber: log.sealNumber || "",
+      }
+      
+      const result = await sendFormData(formDataForThirdParty)
       
       if (result.success) {
         toast({
           title: "Амжилттай",
-          description: "Мэдээлэл Монголын гаалинд амжилттай илгээгдлээ",
+          description: "3-р талын програм руу илгээгдлээ",
         })
         loadLogs(currentPage)
       } else {
         toast({
           title: "Алдаа",
-          description: result.error || "Гаалинд илгээхэд алдаа гарлаа",
+          description: "3-р талын програм руу илгээхэд алдаа гарлаа",
           variant: "destructive",
         })
       }
     } catch (error) {
+      console.error("Error sending log:", error)
       toast({
         title: "Алдаа",
-        description: "Гаалинд илгээхэд алдаа гарлаа",
+        description: error instanceof Error ? error.message : "3-р талын програм руу илгээхэд алдаа гарлаа",
         variant: "destructive",
       })
     } finally {

@@ -403,10 +403,41 @@ export const InSessionForm = forwardRef<
           throw new Error(errorMessage);
       }
 
+      const savedSession = await response.json()
+      
       toast({
         title: "Амжилттай",
         description: "ОРОХ бүртгэл амжилттай хадгалагдлаа",
         });
+
+      // Send to 3rd party app via WebSocket
+      if (savedSession.session && savedSession.session.uniqueCode) {
+        try {
+          const formDataForThirdParty = {
+            aktNumber: savedSession.session.uniqueCode,
+            uniqueCode: savedSession.session.uniqueCode,
+            plateNumber: formState.plateNumber.trim().toUpperCase(),
+            driverName: formState.driverName.trim(),
+            product: formState.productId ? products.find(p => p.id === formState.productId)?.label : "",
+            transporterCompany: formState.transporterCompanyId ? transportCompanies.find(t => t.id === formState.transporterCompanyId)?.name : "",
+            origin: formState.origin.trim(),
+            destination: formState.destination.trim(),
+            grossWeightKg: formState.grossWeightKg,
+            netWeightKg: 0, // IN session has no net weight
+            trailerNumber: formState.hasTrailer ? formState.trailerNumber.trim().toUpperCase() : "",
+            sealNumber: "",
+          }
+          
+          await sendFormData(formDataForThirdParty)
+          toast({
+            title: "Амжилттай",
+            description: "3-р талын програм руу илгээгдлээ",
+          })
+        } catch (sendError) {
+          console.error("Error sending to 3rd party:", sendError)
+          // Don't show error toast - session is already saved
+        }
+      }
 
       // Reset form
       setFormState({

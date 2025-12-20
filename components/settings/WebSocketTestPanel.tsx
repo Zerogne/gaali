@@ -19,14 +19,14 @@ export function WebSocketTestPanel() {
   const sequentialNumberRef = useRef(1)
   const lastDateRef = useRef(new Date().toISOString().slice(0, 10))
 
-  // Generate customs act number (AKT) in format: {customsCode}{date}{sequentialNumber}
-  // Format: 11112025121700009 (17 digits total)
-  // - 1111: Customs office code (4 digits)
+  // Generate customs act number (AKT) in format: {companyPrefix}{date}{sequentialNumber}
+  // Format: 312025121700009 (15 digits total)
+  // - 31: Company-specific prefix (2 digits)
   // - 20251217: Date YYYYMMDD (8 digits)
   // - 00009: Sequential number for that day (5 digits)
   // increment: if true, increments the sequential number for next call
   const generateActNumber = (increment: boolean = false): string => {
-    const customsCode = "1111" // Customs office code
+    const companyPrefix = "31" // Company-specific prefix
     const now = new Date()
     const dateStr = now.toISOString().slice(0, 10).replace(/-/g, "") // YYYYMMDD
     
@@ -38,7 +38,7 @@ export function WebSocketTestPanel() {
     }
     
     const seqNum = sequentialNumberRef.current.toString().padStart(5, '0')
-    const actNumber = `${customsCode}${dateStr}${seqNum}`
+    const actNumber = `${companyPrefix}${dateStr}${seqNum}`
     
     // Only increment when actually sending (not for preview)
     if (increment) {

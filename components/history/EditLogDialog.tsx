@@ -299,13 +299,12 @@ export function EditLogDialog({
             if (inLog && inLog.weightKg) {
               const outWeight = Number(weight)
               const inWeight = inLog.weightKg
-              const calculatedNetWeight = outWeight - inWeight
+              // Calculate net weight: IN weight - OUT weight (cargo weight unloaded)
+              const calculatedNetWeight = inWeight - outWeight
               
-              if (calculatedNetWeight > 0) {
-                setNetWeight(Math.round(calculatedNetWeight).toString())
-              } else {
-                setNetWeight("")
-              }
+              // Never show negative net weight - show 0 or empty instead
+              const displayNetWeight = calculatedNetWeight < 0 ? 0 : Math.round(calculatedNetWeight)
+              setNetWeight(displayNetWeight.toString())
             } else {
               // If no IN log found, keep existing netWeight if it exists, otherwise clear it
               if (!log?.netWeightKg) {
@@ -577,7 +576,8 @@ export function EditLogDialog({
                       <Input
                         id="edit-net-weight"
                         type="number"
-                        value={netWeight}
+                        min="0"
+                        value={netWeight && Number(netWeight) >= 0 ? netWeight : ""}
                         readOnly
                         className="mt-1 bg-gray-50 border-gray-300 text-gray-700 cursor-not-allowed"
                         placeholder="Цэвэр жин автоматаар тооцоологдоно"

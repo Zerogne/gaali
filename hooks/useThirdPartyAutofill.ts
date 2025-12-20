@@ -237,27 +237,22 @@ export function useThirdPartyAutofill() {
       setIsSending(true)
       try {
         // Step 1: Transform formData to 3rd party app format
-        // Format: Array with single object containing CAR, CON, DRN, etc.
+        // Format: Array with single object - exact format as specified
         const thirdPartyData = [
           {
-            CAR: formData.product || formData.cargoType || "", // Тээвэрлэгч байгууллагын нэр / Бүтээгдэхүүн
+            AKT: formData.aktNumber || formData.uniqueCode || "", // Актын дугаар (уникаль код)
+            CAR: formData.product || formData.cargoType || formData.productName || "", // Тээвэрлэгч байгууллагын нэр / Бүтээгдэхүүн
+            CMN: formData.convoyManifestNumber || formData.cmn || "", // Convoy manifest number
             CON: formData.contractNumber || "", // Гэрээний дугаар
+            CT1: formData.container1 || "", // Чингэлэг 1
             DRN: formData.driverName || "", // Жолоочийн нэр
-            LPC: formData.transporterCompany || formData.origin || "", // Ачих газар код
-            PRM: formData.permitNumber || "", // Улс хоорондын тээвэр гүйцэтгэх зөвшөөрлийн дугаар
+            LPC: formData.transporterCompany || formData.origin || formData.transportCompanyName || "", // Ачих газар код
+            NET: formData.netWeightKg || formData.netWeight || 0, // Цэвэр жин
             SLN: formData.sealNumber || "", // Гаалийн лац, ломбын дугаар
             TRL: formData.trailerNumber || formData.trailerPlate || "", // Чиргүүлийн дугаар
-            UPC: formData.destination || formData.receiverOrganization || "", // Хүлээн авах газар код
-            AKT: formData.aktNumber || formData.uniqueCode || "", // Актын дугаар
-            NET: formData.netWeightKg || formData.netWeight || 0, // Цэвэр жин
-            WGT: formData.grossWeightKg || formData.weightKg || formData.weight || 0, // Бохир жин
+            UPC: formData.destination || formData.receiverOrganization || formData.receiverOrganizationName || "", // Хүлээн авах газар код
             VNO: formData.plateNumber || formData.plate || "", // Тээврийн хэрэгслийн дугаар
-            CT1: formData.container1 || "", // Чингэлэг 1
-            CT2: formData.container2 || "", // Чингэлэг 2
-            CT3: formData.container3 || "", // Чингэлэг 3
-            CT4: formData.container4 || "", // Чингэлэг 4
-            TID: formData.rfidNumber || formData.tid || "", // Тээврийн хэрэгслийн RFID дугаар
-            CMN: formData.convoyManifestNumber || formData.cmn || "", // Convoy manifest number
+            WGT: formData.grossWeightKg || formData.weightKg || formData.weight || 0, // Бохир жин
           }
         ]
 
@@ -297,9 +292,21 @@ export function useThirdPartyAutofill() {
         console.log("🔌 Step 3: Connecting WebSocket...")
         console.log("🔌 Current WebSocket state:", ws ? `readyState: ${ws.readyState} (OPEN=${WebSocket.OPEN})` : "null")
         
-        const connectedWs = await connectWebSocket()
-        console.log("✅ WebSocket connection established")
-        console.log("✅ Connected WebSocket readyState:", connectedWs.readyState)
+        let connectedWs: WebSocket
+        try {
+          connectedWs = await connectWebSocket()
+          console.log("✅ WebSocket connection established")
+          console.log("✅ Connected WebSocket readyState:", connectedWs.readyState)
+        } catch (connectionError) {
+          console.error("❌ Failed to connect WebSocket:", connectionError)
+          const errorMessage = connectionError instanceof Error 
+            ? connectionError.message 
+            : "Failed to connect to 3rd party app. Please ensure the app is running."
+          return {
+            success: false,
+            error: errorMessage,
+          }
+        }
 
         // Double-check the connection
         if (!connectedWs || connectedWs.readyState !== WebSocket.OPEN) {
@@ -307,7 +314,7 @@ export function useThirdPartyAutofill() {
           console.error("❌ WebSocket states: CONNECTING=0, OPEN=1, CLOSING=2, CLOSED=3")
           return {
             success: false,
-            error: `WebSocket is not connected. State: ${connectedWs?.readyState}`,
+            error: `WebSocket is not connected. State: ${connectedWs?.readyState}. Please ensure the 3rd party app is running.`,
           }
         }
 
@@ -323,20 +330,30 @@ export function useThirdPartyAutofill() {
         console.log("💡 3rd party app will fetch data from this URL")
         console.log("💡 3rd party app can forward data to another site")
 
-        try {
-          // Verify connection is still open right before sending
-          if (connectedWs.readyState !== WebSocket.OPEN) {
-            console.error("❌ WebSocket closed before send! readyState:", connectedWs.readyState)
-            return {
-              success: false,
-              error: "WebSocket connection closed before sending data",
-            }
+        // Verify connection is still open right before sending
+        if (connectedWs.readyState !== WebSocket.OPEN) {
+          console.error("❌ WebSocket closed before send! readyState:", connectedWs.readyState)
+          return {
+            success: false,
+            error: "WebSocket connection closed before sending data. Please ensure the 3rd party app is running.",
           }
-          
+        }
+        
+        try {
           // Send the full URL (3rd party app expects URL string, will fetch and can forward)
           connectedWs.send(dataUrl)
           console.log("✅ URL sent via WebSocket.send() successfully")
           console.log("✅ URL:", dataUrl)
+          
+          // Verify connection is still open immediately after sending
+          // If it closed, the send might have failed
+          if (connectedWs.readyState !== WebSocket.OPEN) {
+            console.error("❌ WebSocket closed immediately after send! readyState:", connectedWs.readyState)
+            return {
+              success: false,
+              error: "WebSocket connection closed immediately after sending. The 3rd party app may not be running.",
+            }
+          }
           
           // Log to help verify data was sent
           console.log("=".repeat(50))
@@ -347,21 +364,22 @@ export function useThirdPartyAutofill() {
           console.log("💡 3rd party app can forward data to another site")
           console.log("=".repeat(50))
           
-          // Verify connection is still open after sending
-          setTimeout(() => {
-            if (connectedWs.readyState === WebSocket.OPEN) {
-              console.log("✅ WebSocket still open after send")
-            } else {
-              console.warn("⚠️ WebSocket closed after send. readyState:", connectedWs.readyState)
-            }
-          }, 100)
+          // Verify connection is still open after a short delay
+          await new Promise(resolve => setTimeout(resolve, 100))
+          if (connectedWs.readyState !== WebSocket.OPEN) {
+            console.warn("⚠️ WebSocket closed shortly after send. readyState:", connectedWs.readyState)
+            // This might be okay if the app closes after receiving, but log it
+          }
         } catch (sendError) {
           console.error("❌ Error calling ws.send():", sendError)
           console.error("❌ Send error details:", {
             message: sendError instanceof Error ? sendError.message : String(sendError),
             readyState: connectedWs.readyState,
           })
-          throw sendError
+          return {
+            success: false,
+            error: sendError instanceof Error ? sendError.message : "Failed to send data via WebSocket",
+          }
         }
 
         // Store sent data in localStorage for debugging (last 5 entries)
