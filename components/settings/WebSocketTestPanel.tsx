@@ -20,13 +20,13 @@ export function WebSocketTestPanel() {
   const lastDateRef = useRef(new Date().toISOString().slice(0, 10))
 
   // Generate customs act number (AKT) in format: {customsCode}{date}{sequentialNumber}
-  // Format: 311001202401180001
-  // - 311001: Customs office code (6 digits)
-  // - 20240118: Date YYYYMMDD (8 digits)
-  // - 000001: Sequential number for that day (6 digits)
+  // Format: 11112025121700009 (17 digits total)
+  // - 1111: Customs office code (4 digits)
+  // - 20251217: Date YYYYMMDD (8 digits)
+  // - 00009: Sequential number for that day (5 digits)
   // increment: if true, increments the sequential number for next call
   const generateActNumber = (increment: boolean = false): string => {
-    const customsCode = "311001" // Example customs office code
+    const customsCode = "1111" // Customs office code
     const now = new Date()
     const dateStr = now.toISOString().slice(0, 10).replace(/-/g, "") // YYYYMMDD
     
@@ -37,7 +37,7 @@ export function WebSocketTestPanel() {
       sequentialNumberRef.current = 1
     }
     
-    const seqNum = sequentialNumberRef.current.toString().padStart(6, '0')
+    const seqNum = sequentialNumberRef.current.toString().padStart(5, '0')
     const actNumber = `${customsCode}${dateStr}${seqNum}`
     
     // Only increment when actually sending (not for preview)
@@ -56,25 +56,26 @@ export function WebSocketTestPanel() {
     const day = String(new Date().getDate()).padStart(2, '0')
     
     // Generate act number (only increment when actually sending)
+    // Format: 11112025121700009 (code + date + sequential)
     const aktNumber = generateActNumber(incrementActNumber)
     
-    // Generate all required fields according to specification
+    // Generate sample data - exact format as specified
+    // Only AKT (unique code) changes for each request
     const data = [
       {
-        CAR: "Цайны зам", // Тээвэрлэгч байгууллагын нэр
-        CON: `${year}/${month}-${randomNum}`, // Гэрээний дугаар
-        DRN: `Б.ЭНХБАТ ЕТ74102419 ${96650888 + randomNum}`, // Жолоочийн нэр
-        LPC: "ПАТРИКЕЙН ХХК", // Ачих газар код (гаалиас асуух)
-        PRM: `PRM${String(1000 + randomNum).padStart(6, '0')}`, // Улс хоорондын тээвэр гүйцэтгэх зөвшөөрлийн дугаар
-        SLN: `ZW${String(341369 + randomNum).padStart(7, '0')}-ZW${String(341381 + randomNum).padStart(7, '0')}`, // Гаалийн лац, ломбын дугаар
-        TRL: `${1330 + randomNum}СЧ`, // Чиргүүлийн дугаар
-        UPC: "Erlian", // Хүлээн авах газар код (гаалиас асуух)
-        AKT: aktNumber, // Актын дугаар (формат: 311001202401180001)
-        NET: Math.floor(Math.random() * 20000) + 10000, // Цэвэр жин
-        WGT: Math.floor(Math.random() * 25000) + 15000, // Бохир жин
-        VNO: `${3826 + randomNum}ДГН`, // Тээврийн хэрэгслийн дугаар
-        TID: `TID${String(5000000 + randomNum).padStart(10, '0')}`, // Тээврийн хэрэгслийн RFID дугаар (TID)
-        CMN: `CMN${String(6000 + randomNum).padStart(8, '0')}`, // Convoy manifest number
+        AKT: aktNumber,
+        CAR: "МӨНХ ШИЖИР АЛТ ХХК",
+        CMN: "",
+        CON: "AHO/2025/0730",
+        CT1: "",
+        DRN: "Н.БАТТОГТОХ ИЮ84070575 88844805",
+        LPC: "ПАТРИКЕЙН ХХК",
+        NET: 27400,
+        SLN: "ZW0345457-ZW0345469",
+        TRL: "3590AP",
+        UPC: "Erlian",
+        VNO: "3590ДГА",
+        WGT: 43100
       }
     ]
     
