@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server"
 import { getDatabase } from "@/lib/db/client"
 import { getActiveCompany } from "@/lib/auth/session"
+import { captureRequestMetadata } from "@/lib/request-monitor"
 
 /**
  * GET /api/v1/api/service?code={code}
@@ -10,6 +11,11 @@ import { getActiveCompany } from "@/lib/auth/session"
  * Supports both GET (with code query param) and POST (with code in body)
  */
 export async function GET(request: Request) {
+  const startTime = Date.now()
+  let responseStatus = 200
+  let responseTime = 0
+  let error: string | undefined = undefined
+  
   try {
     const { searchParams } = new URL(request.url)
     const code = searchParams.get("code")
@@ -25,6 +31,13 @@ export async function GET(request: Request) {
     console.log("📥 [v1/api/service] GET request")
     console.log("📥 Query params:", { code, plateNumber, akt, latest })
     console.log("📥 Trimmed values:", { trimmedCode, trimmedPlate, trimmedAkt })
+    
+    // Log all headers for debugging
+    const headers: Record<string, string> = {}
+    request.headers.forEach((value, key) => {
+      headers[key] = value
+      console.log(`📋 Header: ${key} = ${value}`)
+    })
 
     // Get company ID (optional - for security, but 3rd party might not have auth)
     let companyId: string | null = null
@@ -104,7 +117,10 @@ export async function GET(request: Request) {
       const sampleCodes = sampleDocs.map(doc => doc.code)
       console.log("📋 Sample codes in database:", sampleCodes)
       
-      return NextResponse.json(
+      responseStatus = 404
+      responseTime = Date.now() - startTime
+      
+      const response = NextResponse.json(
         { 
           error: "Data not found",
           message: trimmedCode 
@@ -119,6 +135,17 @@ export async function GET(request: Request) {
         },
         { status: 404 }
       )
+      
+      // Capture request metadata
+      await captureRequestMetadata(
+        request,
+        responseStatus,
+        responseTime,
+        { code, plateNumber, akt, latest },
+        undefined
+      )
+      
+      return response
     }
 
     const foundCode = document.code
@@ -134,20 +161,47 @@ export async function GET(request: Request) {
     )
 
     console.log("✅ [v1/api/service] Data served for code:", foundCode)
-
-    return NextResponse.json(document.data, {
+    
+    responseTime = Date.now() - startTime
+    
+    const response = NextResponse.json(document.data, {
       status: 200,
       headers: {
         "Content-Type": "application/json",
         "Access-Control-Allow-Origin": "*",
       },
     })
-  } catch (error) {
-    console.error("❌ Error in v1/api/service GET:", error)
+    
+    // Capture request metadata
+    await captureRequestMetadata(
+      request,
+      responseStatus,
+      responseTime,
+      { code, plateNumber, akt, latest },
+      undefined
+    )
+    
+    return response
+  } catch (err) {
+    responseStatus = 500
+    responseTime = Date.now() - startTime
+    error = err instanceof Error ? err.message : String(err)
+    
+    console.error("❌ Error in v1/api/service GET:", err)
+    
+    // Capture request metadata with error
+    await captureRequestMetadata(
+      request,
+      responseStatus,
+      responseTime,
+      undefined,
+      error
+    )
+    
     return NextResponse.json(
       {
         error: "Failed to fetch data",
-        message: error instanceof Error ? error.message : String(error),
+        message: error,
       },
       { status: 500 }
     )
@@ -164,10 +218,22 @@ export async function GET(request: Request) {
  * This is the preferred method for other sites that can't put code in URL
  */
 export async function POST(request: Request) {
+  const startTime = Date.now()
+  let responseStatus = 200
+  let responseTime = 0
+  let error: string | undefined = undefined
+  
   try {
     // Try to parse as JSON first
     let body: any = {}
     const contentType = request.headers.get("content-type") || ""
+    
+    // Log all headers for debugging
+    const headers: Record<string, string> = {}
+    request.headers.forEach((value, key) => {
+      headers[key] = value
+      console.log(`📋 Header: ${key} = ${value}`)
+    })
     
     if (contentType.includes("application/json")) {
       body = await request.json().catch(() => ({}))
@@ -321,7 +387,10 @@ export async function POST(request: Request) {
       const sampleDocs = await collection.find({}).limit(5).toArray()
       const sampleCodes = sampleDocs.map(doc => doc.code)
       
-      return NextResponse.json(
+      responseStatus = 404
+      responseTime = Date.now() - startTime
+      
+      const response = NextResponse.json(
         { 
           error: "Data not found",
           message: trimmedCode 
@@ -338,6 +407,17 @@ export async function POST(request: Request) {
         },
         { status: 404 }
       )
+      
+      // Capture request metadata
+      await captureRequestMetadata(
+        request,
+        responseStatus,
+        responseTime,
+        body,
+        undefined
+      )
+      
+      return response
     }
 
     // Update access stats
@@ -352,20 +432,47 @@ export async function POST(request: Request) {
     }
 
     console.log("✅ [v1/api/service] Data served for code:", foundCode || "latest")
-
-    return NextResponse.json(document.data, {
+    
+    responseTime = Date.now() - startTime
+    
+    const response = NextResponse.json(document.data, {
       status: 200,
       headers: {
         "Content-Type": "application/json",
         "Access-Control-Allow-Origin": "*",
       },
     })
-  } catch (error) {
-    console.error("❌ Error in v1/api/service POST:", error)
+    
+    // Capture request metadata
+    await captureRequestMetadata(
+      request,
+      responseStatus,
+      responseTime,
+      body,
+      undefined
+    )
+    
+    return response
+  } catch (err) {
+    responseStatus = 500
+    responseTime = Date.now() - startTime
+    error = err instanceof Error ? err.message : String(err)
+    
+    console.error("❌ Error in v1/api/service POST:", err)
+    
+    // Capture request metadata with error
+    await captureRequestMetadata(
+      request,
+      responseStatus,
+      responseTime,
+      undefined,
+      error
+    )
+    
     return NextResponse.json(
       {
         error: "Failed to fetch data",
-        message: error instanceof Error ? error.message : String(error),
+        message: error,
       },
       { status: 500 }
     )
