@@ -157,11 +157,59 @@ export async function GET(request: Request) {
 /**
  * POST /api/v1/api/service
  * Accepts code in request body (optional - if not provided, returns latest)
+ * Supports multiple formats:
+ * - JSON body: { "code": "..." }
+ * - Form data: code=...
+ * - URL encoded: code=...
  * This is the preferred method for other sites that can't put code in URL
  */
 export async function POST(request: Request) {
   try {
-    const body = await request.json().catch(() => ({}))
+    // Try to parse as JSON first
+    let body: any = {}
+    const contentType = request.headers.get("content-type") || ""
+    
+    if (contentType.includes("application/json")) {
+      body = await request.json().catch(() => ({}))
+    } else if (contentType.includes("application/x-www-form-urlencoded") || contentType.includes("multipart/form-data")) {
+      // Handle form data
+      const formData = await request.formData().catch(() => null)
+      if (formData) {
+        body = Object.fromEntries(formData.entries())
+      } else {
+        // Try to parse as URL encoded string
+        const text = await request.text().catch(() => "")
+        if (text) {
+          const params = new URLSearchParams(text)
+          body = Object.fromEntries(params.entries())
+        }
+      }
+    } else {
+      // Try JSON as fallback
+      try {
+        const text = await request.text()
+        if (text) {
+          try {
+            body = JSON.parse(text)
+          } catch {
+            // If JSON parse fails, try URL encoded
+            try {
+              const params = new URLSearchParams(text)
+              body = Object.fromEntries(params.entries())
+            } catch {
+              body = {}
+            }
+          }
+        }
+      } catch {
+        body = {}
+      }
+    }
+    
+    console.log("📥 [v1/api/service] POST request")
+    console.log("📥 Content-Type:", contentType)
+    console.log("📥 Request body:", JSON.stringify(body))
+    
     const code = body.code || body.uniqueCode || body.akt || body.code || null
     const plateNumber = body.plate || body.vno || null
     const akt = body.akt || null
