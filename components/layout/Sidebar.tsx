@@ -1,6 +1,7 @@
 "use client";
 
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -126,34 +127,45 @@ export function Sidebar() {
 
       {/* Profile section at bottom */}
       <div className="p-4 border-t border-gray-200">
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <button className="w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-colors hover:bg-gray-100 text-left">
-              <Avatar className="w-8 h-8 ring-2 ring-blue-100">
-                <AvatarFallback className="bg-blue-600 text-white text-sm font-semibold">
-                  {isLoading ? "..." : initials}
-                </AvatarFallback>
-              </Avatar>
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-semibold text-gray-900 truncate">
-                  {isLoading ? "Уншиж байна..." : displayName}
-                </p>
-                <p className="text-xs text-gray-500 truncate">
-                  {isLoading ? "..." : displayRole}
-                </p>
-              </div>
-            </button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-56 bg-white">
-            <DropdownMenuItem 
-              className="cursor-pointer text-red-600 focus:text-red-600"
-              onClick={handleLogoutClick}
-            >
-              <LogOut className="w-4 h-4 mr-2" />
-              Гарах
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+        <div className="flex items-center gap-2">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button className="flex-1 flex items-center gap-3 px-3 py-2 rounded-lg transition-colors hover:bg-gray-100 text-left">
+                <Avatar className="w-8 h-8 ring-2 ring-blue-100">
+                  <AvatarFallback className="bg-blue-600 text-white text-sm font-semibold">
+                    {isLoading ? "..." : initials}
+                  </AvatarFallback>
+                </Avatar>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-semibold text-gray-900 truncate">
+                    {isLoading ? "Уншиж байна..." : displayName}
+                  </p>
+                  <p className="text-xs text-gray-500 truncate">
+                    {isLoading ? "..." : displayRole}
+                  </p>
+                </div>
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-56 bg-white">
+              <DropdownMenuItem
+                className="cursor-pointer text-red-600 focus:text-red-600"
+                onClick={handleLogoutClick}
+              >
+                <LogOut className="w-4 h-4 mr-2" />
+                Гарах
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={handleLogoutClick}
+            className="flex-shrink-0 border-gray-300 hover:bg-red-50 hover:border-red-300 hover:text-red-600"
+            title="Гарах"
+          >
+            <LogOut className="w-4 h-4" />
+          </Button>
+        </div>
       </div>
     </aside>
   );
