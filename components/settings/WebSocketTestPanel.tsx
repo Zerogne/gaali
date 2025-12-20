@@ -212,21 +212,25 @@ export function WebSocketTestPanel() {
       addLog(`📁 Файлын URL: ${fileUrl}`, "info")
       addLog(`📁 Base URL (3-р талын апп-д тохируулах): ${dataBaseUrl}`, "info")
 
-      // Step 3: Send actual JSON data via WebSocket (3rd party app can forward to another site)
-      addLog("📤 JSON өгөгдөлийг WebSocket-оор илгээж байна...", "info")
+      // Step 3: Send code via WebSocket (3rd party app forwards to other site)
+      // Other site is configured with base URL: gaali.vercel.app/api/third-party/data
+      // Other site will fetch: {baseUrl}/{code}
+      addLog("📤 Кодыг WebSocket-оор илгээж байна...", "info")
       addLog(`🔑 Уникал код: ${uniqueCode}`, "info")
-      addLog(`💡 3-р талын апп энэ өгөгдлийг өөр сайт руу дамжуулна`, "info")
+      addLog(`📁 Base URL (өөр сайт дээр тохируулсан): ${dataBaseUrl}`, "info")
+      addLog(`💡 3-р талын апп код-ыг өөр сайт руу дамжуулна`, "info")
+      addLog(`💡 Өөр сайт татана: ${dataBaseUrl}/${uniqueCode}`, "info")
 
-      const jsonDataToSend = JSON.stringify(data)
-      ws.send(jsonDataToSend)
+      ws.send(uniqueCode)
       
       addLog("═══════════════════════════════════════════════════════", "success")
-      addLog("✅ JSON ӨГӨГДӨЛ АМЖИЛТТАЙ ИЛГЭЭГДЛЭЭ!", "success")
+      addLog("✅ КОД АМЖИЛТТАЙ ИЛГЭЭГДЛЭЭ!", "success")
       addLog("═══════════════════════════════════════════════════════", "success")
-      addLog(`✅ Илгээсэн өгөгдөл: ${jsonDataToSend}`, "success")
+      addLog(`✅ Илгээсэн код: ${uniqueCode}`, "success")
       addLog(`✅ Пүүний актын дугаар: ${aktNumber}`, "success")
-      addLog(`🔑 Уникал код: ${uniqueCode}`, "info")
-      addLog(`💡 3-р талын апп энэ өгөгдлийг өөр сайт руу дамжуулна`, "info")
+      addLog(`📁 Base URL: ${dataBaseUrl}`, "info")
+      addLog(`💡 3-р талын апп код-ыг өөр сайт руу дамжуулна`, "info")
+      addLog(`💡 Өөр сайт татана: ${dataBaseUrl}/${uniqueCode}`, "info")
     } catch (error: any) {
       addLog(`❌ Алдаа гарлаа: ${error.message}`, "error")
     }

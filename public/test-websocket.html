@@ -358,10 +358,14 @@
         log(`📁 Файлын URL: ${fileUrl}`, 'info');
         log(`📁 Base URL (3-р талын апп-д тохируулах): ${dataBaseUrl}`, 'info');
 
-        // Step 3: Send actual JSON data via WebSocket (3rd party app can forward to another site)
-        log('📤 JSON өгөгдлийг WebSocket-оор илгээж байна...', 'info');
+        // Step 3: Send code via WebSocket (3rd party app forwards to other site)
+        // Other site is configured with base URL: gaali.vercel.app/api/third-party/data
+        // Other site will fetch: {baseUrl}/{code}
+        log('📤 Кодыг WebSocket-оор илгээж байна...', 'info');
         log(`🔑 Уникал код: ${uniqueCode}`, 'info');
-        log(`💡 3-р талын апп энэ өгөгдлийг өөр сайт руу дамжуулна`, 'info');
+        log(`📁 Base URL (өөр сайт дээр тохируулсан): ${dataBaseUrl}`, 'info');
+        log(`💡 3-р талын апп код-ыг өөр сайт руу дамжуулна`, 'info');
+        log(`💡 Өөр сайт татана: ${dataBaseUrl}/${uniqueCode}`, 'info');
         
         // Verify connection one more time
         if (ws.readyState !== WebSocket.OPEN) {
@@ -369,17 +373,17 @@
           return;
         }
         
-        // Send the actual JSON data (3rd party app can forward this to another site)
-        const jsonDataToSend = JSON.stringify(sampleData);
-        ws.send(jsonDataToSend);
+        // Send the code (3rd party app forwards to other site, which fetches from our API)
+        ws.send(uniqueCode);
         
         log('═══════════════════════════════════════════════════════', 'success');
-        log('✅ JSON ӨГӨГДӨЛ АМЖИЛТТАЙ ИЛГЭЭГДЛЭЭ!', 'success');
+        log('✅ КОД АМЖИЛТТАЙ ИЛГЭЭГДЛЭЭ!', 'success');
         log('═══════════════════════════════════════════════════════', 'success');
-        log(`✅ Илгээсэн өгөгдөл: ${jsonDataToSend}`, 'success');
+        log(`✅ Илгээсэн код: ${uniqueCode}`, 'success');
         log(`✅ Пүүний актын дугаар: ${sampleData[0].AKT}`, 'success');
-        log(`🔑 Уникал код: ${uniqueCode}`, 'info');
-        log(`💡 3-р талын апп энэ өгөгдлийг өөр сайт руу дамжуулна`, 'info');
+        log(`📁 Base URL: ${dataBaseUrl}`, 'info');
+        log(`💡 3-р талын апп код-ыг өөр сайт руу дамжуулна`, 'info');
+        log(`💡 Өөр сайт татана: ${dataBaseUrl}/${uniqueCode}`, 'info');
         
         // Check connection after a short delay
         setTimeout(() => {
