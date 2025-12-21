@@ -47,7 +47,7 @@ type TimePeriod = "all" | "today" | "week" | "month" | "custom";
 export default function HistoryPage() {
   const router = useRouter();
   const { toast } = useToast();
-  const { sendFormData, isConnected } = useThirdPartyAutofill();
+  const { sendFormData, isConnected, isWebSocketOpen, getWebSocket, connectWebSocket } = useThirdPartyAutofill();
   const [logs, setLogs] = useState<TruckLog[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isCheckingAuth, setIsCheckingAuth] = useState(true);
@@ -68,7 +68,7 @@ export default function HistoryPage() {
   const [timePeriod, setTimePeriod] = useState<TimePeriod>("all");
   const [customStartDate, setCustomStartDate] = useState("");
   const [customEndDate, setCustomEndDate] = useState("");
-
+  
   // Applied filters (used for actual filtering)
   const [appliedPlateFilter, setAppliedPlateFilter] = useState("");
   const [appliedDriverNameFilter, setAppliedDriverNameFilter] = useState("");
@@ -212,16 +212,16 @@ export default function HistoryPage() {
   useEffect(() => {
     loadLogs(currentPage);
   }, [
-    isCheckingAuth,
-    appliedPlateFilter,
+    isCheckingAuth, 
+    appliedPlateFilter, 
     appliedDriverNameFilter,
     appliedDriverPhoneFilter,
     appliedOriginFilter,
     appliedDestinationFilter,
     appliedProductFilter,
-    appliedDirectionFilter,
-    appliedStartDate,
-    appliedEndDate,
+    appliedDirectionFilter, 
+    appliedStartDate, 
+    appliedEndDate, 
     currentPage,
   ]);
 
@@ -230,7 +230,7 @@ export default function HistoryPage() {
   ): { start: string | null; end: string | null } => {
     const now = new Date();
     const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-
+    
     switch (period) {
       case "today":
         return {
@@ -343,20 +343,18 @@ export default function HistoryPage() {
   };
 
   const handleSend = async (log: TruckLog) => {
+    console.log("=".repeat(50));
+    console.log("🚀 Starting send process for log:", log.id);
+    console.log("🚀 Log details:", {
+      plate: log.plate,
+      direction: log.direction,
+      createdAt: log.createdAt,
+    });
+    
     setSendingIds((prev) => new Set(prev).add(log.id));
     try {
-      // Check if WebSocket is connected
-      if (!isConnected) {
-        toast({
-          title: "Алдаа",
-          description:
-            "3-р талын програмтай холбогдоогүй байна. Тохиргоо хэсэгт холбогдоно уу.",
-          variant: "destructive",
-        });
-        return;
-      }
-
       // Find the corresponding session to get the uniqueCode (AKT)
+      console.log("🔍 Step 1: Finding session for log...");
       const sessionsResponse = await fetch(
         `/api/truck-sessions?direction=${
           log.direction
@@ -364,10 +362,14 @@ export default function HistoryPage() {
       );
 
       if (!sessionsResponse.ok) {
+        console.error("❌ ERROR: Failed to fetch sessions");
+        console.error("❌ Response status:", sessionsResponse.status);
         throw new Error("Failed to find session");
       }
 
       const sessionsData = await sessionsResponse.json();
+      console.log("📋 Found sessions:", sessionsData.sessions?.length || 0);
+      
       // Find session that matches the log's date/time (closest match)
       const session =
         sessionsData.sessions?.find((s: any) => {
@@ -378,6 +380,9 @@ export default function HistoryPage() {
         }) || sessionsData.sessions?.[0]; // Fallback to first session
 
       if (!session || !session.uniqueCode) {
+        console.error("❌ ERROR: Session not found or missing unique code");
+        console.error("❌ Session:", session);
+        console.error("❌ Available sessions:", sessionsData.sessions);
         toast({
           title: "Алдаа",
           description: "Холбогдох сессийн мэдээлэл олдсонгүй",
@@ -385,6 +390,12 @@ export default function HistoryPage() {
         });
         return;
       }
+      
+      console.log("✅ Session found:", {
+        id: session.id,
+        uniqueCode: session.uniqueCode,
+        createdAt: session.createdAt,
+      });
 
       // Get product name if productId exists
       let productName = log.cargoType || "";
@@ -420,35 +431,194 @@ export default function HistoryPage() {
         }
       }
 
-      // Send to 3rd party app using the session data
-      const formDataForThirdParty = {
-        aktNumber: session.uniqueCode,
-        uniqueCode: session.uniqueCode,
-        plateNumber: log.plate,
-        driverName: log.driverName || "",
-        product: productName,
-        transporterCompany: transportCompanyName,
-        origin: log.origin || "",
-        destination: log.destination || "",
-        grossWeightKg: log.weightKg || 0,
-        netWeightKg: log.netWeightKg || 0,
-        trailerNumber: log.trailerPlate || "",
-        sealNumber: log.sealNumber || "",
-      };
+      // Transform log data to 3rd party app format (matching test-websocket.html)
+      const thirdPartyData = [
+        {
+          AKT: session.uniqueCode,
+          CAR: productName || "",
+          CMN: "",
+          CON: "",
+          CT1: "",
+          DRN: log.driverName || "",
+          LPC: transportCompanyName || log.origin || "",
+          NET: log.netWeightKg || 0,
+          SLN: log.sealNumber || "",
+          TRL: log.trailerPlate || "",
+          UPC: log.destination || "",
+          VNO: log.plate || "",
+          WGT: log.weightKg || 0,
+        },
+      ];
 
-      const result = await sendFormData(formDataForThirdParty);
+      // Step 1: Save data to file-like storage (matching test-websocket.html)
+      console.log("💾 Step 1: Saving data to storage...");
+      const appBaseUrl = typeof window !== "undefined" 
+        ? window.location.origin 
+        : "https://gaali.vercel.app";
+      
+      console.log("💾 Saving data with unique code:", session.uniqueCode);
+      const saveResponse = await fetch(`${appBaseUrl}/api/third-party/save`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          uniqueCode: session.uniqueCode, // Use AKT as unique code (matching test-websocket.html)
+          data: thirdPartyData,
+        }),
+      });
 
-      if (result.success) {
+      if (!saveResponse.ok) {
+        const errorData = await saveResponse.json().catch(() => ({}));
+        console.error("❌ ERROR: Failed to save data");
+        console.error("❌ Response status:", saveResponse.status);
+        console.error("❌ Error data:", errorData);
+        throw new Error(errorData.error || `Failed to save data: ${saveResponse.statusText}`);
+      }
+
+      const saveResult = await saveResponse.json();
+      const uniqueCode = saveResult.code;
+      const dataBaseUrl = `${appBaseUrl}/api/third-party/data`;
+      const dataUrl = `${dataBaseUrl}/${uniqueCode}`;
+      
+      console.log("✅ Step 1: Data saved successfully");
+      console.log("🔑 Unique Code (AKT):", uniqueCode);
+      console.log("📁 Data URL:", dataUrl);
+
+      // Step 2: Check WebSocket connection (matching test-websocket.html logic)
+      let ws = getWebSocket();
+      console.log("🔌 Step 2: Checking WebSocket connection...");
+      console.log("🔌 Current WebSocket state:", ws ? `readyState: ${ws.readyState} (OPEN=${WebSocket.OPEN})` : "null");
+      
+      if (!ws || ws.readyState !== WebSocket.OPEN) {
+        // Try to connect
+        console.log("🔌 WebSocket not connected, attempting to connect...");
+        try {
+          ws = await connectWebSocket();
+          console.log("✅ WebSocket connection attempt completed");
+          // Get fresh reference after connecting (hook might have updated internal state)
+          ws = getWebSocket();
+          console.log("🔌 WebSocket state after connection:", ws ? `readyState: ${ws.readyState}` : "null");
+          // Double-check that connection is actually open after connecting
+          // Sometimes the promise resolves but connection closes immediately
+          await new Promise(resolve => setTimeout(resolve, 50));
+          ws = getWebSocket(); // Get fresh reference again
+          console.log("🔌 WebSocket state after 50ms delay:", ws ? `readyState: ${ws.readyState}` : "null");
+          if (!ws || ws.readyState !== WebSocket.OPEN) {
+            console.error("❌ ERROR: WebSocket connection failed or closed immediately");
+            console.error("❌ WebSocket states: CONNECTING=0, OPEN=1, CLOSING=2, CLOSED=3");
+            console.error("❌ Current state:", ws ? ws.readyState : "null");
+            console.error("❌ This usually means the 3rd party app server is not running");
+            toast({
+              title: "Алдаа",
+              description: "3-р талын програмтай холбогдох боломжгүй байна. Програм ажиллаж байгаа эсэхийг шалгана уу.",
+              variant: "destructive",
+            });
+            return;
+          }
+          console.log("✅ WebSocket connection verified and open");
+        } catch (error) {
+          console.error("❌ ERROR: Failed to connect WebSocket");
+          console.error("❌ Error details:", error);
+          console.error("❌ Error message:", error instanceof Error ? error.message : String(error));
+          console.error("❌ This usually means the 3rd party app server is not running at ws://127.0.0.1:9000/service");
+          toast({
+            title: "Алдаа",
+            description: "3-р талын програмтай холбогдох боломжгүй байна. Програм ажиллаж байгаа эсэхийг шалгана уу.",
+            variant: "destructive",
+          });
+          return;
+        }
+      } else {
+        console.log("✅ WebSocket already connected");
+      }
+
+      // Get fresh reference and verify connection one more time (matching test-websocket.html)
+      ws = getWebSocket();
+      console.log("🔌 Verifying WebSocket connection before sending...");
+      console.log("🔌 WebSocket state:", ws ? `readyState: ${ws.readyState}` : "null");
+      if (!ws || ws.readyState !== WebSocket.OPEN) {
+        console.error("❌ ERROR: WebSocket connection is not open before sending");
+        console.error("❌ WebSocket states: CONNECTING=0, OPEN=1, CLOSING=2, CLOSED=3");
+        console.error("❌ Current state:", ws ? ws.readyState : "null");
+        toast({
+          title: "Алдаа",
+          description: "WebSocket холболт тасарсан байна. Дахин оролдоно уу.",
+          variant: "destructive",
+        });
+        return;
+      }
+      console.log("✅ WebSocket connection verified - ready to send");
+
+      // Step 3: Send the full URL via WebSocket (matching test-websocket.html)
+      try {
+        console.log("📤 Step 3: Sending data to 3rd party app...");
+        console.log("📤 URL to send:", dataUrl);
+        console.log("📤 Unique Code (AKT):", uniqueCode);
+        
+        // Verify connection right before sending
+        if (ws.readyState !== WebSocket.OPEN) {
+          console.error("❌ ERROR: WebSocket closed right before send!");
+          console.error("❌ WebSocket state:", ws.readyState);
+          console.error("❌ WebSocket states: CONNECTING=0, OPEN=1, CLOSING=2, CLOSED=3");
+          toast({
+            title: "Алдаа",
+            description: "WebSocket холболт тасарсан байна. Дахин оролдоно уу.",
+            variant: "destructive",
+          });
+          return;
+        }
+
+        console.log("📤 Calling ws.send()...");
+        ws.send(dataUrl);
+        console.log("✅ ws.send() completed without throwing error");
+
+        // Check connection after a short delay to verify send was successful
+        // If server is not running, connection will close immediately
+        await new Promise(resolve => setTimeout(resolve, 100));
+        
+        // Get fresh reference after sending
+        ws = getWebSocket();
+        console.log("🔌 WebSocket state after send (100ms delay):", ws ? `readyState: ${ws.readyState}` : "null");
+        
+        if (!ws || ws.readyState !== WebSocket.OPEN) {
+          console.error("❌ ERROR: WebSocket closed after sending!");
+          console.error("❌ WebSocket states: CONNECTING=0, OPEN=1, CLOSING=2, CLOSED=3");
+          console.error("❌ Current state:", ws ? ws.readyState : "null");
+          console.error("❌ This usually means the 3rd party app server is not running");
+          console.error("❌ The server should be running at ws://127.0.0.1:9000/service");
+          toast({
+            title: "Алдаа",
+            description: "3-р талын програмтай холболт тасарсан. Програм ажиллаж байгаа эсэхийг шалгана уу.",
+            variant: "destructive",
+          });
+          return;
+        }
+
+        // Success - connection is still open after sending
+        console.log("=".repeat(50));
+        console.log("✅ SUCCESS: Data sent to 3rd party app");
+        console.log("✅ URL sent:", dataUrl);
+        console.log("✅ Unique Code (AKT):", uniqueCode);
+        console.log("✅ WebSocket still connected");
+        console.log("=".repeat(50));
         toast({
           title: "Амжилттай",
           description: "3-р талын програм руу илгээгдлээ",
         });
         loadLogs(currentPage);
-      } else {
-        toast({
-          title: "Алдаа",
-          description: "3-р талын програм руу илгээхэд алдаа гарлаа",
-          variant: "destructive",
+    } catch (error) {
+        console.error("=".repeat(50));
+        console.error("❌ ERROR: Exception thrown while sending data");
+        console.error("❌ Error:", error);
+        console.error("❌ Error message:", error instanceof Error ? error.message : String(error));
+        console.error("❌ Error stack:", error instanceof Error ? error.stack : "No stack trace");
+        console.error("❌ This usually means the 3rd party app server is not running");
+        console.error("=".repeat(50));
+      toast({
+        title: "Алдаа",
+          description: "WebSocket-оор илгээхэд алдаа гарлаа",
+        variant: "destructive",
         });
       }
     } catch (error) {
@@ -526,7 +696,7 @@ export default function HistoryPage() {
                 <div className="space-y-3">
                   <div className="flex items-center justify-between mb-2">
                     <div className="flex items-center gap-2">
-                      <Search className="w-4 h-4 text-gray-400" />
+                    <Search className="w-4 h-4 text-gray-400" />
                       <span className="text-sm font-medium text-gray-700">
                         Хайлт ба шүүлт
                       </span>
@@ -549,25 +719,25 @@ export default function HistoryPage() {
                       </Button>
                     )}
                   </div>
-
+                  
                   {/* First row of filters */}
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
                     <SearchInput
-                      placeholder="Улсын дугаар хайх..."
-                      value={plateFilter}
-                      onChange={(e) => setPlateFilter(e.target.value)}
+                        placeholder="Улсын дугаар хайх..."
+                        value={plateFilter}
+                        onChange={(e) => setPlateFilter(e.target.value)}
                       onEnter={handleApplyFilters}
                     />
                     <SearchInput
-                      placeholder="Жолоочийн нэр хайх..."
-                      value={driverNameFilter}
-                      onChange={(e) => setDriverNameFilter(e.target.value)}
+                        placeholder="Жолоочийн нэр хайх..."
+                        value={driverNameFilter}
+                        onChange={(e) => setDriverNameFilter(e.target.value)}
                       onEnter={handleApplyFilters}
                     />
                     <SearchInput
-                      placeholder="Жолоочийн утас хайх..."
-                      value={driverPhoneFilter}
-                      onChange={(e) => setDriverPhoneFilter(e.target.value)}
+                        placeholder="Жолоочийн утас хайх..."
+                        value={driverPhoneFilter}
+                        onChange={(e) => setDriverPhoneFilter(e.target.value)}
                       onEnter={handleApplyFilters}
                     />
                   </div>
@@ -575,21 +745,21 @@ export default function HistoryPage() {
                   {/* Second row of filters */}
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
                     <SearchInput
-                      placeholder="Хаанаас хайх..."
-                      value={originFilter}
-                      onChange={(e) => setOriginFilter(e.target.value)}
+                        placeholder="Хаанаас хайх..."
+                        value={originFilter}
+                        onChange={(e) => setOriginFilter(e.target.value)}
                       onEnter={handleApplyFilters}
                     />
                     <SearchInput
-                      placeholder="Хаашаа хайх..."
-                      value={destinationFilter}
-                      onChange={(e) => setDestinationFilter(e.target.value)}
+                        placeholder="Хаашаа хайх..."
+                        value={destinationFilter}
+                        onChange={(e) => setDestinationFilter(e.target.value)}
                       onEnter={handleApplyFilters}
                     />
                     <SearchInput
-                      placeholder="Бүтээгдэхүүн хайх..."
-                      value={productFilter}
-                      onChange={(e) => setProductFilter(e.target.value)}
+                        placeholder="Бүтээгдэхүүн хайх..."
+                        value={productFilter}
+                        onChange={(e) => setProductFilter(e.target.value)}
                       onEnter={handleApplyFilters}
                     />
                   </div>

@@ -66,7 +66,8 @@ export const OutSessionForm = forwardRef<
   ) => {
   const { toast } = useToast();
   const {
-    sendFormData,
+    getWebSocket,
+    connectWebSocket,
     isSending: isSendingToThirdParty,
     isConnected,
   } = useThirdPartyAutofill();
@@ -473,31 +474,169 @@ export const OutSessionForm = forwardRef<
         description: "ГАРАХ бүртгэл амжилттай хадгалагдлаа",
       });
 
-      // Send to 3rd party app via WebSocket
+      // Send to 3rd party app via WebSocket (matching test-websocket.html logic)
       if (savedSession.session && savedSession.session.uniqueCode) {
         try {
-          const formDataForThirdParty = {
-            aktNumber: savedSession.session.uniqueCode,
-            uniqueCode: savedSession.session.uniqueCode,
-            plateNumber: formState.plateNumber.trim().toUpperCase(),
-            driverName: formState.driverName.trim(),
-            product: formState.productId ? products.find(p => p.id === formState.productId)?.label : "",
-            transporterCompany: formState.transporterCompanyId ? transportCompanies.find(t => t.id === formState.transporterCompanyId)?.name : "",
-            origin: formState.origin.trim(),
-            destination: formState.destination.trim(),
-            grossWeightKg: formState.outWeightKg,
-            netWeightKg: formState.netWeightKg,
-            trailerNumber: formState.hasTrailer ? formState.trailerNumber.trim().toUpperCase() : "",
-            sealNumber: formState.sealNumber.trim(),
-          }
+          console.log("🚀 Starting send process for OUT session...");
           
-          await sendFormData(formDataForThirdParty)
+          // Step 1: Transform data to 3rd party format (matching test-websocket.html)
+          const productName = formState.productId ? products.find(p => p.id === formState.productId)?.label || "" : "";
+          const transportCompanyName = formState.transporterCompanyId ? transportCompanies.find(t => t.id === formState.transporterCompanyId)?.name || "" : "";
+          
+          const thirdPartyData = [
+            {
+              AKT: savedSession.session.uniqueCode,
+              CAR: productName,
+              CMN: "",
+              CON: "",
+              CT1: "",
+              DRN: formState.driverName.trim(),
+              LPC: transportCompanyName || formState.origin.trim(),
+              NET: formState.netWeightKg || 0,
+              SLN: formState.sealNumber.trim(),
+              TRL: formState.hasTrailer ? formState.trailerNumber.trim().toUpperCase() : "",
+              UPC: formState.destination.trim(),
+              VNO: formState.plateNumber.trim().toUpperCase(),
+              WGT: formState.outWeightKg || 0,
+            },
+          ];
+
+          // Step 2: Save data to file-like storage (matching test-websocket.html)
+          console.log("💾 Step 1: Saving data to storage...");
+          const appBaseUrl = typeof window !== "undefined" 
+            ? window.location.origin 
+            : "https://gaali.vercel.app";
+          
+          const saveResponse = await fetch(`${appBaseUrl}/api/third-party/save`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              uniqueCode: savedSession.session.uniqueCode, // Use AKT as unique code
+              data: thirdPartyData,
+            }),
+          });
+
+          if (!saveResponse.ok) {
+            const errorData = await saveResponse.json().catch(() => ({}));
+            console.error("❌ ERROR: Failed to save data");
+            console.error("❌ Response status:", saveResponse.status);
+            console.error("❌ Error data:", errorData);
+            throw new Error(errorData.error || `Failed to save data: ${saveResponse.statusText}`);
+          }
+
+          const saveResult = await saveResponse.json();
+          const uniqueCode = saveResult.code;
+          const dataBaseUrl = `${appBaseUrl}/api/third-party/data`;
+          const dataUrl = `${dataBaseUrl}/${uniqueCode}`;
+          
+          console.log("✅ Step 1: Data saved successfully");
+          console.log("🔑 Unique Code (AKT):", uniqueCode);
+          console.log("📁 Data URL:", dataUrl);
+
+          // Step 3: Check WebSocket connection (matching test-websocket.html logic)
+          console.log("🔌 Step 2: Checking WebSocket connection...");
+          let ws = getWebSocket();
+          console.log("🔌 Current WebSocket state:", ws ? `readyState: ${ws.readyState} (OPEN=${WebSocket.OPEN})` : "null");
+          
+          if (!ws || ws.readyState !== WebSocket.OPEN) {
+            console.log("🔌 WebSocket not connected, attempting to connect...");
+            try {
+              ws = await connectWebSocket();
+              console.log("✅ WebSocket connection attempt completed");
+              ws = getWebSocket();
+              await new Promise(resolve => setTimeout(resolve, 50));
+              ws = getWebSocket();
+              if (!ws || ws.readyState !== WebSocket.OPEN) {
+                console.error("❌ ERROR: WebSocket connection failed or closed immediately");
+                console.error("❌ WebSocket states: CONNECTING=0, OPEN=1, CLOSING=2, CLOSED=3");
+                console.error("❌ Current state:", ws ? ws.readyState : "null");
+                console.error("❌ This usually means the 3rd party app server is not running");
+                toast({
+                  title: "Алдаа",
+                  description: "3-р талын програмтай холбогдох боломжгүй байна. Програм ажиллаж байгаа эсэхийг шалгана уу.",
+                  variant: "destructive",
+                });
+                return;
+              }
+              console.log("✅ WebSocket connection verified and open");
+            } catch (error) {
+              console.error("❌ ERROR: Failed to connect WebSocket");
+              console.error("❌ Error details:", error);
+              console.error("❌ This usually means the 3rd party app server is not running at ws://127.0.0.1:9000/service");
+              toast({
+                title: "Алдаа",
+                description: "3-р талын програмтай холбогдох боломжгүй байна. Програм ажиллаж байгаа эсэхийг шалгана уу.",
+                variant: "destructive",
+              });
+              return;
+            }
+          } else {
+            console.log("✅ WebSocket already connected");
+          }
+
+          // Step 4: Verify connection one more time (matching test-websocket.html)
+          ws = getWebSocket();
+          if (!ws || ws.readyState !== WebSocket.OPEN) {
+            console.error("❌ ERROR: WebSocket connection is not open before sending");
+            toast({
+              title: "Алдаа",
+              description: "WebSocket холболт тасарсан байна. Дахин оролдоно уу.",
+              variant: "destructive",
+            });
+            return;
+          }
+
+          // Step 5: Send the full URL via WebSocket (matching test-websocket.html)
+          console.log("📤 Step 3: Sending data to 3rd party app...");
+          console.log("📤 URL to send:", dataUrl);
+          console.log("📤 Unique Code (AKT):", uniqueCode);
+          
+          if (ws.readyState !== WebSocket.OPEN) {
+            console.error("❌ ERROR: WebSocket closed right before send!");
+            toast({
+              title: "Алдаа",
+              description: "WebSocket холболт тасарсан байна. Дахин оролдоно уу.",
+              variant: "destructive",
+            });
+            return;
+          }
+
+          ws.send(dataUrl);
+          console.log("✅ ws.send() completed without throwing error");
+
+          // Step 6: Check connection after a short delay (matching test-websocket.html)
+          await new Promise(resolve => setTimeout(resolve, 100));
+          ws = getWebSocket();
+          
+          if (!ws || ws.readyState !== WebSocket.OPEN) {
+            console.error("❌ ERROR: WebSocket closed after sending!");
+            console.error("❌ This usually means the 3rd party app server is not running");
+            toast({
+              title: "Алдаа",
+              description: "3-р талын програмтай холболт тасарсан. Програм ажиллаж байгаа эсэхийг шалгана уу.",
+              variant: "destructive",
+            });
+            return;
+          }
+
+          console.log("=".repeat(50));
+          console.log("✅ SUCCESS: Data sent to 3rd party app");
+          console.log("✅ URL sent:", dataUrl);
+          console.log("✅ Unique Code (AKT):", uniqueCode);
+          console.log("=".repeat(50));
+          
           toast({
             title: "Амжилттай",
             description: "3-р талын програм руу илгээгдлээ",
-          })
+          });
         } catch (sendError) {
-          console.error("Error sending to 3rd party:", sendError)
+          console.error("=".repeat(50));
+          console.error("❌ ERROR: Exception thrown while sending data");
+          console.error("❌ Error:", sendError);
+          console.error("❌ Error message:", sendError instanceof Error ? sendError.message : String(sendError));
+          console.error("=".repeat(50));
           // Don't show error toast - session is already saved
         }
       }

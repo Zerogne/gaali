@@ -98,6 +98,35 @@ async function fetchRelatedData(log: TruckLog): Promise<{
 }
 
 /**
+ * Fetch the session's unique code (AKT) for a log
+ */
+async function fetchSessionUniqueCode(log: TruckLog): Promise<string | null> {
+  try {
+    const sessionsResponse = await fetch(
+      `/api/truck-sessions?direction=${log.direction}&plateNumber=${encodeURIComponent(log.plate)}&limit=10`
+    );
+
+    if (!sessionsResponse.ok) {
+      return null;
+    }
+
+    const sessionsData = await sessionsResponse.json();
+    // Find session that matches the log's date/time (closest match)
+    const session = sessionsData.sessions?.find((s: any) => {
+      const sessionDate = new Date(s.createdAt);
+      const logDate = new Date(log.createdAt);
+      // Match if within 1 hour of each other
+      return Math.abs(sessionDate.getTime() - logDate.getTime()) < 3600000;
+    }) || sessionsData.sessions?.[0]; // Fallback to first session
+
+    return session?.uniqueCode || null;
+  } catch (error) {
+    console.warn("Failed to fetch session unique code:", error);
+    return null;
+  }
+}
+
+/**
  * Generate a responsive PDF for a single truck log using HTML rendering
  */
 export async function exportLogToPDF(log: TruckLog): Promise<void> {
@@ -116,8 +145,11 @@ export async function exportLogToPDF(log: TruckLog): Promise<void> {
     console.warn("Failed to fetch current user:", error);
   }
 
+  // Fetch session's unique code (AKT)
+  const uniqueCode = await fetchSessionUniqueCode(log);
+
   // Create a temporary HTML element with the log data
-  const htmlContent = generateLogHTML(log, relatedData, loaderName);
+  const htmlContent = generateLogHTML(log, relatedData, loaderName, uniqueCode);
 
   // Create an iframe to completely isolate styles
   const iframe = document.createElement("iframe");
@@ -183,9 +215,8 @@ export async function exportLogToPDF(log: TruckLog): Promise<void> {
       heightLeft -= pageHeight;
     }
 
-    // Generate filename
-    const receiptNumber = generateReceiptNumber(log);
-    const filename = `${receiptNumber}.pdf`;
+    // Generate filename - use unique code if available, otherwise use receipt number
+    const filename = uniqueCode ? `${uniqueCode}.pdf` : `${generateReceiptNumber(log)}.pdf`;
 
     // Save PDF
     pdf.save(filename);
@@ -228,10 +259,11 @@ function generateLogHTML(
     driverPhone?: string;
     driverRegistrationNumber?: string;
   },
-  loaderName?: string
+  loaderName?: string,
+  uniqueCode?: string | null
 ): string {
-  // Generate receipt number from log ID and date
-  const receiptNumber = generateReceiptNumber(log);
+  // Use unique code (AKT) if available, otherwise generate receipt number
+  const receiptNumber = uniqueCode || generateReceiptNumber(log);
 
   // Format dates in YYYY-MM-DD HH:MM format
   const formatDate = (date: Date): string => {

@@ -480,6 +480,20 @@ export function useThirdPartyAutofill() {
     }
   }, [])
 
+  /**
+   * Check if WebSocket is currently connected (matching test-websocket.html logic)
+   */
+  const isWebSocketOpen = useCallback((): boolean => {
+    return ws !== null && ws.readyState === WebSocket.OPEN
+  }, [])
+
+  /**
+   * Get the WebSocket instance (for direct state checking like test-websocket.html)
+   */
+  const getWebSocket = useCallback((): WebSocket | null => {
+    return ws
+  }, [])
+
   return {
     isConnected,
     isSending,
@@ -487,5 +501,7 @@ export function useThirdPartyAutofill() {
     connectWebSocket,
     getSentDataHistory,
     clearSentDataHistory,
+    isWebSocketOpen,
+    getWebSocket,
   }
 }
