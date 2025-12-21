@@ -143,8 +143,54 @@ export async function GET(request: Request) {
     )
 
     console.log("✅ Third-party data served for code (query param):", code)
+    
+    // If driverId is missing from the data, try to fetch it from the corresponding log
+    let dataToReturn = document.data
+    if (Array.isArray(dataToReturn) && dataToReturn.length > 0) {
+      const firstItem = dataToReturn[0]
+      if (!firstItem.driverId || firstItem.driverId === "") {
+        console.log("🔍 driverId is missing, trying to fetch from log...")
+        try {
+          // Try to find the corresponding log by plate number and AKT code
+          const plateNumber = firstItem.VNO || ""
+          if (plateNumber) {
+            // Search across all company logs to find matching entry
+            const { getDatabase } = await import("@/lib/db/client")
+            const db = await getDatabase()
+            const companiesCollection = db.collection("companies")
+            const companies = await companiesCollection.find({}).toArray()
+            
+            for (const company of companies) {
+              const companyId = company.id || company._id?.toString()
+              if (!companyId) continue
+              
+              const logsCollection = db.collection(`company_${companyId}_logs`)
+              // Find log by plate and matching date (from AKT code)
+              const log = await logsCollection.findOne(
+                { plate: plateNumber },
+                { sort: { createdAt: -1 } }
+              )
+              
+              if (log && log.driverId) {
+                console.log("✅ Found driverId from log:", log.driverId)
+                // Update the data with driverId
+                dataToReturn = [
+                  {
+                    ...firstItem,
+                    driverId: log.driverId,
+                  }
+                ]
+                break
+              }
+            }
+          }
+        } catch (error) {
+          console.warn("⚠️ Could not fetch driverId from log:", error)
+        }
+      }
+    }
 
-    return NextResponse.json(document.data, {
+    return NextResponse.json(dataToReturn, {
       status: 200,
       headers: {
         "Content-Type": "application/json",

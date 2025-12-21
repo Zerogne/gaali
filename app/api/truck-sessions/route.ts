@@ -125,6 +125,12 @@ export async function POST(request: Request) {
 
     // Send data to 3rd party app after saving
     try {
+      // Get driverId from body - this should be set when form is submitted
+      const driverId = body.driverId || ""
+      console.log("🔍 Driver ID from request body:", driverId)
+      console.log("🔍 Full body.driverId value:", body.driverId)
+      console.log("🔍 body.driverId type:", typeof body.driverId)
+      
       // Transform session data to 3rd party format (exact format as specified)
       const thirdPartyData = [
         {
@@ -144,9 +150,12 @@ export async function POST(request: Request) {
           // Additional fields for sender/receiver company and driver ID
           senderCompany: senderOrgName || "", // Илгээгч байгууллага
           receiverCompany: receiverOrgName || "", // Хүлээн авагч байгууллага
-          driverId: body.driverId || "", // Жолоочийн ID
+          driverId: driverId, // Жолоочийн ID
         }
       ]
+      
+      console.log("💾 Saving 3rd party data with driverId:", driverId)
+      console.log("💾 Full 3rd party data:", JSON.stringify(thirdPartyData, null, 2))
 
       // Save to third-party storage (direct database call)
       const { getDatabase } = await import("@/lib/db/client")
