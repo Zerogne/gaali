@@ -420,6 +420,36 @@ export const InSessionForm = forwardRef<
           const productName = formState.productId ? products.find(p => p.id === formState.productId)?.label || "" : "";
           const transportCompanyName = formState.transporterCompanyId ? transportCompanies.find(t => t.id === formState.transporterCompanyId)?.name || "" : "";
           
+          // Get sender and receiver organization names
+          let senderOrgName = "";
+          let receiverOrgName = "";
+          
+          if (formState.senderOrganizationId) {
+            try {
+              const orgsResponse = await fetch("/api/organizations?type=sender");
+              if (orgsResponse.ok) {
+                const orgs = await orgsResponse.json();
+                const org = orgs.find((o: any) => o.id === formState.senderOrganizationId);
+                if (org) senderOrgName = org.name;
+              }
+            } catch (e) {
+              // Ignore error
+            }
+          }
+          
+          if (formState.receiverOrganizationId) {
+            try {
+              const orgsResponse = await fetch("/api/organizations?type=receiver");
+              if (orgsResponse.ok) {
+                const orgs = await orgsResponse.json();
+                const org = orgs.find((o: any) => o.id === formState.receiverOrganizationId);
+                if (org) receiverOrgName = org.name;
+              }
+            } catch (e) {
+              // Ignore error
+            }
+          }
+          
           const thirdPartyData = [
             {
               AKT: savedSession.session.uniqueCode,
@@ -428,13 +458,17 @@ export const InSessionForm = forwardRef<
               CON: "",
               CT1: "",
               DRN: formState.driverName.trim(),
-              LPC: transportCompanyName || formState.origin.trim(),
+              LPC: transportCompanyName || formState.origin.trim() || senderOrgName,
               NET: 0, // IN session has no net weight
               SLN: "",
               TRL: formState.hasTrailer ? formState.trailerNumber.trim().toUpperCase() : "",
-              UPC: formState.destination.trim(),
+              UPC: formState.destination.trim() || receiverOrgName,
               VNO: formState.plateNumber.trim().toUpperCase(),
               WGT: formState.grossWeightKg || 0,
+              // Additional fields for sender/receiver company and driver ID
+              senderCompany: senderOrgName,
+              receiverCompany: receiverOrgName,
+              driverId: formState.driverId || "",
             },
           ];
 
@@ -495,7 +529,7 @@ export const InSessionForm = forwardRef<
                   description: "3-р талын програмтай холбогдох боломжгүй байна. Програм ажиллаж байгаа эсэхийг шалгана уу.",
                   variant: "destructive",
                 });
-                return;
+                return false;
               }
               console.log("✅ WebSocket connection verified and open");
             } catch (error) {
@@ -507,7 +541,7 @@ export const InSessionForm = forwardRef<
                 description: "3-р талын програмтай холбогдох боломжгүй байна. Програм ажиллаж байгаа эсэхийг шалгана уу.",
                 variant: "destructive",
               });
-              return;
+              return false;
             }
           } else {
             console.log("✅ WebSocket already connected");
@@ -522,7 +556,7 @@ export const InSessionForm = forwardRef<
               description: "WebSocket холболт тасарсан байна. Дахин оролдоно уу.",
               variant: "destructive",
             });
-            return;
+            return false;
           }
 
           // Step 5: Send the full URL via WebSocket (matching test-websocket.html)
@@ -537,7 +571,7 @@ export const InSessionForm = forwardRef<
               description: "WebSocket холболт тасарсан байна. Дахин оролдоно уу.",
               variant: "destructive",
             });
-            return;
+            return false;
           }
 
           ws.send(dataUrl);
@@ -555,7 +589,7 @@ export const InSessionForm = forwardRef<
               description: "3-р талын програмтай холболт тасарсан. Програм ажиллаж байгаа эсэхийг шалгана уу.",
               variant: "destructive",
             });
-            return;
+            return false;
           }
 
           console.log("=".repeat(50));
@@ -575,6 +609,7 @@ export const InSessionForm = forwardRef<
           console.error("❌ Error message:", sendError instanceof Error ? sendError.message : String(sendError));
           console.error("=".repeat(50));
           // Don't show error toast - session is already saved
+          return false;
         }
       }
 

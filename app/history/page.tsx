@@ -431,6 +431,37 @@ export default function HistoryPage() {
         }
       }
 
+      // Get sender and receiver organization names
+      let senderOrgName = log.senderOrganization || "";
+      let receiverOrgName = log.receiverOrganization || "";
+      
+      // If we have IDs but not names, try to fetch them
+      if (log.senderOrganizationId && !senderOrgName) {
+        try {
+          const orgsResponse = await fetch("/api/organizations?type=sender");
+          if (orgsResponse.ok) {
+            const orgs = await orgsResponse.json();
+            const org = orgs.find((o: any) => o.id === log.senderOrganizationId);
+            if (org) senderOrgName = org.name;
+          }
+        } catch (e) {
+          // Ignore error
+        }
+      }
+      
+      if (log.receiverOrganizationId && !receiverOrgName) {
+        try {
+          const orgsResponse = await fetch("/api/organizations?type=receiver");
+          if (orgsResponse.ok) {
+            const orgs = await orgsResponse.json();
+            const org = orgs.find((o: any) => o.id === log.receiverOrganizationId);
+            if (org) receiverOrgName = org.name;
+          }
+        } catch (e) {
+          // Ignore error
+        }
+      }
+
       // Transform log data to 3rd party app format (matching test-websocket.html)
       const thirdPartyData = [
         {
@@ -440,13 +471,17 @@ export default function HistoryPage() {
           CON: "",
           CT1: "",
           DRN: log.driverName || "",
-          LPC: transportCompanyName || log.origin || "",
+          LPC: transportCompanyName || log.origin || senderOrgName || "",
           NET: log.netWeightKg || 0,
           SLN: log.sealNumber || "",
           TRL: log.trailerPlate || "",
-          UPC: log.destination || "",
+          UPC: log.destination || receiverOrgName || "",
           VNO: log.plate || "",
           WGT: log.weightKg || 0,
+          // Additional fields for sender/receiver company and driver ID
+          senderCompany: senderOrgName || "",
+          receiverCompany: receiverOrgName || "",
+          driverId: log.driverId || "",
         },
       ];
 

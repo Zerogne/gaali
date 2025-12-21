@@ -134,13 +134,17 @@ export async function POST(request: Request) {
           CON: "", // Гэрээний дугаар (can be empty)
           CT1: "", // Чингэлэг 1
           DRN: session.driverName || "", // Жолоочийн нэр
-          LPC: session.transporterCompany || body.origin || "", // Ачих газар код
+          LPC: session.transporterCompany || body.origin || senderOrgName || "", // Ачих газар код (with sender company)
           NET: session.netWeightKg || 0, // Цэвэр жин
           SLN: body.sealNumber || "", // Гаалийн лац, ломбын дугаар
           TRL: body.trailerNumber || body.trailerPlate || "", // Чиргүүлийн дугаар
-          UPC: body.destination || receiverOrgName || "", // Хүлээн авах газар код
+          UPC: body.destination || receiverOrgName || "", // Хүлээн авах газар код (with receiver company)
           VNO: session.plateNumber || "", // Тээврийн хэрэгслийн дугаар
           WGT: session.grossWeightKg || 0, // Бохир жин
+          // Additional fields for sender/receiver company and driver ID
+          senderCompany: senderOrgName || "", // Илгээгч байгууллага
+          receiverCompany: receiverOrgName || "", // Хүлээн авагч байгууллага
+          driverId: body.driverId || "", // Жолоочийн ID
         }
       ]
 

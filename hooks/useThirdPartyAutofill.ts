@@ -246,13 +246,17 @@ export function useThirdPartyAutofill() {
             CON: formData.contractNumber || "", // Гэрээний дугаар
             CT1: formData.container1 || "", // Чингэлэг 1
             DRN: formData.driverName || "", // Жолоочийн нэр
-            LPC: formData.transporterCompany || formData.origin || formData.transportCompanyName || "", // Ачих газар код
+            LPC: formData.transporterCompany || formData.origin || formData.transportCompanyName || formData.senderOrganization || formData.senderOrganizationName || "", // Ачих газар код (with sender company)
             NET: formData.netWeightKg || formData.netWeight || 0, // Цэвэр жин
             SLN: formData.sealNumber || "", // Гаалийн лац, ломбын дугаар
             TRL: formData.trailerNumber || formData.trailerPlate || "", // Чиргүүлийн дугаар
-            UPC: formData.destination || formData.receiverOrganization || formData.receiverOrganizationName || "", // Хүлээн авах газар код
+            UPC: formData.destination || formData.receiverOrganization || formData.receiverOrganizationName || "", // Хүлээн авах газар код (with receiver company)
             VNO: formData.plateNumber || formData.plate || "", // Тээврийн хэрэгслийн дугаар
             WGT: formData.grossWeightKg || formData.weightKg || formData.weight || 0, // Бохир жин
+            // Additional fields for sender/receiver company and driver ID
+            senderCompany: formData.senderOrganization || formData.senderOrganizationName || "", // Илгээгч байгууллага
+            receiverCompany: formData.receiverOrganization || formData.receiverOrganizationName || "", // Хүлээн авагч байгууллага
+            driverId: formData.driverId || "", // Жолоочийн ID
           }
         ]
 
