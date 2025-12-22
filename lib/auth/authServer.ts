@@ -136,6 +136,14 @@ export async function selectWorker(
     // Find the worker in the company's collection
     const worker = await workersCollection.findOne({ id: workerId })
 
+    // Debug logging
+    if (!worker) {
+      console.error(`Worker not found: workerId=${workerId}, companyId=${sessionCompanyId}`)
+      // Try to find all workers to see what IDs exist
+      const allWorkers = await workersCollection.find({}).toArray()
+      console.error(`Available worker IDs in company ${sessionCompanyId}:`, allWorkers.map(w => w.id))
+    }
+
     // Verify worker exists and belongs to the session company
     if (!worker || worker.companyId !== sessionCompanyId) {
       return {

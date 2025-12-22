@@ -38,7 +38,7 @@ export function CompanyLoginForm({
     )
 
     if (!company) {
-      setError("Company not found. Please check the company name.")
+      setError("Компани байхгүй байна. Компанийн нэрийг шалгана уу.")
       setPassword("") // Clear password on error
       return
     }
@@ -53,14 +53,14 @@ export function CompanyLoginForm({
       })
 
       if (!result.success) {
-        setError(result.error || "Login failed")
+        setError(result.error || "Нэвтрэхэд алдаа гарлаа")
         setPassword("") // Clear password on error
       } else {
         // Success - call onSuccess with companyId
         onSuccess(company.companyId)
       }
     } catch (err) {
-      setError("An unexpected error occurred")
+      setError("Таармагдсан алдаа гарлаа")
       setPassword("")
     } finally {
       setIsLoggingIn(false)
@@ -71,17 +71,17 @@ export function CompanyLoginForm({
     <div className="space-y-6">
       <div className="text-center space-y-2">
         <h2 className="text-2xl font-bold text-gray-900">
-          Company Login
+          Нэвтрэх
         </h2>
         <p className="text-sm text-gray-600">
-          Enter your company name and password to continue.
+          Компанийн нэр болон нууц үгээ оруулна уу.
         </p>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-6">
         <div>
           <Label htmlFor="company" className="text-sm font-medium text-gray-700">
-            Company Name
+            Компанийн нэр
           </Label>
           <Input
             id="company"
@@ -93,14 +93,14 @@ export function CompanyLoginForm({
             }}
             disabled={isLoggingIn}
             className="mt-1 bg-white border-gray-300 focus:border-blue-500 focus:ring-blue-500"
-            placeholder="Enter company name"
+            placeholder="Компанийн нэр"
             autoFocus
           />
         </div>
 
         <div>
           <Label htmlFor="password" className="text-sm font-medium text-gray-700">
-            Company Password
+            Нууц үг
           </Label>
           <Input
             id="password"
@@ -112,7 +112,7 @@ export function CompanyLoginForm({
             }}
             disabled={isLoggingIn}
             className="mt-1 bg-white border-gray-300 focus:border-blue-500 focus:ring-blue-500"
-            placeholder="Enter company password"
+            placeholder="******"
           />
           {error && (
             <p className="mt-2 text-sm text-red-600">{error}</p>
@@ -128,17 +128,17 @@ export function CompanyLoginForm({
             {isLoggingIn ? (
               <>
                 <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                Logging in...
+                Нэвтрэж байна...
               </>
             ) : (
-              "Continue"
+              "Үргэлжлүүлэх"
             )}
           </Button>
           <button
             type="button"
             className="text-sm text-gray-500 hover:text-gray-700 transition-colors"
           >
-            Forgot password?
+            Нууц үгээ мартсан уу?
           </button>
         </div>
       </form>

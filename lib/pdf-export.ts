@@ -128,8 +128,10 @@ async function fetchSessionUniqueCode(log: TruckLog): Promise<string | null> {
 
 /**
  * Generate a responsive PDF for a single truck log using HTML rendering
+ * @param log - The truck log data
+ * @param providedUniqueCode - Optional unique code to use instead of fetching
  */
-export async function exportLogToPDF(log: TruckLog): Promise<void> {
+export async function exportLogToPDF(log: TruckLog, providedUniqueCode?: string | null): Promise<void> {
   // Fetch related data (transport company, organizations)
   const relatedData = await fetchRelatedData(log);
 
@@ -145,8 +147,8 @@ export async function exportLogToPDF(log: TruckLog): Promise<void> {
     console.warn("Failed to fetch current user:", error);
   }
 
-  // Fetch session's unique code (AKT)
-  const uniqueCode = await fetchSessionUniqueCode(log);
+  // Use provided unique code, or fetch session's unique code (AKT)
+  const uniqueCode = providedUniqueCode !== undefined ? providedUniqueCode : await fetchSessionUniqueCode(log);
 
   // Create a temporary HTML element with the log data
   const htmlContent = generateLogHTML(log, relatedData, loaderName, uniqueCode);

@@ -34,6 +34,18 @@ export default async function proxy(request: Request) {
   const workerId = cookies['worker-id']
   const expiresAt = cookies['session-expires']
 
+  // Special case: Allow POST to /api/companies/[companyId]/workers during login flow
+  // (when companyId cookie exists but workerId doesn't - user is selecting worker)
+  if (
+    pathname.match(/^\/api\/companies\/[^/]+\/workers$/) &&
+    request.method === 'POST' &&
+    companyId &&
+    !workerId
+  ) {
+    // Allow during login flow - the route itself will verify company exists
+    return NextResponse.next()
+  }
+
   // Check if session exists
   if (!companyId || !workerId) {
     // Redirect to login if not authenticated

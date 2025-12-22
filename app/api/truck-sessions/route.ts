@@ -90,7 +90,7 @@ export async function POST(request: Request) {
 
     const cleanedBody = {
       direction: body.direction,
-      plateNumber: body.plateNumber,
+      plateNumber: body.plateNumber ? body.plateNumber.trim().toUpperCase() : body.plateNumber,
       driverName: body.driverName === "" ? undefined : body.driverName,
       product: productName || body.product || (body.product === "" ? undefined : body.product),
       transporterCompany: transportCompanyName || body.transporterCompany || (body.transporterCompany === "" ? undefined : body.transporterCompany),
@@ -120,8 +120,41 @@ export async function POST(request: Request) {
     }
 
     console.log("✅ Validation passed, saving session...")
+    console.log("📋 Session data to save:", {
+      direction: cleanedBody.direction,
+      plateNumber: cleanedBody.plateNumber,
+      grossWeightKg: cleanedBody.grossWeightKg,
+      driverName: cleanedBody.driverName,
+      product: cleanedBody.product,
+    })
     const session = await saveTruckSession(cleanedBody)
-    console.log("✅ Session saved successfully:", session.id)
+    console.log("✅ Session saved successfully!")
+    console.log("✅ Session ID:", session.id)
+    console.log("✅ Session unique code:", session.uniqueCode)
+    console.log("✅ Session plate number:", session.plateNumber)
+    console.log("✅ Session direction:", session.direction)
+    console.log("✅ Session weight:", session.grossWeightKg)
+    
+    // Verify session exists in database
+    try {
+      const verifyResult = await getTruckSessions({
+        direction: session.direction,
+        plateNumber: session.plateNumber,
+        limit: 1,
+      })
+      if (verifyResult.sessions.length > 0) {
+        const foundSession = verifyResult.sessions.find(s => s.uniqueCode === session.uniqueCode)
+        if (foundSession) {
+          console.log("✅ Verification: Session confirmed in database!")
+        } else {
+          console.error("❌ Verification: Session not found in database query!")
+        }
+      } else {
+        console.error("❌ Verification: No sessions found for this plate number!")
+      }
+    } catch (verifyError) {
+      console.error("❌ Verification: Error verifying session:", verifyError)
+    }
 
     // Send data to 3rd party app after saving
     try {

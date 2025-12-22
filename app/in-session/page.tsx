@@ -139,30 +139,14 @@ export default function InSessionPage() {
       {/* Main Content - Fills remaining space */}
       <div className="flex-1 min-h-0 overflow-hidden">
         <div className="h-full max-w-full mx-auto px-3 py-2">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-2 h-full">
-            {/* Left Column: Camera (1/3 width on large screens) */}
-            <div className="lg:col-span-1 h-full overflow-hidden">
-              <CameraPanel
-                streamUrl={streamUrl}
-                lastPlate={cameraAutofill.plate}
-                lastPayload={cameraAutofill.rawPayload}
-                status={cameraAutofill.status}
-                onRefresh={() => {
-                  cameraAutofill.refresh();
-                }}
-              />
-            </div>
-
-            {/* Right Column: Form (2/3 width on large screens) */}
-            <div className="lg:col-span-2 h-full overflow-hidden">
-              <InSessionForm
-                ref={formRef}
-                autoFillPlate={null}
-                onPlateChange={handlePlateChange}
-                onHasUnsavedDataChange={setHasUnsavedData}
-              />
-            </div>
-          </div>
+          <InSessionForm
+            ref={formRef}
+            autoFillPlate={null}
+            onPlateChange={handlePlateChange}
+            onHasUnsavedDataChange={setHasUnsavedData}
+            streamUrl={streamUrl}
+            cameraAutofill={cameraAutofill}
+          />
         </div>
       </div>
 

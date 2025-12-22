@@ -45,25 +45,25 @@ export default function LoginPage() {
   }, [])
 
   // Load workers when company is authenticated
-  useEffect(() => {
-    async function loadWorkers() {
-      if (!selectedCompanyId || step !== "worker") {
-        setCompanyWorkers([])
-        return
-      }
-
-      setIsLoadingWorkers(true)
-      try {
-        const workers = await getCompanyWorkers(selectedCompanyId)
-        setCompanyWorkers(workers)
-      } catch (error) {
-        console.error("Error loading workers:", error)
-        setCompanyWorkers([])
-      } finally {
-        setIsLoadingWorkers(false)
-      }
+  const loadWorkers = async () => {
+    if (!selectedCompanyId || step !== "worker") {
+      setCompanyWorkers([])
+      return
     }
 
+    setIsLoadingWorkers(true)
+    try {
+      const workers = await getCompanyWorkers(selectedCompanyId)
+      setCompanyWorkers(workers)
+    } catch (error) {
+      console.error("Error loading workers:", error)
+      setCompanyWorkers([])
+    } finally {
+      setIsLoadingWorkers(false)
+    }
+  }
+
+  useEffect(() => {
     loadWorkers()
   }, [selectedCompanyId, step])
 
@@ -88,9 +88,8 @@ export default function LoginPage() {
             <div className="w-12 h-12 rounded-lg bg-blue-600 flex items-center justify-center">
               <Truck className="w-7 h-7 text-white" />
             </div>
-            <h1 className="text-2xl font-bold text-gray-900">XP Agency</h1>
+            <h1 className="text-2xl font-bold text-gray-900">УХААЛАГ ГАРЦ - ЭКСПОРТ СИСТЕМ</h1>
           </div>
-          <p className="text-sm text-gray-600">Logistics Platform</p>
         </div>
 
         {/* Stepper */}
@@ -112,7 +111,7 @@ export default function LoginPage() {
                 step === "company" ? "text-gray-900" : "text-gray-500"
               }`}
             >
-              Step 1: Company Login
+              Нэвтрэх
             </span>
           </div>
           <div className="w-12 h-0.5 bg-gray-300" />
@@ -133,7 +132,7 @@ export default function LoginPage() {
                 step === "worker" ? "text-gray-900" : "text-gray-500"
               }`}
             >
-              Step 2: Select Worker
+              Ажилтан сонгох
             </span>
           </div>
         </div>
@@ -148,7 +147,7 @@ export default function LoginPage() {
           >
             {isLoadingCompanies ? (
               <div className="text-center py-8">
-                <p className="text-gray-500">Loading companies...</p>
+                <p className="text-gray-500">жагсаалтын татаж байна...</p>
               </div>
             ) : (
               <CompanyLoginForm
@@ -167,10 +166,12 @@ export default function LoginPage() {
             {selectedCompany && (
               <WorkerSelector
                 companyName={selectedCompany.name}
+                companyId={selectedCompany.companyId}
                 workers={companyWorkers}
                 selectedWorkerId={selectedWorkerId}
                 onSelect={setSelectedWorkerId}
                 onBack={handleBackToCompany}
+                onWorkerAdded={loadWorkers}
                 isLoading={isLoadingWorkers}
               />
             )}

@@ -25,7 +25,7 @@ export const selectWorkerSchema = z.object({
     .string()
     .min(1, 'Worker ID is required')
     .max(100, 'Worker ID is too long')
-    .regex(/^[a-z0-9-]+$/, 'Worker ID contains invalid characters'),
+    .regex(/^[a-z0-9_-]+$/, 'Worker ID contains invalid characters'), // Allow underscores and hyphens
 })
 
 export type SelectWorkerInput = z.infer<typeof selectWorkerSchema>
@@ -41,7 +41,7 @@ export const loginWorkerSchema = z.object({
     .string()
     .min(1, 'Worker ID is required')
     .max(100, 'Worker ID is too long')
-    .regex(/^[a-z0-9-]+$/, 'Worker ID contains invalid characters'),
+    .regex(/^[a-z0-9_-]+$/, 'Worker ID contains invalid characters'), // Allow underscores and hyphens
   password: z
     .string()
     .min(1, 'Password is required')

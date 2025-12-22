@@ -17,7 +17,7 @@ const truckSessionSchema = z.object({
   transporterCompany: z.string().optional(),
   inSessionId: z.string().optional(),
   grossWeightKg: z.number().positive("Gross weight must be positive"),
-  netWeightKg: z.number().positive().optional().nullable(),
+  netWeightKg: z.number().optional().nullable(), // Allow negative values (negative = cargo loaded, positive = cargo unloaded)
   inTime: z.string().optional(),
   outTime: z.string().optional(),
   notes: z.string().optional(),
@@ -195,6 +195,22 @@ export async function saveTruckSession(
     }
     console.log("✅ Session saved with unique code:", uniqueCode, "insertedId:", insertResult.insertedId)
 
+    // Verify the session was actually saved by querying it back
+    try {
+      const verifySession = await sessionsCollection.findOne({ uniqueCode })
+      if (verifySession) {
+        console.log("✅ Verification: Session found in database after save")
+        console.log("✅ Verification: Session plate:", verifySession.plateNumber)
+        console.log("✅ Verification: Session direction:", verifySession.direction)
+        console.log("✅ Verification: Session weight:", verifySession.grossWeightKg)
+      } else {
+        console.error("❌ Verification: Session NOT found in database after save!")
+        console.error("❌ Verification: This indicates a serious database issue")
+      }
+    } catch (verifyError) {
+      console.error("❌ Verification: Error verifying session:", verifyError)
+    }
+
     // Serialize MongoDB document to plain object
     const serializedSession: TruckSession = {
       id: sessionDoc.id,
@@ -367,17 +383,52 @@ export async function findLatestInSession(
       "truck_sessions"
     )
 
-    const inSession = await sessionsCollection
+    const normalizedPlate = plateNumber.trim().toUpperCase();
+    console.log("🔍 findLatestInSession: Searching for plate:", normalizedPlate);
+
+    // First try exact match with weight > 0
+    let inSession = await sessionsCollection
       .findOne(
         {
           direction: "IN",
-          plateNumber: plateNumber.trim().toUpperCase(),
+          plateNumber: normalizedPlate,
           grossWeightKg: { $gt: 0 },
         },
         { sort: { createdAt: -1 } }
       )
 
-    if (!inSession) return null
+    // If not found, try without weight restriction (in case weight is 0 or null)
+    if (!inSession) {
+      console.log("🔍 findLatestInSession: Not found with weight > 0, trying without weight restriction");
+      inSession = await sessionsCollection
+        .findOne(
+          {
+            direction: "IN",
+            plateNumber: normalizedPlate,
+          },
+          { sort: { createdAt: -1 } }
+        )
+    }
+
+    // If still not found, try case-insensitive regex search
+    if (!inSession) {
+      console.log("🔍 findLatestInSession: Not found with exact match, trying case-insensitive regex");
+      inSession = await sessionsCollection
+        .findOne(
+          {
+            direction: "IN",
+            plateNumber: { $regex: normalizedPlate.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), $options: "i" },
+          },
+          { sort: { createdAt: -1 } }
+        )
+    }
+
+    if (!inSession) {
+      console.log("🔍 findLatestInSession: No session found");
+      return null;
+    }
+
+    console.log("✅ findLatestInSession: Found session:", inSession.id);
 
     // Serialize MongoDB document to plain object
     const { _id, ...sessionData } = inSession

@@ -4,29 +4,40 @@ import { useState } from "react"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
-import { Loader2 } from "lucide-react"
+import { Input } from "@/components/ui/input"
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { Loader2, Plus } from "lucide-react"
 import type { Worker } from "@/lib/auth/mockData"
 import { handleWorkerSelect } from "@/lib/auth/authClient"
+import { useToast } from "@/hooks/use-toast"
 
 interface WorkerSelectorProps {
   companyName: string
+  companyId: string
   workers: Worker[]
   selectedWorkerId: string | null
   onSelect: (workerId: string) => void
   onBack: () => void
+  onWorkerAdded?: () => void
   isLoading?: boolean
 }
 
 export function WorkerSelector({
   companyName,
+  companyId,
   workers,
   selectedWorkerId,
   onSelect,
   onBack,
+  onWorkerAdded,
   isLoading: isLoadingWorkers = false,
 }: WorkerSelectorProps) {
   const [error, setError] = useState<string | null>(null)
   const [isSelecting, setIsSelecting] = useState(false)
+  const [isDialogOpen, setIsDialogOpen] = useState(false)
+  const [isAdding, setIsAdding] = useState(false)
+  const [workerData, setWorkerData] = useState({ name: "", role: "" })
+  const { toast } = useToast()
 
   const selectedWorker = workers.find((w) => w.id === selectedWorkerId)
 
@@ -67,6 +78,58 @@ export function WorkerSelector({
       .slice(0, 2)
   }
 
+  const handleAddWorker = async () => {
+    if (!workerData.name.trim() || !workerData.role.trim()) {
+      toast({
+        title: "Алдаа",
+        description: "Нэр болон албан тушаал оруулах шаардлагатай",
+        variant: "destructive",
+      })
+      return
+    }
+
+    setIsAdding(true)
+    try {
+      const response = await fetch(`/api/companies/${companyId}/workers`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include", // Include cookies in the request
+        body: JSON.stringify({
+          name: workerData.name.trim(),
+          role: workerData.role.trim(),
+        }),
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.error || "Failed to add worker")
+      }
+
+      toast({
+        title: "Амжилттай",
+        description: "Ажилтан амжилттай нэмэгдлээ",
+      })
+
+      setWorkerData({ name: "", role: "" })
+      setIsDialogOpen(false)
+
+      // Refresh workers list
+      if (onWorkerAdded) {
+        onWorkerAdded()
+      }
+    } catch (error) {
+      toast({
+        title: "Алдаа",
+        description: error instanceof Error ? error.message : "Ажилтан нэмэхэд алдаа гарлаа",
+        variant: "destructive",
+      })
+    } finally {
+      setIsAdding(false)
+    }
+  }
+
   return (
     <div className="space-y-6">
       <button
@@ -86,32 +149,42 @@ export function WorkerSelector({
             d="M15 19l-7-7 7-7"
           />
         </svg>
-        Back to company password
+        Буцах
       </button>
 
       <div className="text-center space-y-2">
         <h2 className="text-2xl font-bold text-gray-900">
-          Select Worker Account
+          Ажилтан сонгох
         </h2>
-        <p className="text-sm text-gray-600">
-          Choose your worker profile to continue.
-        </p>
+        
       </div>
 
       <div className="space-y-4">
         {/* Worker Profiles */}
         <div>
-          <Label className="text-sm font-medium text-gray-700 mb-3 block">
-            Available Workers
-          </Label>
+          <div className="flex items-center justify-between mb-3">
+            <Label className="text-sm font-medium text-gray-700">
+              Бүртгэлтэй ажилтан 
+            </Label>
+            <Button
+              type="button"
+              size="sm"
+              variant="outline"
+              onClick={() => setIsDialogOpen(true)}
+              className="gap-1.5"
+            >
+              <Plus className="w-4 h-4" />
+              Ажилтан нэмэх
+            </Button>
+          </div>
           {isLoadingWorkers ? (
             <div className="text-center py-8 text-gray-500">
               <Loader2 className="w-6 h-6 animate-spin mx-auto mb-2" />
-              Loading workers...
+              Ажилтаны жагсаалтын татаж байна...
             </div>
           ) : workers.length === 0 ? (
             <div className="text-center py-8 text-gray-500">
-              No workers found for this company
+              Бүртгэлтэй ажилтан олдсонгүй
             </div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
@@ -183,6 +256,76 @@ export function WorkerSelector({
           </div>
         )}
       </div>
+
+      {/* Add Worker Dialog */}
+      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Ажилтан нэмэх</DialogTitle>
+            <DialogDescription>
+              Шинэ ажилтан нэмэх
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div>
+              <Label htmlFor="worker-name" className="text-sm font-medium text-gray-700">
+                Нэр
+              </Label>
+              <Input
+                id="worker-name"
+                type="text"
+                value={workerData.name}
+                onChange={(e) => setWorkerData({ ...workerData, name: e.target.value })}
+                disabled={isAdding}
+                className="mt-1"
+                placeholder="Ажилтны нэр"
+                autoFocus
+              />
+            </div>
+            <div>
+              <Label htmlFor="worker-role" className="text-sm font-medium text-gray-700">
+                Албан тушаал
+              </Label>
+              <Input
+                id="worker-role"
+                type="text"
+                value={workerData.role}
+                onChange={(e) => setWorkerData({ ...workerData, role: e.target.value })}
+                disabled={isAdding}
+                className="mt-1"
+                placeholder="Жишээ: Gate Operator, Supervisor"
+              />
+            </div>
+          </div>
+          <div className="flex justify-end gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => {
+                setIsDialogOpen(false)
+                setWorkerData({ name: "", role: "" })
+              }}
+              disabled={isAdding}
+            >
+              Цуцлах
+            </Button>
+            <Button
+              type="button"
+              onClick={handleAddWorker}
+              disabled={isAdding || !workerData.name.trim() || !workerData.role.trim()}
+            >
+              {isAdding ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  Хадгалж байна...
+                </>
+              ) : (
+                "Нэмэх"
+              )}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

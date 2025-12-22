@@ -1,6 +1,7 @@
 "use client";
 
 import { DriverManager } from "@/components/drivers/DriverManager";
+import { CameraPanel } from "@/components/sessions/CameraPanel";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -22,7 +23,7 @@ import type {
   TransportCompany,
   TruckLog,
 } from "@/lib/types";
-import { Camera, CheckCircle2, Clock, Loader2, Zap } from "lucide-react";
+import { Camera, CheckCircle2, Loader2 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 
 interface Product {
@@ -459,16 +460,8 @@ export function EditLogDialog({
       ? "Тээврийн хэрэгсэл ОРОХ – Хаалгаар орох"
       : "Тээврийн хэрэгсэл ГАРАХ – Хаалгаар гарах";
   const weightLabel = direction === "IN" ? "Бүрэн жин (кг)" : "Бүрэн жин (кг)";
-
-  // Mock plate recognition data
-  const confidence = 98.5;
-  const timestamp = new Date(log.createdAt).toLocaleString("en-US", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  });
+  
+  const timestamp = new Date(log.createdAt).toISOString();
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -485,185 +478,74 @@ export function EditLogDialog({
         <DialogDescription className="sr-only">
           Update the truck log information below.
         </DialogDescription>
-        <div className="p-6 h-full overflow-y-auto">
-          <div className="max-w-4xl mx-auto">
-            <Card className="border-gray-200 bg-white">
-              <CardHeader className="pb-4">
-                <div className="flex items-center justify-between">
-                  <CardTitle className="flex items-center gap-2.5 text-gray-900 text-lg font-semibold">
-                    <div className="p-2 rounded-lg bg-blue-50">
-                      <Camera className="w-5 h-5 text-blue-600" />
-                    </div>
-                    {isSentToCustoms ? "Дахин засах: " : "Засах: "}
-                    {title}
-                  </CardTitle>
-                  <div className="flex items-center gap-2">
-                    {isSentToCustoms && (
-                      <Badge className="bg-orange-50 text-orange-700 border-orange-200 px-2.5 py-1">
-                        Гаальд илгээсэн
-                      </Badge>
-                    )}
-                    <Badge className="bg-green-50 text-green-700 border-green-200 px-2.5 py-1">
-                      <CheckCircle2 className="w-3.5 h-3.5 mr-1.5" />
-                      Танигдсан
-                    </Badge>
-                  </div>
+        <div className="h-full flex flex-col overflow-hidden p-2">
+          {/* Header */}
+          <div className="mb-2 flex-shrink-0">
+            <div className="flex items-center justify-between mb-2">
+              <CardTitle className="flex items-center gap-2.5 text-gray-900 text-lg font-semibold">
+                <div className="p-2 rounded-lg bg-blue-50">
+                  <Camera className="w-5 h-5 text-blue-600" />
                 </div>
+                {isSentToCustoms ? "Дахин засах: " : "Засах: "}
+                {title}
+              </CardTitle>
+              <div className="flex items-center gap-2">
                 {isSentToCustoms && (
-                  <div className="mt-3 p-3 bg-orange-50 border border-orange-200 rounded-lg">
-                    <p className="text-sm text-orange-800">
-                      <strong>Анхаар:</strong> Энэ бүртгэл гаалинд илгээгдсэн
-                      байна. Засварласны дараа дахин илгээх шаардлагатай.
-                    </p>
-                  </div>
+                  <Badge className="bg-orange-50 text-orange-700 border-orange-200 px-2.5 py-1">
+                    Гаальд илгээсэн
+                  </Badge>
                 )}
-              </CardHeader>
-              <CardContent className="space-y-5">
-                <form onSubmit={handleSubmit} className="space-y-5">
-                  {/* License Plate Recognition */}
-                  <div className="bg-gray-50 rounded-xl p-4 border border-gray-200">
-                    <h3 className="text-sm font-semibold text-gray-900 mb-3 flex items-center gap-2">
-                      <Camera className="w-4 h-4 text-blue-600" />
-                      Улсын дугаарыг бодит цагт таних
-                    </h3>
+                <Badge className="bg-green-50 text-green-700 border-green-200 px-2.5 py-1">
+                  <CheckCircle2 className="w-3.5 h-3.5 mr-1.5" />
+                  Танигдсан
+                </Badge>
+              </div>
+            </div>
+            {isSentToCustoms && (
+              <div className="p-3 bg-orange-50 border border-orange-200 rounded-lg">
+                <p className="text-sm text-orange-800">
+                  <strong>Анхаар:</strong> Энэ бүртгэл гаалинд илгээгдсэн
+                  байна. Засварласны дараа дахин илгээх шаардлагатай.
+                </p>
+              </div>
+            )}
+          </div>
 
-                    <div className="aspect-video bg-gray-100 rounded-lg overflow-hidden relative border-2 border-gray-200 mb-4">
-                      <img
-                        src="/truck-front-view-license-plate.jpg"
-                        alt="Truck camera feed"
-                        className="w-full h-full object-cover"
-                      />
-                      <div className="absolute bottom-3 left-3 right-3 bg-white/95 backdrop-blur-sm rounded-lg p-3 border border-blue-200 shadow-sm">
-                        <div className="flex items-center justify-between">
-                          <div>
-                            <p className="text-xs font-medium text-gray-500 mb-1">
-                              Танигдсан дугаар
-                            </p>
-                            <p className="text-xl font-mono font-bold text-blue-600 tracking-wider">
-                              {plate}
-                            </p>
-                          </div>
-                          <div className="text-right">
-                            <p className="text-xs font-medium text-gray-500 mb-1">
-                              Найдвартай байдал
-                            </p>
-                            <div className="flex items-center gap-1.5">
-                              <Zap className="w-4 h-4 text-green-600" />
-                              <p className="text-lg font-bold text-green-600">
-                                {confidence}%
-                              </p>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
+          {/* Form Content - Grid Layout */}
+          <form onSubmit={handleSubmit} className="flex-1 min-h-0 overflow-hidden">
+            <div className="grid grid-cols-2 gap-2 h-full">
+              {/* Left Column */}
+              <div className="flex flex-col gap-2 overflow-hidden">
+                {/* Plate Number */}
+                <Card className="p-3 flex-shrink-0">
+                  <Label
+                    htmlFor="edit-plate"
+                    className="text-xs font-semibold text-gray-900 mb-2 block"
+                  >
+                    Улсын дугаар *
+                  </Label>
+                  <Input
+                    id="edit-plate"
+                    value={plate}
+                    onChange={(e) => setPlate(e.target.value)}
+                    className="h-10 text-sm font-mono font-semibold"
+                    placeholder="УБ1234"
+                    required
+                  />
+                  {errors.plate && (
+                    <p className="mt-1 text-xs text-red-600">{errors.plate}</p>
+                  )}
+                </Card>
 
-                    <div className="grid grid-cols-2 gap-3">
-                      <div className="bg-white rounded-lg p-3 border border-gray-200">
-                        <div className="flex items-center gap-2 text-gray-500 mb-1">
-                          <Clock className="w-4 h-4" />
-                          <span className="text-xs font-medium">Авагдсан</span>
-                        </div>
-                        <p className="text-sm font-semibold text-gray-900">
-                          {timestamp}
-                        </p>
-                      </div>
-                      <div className="bg-white rounded-lg p-3 border border-gray-200">
-                        <p className="text-xs font-medium text-gray-500 mb-1">
-                          Боловсруулах хугацаа
-                        </p>
-                        <p className="text-sm font-semibold text-gray-900">
-                          0.82s
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Form Fields */}
-                  <div className="space-y-4">
-                    {/* 1. Улсын дугаар input */}
-                    <div>
-                      <Label
-                        htmlFor="edit-plate"
-                        className="text-sm font-medium text-gray-700"
-                      >
-                        Улсын дугаар
-                      </Label>
-                      <Input
-                        id="edit-plate"
-                        value={plate}
-                        onChange={(e) => setPlate(e.target.value)}
-                        className="mt-1 bg-white border-gray-300 focus:border-blue-500 focus:ring-blue-500"
-                        placeholder="Улсын дугаар оруулах"
-                      />
-                      {errors.plate && (
-                        <p className="mt-1 text-xs text-red-600">
-                          {errors.plate}
-                        </p>
-                      )}
-                    </div>
-
-                    {/* 2. Weight input */}
-                    <div>
-                      <Label
-                        htmlFor="edit-weight"
-                        className="text-sm font-medium text-gray-700"
-                      >
-                        {weightLabel}
-                      </Label>
-                      <Input
-                        id="edit-weight"
-                        type="number"
-                        value={weight}
-                        onChange={(e) => setWeight(e.target.value)}
-                        className="mt-1 bg-white border-gray-300 focus:border-blue-500 focus:ring-blue-500"
-                        placeholder="Жин (кг) оруулах"
-                      />
-                      {errors.weight && (
-                        <p className="mt-1 text-xs text-red-600">
-                          {errors.weight}
-                        </p>
-                      )}
-                    </div>
-
-                    {/* Net weight input - only for OUT direction (auto-calculated) */}
-                    {direction === "OUT" && (
-                      <div>
-                        <Label
-                          htmlFor="edit-net-weight"
-                          className="text-sm font-medium text-gray-700"
-                        >
-                          Цэвэр жин (кг){" "}
-                          <span className="text-xs text-gray-500 font-normal">
-                            (автоматаар тооцоолно)
-                          </span>
-                        </Label>
-                        <Input
-                          id="edit-net-weight"
-                          type="number"
-                          min="0"
-                          value={
-                            netWeight && Number(netWeight) >= 0 ? netWeight : ""
-                          }
-                          readOnly
-                          className="mt-1 bg-gray-50 border-gray-300 text-gray-700 cursor-not-allowed"
-                          placeholder="Цэвэр жин автоматаар тооцоологдоно"
-                        />
-                        {errors.netWeight && (
-                          <p className="mt-1 text-xs text-red-600">
-                            {errors.netWeight}
-                          </p>
-                        )}
-                      </div>
-                    )}
-
-                    {/* 3. Transport company dropdown */}
+                {/* Basic Info */}
+                <Card className="p-2.5 flex-shrink-0">
+                  <div className="flex-1 min-h-0 flex flex-col gap-2">
                     <div>
                       <Label
                         htmlFor="edit-transport-company"
-                        className="text-sm font-medium text-gray-700 mb-2 block"
+                        className="text-xs font-medium text-gray-700 mb-1 block"
                       >
-                        Тээврийн компани
+                        Тээврийн компани *
                       </Label>
                       <FilterableSelect
                         options={transportCompanies.map((company) => ({
@@ -681,13 +563,11 @@ export function EditLogDialog({
                         searchPlaceholder="Тээврийн компани хайх..."
                       />
                     </div>
-
-                    {/* 4. Route fields (Haanaas & Haashaa) */}
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-2 gap-2">
                       <div>
                         <Label
                           htmlFor="edit-origin"
-                          className="text-sm font-medium text-gray-700"
+                          className="text-xs font-medium text-gray-700 mb-1 block"
                         >
                           Хаанаас
                         </Label>
@@ -695,14 +575,14 @@ export function EditLogDialog({
                           id="edit-origin"
                           value={origin}
                           onChange={(e) => setOrigin(e.target.value)}
-                          className="mt-1 bg-white border-gray-300 focus:border-blue-500 focus:ring-blue-500"
+                          className="h-9 text-sm"
                           placeholder="Гарах газар"
                         />
                       </div>
                       <div>
                         <Label
                           htmlFor="edit-destination"
-                          className="text-sm font-medium text-gray-700"
+                          className="text-xs font-medium text-gray-700 mb-1 block"
                         >
                           Хаашаа
                         </Label>
@@ -710,19 +590,17 @@ export function EditLogDialog({
                           id="edit-destination"
                           value={destination}
                           onChange={(e) => setDestination(e.target.value)}
-                          className="mt-1 bg-white border-gray-300 focus:border-blue-500 focus:ring-blue-500"
+                          className="h-9 text-sm"
                           placeholder="Очих газар"
                         />
                       </div>
                     </div>
-
-                    {/* 5. Product type dropdown */}
                     <div>
                       <Label
                         htmlFor="edit-cargo"
-                        className="text-sm font-medium text-gray-700 mb-2 block"
+                        className="text-xs font-medium text-gray-700 mb-1 block"
                       >
-                        Бүтээгдэхүүн
+                        Бүтээгдэхүүн *
                       </Label>
                       <FilterableSelect
                         options={products.map((product: Product) => ({
@@ -745,62 +623,56 @@ export function EditLogDialog({
                         </p>
                       )}
                     </div>
-
-                    {/* 6. Sender/Receiver dropdowns */}
-                    <div className="space-y-4">
-                      <div>
-                        <Label
-                          htmlFor="edit-sender"
-                          className="text-sm font-medium text-gray-700 mb-2 block"
-                        >
-                          Илгээч байгууллага
-                        </Label>
-                        <FilterableSelect
-                          options={organizationOptions}
-                          value={senderOrganizationId}
-                          onValueChange={(value) =>
-                            setSenderOrganizationId(value)
-                          }
-                          disabled={isLoadingOrganizations}
-                          placeholder={
-                            isLoadingOrganizations
-                              ? "Уншиж байна..."
-                              : "Илгээч байгууллага сонгох"
-                          }
-                          searchPlaceholder="Илгээч байгууллага хайх..."
-                        />
-                      </div>
-                      <div>
-                        <Label
-                          htmlFor="edit-receiver"
-                          className="text-sm font-medium text-gray-700 mb-2 block"
-                        >
-                          Хүлээн авагч байгууллага
-                        </Label>
-                        <FilterableSelect
-                          options={organizationOptions}
-                          value={receiverOrganizationId}
-                          onValueChange={(value) =>
-                            setReceiverOrganizationId(value)
-                          }
-                          disabled={isLoadingOrganizations}
-                          placeholder={
-                            isLoadingOrganizations
-                              ? "Уншиж байна..."
-                              : "Хүлээн авагч байгууллага сонгох"
-                          }
-                          searchPlaceholder="Хүлээн авагч байгууллага хайх..."
-                        />
-                      </div>
+                    <div>
+                      <Label
+                        htmlFor="edit-sender"
+                        className="text-xs font-medium text-gray-700 mb-1 block"
+                      >
+                        Илгээч байгууллага
+                      </Label>
+                      <FilterableSelect
+                        options={organizationOptions}
+                        value={senderOrganizationId}
+                        onValueChange={(value) =>
+                          setSenderOrganizationId(value)
+                        }
+                        disabled={isLoadingOrganizations}
+                        placeholder={
+                          isLoadingOrganizations
+                            ? "Уншиж байна..."
+                            : "Илгээч байгууллага сонгох"
+                        }
+                        searchPlaceholder="Илгээч байгууллага хайх..."
+                      />
                     </div>
-
-                    {/* 7. Driver registration & selection */}
+                    <div>
+                      <Label
+                        htmlFor="edit-receiver"
+                        className="text-xs font-medium text-gray-700 mb-1 block"
+                      >
+                        Хүлээн авагч байгууллага
+                      </Label>
+                      <FilterableSelect
+                        options={organizationOptions}
+                        value={receiverOrganizationId}
+                        onValueChange={(value) =>
+                          setReceiverOrganizationId(value)
+                        }
+                        disabled={isLoadingOrganizations}
+                        placeholder={
+                          isLoadingOrganizations
+                            ? "Уншиж байна..."
+                            : "Хүлээн авагч байгууллага сонгох"
+                        }
+                        searchPlaceholder="Хүлээн авагч байгууллага хайх..."
+                      />
+                    </div>
                     <div>
                       <Label
                         htmlFor="edit-driver"
-                        className="text-sm font-medium text-gray-700 mb-2 block"
+                        className="text-xs font-medium text-gray-700 mb-1 block"
                       >
-                        Жолооч
+                        Жолооч *
                       </Label>
                       <div className="flex items-center gap-2">
                         <div className="flex-1">
@@ -840,13 +712,11 @@ export function EditLogDialog({
                         </p>
                       )}
                     </div>
-
-                    {/* 8. Seal number input - only show for OUT direction */}
                     {direction === "OUT" && (
                       <div>
                         <Label
                           htmlFor="edit-seal"
-                          className="text-sm font-medium text-gray-700"
+                          className="text-xs font-medium text-gray-700 mb-1 block"
                         >
                           Лацны дугаар
                         </Label>
@@ -854,14 +724,12 @@ export function EditLogDialog({
                           id="edit-seal"
                           value={sealNumber}
                           onChange={(e) => setSealNumber(e.target.value)}
-                          className="mt-1 bg-white border-gray-300 focus:border-blue-500 focus:ring-blue-500"
+                          className="h-9 text-sm"
                           placeholder="Лацны дугаар оруулах"
                         />
                       </div>
                     )}
-
-                    {/* 9. Chirguultei checkbox (show/hide trailer fields) */}
-                    <div className="flex items-center space-x-2">
+                    <div className="flex items-center gap-2">
                       <Checkbox
                         id="edit-has-trailer"
                         checked={hasTrailer}
@@ -874,58 +742,150 @@ export function EditLogDialog({
                       />
                       <Label
                         htmlFor="edit-has-trailer"
-                        className="text-sm font-medium text-gray-700 cursor-pointer"
+                        className="text-xs font-medium text-gray-700 cursor-pointer"
                       >
                         Чиргүүлтэй
                       </Label>
-                    </div>
-
-                    {/* Trailer fields (shown when hasTrailer is true) */}
-                    {hasTrailer && (
-                      <div>
-                        <Label
-                          htmlFor="edit-trailer-plate"
-                          className="text-sm font-medium text-gray-700"
-                        >
-                          Чиргүүлийн улсын дугаар
-                        </Label>
+                      {hasTrailer && (
                         <Input
                           id="edit-trailer-plate"
                           value={trailerPlate}
                           onChange={(e) => setTrailerPlate(e.target.value)}
-                          className="mt-1 bg-white border-gray-300 focus:border-blue-500 focus:ring-blue-500"
-                          placeholder="Чиргүүлийн улсын дугаар"
+                          className="h-8 text-xs font-mono flex-1 max-w-[200px]"
+                          placeholder="УБ1234"
                         />
-                      </div>
-                    )}
-
-                    {/* 10. Additional notes textarea */}
+                      )}
+                    </div>
                     <div>
                       <Label
-                        htmlFor="edit-comments"
-                        className="text-sm font-medium text-gray-700"
+                        htmlFor="edit-time"
+                        className="text-xs font-medium text-gray-700 mb-1 block"
                       >
-                        Нэмэлт
+                        {direction === "IN" ? "Орох цаг *" : "Гарах цаг *"}
                       </Label>
-                      <Textarea
-                        id="edit-comments"
-                        value={comments}
-                        onChange={(e) => setComments(e.target.value)}
-                        className="mt-1 bg-white border-gray-300 focus:border-blue-500 focus:ring-blue-500"
-                        placeholder="Нэмэлт мэдээлэл..."
-                        rows={3}
+                      <Input
+                        id="edit-time"
+                        type="datetime-local"
+                        value={
+                          direction === "IN"
+                            ? log.inTime
+                              ? new Date(log.inTime).toISOString().slice(0, 16)
+                              : new Date(log.createdAt)
+                                  .toISOString()
+                                  .slice(0, 16)
+                            : log.outTime
+                              ? new Date(log.outTime).toISOString().slice(0, 16)
+                              : new Date(log.createdAt)
+                                  .toISOString()
+                                  .slice(0, 16)
+                        }
+                        onChange={(e) => {
+                          // Handle time change if needed
+                        }}
+                        className="h-9 text-sm"
+                        required
                       />
                     </div>
                   </div>
+                </Card>
+              </div>
 
-                  {/* Action Buttons */}
-                  <div className="flex gap-3 pt-2">
+              {/* Right Column */}
+              <div className="flex flex-col gap-2 overflow-hidden">
+                {/* Camera Section */}
+                <div className="h-[200px] shrink-0">
+                  <CameraPanel
+                    streamUrl={undefined}
+                    lastPlate={plate}
+                    lastPayload={plate ? { plate, ts: timestamp } : null}
+                    status="idle"
+                    onRefresh={() => {}}
+                  />
+                </div>
+
+                {/* Weight Section */}
+                <Card className="p-3 border-2 border-green-200 bg-green-50/30 shrink-0 flex flex-col min-h-[200px]">
+                  <h3 className="text-xs font-semibold text-gray-900 mb-2">
+                    Жингийн мэдээлэл
+                  </h3>
+                  <div className="flex flex-col gap-2">
+                    <div>
+                      <Label
+                        htmlFor="edit-weight"
+                        className="text-xs font-medium text-gray-700 mb-1 block"
+                      >
+                        {weightLabel} *
+                      </Label>
+                      <Input
+                        id="edit-weight"
+                        type="number"
+                        value={weight}
+                        onChange={(e) => setWeight(e.target.value)}
+                        className="bg-white font-semibold text-sm cursor-text h-9"
+                        placeholder="Жин оруулах (кг)"
+                        required
+                      />
+                      {errors.weight && (
+                        <p className="mt-1 text-xs text-red-600">
+                          {errors.weight}
+                        </p>
+                      )}
+                    </div>
+                    {direction === "OUT" && (
+                      <div>
+                        <Label
+                          htmlFor="edit-net-weight"
+                          className="text-xs font-medium text-gray-700 mb-1 block"
+                        >
+                          Цэвэр жин (кг) *
+                        </Label>
+                        <Input
+                          id="edit-net-weight"
+                          type="number"
+                          value={
+                            netWeight !== null && netWeight !== undefined
+                              ? Math.abs(netWeight)
+                              : ""
+                          }
+                          readOnly
+                          className="bg-gray-50 font-semibold text-sm cursor-not-allowed h-9"
+                          placeholder="Цэвэр жин автоматаар тооцоологдоно"
+                        />
+                        {errors.netWeight && (
+                          <p className="mt-1 text-xs text-red-600">
+                            {errors.netWeight}
+                          </p>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                </Card>
+
+                {/* Notes Section */}
+                <Card className="p-3 shrink-0 flex flex-col overflow-hidden">
+                  <div className="flex flex-col gap-1.5 mb-3">
+                    <Label
+                      htmlFor="edit-comments"
+                      className="text-xs font-medium text-gray-700 mb-0.5 block"
+                    >
+                      Нэмэлт мэдээлэл
+                    </Label>
+                    <Textarea
+                      id="edit-comments"
+                      value={comments}
+                      onChange={(e) => setComments(e.target.value)}
+                      className="text-xs resize-none"
+                      placeholder="Нэмэлт мэдээлэл..."
+                      rows={3}
+                    />
+                  </div>
+                  <div className="flex items-center gap-2 pt-2 border-t border-gray-200 shrink-0">
                     <Button
                       type="button"
                       variant="outline"
                       onClick={() => onOpenChange(false)}
                       disabled={isSaving}
-                      className="flex-1 border-gray-300 hover:bg-gray-50"
+                      className="flex-1"
                     >
                       Цуцлах
                     </Button>
@@ -944,10 +904,10 @@ export function EditLogDialog({
                       )}
                     </Button>
                   </div>
-                </form>
-              </CardContent>
-            </Card>
-          </div>
+                </Card>
+              </div>
+            </div>
+          </form>
         </div>
       </DialogContent>
     </Dialog>

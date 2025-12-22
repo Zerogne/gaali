@@ -15,7 +15,7 @@ import { useCameraPlateAutofill } from "@/hooks/useCameraPlateAutofill";
 import { useThirdPartyAutofill } from "@/hooks/useThirdPartyAutofill";
 import type { Product } from "@/lib/products/products";
 import type { Driver, Organization, TransportCompany } from "@/lib/types";
-import { ArrowRight, Camera } from "lucide-react";
+import { ArrowRight, Camera, Printer } from "lucide-react";
 import {
   forwardRef,
   useEffect,
@@ -23,6 +23,9 @@ import {
   useMemo,
   useState,
 } from "react";
+import { CameraPanel } from "./CameraPanel";
+import { exportLogToPDF } from "@/lib/pdf-export";
+import type { TruckLog } from "@/lib/types";
 
 interface OutSessionFormState {
   plateNumber: string;
@@ -49,6 +52,8 @@ interface OutSessionFormProps {
   onPlateChange?: (plate: string) => void;
   onHasUnsavedDataChange?: (hasData: boolean) => void;
   onSaveRequest?: () => Promise<boolean>;
+  streamUrl?: string;
+  cameraAutofill?: ReturnType<typeof useCameraPlateAutofill>;
 }
 
 export interface OutSessionFormHandle {
@@ -61,7 +66,7 @@ export const OutSessionForm = forwardRef<
   OutSessionFormProps
 >(
   (
-    { autoFillPlate, onPlateChange, onHasUnsavedDataChange, onSaveRequest },
+    { autoFillPlate, onPlateChange, onHasUnsavedDataChange, onSaveRequest, streamUrl, cameraAutofill: externalCameraAutofill },
     ref
   ) => {
   const { toast } = useToast();
@@ -75,7 +80,8 @@ export const OutSessionForm = forwardRef<
   const [plateInputRef, setPlateInputRef] = useState<HTMLInputElement | null>(
     null
   );
-  const cameraAutofill = useCameraPlateAutofill();
+  const internalCameraAutofill = useCameraPlateAutofill();
+  const cameraAutofill = externalCameraAutofill || internalCameraAutofill;
 
   // Data loading states
   const [products, setProducts] = useState<Product[]>([]);
@@ -301,9 +307,180 @@ export const OutSessionForm = forwardRef<
         }));
     };
 
-  // Auto-find IN session and calculate net weight when plate number and out weight are filled
+  // Auto-fill all data from IN session when plate number is entered
   useEffect(() => {
-    const findInSessionAndCalculateNet = async () => {
+    // Only fetch if we have a plate number (at least 2 characters to avoid too many requests)
+    const plateNumber = formState.plateNumber.trim();
+    if (!plateNumber || plateNumber.length < 2) {
+        return;
+      }
+
+    console.log("🔍 Auto-fill: Plate number entered:", formState.plateNumber.trim());
+
+    // Don't auto-fill if user is currently typing (debounce)
+    const timeoutId = setTimeout(async () => {
+      try {
+        const plateNumber = formState.plateNumber.trim();
+        console.log("🔍 Auto-fill: Fetching IN session for plate:", plateNumber);
+        
+        // Find the latest IN session and log for this plate number
+        const response = await fetch(
+          `/api/truck-sessions/find-in?plateNumber=${encodeURIComponent(plateNumber)}`
+        );
+        
+        console.log("🔍 Auto-fill: Response status:", response.status);
+        
+        if (response.ok) {
+          const data = await response.json();
+          console.log("🔍 Auto-fill: Response data:", data);
+          
+          if (data.success && data.session) {
+            const inSession = data.session;
+            const inLog = data.log; // Log has all the fields
+            
+            console.log("✅ Auto-fill: Found IN session:", inSession.id);
+            console.log("✅ Auto-fill: Found IN log:", inLog ? "Yes" : "No");
+            console.log("✅ Auto-fill: IN session plate:", inSession.plateNumber);
+            console.log("✅ Auto-fill: IN session weight:", inSession.grossWeightKg);
+            console.log("✅ Auto-fill: IN log data:", inLog ? JSON.stringify(inLog, null, 2) : "No log");
+              
+            // Auto-fill all available data (only if fields are empty or not set)
+            setFormState((prev) => {
+              const updates: Partial<OutSessionFormState> = {
+                inSessionId: inSession.id,
+              };
+
+              // Helper to check if field is empty
+              const isEmpty = (value: any) => !value || (typeof value === 'string' && value.trim() === '');
+
+              // Auto-fill driver - try log first, then session
+              if (isEmpty(prev.driverId)) {
+                if (inLog?.driverId) {
+                  const matchingDriver = drivers.find(d => d.id === inLog.driverId);
+                  if (matchingDriver) {
+                    updates.driverId = matchingDriver.id;
+                    updates.driverName = matchingDriver.name;
+                    console.log("✅ Auto-fill: Filled driver (from log):", matchingDriver.name);
+                  }
+                }
+                if (!updates.driverId && inSession.driverName) {
+                  // Fallback to driver name matching from session
+                  const matchingDriver = drivers.find(d => d.name === inSession.driverName);
+                  if (matchingDriver) {
+                    updates.driverId = matchingDriver.id;
+                    updates.driverName = matchingDriver.name;
+                    console.log("✅ Auto-fill: Filled driver (from session):", matchingDriver.name);
+                  }
+                }
+              }
+
+              // Auto-fill product - try log first, then session
+              if (isEmpty(prev.productId)) {
+                if (inLog?.cargoType) {
+                  const matchingProduct = products.find(p => p.label === inLog.cargoType);
+                  if (matchingProduct) {
+                    updates.productId = matchingProduct.id;
+                    console.log("✅ Auto-fill: Filled product (from log):", matchingProduct.label);
+                  }
+                }
+                if (!updates.productId && inSession.product) {
+                  const matchingProduct = products.find(p => p.label === inSession.product);
+                  if (matchingProduct) {
+                    updates.productId = matchingProduct.id;
+                    console.log("✅ Auto-fill: Filled product (from session):", matchingProduct.label);
+                  }
+                }
+              }
+
+              // Auto-fill transport company - from log
+              if (isEmpty(prev.transporterCompanyId) && inLog?.transportCompanyId) {
+                updates.transporterCompanyId = inLog.transportCompanyId;
+                console.log("✅ Auto-fill: Filled transport company:", inLog.transportCompanyId);
+              }
+
+              // Auto-fill origin - from log
+              if (isEmpty(prev.origin) && inLog?.origin) {
+                updates.origin = inLog.origin;
+                console.log("✅ Auto-fill: Filled origin:", inLog.origin);
+              }
+
+              // Auto-fill destination - from log
+              if (isEmpty(prev.destination) && inLog?.destination) {
+                updates.destination = inLog.destination;
+                console.log("✅ Auto-fill: Filled destination:", inLog.destination);
+              }
+
+              // Auto-fill sender organization - from log
+              if (isEmpty(prev.senderOrganizationId) && inLog?.senderOrganizationId) {
+                updates.senderOrganizationId = inLog.senderOrganizationId;
+                console.log("✅ Auto-fill: Filled sender organization:", inLog.senderOrganizationId);
+              }
+
+              // Auto-fill receiver organization - from log
+              if (isEmpty(prev.receiverOrganizationId) && inLog?.receiverOrganizationId) {
+                updates.receiverOrganizationId = inLog.receiverOrganizationId;
+                console.log("✅ Auto-fill: Filled receiver organization:", inLog.receiverOrganizationId);
+              }
+
+              // Auto-fill seal number - from log
+              if (isEmpty(prev.sealNumber) && inLog?.sealNumber) {
+                updates.sealNumber = inLog.sealNumber;
+                console.log("✅ Auto-fill: Filled seal number:", inLog.sealNumber);
+              }
+
+              // Auto-fill trailer info - from log
+              if (inLog?.hasTrailer !== undefined) {
+                if (prev.hasTrailer !== inLog.hasTrailer) {
+                  updates.hasTrailer = inLog.hasTrailer;
+                  console.log("✅ Auto-fill: Filled hasTrailer:", inLog.hasTrailer);
+                }
+                if (inLog.hasTrailer && inLog.trailerPlate && isEmpty(prev.trailerNumber)) {
+                  updates.trailerNumber = inLog.trailerPlate;
+                  console.log("✅ Auto-fill: Filled trailer number:", inLog.trailerPlate);
+                }
+              }
+
+              // Auto-fill notes - from log
+              if (isEmpty(prev.notes) && inLog?.comments) {
+                updates.notes = inLog.comments;
+                console.log("✅ Auto-fill: Filled notes:", inLog.comments);
+              }
+
+              console.log("✅ Auto-fill: Updates to apply:", updates);
+              console.log("✅ Auto-fill: Total fields to update:", Object.keys(updates).length);
+              return { ...prev, ...updates };
+            });
+        } else {
+            console.log("⚠️ Auto-fill: Response OK but no session in data");
+          }
+        } else {
+          // Handle error responses
+          let errorData;
+          try {
+            errorData = await response.json();
+          } catch {
+            errorData = { error: `HTTP ${response.status}` };
+          }
+          
+          if (response.status === 404) {
+            console.log("⚠️ Auto-fill: 404 - No IN session found for plate:", plateNumber);
+            console.log("⚠️ Auto-fill: Error message:", errorData.error || "Not found");
+            // This is normal - just means there's no IN session for this plate yet
+          } else {
+            console.error("❌ Auto-fill: API error:", response.status, errorData);
+          }
+        }
+      } catch (error) {
+        console.error("❌ Auto-fill: Error fetching IN session:", error);
+      }
+    }, 500); // 500ms debounce
+
+    return () => clearTimeout(timeoutId);
+  }, [formState.plateNumber, drivers, products]);
+
+  // Auto-calculate net weight when plate number and out weight are filled
+  useEffect(() => {
+    const calculateNetWeight = async () => {
       // Only calculate if we have plate number and out weight is set (can be 0)
       if (!formState.plateNumber.trim() || formState.outWeightKg === null || formState.outWeightKg === undefined) {
         return;
@@ -312,61 +489,47 @@ export const OutSessionForm = forwardRef<
       try {
         // Find the latest IN session for this plate number
         const response = await fetch(
-          `/api/truck-sessions?direction=IN&plateNumber=${encodeURIComponent(formState.plateNumber.trim())}&limit=1`
+          `/api/truck-sessions/find-in?plateNumber=${encodeURIComponent(formState.plateNumber.trim())}`
         );
         
         if (response.ok) {
           const data = await response.json();
-          if (data.sessions && data.sessions.length > 0) {
-            const inSession = data.sessions[0]; // Get the latest IN session
+          if (data.success && data.session) {
+            const inSession = data.session;
             
-            // Calculate net weight: IN weight - OUT weight (cargo weight that was unloaded)
-            // If truck came in with 25000 kg and goes out with 0 kg, net = 25000 - 0 = 25000 kg (cargo unloaded)
+            // Calculate net weight: IN weight - OUT weight
+            // Positive = cargo unloaded, Negative = cargo loaded
             const inWeight = inSession.grossWeightKg || 0;
             const outWeight = formState.outWeightKg || 0;
-            const netWeight = inWeight - outWeight; // This is the cargo weight
+            const netWeight = inWeight - outWeight;
             
-            // Never show negative net weight - show 0 or empty instead
-            const displayNetWeight = netWeight < 0 ? 0 : netWeight;
+            // Show the actual calculated value (can be negative if cargo was loaded)
+            // Negative values indicate cargo was loaded (OUT > IN)
+            // Positive values indicate cargo was unloaded (IN > OUT)
             
-            // Update form state with IN session ID and calculated net weight
-            setFormState((prev) => ({
-              ...prev,
+            // Update form state with calculated net weight
+    setFormState((prev) => ({
+      ...prev,
               inSessionId: inSession.id,
-              netWeightKg: displayNetWeight, // Never negative - shows 0 if calculation is negative
+              netWeightKg: netWeight,
             }));
             
-            // Auto-fill other fields from IN session if not already filled
-            if (!formState.driverId && inSession.driverName) {
-              const matchingDriver = drivers.find(d => d.name === inSession.driverName);
-              if (matchingDriver) {
-                setFormState((prev) => ({
-                  ...prev,
-                  driverId: matchingDriver.id,
-                  driverName: matchingDriver.name,
-                }));
-              }
-            }
-            
-            if (!formState.productId && inSession.product) {
-              const matchingProduct = products.find(p => p.label === inSession.product);
-              if (matchingProduct) {
-                setFormState((prev) => ({
-                  ...prev,
-                  productId: matchingProduct.id,
-                }));
-              }
-            }
+            console.log("📊 Net weight calculation:", {
+              inWeight,
+              outWeight,
+              netWeight,
+              meaning: netWeight > 0 ? "Cargo unloaded" : netWeight < 0 ? "Cargo loaded" : "No change"
+            });
           }
         }
       } catch (error) {
-        console.error("Error finding IN session:", error);
+        console.error("Error calculating net weight:", error);
         // Don't show error - just silently fail
       }
     };
 
-    findInSessionAndCalculateNet();
-  }, [formState.plateNumber, formState.outWeightKg, drivers, products]);
+    calculateNetWeight();
+  }, [formState.plateNumber, formState.outWeightKg]);
 
     // Check if form has unsaved data
     const hasUnsavedData = (): boolean => {
@@ -434,7 +597,7 @@ export const OutSessionForm = forwardRef<
         senderOrganizationId: formState.senderOrganizationId || undefined,
         receiverOrganizationId: formState.receiverOrganizationId || undefined,
         grossWeightKg: formState.outWeightKg,
-          netWeightKg: formState.netWeightKg
+          netWeightKg: formState.netWeightKg !== null && formState.netWeightKg !== undefined
             ? formState.netWeightKg
             : undefined,
           inSessionId: formState.inSessionId
@@ -468,7 +631,7 @@ export const OutSessionForm = forwardRef<
       }
 
       const savedSession = await response.json()
-      
+
       toast({
         title: "Амжилттай",
         description: "ГАРАХ бүртгэл амжилттай хадгалагдлаа",
@@ -727,7 +890,7 @@ export const OutSessionForm = forwardRef<
       }
 
       await performSave();
-    };
+  };
 
   return (
     <div className="h-full flex flex-col overflow-hidden">
@@ -1078,12 +1241,32 @@ export const OutSessionForm = forwardRef<
 
             {/* Right Column */}
             <div className="flex flex-col gap-2 overflow-hidden">
-              {/* Weight Section */}
-              <Card className="p-2 border-2 border-green-200 bg-green-50/30 flex-1 min-h-0 flex flex-col">
+              {/* Camera Section - On top of scale info */}
+              <div className="h-[200px] shrink-0">
+                <CameraPanel
+                  streamUrl={streamUrl}
+                  lastPlate={cameraAutofill.plate}
+                  lastPayload={
+                    cameraAutofill.plate
+                      ? {
+                          plate: cameraAutofill.plate,
+                          ts: cameraAutofill.lastSeenAt,
+                        }
+                      : null
+                  }
+                  status={cameraAutofill.status}
+                  onRefresh={() => {
+                    cameraAutofill.refresh();
+                  }}
+                />
+              </div>
+
+              {/* Weight Section - Reduced height */}
+              <Card className="p-2 border-2 border-green-200 bg-green-50/30 shrink-0 flex flex-col min-h-[200px]">
                 <h3 className="text-xs font-semibold text-gray-900 mb-1.5">
                   Жингийн мэдээлэл
                 </h3>
-                <div className="flex-1 min-h-0 flex flex-col gap-1.5">
+                <div className="flex flex-col gap-1.5">
                   <InSessionWeightConnector
                     onWeightDetected={handleWeightDetected}
                   />
@@ -1123,16 +1306,26 @@ export const OutSessionForm = forwardRef<
                     <Input
                       id="netWeightKg"
                       type="number"
-                      min="0"
-                      value={formState.netWeightKg !== null && formState.netWeightKg >= 0 ? formState.netWeightKg : ""}
+                      value={formState.netWeightKg !== null ? Math.abs(formState.netWeightKg) : ""}
                         onChange={(e) => {
-                          const value =
-                            e.target.value === ""
-                              ? null
-                              : Math.max(0, parseFloat(e.target.value) || 0); // Never allow negative
+                          if (e.target.value === "") {
+                            setFormState((prev) => ({
+                              ...prev,
+                              netWeightKg: null,
+                            }));
+                            return;
+                          }
+                          
+                          const value = parseFloat(e.target.value) || 0;
+                          // Determine if this should be negative based on current state
+                          // If current value is negative and user is entering a value, keep it negative
+                          const currentValue = formState.netWeightKg;
+                          const newValue = currentValue !== null && currentValue < 0 
+                            ? -Math.abs(value) // Keep negative if it was negative
+                            : Math.abs(value); // Keep positive if it was positive or null
                           setFormState((prev) => ({
                             ...prev,
-                            netWeightKg: value,
+                            netWeightKg: newValue,
                           }));
                         }}
                         className="bg-white font-semibold text-xs cursor-text h-8"
@@ -1142,10 +1335,9 @@ export const OutSessionForm = forwardRef<
                 </div>
               </Card>
 
-              {/* Notes */}
-              <Card className="p-2.5 flex-1 min-h-0 flex flex-col">
-                <div className="flex flex-col gap-1.5 flex-1 min-h-0">
-                  <div className="flex-1 min-h-0 flex flex-col">
+              {/* Notes - Reduced height */}
+              <Card className="p-2.5 shrink-0 flex flex-col overflow-hidden">
+                <div className="flex flex-col gap-1.5 mb-3">
                     <Label
                       htmlFor="notes"
                       className="text-xs font-medium text-gray-700 mb-0.5 block"
@@ -1161,12 +1353,12 @@ export const OutSessionForm = forwardRef<
                           notes: e.target.value,
                         }))
                       }
-                      className="text-xs resize-none flex-1 min-h-0"
+                    className="text-xs resize-none"
                       placeholder="Нэмэлт мэдээлэл..."
+                    rows={3}
                     />
                   </div>
-                </div>
-                <div className="flex items-center gap-2 mt-3 pt-2 border-t border-gray-200">
+                <div className="flex items-center gap-2 pt-2 border-t border-gray-200 shrink-0">
                   <Button
                     type="button"
                     variant="outline"
@@ -1194,6 +1386,103 @@ export const OutSessionForm = forwardRef<
                     className="h-9 px-4 text-xs"
                   >
                     Цэвэрлэх
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={async () => {
+                      try {
+                        // Convert form state to TruckLog format for PDF export
+                        const productName = formState.productId 
+                          ? products.find(p => p.id === formState.productId)?.label || "" 
+                          : "";
+                        
+                        // Try to fetch the OUT session's unique code if it exists
+                        let uniqueCode: string | null = null;
+                        try {
+                          const sessionsResponse = await fetch(
+                            `/api/truck-sessions?direction=OUT&plateNumber=${encodeURIComponent(formState.plateNumber.trim())}&limit=10`
+                          );
+                          if (sessionsResponse.ok) {
+                            const sessionsData = await sessionsResponse.json();
+                            // Find the session that matches the out time (if available)
+                            const outTime = formState.outTime ? new Date(formState.outTime) : new Date();
+                            const outSession = sessionsData.sessions?.find((s: any) => {
+                              const sessionDate = new Date(s.createdAt);
+                              return Math.abs(sessionDate.getTime() - outTime.getTime()) < 3600000;
+                            }) || sessionsData.sessions?.[0];
+                            
+                            if (outSession?.uniqueCode) {
+                              uniqueCode = outSession.uniqueCode;
+                              console.log("✅ Print: Found OUT session unique code:", uniqueCode);
+                            }
+                          }
+                        } catch (e) {
+                          console.warn("Could not fetch OUT session unique code:", e);
+                        }
+                        
+                        // If no OUT session found, generate a new unique code for the OUT session
+                        if (!uniqueCode) {
+                          try {
+                            const generateResponse = await fetch("/api/truck-sessions/generate-code");
+                            if (generateResponse.ok) {
+                              const generateData = await generateResponse.json();
+                              uniqueCode = generateData.uniqueCode;
+                              console.log("✅ Print: Generated new unique code for OUT session:", uniqueCode);
+                            }
+                          } catch (e) {
+                            console.warn("Could not generate unique code:", e);
+                          }
+                        }
+                        
+                        const logData: TruckLog = {
+                          id: formState.inSessionId || `temp-${Date.now()}`,
+                          direction: "OUT",
+                          plate: formState.plateNumber.trim().toUpperCase(),
+                          driverId: formState.driverId || undefined,
+                          driverName: formState.driverName || "",
+                          cargoType: productName || "",
+                          weightKg: formState.outWeightKg || undefined,
+                          netWeightKg: formState.netWeightKg || undefined,
+                          comments: formState.notes || undefined,
+                          origin: formState.origin || undefined,
+                          destination: formState.destination || undefined,
+                          senderOrganizationId: formState.senderOrganizationId || undefined,
+                          receiverOrganizationId: formState.receiverOrganizationId || undefined,
+                          transportCompanyId: formState.transporterCompanyId || undefined,
+                          sealNumber: formState.sealNumber || undefined,
+                          hasTrailer: formState.hasTrailer || undefined,
+                          trailerPlate: formState.trailerNumber || undefined,
+                          createdAt: formState.outTime ? new Date(formState.outTime).toISOString() : new Date().toISOString(),
+                          sentToCustoms: false,
+                        };
+                        
+                        // Pass the unique code directly to the export function
+                        await exportLogToPDF(logData, uniqueCode);
+                        
+                        toast({
+                          title: "Амжилттай",
+                          description: "PDF файл татагдлаа",
+                        });
+                      } catch (error) {
+                        console.error("Error exporting PDF:", error);
+                        toast({
+                          title: "Алдаа",
+                          description: "PDF файл татахад алдаа гарлаа",
+                          variant: "destructive",
+                        });
+                      }
+                    }}
+                    disabled={
+                      !formState.plateNumber.trim() ||
+                      !formState.outWeightKg ||
+                      !formState.netWeightKg
+                    }
+                    className="h-9 px-4 text-xs"
+                    title="PDF файл татах"
+                  >
+                    <Printer className="w-4 h-4 mr-1" />
+                    Хэвлэх
                   </Button>
                   <Button
                     type="submit"

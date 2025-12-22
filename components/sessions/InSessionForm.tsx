@@ -2,6 +2,7 @@
 
 import { DriverManager } from "@/components/drivers/DriverManager";
 import { InSessionWeightConnector } from "@/components/scale/InSessionWeightConnector";
+import { CameraPanel } from "@/components/sessions/CameraPanel";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -46,6 +47,8 @@ interface InSessionFormProps {
   onPlateChange?: (plate: string) => void;
   onHasUnsavedDataChange?: (hasData: boolean) => void;
   onSaveRequest?: () => Promise<boolean>;
+  streamUrl?: string;
+  cameraAutofill?: ReturnType<typeof useCameraPlateAutofill>;
 }
 
 export interface InSessionFormHandle {
@@ -58,7 +61,7 @@ export const InSessionForm = forwardRef<
   InSessionFormProps
 >(
   (
-    { autoFillPlate, onPlateChange, onHasUnsavedDataChange, onSaveRequest },
+    { autoFillPlate, onPlateChange, onHasUnsavedDataChange, onSaveRequest, streamUrl, cameraAutofill: externalCameraAutofill },
     ref
   ) => {
     const { toast } = useToast();
@@ -72,7 +75,8 @@ export const InSessionForm = forwardRef<
     const [plateInputRef, setPlateInputRef] = useState<HTMLInputElement | null>(
       null
     );
-    const cameraAutofill = useCameraPlateAutofill();
+    const internalCameraAutofill = useCameraPlateAutofill();
+    const cameraAutofill = externalCameraAutofill || internalCameraAutofill;
 
   // Data loading states
     const [products, setProducts] = useState<Product[]>([]);
@@ -725,7 +729,7 @@ export const InSessionForm = forwardRef<
               </Card>
 
               {/* Basic Info */}
-              <Card className="p-3 flex-1 min-h-0 flex flex-col overflow-y-auto">
+              <Card className="p-2.5 flex-shrink-0">
                 <div className="flex-1 min-h-0 flex flex-col gap-2">
                   <div>
                       <Label
@@ -886,27 +890,27 @@ export const InSessionForm = forwardRef<
                       </Label>
                       <div className="flex items-center gap-2">
                         <div className="flex-1">
-                          <FilterableSelect
-                            options={driverOptions}
-                            value={formState.driverId}
-                            onValueChange={(value) => {
+                    <FilterableSelect
+                      options={driverOptions}
+                      value={formState.driverId}
+                      onValueChange={(value) => {
                               const selectedDriver = drivers.find(
                                 (d) => d.id === value
                               );
-                              setFormState((prev) => ({
-                                ...prev,
-                                driverId: value,
+                        setFormState((prev) => ({ 
+                          ...prev, 
+                          driverId: value,
                                 driverName: selectedDriver?.name || "",
                               }));
-                            }}
-                            disabled={isLoadingDrivers}
+                      }}
+                      disabled={isLoadingDrivers}
                             placeholder={
                               isLoadingDrivers
                                 ? "Уншиж байна..."
                                 : "Жолооч сонгох"
                             }
-                            searchPlaceholder="Жолооч хайх..."
-                          />
+                      searchPlaceholder="Жолооч хайх..."
+                    />
                         </div>
                         <DriverManager
                           drivers={drivers}
@@ -979,12 +983,25 @@ export const InSessionForm = forwardRef<
 
             {/* Right Column */}
             <div className="flex flex-col gap-2 overflow-hidden">
-              {/* Weight Section */}
-              <Card className="p-3 border-2 border-green-200 bg-green-50/30 flex-1 min-h-0 flex flex-col">
+              {/* Camera Section - On top of scale info */}
+              <div className="h-[200px] shrink-0">
+                <CameraPanel
+                  streamUrl={streamUrl}
+                  lastPlate={cameraAutofill.plate}
+                  lastPayload={cameraAutofill.rawPayload}
+                  status={cameraAutofill.status}
+                  onRefresh={() => {
+                    cameraAutofill.refresh();
+                  }}
+                />
+              </div>
+
+              {/* Weight Section - Reduced height */}
+              <Card className="p-3 border-2 border-green-200 bg-green-50/30 shrink-0 flex flex-col">
                   <h3 className="text-xs font-semibold text-gray-900 mb-2">
                     Жингийн мэдээлэл
                   </h3>
-                <div className="flex-1 min-h-0 flex flex-col gap-2">
+                <div className="flex flex-col gap-2">
                     <InSessionWeightConnector
                       onWeightDetected={handleWeightDetected}
                     />
@@ -1017,16 +1034,15 @@ export const InSessionForm = forwardRef<
                 </div>
               </Card>
 
-              {/* Notes */}
-              <Card className="p-3 flex-1 min-h-0 flex flex-col">
-                  <div className="flex flex-col gap-1.5 flex-1 min-h-0">
-                    <div className="flex-1 min-h-0 flex flex-col">
-                      <Label
-                        htmlFor="notes"
-                        className="text-xs font-medium text-gray-700 mb-0.5 block"
-                      >
-                        Нэмэлт мэдээлэл
-                      </Label>
+              {/* Notes - Reduced height */}
+              <Card className="p-3 shrink-0 flex flex-col overflow-hidden">
+                  <div className="flex flex-col gap-1.5 mb-3">
+                    <Label
+                      htmlFor="notes"
+                      className="text-xs font-medium text-gray-700 mb-0.5 block"
+                    >
+                      Нэмэлт мэдээлэл
+                    </Label>
                 <Textarea
                   id="notes"
                   value={formState.notes}
@@ -1036,12 +1052,12 @@ export const InSessionForm = forwardRef<
                             notes: e.target.value,
                           }))
                   }
-                        className="text-xs resize-none flex-1 min-h-0"
+                        className="text-xs resize-none"
                   placeholder="Нэмэлт мэдээлэл..."
+                  rows={3}
                 />
-                    </div>
                   </div>
-                  <div className="flex items-center gap-2 mt-3 pt-2 border-t border-gray-200">
+                  <div className="flex items-center gap-2 pt-2 border-t border-gray-200 shrink-0">
                     <Button
                       type="button"
                       variant="outline"

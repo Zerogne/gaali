@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useMemo } from "react"
+import { useState, useMemo, useEffect } from "react"
 import { Card } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
@@ -20,6 +20,7 @@ export function HistoryTable({ logs, onUpdate }: HistoryTableProps) {
   const [currentPage, setCurrentPage] = useState(1)
   const [editingLog, setEditingLog] = useState<TruckLog | null>(null)
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
+  const [uniqueCodes, setUniqueCodes] = useState<Map<string, string>>(new Map())
   const itemsPerPage = 10
 
   const handleEdit = (log: TruckLog) => {
@@ -76,17 +77,56 @@ export function HistoryTable({ logs, onUpdate }: HistoryTableProps) {
     return `${weight.toLocaleString()} kg`
   }
 
-  // Get status badge variant
-  const getStatusVariant = (log: TruckLog) => {
-    if (log.sentToCustoms) return "default"
-    return "secondary"
+  // Fetch unique codes for logs
+  const fetchUniqueCodesForLogs = async (logsToFetch: TruckLog[]) => {
+    const codesMap = new Map<string, string>()
+    
+    console.log("🔍 Fetching unique codes for", logsToFetch.length, "logs")
+    
+    await Promise.all(
+      logsToFetch.map(async (log) => {
+        try {
+          const sessionsResponse = await fetch(
+            `/api/truck-sessions?direction=${log.direction}&plateNumber=${encodeURIComponent(log.plate)}&limit=100`
+          )
+
+          if (sessionsResponse.ok) {
+            const sessionsData = await sessionsResponse.json()
+            
+            if (sessionsData.sessions && sessionsData.sessions.length > 0) {
+              const logDate = new Date(log.createdAt)
+              
+              const sortedSessions = sessionsData.sessions
+                .map((s: any) => ({
+                  ...s,
+                  timeDiff: Math.abs(new Date(s.createdAt).getTime() - logDate.getTime())
+                }))
+                .sort((a: any, b: any) => a.timeDiff - b.timeDiff)
+              
+              const session = sortedSessions.find((s: any) => s.timeDiff < 24 * 60 * 60 * 1000) 
+                || sortedSessions[0]
+
+              if (session?.uniqueCode) {
+                codesMap.set(log.id, session.uniqueCode)
+              }
+            }
+          }
+        } catch (error) {
+          console.error(`❌ Error fetching unique code for log ${log.id}:`, error)
+        }
+      })
+    )
+    
+    setUniqueCodes(codesMap)
   }
 
-  // Get status text
-  const getStatusText = (log: TruckLog) => {
-    if (log.sentToCustoms) return "Sent to Customs"
-    return "Saved"
-  }
+  // Fetch unique codes when logs change
+  useEffect(() => {
+    if (logs.length > 0) {
+      fetchUniqueCodesForLogs(logs).catch(console.error)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [logs])
 
   return (
     <Card className="p-6">
@@ -121,7 +161,7 @@ export function HistoryTable({ logs, onUpdate }: HistoryTableProps) {
               <th className="text-left py-3 px-4 text-sm font-semibold text-foreground">Driver</th>
               <th className="text-left py-3 px-4 text-sm font-semibold text-foreground">Cargo</th>
               <th className="text-left py-3 px-4 text-sm font-semibold text-foreground">Weight</th>
-              <th className="text-left py-3 px-4 text-sm font-semibold text-foreground">Status</th>
+              <th className="text-left py-3 px-4 text-sm font-semibold text-foreground">Уникаль код</th>
               <th className="text-right py-3 px-4 text-sm font-semibold text-foreground">Actions</th>
             </tr>
           </thead>
@@ -134,7 +174,16 @@ export function HistoryTable({ logs, onUpdate }: HistoryTableProps) {
               </tr>
             ) : (
               paginatedData.map((log) => (
-                <tr key={log.id} className="border-b border-border hover:bg-muted/50 transition-colors">
+                <tr 
+                  key={log.id} 
+                  className="border-b border-border hover:bg-muted/50 transition-colors cursor-pointer"
+                  onDoubleClick={(e) => {
+                    e.preventDefault()
+                    e.stopPropagation()
+                    console.log("🖱️ Double-clicked on log:", log.id)
+                    handleEdit(log)
+                  }}
+                >
                   <td className="py-4 px-4">
                     <span className="font-mono font-semibold text-foreground">{log.plate || "—"}</span>
                   </td>
@@ -146,10 +195,8 @@ export function HistoryTable({ logs, onUpdate }: HistoryTableProps) {
                   <td className="py-4 px-4 text-sm font-semibold text-foreground">
                     {formatWeight(log.weightKg)}
                   </td>
-                  <td className="py-4 px-4">
-                    <Badge variant={getStatusVariant(log)}>
-                      {getStatusText(log)}
-                    </Badge>
+                  <td className="py-4 px-4 font-mono font-semibold text-foreground">
+                    {uniqueCodes.get(log.id) || "—"}
                   </td>
                   <td className="py-4 px-4">
                     <div className="flex items-center justify-end gap-2">

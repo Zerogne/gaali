@@ -25,9 +25,9 @@ import { useToast } from "@/hooks/use-toast";
 import { sendTruckLogToCustoms } from "@/lib/api";
 import { exportLogToPDF } from "@/lib/pdf-export";
 import type { Direction, TruckLog } from "@/lib/types";
-import { Edit, ExternalLink, FileDown, Search, Send } from "lucide-react";
+import { Edit, FileDown, Search, Send } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 interface TruckTableProps {
   logs: TruckLog[];
@@ -45,6 +45,7 @@ export function TruckTable({ logs, onSend, onUpdate }: TruckTableProps) {
   const [sendingIds, setSendingIds] = useState<Set<string>>(new Set());
   const [editingLog, setEditingLog] = useState<TruckLog | null>(null);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [uniqueCodes, setUniqueCodes] = useState<Map<string, string>>(new Map());
 
   const handleEdit = (log: TruckLog) => {
     setEditingLog(log);
@@ -105,6 +106,55 @@ export function TruckTable({ logs, onSend, onUpdate }: TruckTableProps) {
     }
   };
 
+  // Fetch unique codes for logs
+  const fetchUniqueCodesForLogs = async (logsToFetch: TruckLog[]) => {
+    const codesMap = new Map<string, string>()
+    
+    await Promise.all(
+      logsToFetch.map(async (log) => {
+        try {
+          const sessionsResponse = await fetch(
+            `/api/truck-sessions?direction=${log.direction}&plateNumber=${encodeURIComponent(log.plate)}&limit=100`
+          )
+
+          if (sessionsResponse.ok) {
+            const sessionsData = await sessionsResponse.json()
+            
+            if (sessionsData.sessions && sessionsData.sessions.length > 0) {
+              const logDate = new Date(log.createdAt)
+              
+              const sortedSessions = sessionsData.sessions
+                .map((s: any) => ({
+                  ...s,
+                  timeDiff: Math.abs(new Date(s.createdAt).getTime() - logDate.getTime())
+                }))
+                .sort((a: any, b: any) => a.timeDiff - b.timeDiff)
+              
+              const session = sortedSessions.find((s: any) => s.timeDiff < 24 * 60 * 60 * 1000) 
+                || sortedSessions[0]
+
+              if (session?.uniqueCode) {
+                codesMap.set(log.id, session.uniqueCode)
+              }
+            }
+          }
+        } catch (error) {
+          console.error(`❌ Error fetching unique code for log ${log.id}:`, error)
+        }
+      })
+    )
+    
+    setUniqueCodes(codesMap)
+  }
+
+  // Fetch unique codes when logs change
+  useEffect(() => {
+    if (logs.length > 0) {
+      fetchUniqueCodesForLogs(logs).catch(console.error)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [logs])
+
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleString("mn-MN", {
       month: "short",
@@ -127,16 +177,6 @@ export function TruckTable({ logs, onSend, onUpdate }: TruckTableProps) {
               Бүх тээврийн хэрэгслийн орох/гарах бүртгэлийн мэдээлэл
             </p>
           </div>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => router.push("/history")}
-            className="flex items-center gap-2"
-            title="Бүрэн түүх харах"
-          >
-            <ExternalLink className="w-4 h-4" />
-            Бүрэн түүх
-          </Button>
         </div>
 
         <Separator className="my-4" />
@@ -243,7 +283,7 @@ export function TruckTable({ logs, onSend, onUpdate }: TruckTableProps) {
                       Үүсгэсэн огноо
                     </TableHead>
                     <TableHead className="text-gray-700 font-semibold">
-                      Төлөв
+                      Уникаль код
                     </TableHead>
                     <TableHead className="text-gray-700 font-semibold">
                       Үйлдлүүд
@@ -252,7 +292,16 @@ export function TruckTable({ logs, onSend, onUpdate }: TruckTableProps) {
                 </TableHeader>
                 <TableBody>
                   {filteredLogs.map((log) => (
-                    <TableRow key={log.id} className="hover:bg-gray-50">
+                    <TableRow 
+                      key={log.id} 
+                      className="hover:bg-gray-50 cursor-pointer"
+                      onDoubleClick={(e) => {
+                        e.preventDefault()
+                        e.stopPropagation()
+                        console.log("🖱️ Double-clicked on log:", log.id)
+                        handleEdit(log)
+                      }}
+                    >
                       <TableCell>
                         <Badge
                           variant="outline"
@@ -286,19 +335,8 @@ export function TruckTable({ logs, onSend, onUpdate }: TruckTableProps) {
                       <TableCell className="text-gray-600 text-sm">
                         {formatDate(log.createdAt)}
                       </TableCell>
-                      <TableCell>
-                        {log.sentToCustoms ? (
-                          <Badge className="bg-green-50 text-green-700 border-green-200">
-                            Гаальд илгээсэн
-                          </Badge>
-                        ) : (
-                          <Badge
-                            variant="outline"
-                            className="bg-amber-50 text-amber-700 border-amber-200"
-                          >
-                            Зөвхөн хадгалсан
-                          </Badge>
-                        )}
+                      <TableCell className="font-mono font-semibold text-gray-900">
+                        {uniqueCodes.get(log.id) || "—"}
                       </TableCell>
                       <TableCell>
                         <div className="flex items-center gap-2">
