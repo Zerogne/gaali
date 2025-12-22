@@ -26,7 +26,6 @@ import { useEffect, useState } from "react";
 
 const menuItems = [
   { icon: LayoutDashboard, label: "Хяналтын самбар", href: "/" },
-  { icon: History, label: "Бүртгэлийн түүх", href: "/history" },
   { icon: Package, label: "Бүтээгдэхүүн", href: "/products" },
   { icon: Truck, label: "Тээврийн компани", href: "/companies" },
   { icon: User, label: "Жолооч", href: "/drivers" },

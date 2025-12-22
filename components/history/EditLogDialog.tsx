@@ -768,13 +768,13 @@ export function EditLogDialog({
                         type="datetime-local"
                         value={
                           direction === "IN"
-                            ? log.inTime
-                              ? new Date(log.inTime).toISOString().slice(0, 16)
+                            ? log.createdAt
+                              ? new Date(log.createdAt).toISOString().slice(0, 16)
                               : new Date(log.createdAt)
                                   .toISOString()
                                   .slice(0, 16)
-                            : log.outTime
-                              ? new Date(log.outTime).toISOString().slice(0, 16)
+                            : log.createdAt
+                              ? new Date(log.createdAt).toISOString().slice(0, 16)
                               : new Date(log.createdAt)
                                   .toISOString()
                                   .slice(0, 16)
@@ -844,7 +844,7 @@ export function EditLogDialog({
                           type="number"
                           value={
                             netWeight !== null && netWeight !== undefined
-                              ? Math.abs(netWeight)
+                              ? Math.abs(Number(netWeight))
                               : ""
                           }
                           readOnly
