@@ -12,7 +12,7 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
-import { useCameraPlateAutofill } from "@/hooks/useCameraPlateAutofill";
+import { useLprPlateAutofill } from "@/hooks/useLprPlateAutofill";
 import { useThirdPartyAutofill } from "@/hooks/useThirdPartyAutofill";
 import type { Product } from "@/lib/products/products";
 import type { Driver, Organization, TransportCompany } from "@/lib/types";
@@ -48,7 +48,7 @@ interface InSessionFormProps {
   onHasUnsavedDataChange?: (hasData: boolean) => void;
   onSaveRequest?: () => Promise<boolean>;
   streamUrl?: string;
-  cameraAutofill?: ReturnType<typeof useCameraPlateAutofill>;
+  cameraAutofill?: ReturnType<typeof useLprPlateAutofill>;
 }
 
 export interface InSessionFormHandle {
@@ -75,7 +75,7 @@ export const InSessionForm = forwardRef<
     const [plateInputRef, setPlateInputRef] = useState<HTMLInputElement | null>(
       null
     );
-    const internalCameraAutofill = useCameraPlateAutofill();
+    const internalCameraAutofill = useLprPlateAutofill();
     const cameraAutofill = externalCameraAutofill || internalCameraAutofill;
 
   // Data loading states
@@ -712,10 +712,20 @@ export const InSessionForm = forwardRef<
                     placeholder="УБ1234"
                   required
                 />
-                {cameraAutofill.status === "polling" && (
+                {(cameraAutofill.status === "polling" || cameraAutofill.status === "connected") && (
                   <div className="mt-2 flex items-center gap-1.5 text-xs text-blue-600">
                     <Camera className="h-3 w-3 animate-pulse" />
-                    <span>Камера холбогдож байна...</span>
+                    <span>
+                      {cameraAutofill.status === "connected" 
+                        ? "Камера холбогдсон" 
+                        : "Камера холбогдож байна..."}
+                    </span>
+                  </div>
+                )}
+                {cameraAutofill.status === "error" && cameraAutofill.error && (
+                  <div className="mt-2 flex items-center gap-1.5 text-xs text-red-600">
+                    <Camera className="h-3 w-3" />
+                    <span>Камера алдаа: {cameraAutofill.error}</span>
                   </div>
                 )}
                 {cameraAutofill.plate && cameraAutofill.lastSeenAt && (

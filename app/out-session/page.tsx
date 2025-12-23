@@ -17,14 +17,14 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { useCameraPlateAutofill } from "@/hooks/useCameraPlateAutofill";
+import { useLprPlateAutofill } from "@/hooks/useLprPlateAutofill";
 import { ArrowLeft } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useRef, useState } from "react";
 
 export default function OutSessionPage() {
   const router = useRouter();
-  const cameraAutofill = useCameraPlateAutofill();
+  const cameraAutofill = useLprPlateAutofill();
   const [currentPlate, setCurrentPlate] = useState<string>("");
   const formRef = useRef<OutSessionFormHandle>(null);
   const [showSaveDialog, setShowSaveDialog] = useState(false);

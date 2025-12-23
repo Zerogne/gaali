@@ -17,14 +17,14 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { useCameraPlateAutofill } from "@/hooks/useCameraPlateAutofill";
+import { useLprPlateAutofill } from "@/hooks/useLprPlateAutofill";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 
 export default function InSessionPage() {
   const router = useRouter();
-  const cameraAutofill = useCameraPlateAutofill();
+  const cameraAutofill = useLprPlateAutofill();
   const [currentPlate, setCurrentPlate] = useState<string>("");
   const [streamUrl, setStreamUrl] = useState<string | undefined>(undefined);
   const formRef = useRef<InSessionFormHandle>(null);
