@@ -144,7 +144,7 @@ export default function OutSessionPage() {
               onClick={handleSaveAndNavigate}
               className="bg-green-600 hover:bg-green-700"
             >
-              Хадгалах
+              Хадгалаж гааль руу илгээх
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

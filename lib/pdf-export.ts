@@ -380,11 +380,11 @@ function generateLogHTML(
           border-collapse: collapse;
           margin-top: 8px;
           font-size: 11px;
-          border: 1px solid rgb(0, 0, 0);
+          border: 0.3px solid rgb(128, 128, 128);
         }
         .data-table td {
           padding: 5px 7px;
-          border: 1px solid rgb(0, 0, 0);
+          border: 0.3px solid rgb(128, 128, 128);
           vertical-align: middle;
         }
         .data-table .label-cell {
@@ -403,7 +403,7 @@ function generateLogHTML(
         }
         .data-table .empty-cell {
           background-color: rgb(255, 255, 255);
-          border: 1px solid rgb(0, 0, 0);
+          border: 0.3px solid rgb(128, 128, 128);
         }
       </style>
     </head>
