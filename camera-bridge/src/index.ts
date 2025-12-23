@@ -47,7 +47,7 @@ async function main() {
       process.exit(1);
     }
     startHttpPushReceiver();
-  }
+        }
 
   if (env.MODE === "poll" || env.MODE === "both") {
     if (!env.CAMERA_BASE_URL) {

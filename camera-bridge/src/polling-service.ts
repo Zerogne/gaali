@@ -37,6 +37,9 @@ interface DedupKey {
 // Global state
 let lastDedupKey: string | null = null;
 let retryDelay = 1000; // Start with 1 second
+let sessionCookie: string | null = null;
+let lastLoginTime: number = 0;
+const SESSION_REFRESH_INTERVAL = 5 * 60 * 1000; // Refresh session every 5 minutes
 
 /**
  * Generate deduplication key
@@ -78,10 +81,62 @@ async function tryFetchSnapshotBase64(
 }
 
 /**
+ * Login to camera and get session cookie
+ */
+async function loginToCamera(): Promise<string | null> {
+  if (!env.CAMERA_AUTH) {
+    return null;
+  }
+
+  try {
+    const [username, password] = env.CAMERA_AUTH.split(":");
+    if (!username || !password) {
+      return null;
+    }
+
+    // Try to login via the camera's login endpoint
+    const loginUrl = `${env.CAMERA_BASE_URL}/login.htm`;
+    const response = await fetch(loginUrl, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+      },
+      body: `username=${encodeURIComponent(username)}&password=${encodeURIComponent(password)}`,
+      redirect: "manual",
+      signal: AbortSignal.timeout(5000),
+    });
+
+    const setCookie = response.headers.get("set-cookie");
+    if (setCookie) {
+      // Extract cookie value (simplified - may need adjustment based on actual cookie format)
+      const cookieMatch = setCookie.match(/([^;]+)/);
+      if (cookieMatch) {
+        sessionCookie = cookieMatch[1];
+        lastLoginTime = Date.now();
+        return sessionCookie;
+      }
+    }
+
+    return null;
+  } catch (error) {
+    console.warn("Failed to login to camera:", error);
+    return null;
+  }
+}
+
+/**
  * Poll camera for latest plate recognition
  */
 async function pollCamera(): Promise<DedupKey | null> {
   try {
+    // Refresh session if needed
+    if (
+      !sessionCookie ||
+      Date.now() - lastLoginTime > SESSION_REFRESH_INTERVAL
+    ) {
+      await loginToCamera();
+    }
+
     // Build URL with query parameters
     const queryObj = JSON.stringify({ result_id: env.CAMERA_RESULT_ID });
     const timestamp = Date.now();
@@ -101,50 +156,40 @@ async function pollCamera(): Promise<DedupKey | null> {
       }
     }
 
+    // Add session cookie if available
+    if (sessionCookie) {
+      headers["Cookie"] = sessionCookie;
+    }
+
     const response = await fetch(url, {
       headers,
       signal: AbortSignal.timeout(5000),
     });
 
     if (!response.ok) {
+      // If we get 401/403, try to re-login
+      if ((response.status === 401 || response.status === 403) && env.CAMERA_AUTH) {
+        console.warn("Authentication failed, attempting to re-login...");
+        sessionCookie = null;
+        await loginToCamera();
+        // Retry once after login
+        const retryResponse = await fetch(url, {
+          headers,
+          signal: AbortSignal.timeout(5000),
+        });
+        if (!retryResponse.ok) {
+          console.warn(`Camera API returned ${retryResponse.status} after re-login`);
+          return null;
+        }
+        const retryText = await retryResponse.text();
+        return parseCameraResponse(retryText);
+      }
       console.warn(`Camera API returned ${response.status}`);
       return null;
     }
 
     const text = await response.text();
-    let data: CameraResponse;
-
-    try {
-      data = JSON.parse(text);
-    } catch (parseError) {
-      // Try parsing as stringified JSON
-      try {
-        data = JSON.parse(text.replace(/^["']|["']$/g, ""));
-      } catch {
-        console.warn("Failed to parse camera response:", text.slice(0, 100));
-        return null;
-      }
-    }
-
-    const plateResult = data.PlateResult;
-    if (!plateResult) {
-      return null;
-    }
-
-    const plateNumber = plateResult.license;
-    const recognizedAt = plateResult.trigger_time;
-    const imagePath =
-      plateResult.image_path || plateResult.image_sd_path || "";
-
-    if (!plateNumber || !recognizedAt) {
-      return null;
-    }
-
-    return {
-      plateNumber: plateNumber.trim(),
-      recognizedAt: recognizedAt.trim(),
-      imagePath: imagePath.trim(),
-    };
+    return parseCameraResponse(text);
   } catch (error) {
     if (error instanceof Error && error.name === "AbortError") {
       console.warn("Camera request timeout");
@@ -153,6 +198,53 @@ async function pollCamera(): Promise<DedupKey | null> {
     }
     return null;
   }
+}
+
+/**
+ * Parse camera response text into CameraResponse
+ */
+function parseCameraResponse(text: string): DedupKey | null {
+  // Check if response is HTML (login page or error)
+  if (text.includes("<HTML>") || text.includes("login") || text.includes("TimeOut")) {
+    // If we have auth configured, this might mean session expired
+    if (env.CAMERA_AUTH) {
+      console.warn("Received HTML response (likely login page), session may have expired");
+    }
+    return null;
+  }
+
+  let data: CameraResponse;
+  try {
+    data = JSON.parse(text);
+  } catch (parseError) {
+    // Try parsing as stringified JSON
+    try {
+      data = JSON.parse(text.replace(/^["']|["']$/g, ""));
+    } catch {
+      console.warn("Failed to parse camera response:", text.slice(0, 100));
+      return null;
+    }
+  }
+
+  const plateResult = data.PlateResult;
+  if (!plateResult) {
+    return null;
+  }
+
+  const plateNumber = plateResult.license;
+  const recognizedAt = plateResult.trigger_time;
+  const imagePath =
+    plateResult.image_path || plateResult.image_sd_path || "";
+
+  if (!plateNumber || !recognizedAt) {
+    return null;
+  }
+
+  return {
+    plateNumber: plateNumber.trim(),
+    recognizedAt: recognizedAt.trim(),
+    imagePath: imagePath.trim(),
+  };
 }
 
 /**
