@@ -94,26 +94,59 @@ async function loginToCamera(): Promise<string | null> {
       return null;
     }
 
-    // Try to login via the camera's login endpoint
-    const loginUrl = `${env.CAMERA_BASE_URL}/login.htm`;
-    const response = await fetch(loginUrl, {
+    // First, try to GET the login page to establish a session
+    const loginPageUrl = `${env.CAMERA_BASE_URL}/login.htm`;
+    const getResponse = await fetch(loginPageUrl, {
+      method: "GET",
+      signal: AbortSignal.timeout(5000),
+    });
+    
+    // Get any cookies from the initial request
+    const initialCookie = getResponse.headers.get("set-cookie");
+    const cookies: string[] = [];
+    if (initialCookie) {
+      cookies.push(initialCookie);
+    }
+
+    // Try to login via POST
+    const response = await fetch(loginPageUrl, {
       method: "POST",
       headers: {
         "Content-Type": "application/x-www-form-urlencoded",
+        ...(cookies.length > 0 ? { "Cookie": cookies.join("; ") } : {}),
       },
       body: `username=${encodeURIComponent(username)}&password=${encodeURIComponent(password)}`,
       redirect: "manual",
       signal: AbortSignal.timeout(5000),
     });
 
+    const responseText = await response.text();
+    
+    // Check if login was successful (not "FAILED")
+    if (responseText === "FAILED" || responseText.includes("FAILED")) {
+      console.warn("Camera login failed - check credentials in .env (CAMERA_AUTH)");
+      return null;
+    }
+
     const setCookie = response.headers.get("set-cookie");
     if (setCookie) {
-      // Extract cookie value (simplified - may need adjustment based on actual cookie format)
-      const cookieMatch = setCookie.match(/([^;]+)/);
-      if (cookieMatch) {
-        sessionCookie = cookieMatch[1];
-        lastLoginTime = Date.now();
-        return sessionCookie;
+      // Extract cookie value - handle multiple cookies
+      const cookieParts = setCookie.split(",").map(c => c.trim());
+      for (const cookiePart of cookieParts) {
+        const match = cookiePart.match(/([^=]+)=([^;]+)/);
+        if (match) {
+          const cookieName = match[1];
+          const cookieValue = match[2];
+          // Look for session-related cookies
+          if (cookieName.toLowerCase().includes("session") || 
+              cookieName.toLowerCase().includes("sid") ||
+              cookieValue !== "0") {
+            sessionCookie = `${cookieName}=${cookieValue}`;
+            lastLoginTime = Date.now();
+            console.log("✓ Camera login successful");
+            return sessionCookie;
+          }
+        }
       }
     }
 
