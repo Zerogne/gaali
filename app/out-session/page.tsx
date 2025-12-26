@@ -20,18 +20,42 @@ import { Button } from "@/components/ui/button";
 import { useLprPlateAutofill } from "@/hooks/useLprPlateAutofill";
 import { ArrowLeft } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 export default function OutSessionPage() {
   const router = useRouter();
   const cameraAutofill = useLprPlateAutofill();
   const [currentPlate, setCurrentPlate] = useState<string>("");
+  const [streamUrl, setStreamUrl] = useState<string | undefined>(undefined);
   const formRef = useRef<OutSessionFormHandle>(null);
   const [showSaveDialog, setShowSaveDialog] = useState(false);
   const [pendingNavigation, setPendingNavigation] = useState<string | null>(
     null
   );
   const [hasUnsavedData, setHasUnsavedData] = useState(false);
+
+  // Fetch camera stream URL from config
+  useEffect(() => {
+    const fetchStreamUrl = async () => {
+      try {
+        const response = await fetch("/api/camera/config");
+        if (response.ok) {
+          const config = await response.json();
+          // Use NEXT_PUBLIC env var if set, otherwise use config streamUrl
+          setStreamUrl(
+            process.env.NEXT_PUBLIC_CAMERA_STREAM_URL ||
+              config.streamUrl ||
+              undefined
+          );
+        }
+      } catch (error) {
+        console.error("Failed to fetch camera stream URL:", error);
+        // Fallback to env var if API fails
+        setStreamUrl(process.env.NEXT_PUBLIC_CAMERA_STREAM_URL);
+      }
+    };
+    fetchStreamUrl();
+  }, []);
 
   // Track if user manually edited the plate field
   const handlePlateChange = (value: string) => {
@@ -120,7 +144,7 @@ export default function OutSessionPage() {
             autoFillPlate={null}
             onPlateChange={handlePlateChange}
             onHasUnsavedDataChange={setHasUnsavedData}
-            streamUrl={undefined}
+            streamUrl={streamUrl}
             cameraAutofill={cameraAutofill}
           />
         </div>

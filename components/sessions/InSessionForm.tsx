@@ -2,7 +2,6 @@
 
 import { DriverManager } from "@/components/drivers/DriverManager";
 import { InSessionWeightConnector } from "@/components/scale/InSessionWeightConnector";
-import { CameraPanel } from "@/components/sessions/CameraPanel";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -13,6 +12,8 @@ import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { useLprPlateAutofill } from "@/hooks/useLprPlateAutofill";
+import { useCameraBridgeWebSocket } from "@/hooks/useCameraBridgeWebSocket";
+import { useCameraPlateAutofill } from "@/hooks/useCameraPlateAutofill";
 import { useThirdPartyAutofill } from "@/hooks/useThirdPartyAutofill";
 import type { Product } from "@/lib/products/products";
 import type { Driver, Organization, TransportCompany } from "@/lib/types";
@@ -22,6 +23,7 @@ import {
   useEffect,
   useImperativeHandle,
   useMemo,
+  useRef,
   useState,
 } from "react";
 
@@ -75,8 +77,45 @@ export const InSessionForm = forwardRef<
     const [plateInputRef, setPlateInputRef] = useState<HTMLInputElement | null>(
       null
     );
+    const isAutofillingRef = useRef(false);
+    // Use WebSocket for real-time camera updates (preferred)
+    // Falls back to polling if WebSocket not available
+    const internalCameraAutofillWs = useCameraBridgeWebSocket();
     const internalCameraAutofill = useLprPlateAutofill();
-    const cameraAutofill = externalCameraAutofill || internalCameraAutofill;
+    
+    // FORCE ENABLE WebSocket if it's disabled (user might have disabled it before)
+    useEffect(() => {
+      if (!internalCameraAutofillWs.isEnabled) {
+        console.log("🔧🔧🔧 WebSocket autofill is DISABLED - ENABLING IT NOW");
+        internalCameraAutofillWs.toggleEnabled(true);
+      }
+    }, [internalCameraAutofillWs.isEnabled, internalCameraAutofillWs]);
+    
+    // Prefer WebSocket if enabled (even if connecting), otherwise use external or polling
+    const cameraAutofill = 
+      (internalCameraAutofillWs.isEnabled)
+        ? internalCameraAutofillWs 
+        : (externalCameraAutofill || internalCameraAutofill);
+    
+    // Debug logging
+    useEffect(() => {
+      console.log("📡 Camera autofill status:", {
+        using: externalCameraAutofill ? "external" : (internalCameraAutofillWs.isEnabled ? "websocket" : "polling"),
+        wsStatus: internalCameraAutofillWs.status,
+        wsEnabled: internalCameraAutofillWs.isEnabled,
+        wsPlate: internalCameraAutofillWs.plate,
+        pollingPlate: internalCameraAutofill.plate,
+        currentPlate: cameraAutofill.plate,
+        hasPlate: !!cameraAutofill.plate,
+      });
+      
+      // Log when plate changes
+      if (cameraAutofill.plate) {
+        console.log("🎯🎯🎯 ========================================");
+        console.log("🎯🎯🎯 PLATE READ:", cameraAutofill.plate);
+        console.log("🎯🎯🎯 ========================================");
+      }
+    }, [cameraAutofill.plate, internalCameraAutofillWs.status, internalCameraAutofillWs.isEnabled, internalCameraAutofillWs.plate, internalCameraAutofill.plate, externalCameraAutofill]);
 
   // Data loading states
     const [products, setProducts] = useState<Product[]>([]);
@@ -291,15 +330,126 @@ export const InSessionForm = forwardRef<
   // Bind camera autofill to plate input
   useEffect(() => {
     if (plateInputRef) {
-      cameraAutofill.bindToInput({
-        getValue: () => formState.plateNumber,
-        setValue: (value: string) => {
-            setFormState((prev) => ({ ...prev, plateNumber: value }));
+      console.log("🔗🔗🔗 ========================================");
+      console.log("🔗🔗🔗 BINDING AUTOFILL TO INPUT");
+      console.log("🔗🔗🔗 ========================================");
+      console.log("🔗 Current plate in hook:", cameraAutofill.plate);
+      console.log("🔗 Current form state plate:", formState.plateNumber);
+      console.log("🔗 Input element:", plateInputRef);
+      console.log("🔗 Input element value:", plateInputRef.value);
+      
+      const binding = {
+        getValue: () => {
+          const value = formState.plateNumber;
+          console.log("🔗 getValue called, returning:", value);
+          return value;
         },
-        isFocused: () => document.activeElement === plateInputRef,
-        });
+        setValue: (value: string) => {
+          console.log("📝📝📝 ========================================");
+          console.log("📝📝📝 AUTOFILL setValue CALLED!");
+          console.log("📝📝📝 Setting plate to:", value);
+          console.log("📝📝📝 ========================================");
+          console.log("📝 Current formState.plateNumber:", formState.plateNumber);
+          console.log("📝 Input element exists:", !!plateInputRef);
+          console.log("📝 Input element:", plateInputRef);
+          
+          if (!plateInputRef) {
+            console.error("❌❌❌ CRITICAL: plateInputRef is NULL! Cannot update input!");
+            return;
+          }
+          
+          // CRITICAL: This is a CONTROLLED component - React controls the value via the `value` prop
+          // We MUST update React state, and React will update the DOM on re-render
+          console.log("📝 Step 1: Setting autofill flag");
+          isAutofillingRef.current = true;
+          
+          console.log("📝 Step 2: Updating React state (CONTROLLED COMPONENT)");
+          console.log("📝 Current formState.plateNumber:", formState.plateNumber);
+          console.log("📝 New value to set:", value);
+          
+          // Update React state - this will trigger a re-render and update the input
+          setFormState((prev) => {
+            console.log("📝 Inside setFormState - prev.plateNumber:", prev.plateNumber, "new value:", value);
+            if (prev.plateNumber === value) {
+              console.log("📝 Value already matches, but updating anyway to trigger re-render");
+            }
+            const newState = { ...prev, plateNumber: value };
+            console.log("📝 Returning new state with plateNumber:", newState.plateNumber);
+            return newState;
+          });
+          
+          // ALSO update DOM directly as immediate visual feedback
+          console.log("📝 Step 3: Directly updating DOM for immediate visual feedback");
+          plateInputRef.value = value;
+          
+          // Use native setter to trigger React's event system
+          try {
+            const nativeInputValueSetter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, "value")?.set;
+            if (nativeInputValueSetter) {
+              nativeInputValueSetter.call(plateInputRef, value);
+              const nativeEvent = new Event("input", { bubbles: true, cancelable: true });
+              plateInputRef.dispatchEvent(nativeEvent);
+              console.log("📝 Used native setter and dispatched input event");
+            }
+          } catch (e) {
+            console.log("📝 Native setter failed:", e);
+          }
+          
+          // Trigger onPlateChange callback
+          if (onPlateChange) {
+            console.log("📝 Step 4: Calling onPlateChange callback");
+            onPlateChange(value);
+          }
+          
+          // Clear autofill flag after a delay
+          setTimeout(() => {
+            isAutofillingRef.current = false;
+          }, 500);
+          
+          // Verify after React has had time to re-render
+          setTimeout(() => {
+            const currentInputValue = plateInputRef.value;
+            const currentStateValue = formState.plateNumber;
+            console.log("📝 Verification - Input DOM value:", currentInputValue);
+            console.log("📝 Verification - React state value:", currentStateValue);
+            console.log("📝 Verification - Expected value:", value);
+            
+            if (currentInputValue === value || currentStateValue === value) {
+              console.log("✅✅✅ VERIFIED: Input field updated!");
+            } else {
+              console.error("❌❌❌ NOT UPDATED! DOM:", currentInputValue, "State:", currentStateValue, "Expected:", value);
+              console.error("❌ Attempting emergency update...");
+              // Force update one more time
+              setFormState((prev) => ({ ...prev, plateNumber: value }));
+              plateInputRef.value = value;
+            }
+          }, 200);
+          
+          console.log("📝📝📝 setValue COMPLETE for:", value);
+        },
+        isFocused: () => {
+          const focused = document.activeElement === plateInputRef;
+          console.log("🔗 isFocused called, returning:", focused);
+          return focused;
+        },
+      };
+      
+      cameraAutofill.bindToInput(binding);
+      console.log("🔗 Binding complete");
+      
+      // If we already have a plate, try to autofill immediately
+      if (cameraAutofill.plate && !formState.plateNumber) {
+        console.log("🔗 Plate exists but form is empty, triggering immediate autofill");
+        setTimeout(() => {
+          if (cameraAutofill.plate) {
+            binding.setValue(cameraAutofill.plate);
+          }
+        }, 200);
+      }
+    } else {
+      console.log("⚠️ plateInputRef is null, cannot bind autofill");
     }
-    }, [plateInputRef, cameraAutofill, formState.plateNumber]);
+  }, [plateInputRef, cameraAutofill.plate, formState.plateNumber, cameraAutofill, onPlateChange]);
 
   // Auto-fill plate from camera
   useEffect(() => {
@@ -678,66 +828,6 @@ export const InSessionForm = forwardRef<
           <div className="grid grid-cols-2 gap-2 h-full">
             {/* Left Column */}
             <div className="flex flex-col gap-2 overflow-hidden">
-              {/* Plate Number */}
-              <Card className="p-3 flex-shrink-0">
-                <div className="flex items-center justify-between mb-2">
-                    <Label
-                      htmlFor="plateNumber"
-                      className="text-xs font-semibold text-gray-900"
-                    >
-                    Улсын дугаар *
-                  </Label>
-                  <div className="flex items-center gap-2">
-                    <Switch
-                      checked={cameraAutofill.isEnabled}
-                      onCheckedChange={cameraAutofill.toggleEnabled}
-                    />
-                    <span className="text-xs text-gray-600">Камера</span>
-                  </div>
-                </div>
-                <Input
-                  ref={setPlateInputRef}
-                  id="plateNumber"
-                  value={formState.plateNumber}
-                  onChange={(e) => {
-                      cameraAutofill.trackTyping();
-                      setFormState((prev) => ({
-                        ...prev,
-                        plateNumber: e.target.value,
-                      }));
-                      onPlateChange?.(e.target.value);
-                  }}
-                  onFocus={() => cameraAutofill.trackTyping()}
-                  className="h-10 text-sm font-mono font-semibold"
-                    placeholder="УБ1234"
-                  required
-                />
-                {(cameraAutofill.status === "polling" || cameraAutofill.status === "connected") && (
-                  <div className="mt-2 flex items-center gap-1.5 text-xs text-blue-600">
-                    <Camera className="h-3 w-3 animate-pulse" />
-                    <span>
-                      {cameraAutofill.status === "connected" 
-                        ? "Камера холбогдсон" 
-                        : "Камера холбогдож байна..."}
-                    </span>
-                  </div>
-                )}
-                {cameraAutofill.status === "error" && cameraAutofill.error && (
-                  <div className="mt-2 flex items-center gap-1.5 text-xs text-red-600">
-                    <Camera className="h-3 w-3" />
-                    <span>Камера алдаа: {cameraAutofill.error}</span>
-                  </div>
-                )}
-                {cameraAutofill.plate && cameraAutofill.lastSeenAt && (
-                  <p className="text-xs text-gray-500 mt-1.5">
-                      Сүүлд:{" "}
-                      <span className="font-mono font-semibold text-blue-600">
-                        {cameraAutofill.plate}
-                      </span>
-                  </p>
-                )}
-              </Card>
-
               {/* Basic Info */}
               <Card className="p-2.5 flex-shrink-0">
                 <div className="flex-1 min-h-0 flex flex-col gap-2">
@@ -993,18 +1083,71 @@ export const InSessionForm = forwardRef<
 
             {/* Right Column */}
             <div className="flex flex-col gap-2 overflow-hidden">
-              {/* Camera Section - On top of scale info */}
-              <div className="h-[200px] shrink-0">
-                <CameraPanel
-                  streamUrl={streamUrl}
-                  lastPlate={cameraAutofill.plate}
-                  lastPayload={cameraAutofill.rawPayload}
-                  status={cameraAutofill.status}
-                  onRefresh={() => {
-                    cameraAutofill.refresh();
+              {/* Plate Number */}
+              <Card className="p-3 flex-shrink-0">
+                <div className="flex items-center justify-between mb-2">
+                    <Label
+                      htmlFor="plateNumber"
+                      className="text-xs font-semibold text-gray-900"
+                    >
+                    Улсын дугаар *
+                  </Label>
+                  <div className="flex items-center gap-2">
+                    <Switch
+                      checked={cameraAutofill.isEnabled}
+                      onCheckedChange={(checked) => {
+                        console.log("🔄 Camera autofill toggle:", checked);
+                        cameraAutofill.toggleEnabled(checked);
+                      }}
+                    />
+                    <span className="text-xs text-gray-600">Камера</span>
+                    {cameraAutofill.status === "connected" && (
+                      <span className="text-[10px] text-green-600">● Connected</span>
+                    )}
+                    {cameraAutofill.status === "connecting" && (
+                      <span className="text-[10px] text-yellow-600">● Connecting...</span>
+                    )}
+                  </div>
+                </div>
+                <Input
+                  ref={setPlateInputRef}
+                  id="plateNumber"
+                  value={formState.plateNumber}
+                  onChange={(e) => {
+                      // Don't track typing if we're autofilling (prevents interference)
+                      if (!isAutofillingRef.current) {
+                        cameraAutofill.trackTyping();
+                      }
+                      setFormState((prev) => ({
+                        ...prev,
+                        plateNumber: e.target.value,
+                      }));
+                      onPlateChange?.(e.target.value);
                   }}
+                  onFocus={() => cameraAutofill.trackTyping()}
+                  className="h-10 text-sm font-mono font-semibold"
+                    placeholder="УБ1234"
+                  required
                 />
-              </div>
+                {(cameraAutofill.status === "polling" || cameraAutofill.status === "connected" || cameraAutofill.status === "connecting") && (
+                  <div className="mt-2 flex items-center gap-1.5 text-xs text-blue-600">
+                    <Camera className="h-3 w-3 animate-pulse" />
+                    <span>
+                      {cameraAutofill.status === "connected" 
+                        ? "Камера холбогдсон" 
+                        : cameraAutofill.status === "connecting"
+                        ? "Камера холбогдож байна..."
+                        : "Камера холбогдож байна..."}
+                    </span>
+                  </div>
+                )}
+                {cameraAutofill.status === "error" && cameraAutofill.error && (
+                  <div className="mt-2 flex items-center gap-1.5 text-xs text-red-600">
+                    <Camera className="h-3 w-3" />
+                    <span>Камера алдаа: {cameraAutofill.error}</span>
+                  </div>
+                )}
+              </Card>
 
               {/* Weight Section - Reduced height */}
               <Card className="p-3 border-2 border-green-200 bg-green-50/30 shrink-0 flex flex-col">

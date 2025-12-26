@@ -10,6 +10,20 @@ export async function GET() {
   const streamPath = process.env.CAMERA_STREAM_PATH || "/video.mjpeg";
   const hasAuth = !!process.env.CAMERA_AUTH;
   const pollMs = process.env.CAMERA_POLL_MS;
+  
+  // Allow override via NEXT_PUBLIC env var (for direct camera access)
+  const publicStreamUrl = process.env.NEXT_PUBLIC_CAMERA_STREAM_URL;
+  
+  // Build stream URL - prefer public env var, then build from baseUrl
+  let streamUrl = null;
+  if (publicStreamUrl) {
+    streamUrl = publicStreamUrl;
+  } else if (baseUrl) {
+    streamUrl = `${baseUrl}${streamPath}`;
+  }
+  
+  // If no stream URL configured, return null (video won't show)
+  // User needs to set up RTSP proxy separately or configure NEXT_PUBLIC_CAMERA_STREAM_URL
 
   return NextResponse.json({
     configured: !!baseUrl,
@@ -19,6 +33,6 @@ export async function GET() {
     hasAuth,
     pollMs: pollMs ? parseInt(pollMs, 10) : 500,
     fullUrl: baseUrl && eventPath ? `${baseUrl}${eventPath}` : null,
-    streamUrl: baseUrl ? `${baseUrl}${streamPath}` : null,
+    streamUrl: streamUrl,
   });
 }

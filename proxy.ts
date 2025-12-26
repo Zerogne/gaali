@@ -22,6 +22,8 @@ export default async function proxy(request: Request) {
     pathname.startsWith('/api/third-party/debug') || // Allow debug endpoint for troubleshooting
     pathname.startsWith('/api/v1/api/service') || // Allow v1/api/service endpoint for other sites (etos.ojus compatibility)
     pathname.startsWith('/api/lpr/latest') || // Allow LPR latest endpoint for frontend polling
+    pathname.startsWith('/api/lpr/ingest') || // Allow LPR ingest endpoint for bridge service
+    pathname.startsWith('/api/lpr/camera-direct') || // Allow direct camera push endpoint
     pathname.match(/\.(ico|png|jpg|jpeg|svg|gif|webp|css|js|woff|woff2|ttf|eot)$/)
   ) {
     return NextResponse.next()

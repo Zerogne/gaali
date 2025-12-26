@@ -4,8 +4,10 @@ import dotenv from "dotenv";
 dotenv.config();
 
 // Environment schema
+// Note: CAMERA_BASE_URL is optional here because this module is imported even in push mode
+// It will be validated when startPollingService() is actually called
 const envSchema = z.object({
-  CAMERA_BASE_URL: z.string().url(),
+  CAMERA_BASE_URL: z.string().url().optional(),
   CAMERA_RESULT_ID: z.coerce.number().default(6),
   POLL_MS: z.coerce.number().positive().default(700),
   CLOUD_BASE_URL: z.string().url(),
@@ -18,6 +20,9 @@ const envSchema = z.object({
 });
 
 const env = envSchema.parse(process.env);
+
+// This will be set when startPollingService() is called
+let cameraBaseUrl: string | undefined = env.CAMERA_BASE_URL;
 
 interface CameraResponse {
   PlateResult?: {
@@ -60,7 +65,8 @@ async function tryFetchSnapshotBase64(
 
   try {
     // Construct full URL
-    const imageUrl = `${env.CAMERA_BASE_URL}${imagePath}`;
+    if (!cameraBaseUrl) throw new Error("CAMERA_BASE_URL not set");
+    const imageUrl = `${cameraBaseUrl}${imagePath}`;
     const response = await fetch(imageUrl, {
       signal: AbortSignal.timeout(5000),
     });
@@ -95,7 +101,8 @@ async function loginToCamera(): Promise<string | null> {
     }
 
     // First, try to GET the login page to establish a session
-    const loginPageUrl = `${env.CAMERA_BASE_URL}/login.htm`;
+    if (!cameraBaseUrl) throw new Error("CAMERA_BASE_URL not set");
+    const loginPageUrl = `${cameraBaseUrl}/login.htm`;
     const getResponse = await fetch(loginPageUrl, {
       method: "GET",
       signal: AbortSignal.timeout(5000),
@@ -171,9 +178,10 @@ async function pollCamera(): Promise<DedupKey | null> {
     }
 
     // Build URL with query parameters
+    if (!cameraBaseUrl) throw new Error("CAMERA_BASE_URL not set");
     const queryObj = JSON.stringify({ result_id: env.CAMERA_RESULT_ID });
     const timestamp = Date.now();
-    const url = `${env.CAMERA_BASE_URL}/ivs_result.php?${encodeURIComponent(queryObj)}&_=${timestamp}`;
+    const url = `${cameraBaseUrl}/ivs_result.php?${encodeURIComponent(queryObj)}&_=${timestamp}`;
 
     // Prepare headers
     const headers: Record<string, string> = {
@@ -295,7 +303,7 @@ async function pushToCloud(data: DedupKey): Promise<boolean> {
       const payload: any = {
         plateNumber: data.plateNumber,
         recognizedAt: data.recognizedAt,
-        cameraIp: new URL(env.CAMERA_BASE_URL).hostname,
+        cameraIp: cameraBaseUrl ? new URL(cameraBaseUrl).hostname : "unknown",
         imagePath: data.imagePath || null,
       };
 
@@ -363,8 +371,17 @@ async function pushToCloud(data: DedupKey): Promise<boolean> {
  * Main polling loop
  */
 export function startPollingService(): void {
+  // Validate required environment variables
+  if (!env.CAMERA_BASE_URL) {
+    console.error("❌ CAMERA_BASE_URL required for polling mode");
+    process.exit(1);
+  }
+
+  // At this point, CAMERA_BASE_URL is guaranteed to be defined
+  cameraBaseUrl = env.CAMERA_BASE_URL!;
+
   console.log("🚀 Camera Polling Service Starting...");
-  console.log(`📷 Camera: ${env.CAMERA_BASE_URL}`);
+  console.log(`📷 Camera: ${cameraBaseUrl}`);
   console.log(`☁️  Cloud: ${env.CLOUD_BASE_URL}`);
   console.log(`⏱️  Poll interval: ${env.POLL_MS}ms`);
   console.log("");

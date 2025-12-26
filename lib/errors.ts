@@ -12,7 +12,10 @@ export class AppError extends Error {
   ) {
     super(message)
     this.name = 'AppError'
-    Error.captureStackTrace(this, this.constructor)
+    // Only capture stack trace in Node.js environment
+    if (typeof Error.captureStackTrace === 'function') {
+      Error.captureStackTrace(this, this.constructor)
+    }
   }
 }
 

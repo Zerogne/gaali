@@ -63,11 +63,28 @@ export function CameraPanel({
       <div className="flex-1 min-h-0 p-2">
         <div className="h-full bg-gray-900 rounded-lg overflow-hidden flex items-center justify-center border border-gray-200">
           {streamUrl ? (
-            streamUrl.endsWith(".mjpeg") || streamUrl.includes("mjpeg") ? (
+            streamUrl.endsWith(".mjpeg") || streamUrl.includes("mjpeg") || streamUrl.includes("stream") ? (
               <img
                 src={streamUrl}
                 alt="Camera stream"
                 className="w-full h-full object-contain"
+                onError={(e) => {
+                  console.error("Failed to load camera stream:", streamUrl);
+                  // Fallback: try iframe for RTSP streams
+                  if (streamUrl.includes("rtsp://")) {
+                    const iframe = document.createElement("iframe");
+                    iframe.src = streamUrl.replace("rtsp://", "http://").replace(":8557", "");
+                    iframe.style.width = "100%";
+                    iframe.style.height = "100%";
+                    e.currentTarget.parentElement?.appendChild(iframe);
+                  }
+                }}
+              />
+            ) : streamUrl.includes("iframe") || streamUrl.includes(".htm") ? (
+              <iframe
+                src={streamUrl}
+                className="w-full h-full border-0"
+                allow="autoplay; fullscreen"
               />
             ) : (
               <video
@@ -75,6 +92,7 @@ export function CameraPanel({
                 autoPlay
                 muted
                 loop
+                playsInline
                 className="w-full h-full object-contain"
               />
             )

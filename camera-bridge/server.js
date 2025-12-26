@@ -1,0 +1,170 @@
+const express = require("express");
+const { WebSocketServer } = require("ws");
+const app = express();
+
+app.use(express.json({ limit: "10mb" }));
+app.use(express.urlencoded({ extended: true }));
+
+// WebSocket clients storage
+const wsClients = new Set();
+
+// Broadcast plate event to all connected WebSocket clients
+function broadcastPlateEvent(plateNumber) {
+  const message = JSON.stringify({
+    type: "plate_event",
+    plate: plateNumber,
+    timestamp: new Date().toISOString(),
+  });
+
+  console.log(`📡📡📡 Broadcasting plate event to ${wsClients.size} WebSocket client(s): ${plateNumber}`);
+  console.log(`📡 Message to send:`, message);
+
+  if (wsClients.size === 0) {
+    console.log(`⚠️⚠️⚠️ NO WEBSOCKET CLIENTS CONNECTED! Frontend is not connected!`);
+    console.log(`⚠️ Make sure the frontend WebSocket is connecting to ws://localhost:3001`);
+  }
+
+  let sentCount = 0;
+  let errorCount = 0;
+  wsClients.forEach((client, index) => {
+    console.log(`📡 Checking client ${index + 1}, readyState: ${client.readyState} (1 = OPEN)`);
+    if (client.readyState === 1) { // WebSocket.OPEN
+      try {
+        client.send(message);
+        sentCount++;
+        console.log(`✅✅✅ Sent plate event to client ${index + 1}`);
+      } catch (error) {
+        console.error(`❌ Error sending WebSocket message to client ${index + 1}:`, error);
+        wsClients.delete(client);
+        errorCount++;
+      }
+    } else {
+      console.log(`⚠️ Client ${index + 1} is not OPEN (readyState: ${client.readyState}), removing`);
+      wsClients.delete(client);
+    }
+  });
+
+  if (sentCount > 0) {
+    console.log(`✅✅✅ Successfully sent plate event to ${sentCount} client(s)`);
+  } else {
+    console.log(`❌❌❌ FAILED to send plate event to any clients!`);
+    console.log(`❌ Total clients: ${wsClients.size}, Sent: ${sentCount}, Errors: ${errorCount}`);
+  }
+}
+
+// HTTP POST endpoint - receives plate data from camera
+app.post("/plate", (req, res) => {
+  const alarm = req.body?.AlarmInfoPlate;
+  const plateResultRaw = alarm?.result?.PlateResult;
+
+  // PlateResult sometimes comes as an object, sometimes an array
+  const plateResult = Array.isArray(plateResultRaw)
+    ? plateResultRaw[0]
+    : plateResultRaw;
+
+  const plate = plateResult?.license || plateResult?.License || null;
+
+  if (plate) {
+    console.log("✅ Plate received:", plate);
+    
+    // Broadcast to WebSocket clients immediately
+    broadcastPlateEvent(plate);
+  } else {
+    console.log("⚠️ No plate detected in request");
+  }
+
+  // Always respond OK to camera (like the working version)
+  res.send("OK");
+});
+
+// Serve static files (for the HTML test page)
+app.use(express.static("public"));
+
+// Start HTTP server on port 3002 (3000 is used by Next.js, 3001 is WebSocket)
+// Camera should be configured to send POST requests to http://YOUR_IP:3002/plate
+const HTTP_PORT = 3002;
+const server = app.listen(HTTP_PORT, "0.0.0.0", () => {
+  console.log("🚀 HTTP Server running on http://0.0.0.0:" + HTTP_PORT);
+  console.log("📡 Ready to receive camera pushes at http://0.0.0.0:" + HTTP_PORT + "/plate");
+  console.log("💡 Make sure your camera is configured to send POST requests to this URL");
+});
+
+// Create WebSocket server on port 3001 (same as test2)
+const wss = new WebSocketServer({ port: 3001, host: "0.0.0.0" });
+
+wss.on("connection", (ws, req) => {
+  const clientIp = req.socket?.remoteAddress || "unknown";
+  const clientUrl = req.url || "unknown";
+  console.log(`🔌🔌🔌 WebSocket client CONNECTED from ${clientIp} (total: ${wsClients.size + 1})`);
+  console.log(`🔌 Client URL: ${clientUrl}`);
+  console.log(`🔌 Client headers:`, JSON.stringify(req.headers, null, 2));
+  wsClients.add(ws);
+  console.log(`🔌 Total connected clients: ${wsClients.size}`);
+
+  // Send welcome message
+  try {
+    const welcomeMsg = JSON.stringify({
+      type: "connected",
+      message: "Connected to plate feed",
+    });
+    ws.send(welcomeMsg);
+    console.log(`✅ Welcome message sent to client from ${clientIp}`);
+    console.log(`✅ Welcome message content:`, welcomeMsg);
+  } catch (error) {
+    console.error("❌ Error sending welcome message:", error);
+  }
+
+  ws.on("close", (code, reason) => {
+    wsClients.delete(ws);
+    console.log(`🔌🔌🔌 WebSocket client DISCONNECTED from ${clientIp}`);
+    console.log(`🔌 Disconnect code: ${code}, reason: ${reason}`);
+    console.log(`🔌 Remaining clients: ${wsClients.size}`);
+  });
+
+  ws.on("error", (error) => {
+    console.error(`❌❌❌ WebSocket client ERROR from ${clientIp}:`, error);
+    wsClients.delete(ws);
+    console.log(`🔌 Remaining clients after error: ${wsClients.size}`);
+  });
+
+  ws.on("message", (message) => {
+    console.log(`📨📨📨 Received message from ${clientIp}:`, message.toString());
+    try {
+      const parsed = JSON.parse(message.toString());
+      console.log(`📨 Parsed message:`, parsed);
+    } catch (e) {
+      console.log(`📨 Message is not JSON (that's okay)`);
+    }
+  });
+});
+
+wss.on("listening", () => {
+  console.log("🔌 WebSocket server listening on port 3001");
+});
+
+// Handle graceful shutdown
+process.on("SIGINT", () => {
+  console.log("\n👋 Shutting down...");
+  wsClients.forEach((client) => {
+    if (client.readyState === 1) {
+      client.close();
+    }
+  });
+  wss.close();
+  server.close(() => {
+    process.exit(0);
+  });
+});
+
+process.on("SIGTERM", () => {
+  console.log("\n👋 Shutting down...");
+  wsClients.forEach((client) => {
+    if (client.readyState === 1) {
+      client.close();
+    }
+  });
+  wss.close();
+  server.close(() => {
+    process.exit(0);
+  });
+});
