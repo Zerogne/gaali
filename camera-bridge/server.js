@@ -251,7 +251,8 @@ wss.on("connection", (ws, req) => {
 });
 
 wss.on("listening", () => {
-  console.log(`🔌 WebSocket server listening on port ${WS_PORT}`);
+  const wsPort = process.env.PORT ? process.env.PORT : (process.env.WS_PORT || 3001);
+  console.log(`🔌 WebSocket server listening on ${process.env.PORT ? 'same port as HTTP (' + process.env.PORT + ')' : `port ${wsPort}`}`);
 });
 
 // Handle graceful shutdown
