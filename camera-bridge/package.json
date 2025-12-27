@@ -7,7 +7,7 @@
   "scripts": {
     "dev": "node server.js",
     "start": "node server.js",
-    "build": "tsc",
+    "build": "echo 'No build needed, using server.js directly'",
     "dev-old": "tsx src/index.ts"
   },
   "dependencies": {
