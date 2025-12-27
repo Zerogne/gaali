@@ -94,10 +94,10 @@ export function useCameraBridgeWebSocket(
     console.log("🔍 [useCameraBridgeWebSocket] Environment variable:", process.env.NEXT_PUBLIC_CAMERA_BRIDGE_WS_URL);
     console.log("🔍 [useCameraBridgeWebSocket] Options passed:", options);
     
-    // CRITICAL: Warn if trying to connect to wrong port
-    if (wsUrl.includes(":3002") || wsUrl.includes(":3003")) {
-      console.error("❌❌❌ WRONG PORT! Server is on port 3001, but trying to connect to:", wsUrl);
-      console.error("❌ Fix: Update .env.local to use ws://localhost:3001 or remove the env var");
+    // Warn if environment variable is not set in production
+    if (!process.env.NEXT_PUBLIC_CAMERA_BRIDGE_WS_URL && window.location.hostname !== "localhost" && window.location.hostname !== "127.0.0.1") {
+      console.warn("⚠️⚠️⚠️ NEXT_PUBLIC_CAMERA_BRIDGE_WS_URL not set! Using localhost:3001 (will fail in production)");
+      console.warn("⚠️ Set NEXT_PUBLIC_CAMERA_BRIDGE_WS_URL in Vercel environment variables to your Render service URL");
     }
   }
 
