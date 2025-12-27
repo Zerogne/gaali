@@ -196,9 +196,12 @@ const server = app.listen(HTTP_PORT, "0.0.0.0", () => {
   console.log("💡 Make sure your camera is configured to send POST requests to this URL");
 });
 
-// Create WebSocket server on port 3001 (same as test2)
-const WS_PORT = process.env.WS_PORT || 3001;
-const wss = new WebSocketServer({ port: WS_PORT, host: "0.0.0.0" });
+// Create WebSocket server
+// On Render (when PORT is set), attach to same HTTP server (Render only exposes one port)
+// Otherwise, use separate port 3001 for local development
+const wss = process.env.PORT 
+  ? new WebSocketServer({ server: server }) // Use same server on Render
+  : new WebSocketServer({ port: process.env.WS_PORT || 3001, host: "0.0.0.0" }); // Separate port for local
 
 wss.on("connection", (ws, req) => {
   const clientIp = req.socket?.remoteAddress || "unknown";
