@@ -62,6 +62,8 @@ interface OutSessionFormProps {
   cameraAutofill?: ReturnType<typeof useLprPlateAutofill>;
   editLog?: TruckLog | null;
   editLogId?: string | null;
+  outTime?: string;
+  onOutTimeChange?: (time: string) => void;
 }
 
 export interface OutSessionFormHandle {
@@ -85,6 +87,8 @@ export const OutSessionForm = forwardRef<
       cameraAutofill: externalCameraAutofill,
       editLog,
       editLogId,
+      outTime: externalOutTime,
+      onOutTimeChange,
     },
     ref
   ) => {
@@ -132,7 +136,7 @@ export const OutSessionForm = forwardRef<
       destination: "",
       senderOrganizationId: "",
       receiverOrganizationId: "",
-      outTime: new Date().toISOString().slice(0, 16),
+      outTime: externalOutTime || new Date().toISOString().slice(0, 16),
       outWeightKg: null,
       netWeightKg: null,
       sealNumber: "",
@@ -141,6 +145,13 @@ export const OutSessionForm = forwardRef<
       notes: "",
       inSessionId: undefined,
     });
+
+    // Sync external outTime with form state
+    useEffect(() => {
+      if (externalOutTime) {
+        setFormState((prev) => ({ ...prev, outTime: externalOutTime }));
+      }
+    }, [externalOutTime]);
 
     // Populate form when editing
     useEffect(() => {
@@ -175,9 +186,14 @@ export const OutSessionForm = forwardRef<
         );
 
         // Format date for datetime-local input
-        const outTime = editLog.createdAt
+        const outTime = editLog.createdAt 
           ? new Date(editLog.createdAt).toISOString().slice(0, 16)
           : new Date().toISOString().slice(0, 16);
+
+        // Update external outTime if handler is provided
+        if (onOutTimeChange) {
+          onOutTimeChange(outTime);
+        }
 
         setFormState({
           plateNumber: editLog.plate || "",
@@ -798,6 +814,9 @@ export const OutSessionForm = forwardRef<
     const performSave = async (): Promise<boolean> => {
       setIsSaving(true);
       try {
+        // Use external outTime if provided, otherwise use form state
+        const currentOutTime = externalOutTime || formState.outTime;
+        
         // If editing, update the existing log
         if (editLogId && editLog) {
           const productName = formState.productId
@@ -890,9 +909,11 @@ export const OutSessionForm = forwardRef<
         }
 
         // Otherwise, create a new session
-        // Update outTime to current time before saving
-        const currentTime = getCurrentDateTime();
-        setFormState((prev) => ({ ...prev, outTime: currentTime }));
+        // Use external outTime if provided, otherwise use current time
+        const saveTime = currentOutTime || getCurrentDateTime();
+        if (onOutTimeChange) {
+          onOutTimeChange(saveTime);
+        }
 
         const requestData = {
           direction: "OUT",
@@ -914,7 +935,7 @@ export const OutSessionForm = forwardRef<
           inSessionId: formState.inSessionId
             ? formState.inSessionId
             : undefined,
-          outTime: currentTime,
+          outTime: saveTime,
           sealNumber: formState.sealNumber.trim() || undefined,
           hasTrailer: formState.hasTrailer || undefined,
           trailerNumber: formState.trailerNumber.trim() || undefined,
@@ -1257,9 +1278,11 @@ export const OutSessionForm = forwardRef<
         return;
       }
 
-      // Update outTime to current time before saving
-      const currentTime = getCurrentDateTime();
-      setFormState((prev) => ({ ...prev, outTime: currentTime }));
+      // Use external outTime if provided, otherwise use current time
+      const currentTime = externalOutTime || getCurrentDateTime();
+      if (onOutTimeChange) {
+        onOutTimeChange(currentTime);
+      }
 
       await performSave();
     };
@@ -1268,30 +1291,34 @@ export const OutSessionForm = forwardRef<
       <div className="h-full flex flex-col overflow-hidden">
         <form
           onSubmit={handleSubmit}
-          className="h-full flex flex-col overflow-hidden p-3"
+          className="h-full flex flex-col overflow-hidden"
         >
-          {/* Form Content - No Scroll, Grid Layout */}
-          <div className="flex-1 min-h-0 overflow-hidden">
-            <div className="grid grid-cols-2 gap-1.5 h-full">
-              {/* Left Column */}
-              <div className="flex flex-col gap-2 overflow-hidden min-h-0">
-                {/* Basic Info */}
-                <Card className="p-2 flex-1 min-h-0 flex flex-col">
-                  <div className="flex flex-col gap-1.5 flex-1 min-h-0">
-                    {/* Plate Number - First Input */}
-                    <div>
+          {/* Form Content - Single Section Layout */}
+          <div className="flex-1 min-h-0 overflow-auto flex justify-center p-4">
+            <Card className="p-4 w-full max-w-6xl">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-2">
+                {/* Plate Number */}
+                <div className="flex flex-col">
+                  <div className="mb-1.5 flex items-center">
                       <Label
                         htmlFor="plateNumber"
-                        className="text-xs font-medium text-gray-700 mb-1 block"
+                      className="text-base font-medium text-gray-700"
                       >
                         Улсын дугаар *
                       </Label>
-                      {/* Connection Status - Above Input */}
+                  </div>
+                  {/* Connection Status - Helper Text Area */}
+                  {(cameraAutofill.status === "polling" ||
+                    cameraAutofill.status === "connected" ||
+                    cameraAutofill.status === "connecting" ||
+                    (cameraAutofill.status === "error" &&
+                      cameraAutofill.error)) && (
+                    <div className="mb-1.5">
                       {(cameraAutofill.status === "polling" ||
                         cameraAutofill.status === "connected" ||
                         cameraAutofill.status === "connecting") && (
-                        <div className="flex items-center gap-1.5 text-xs text-blue-600 mb-1 whitespace-nowrap">
-                          <Camera className="h-3 w-3 animate-pulse shrink-0" />
+                        <div className="flex items-center gap-1.5 text-base text-blue-600 whitespace-nowrap">
+                          <Camera className="h-5 w-5 animate-pulse shrink-0" />
                           <span className="whitespace-nowrap">
                             {cameraAutofill.status === "connected"
                               ? "Камера холбогдсон"
@@ -1303,13 +1330,16 @@ export const OutSessionForm = forwardRef<
                       )}
                       {cameraAutofill.status === "error" &&
                         cameraAutofill.error && (
-                          <div className="flex items-center gap-1.5 text-xs text-red-600 mb-1 whitespace-nowrap">
-                            <Camera className="h-3 w-3 shrink-0" />
+                          <div className="flex items-center gap-1.5 text-base text-red-600 whitespace-nowrap">
+                            <Camera className="h-5 w-5 shrink-0" />
                             <span className="whitespace-nowrap">
                               Камера алдаа: {cameraAutofill.error}
                             </span>
                           </div>
                         )}
+                    </div>
+                  )}
+                  <div className="h-12">
                       <Input
                         ref={setPlateInputRef}
                         id="plateNumber"
@@ -1326,13 +1356,54 @@ export const OutSessionForm = forwardRef<
                           onPlateChange?.(e.target.value);
                         }}
                         onFocus={() => cameraAutofill.trackTyping()}
-                        className="h-9 text-sm font-mono font-semibold w-full"
+                      className="h-12 text-lg font-mono font-semibold w-full"
                         placeholder="УБ1234"
                         required
                       />
                     </div>
-                    {/* Trailer Checkbox */}
-                    <div className="flex items-center gap-2">
+                </div>
+
+                {/* Out Weight Input */}
+                <div className="flex flex-col">
+                  <div className="mb-1.5 flex items-center">
+                    <Label
+                      htmlFor="outWeightKg"
+                      className="text-base font-medium text-gray-700"
+                    >
+                      Гарах жин (кг) *
+                    </Label>
+                  </div>
+                  <div className="h-12">
+                    <Input
+                      id="outWeightKg"
+                      type="number"
+                      value={formState.outWeightKg ?? ""}
+                      onChange={(e) => {
+                        const value =
+                          e.target.value === ""
+                            ? null
+                            : parseFloat(e.target.value);
+                        setFormState((prev) => ({
+                          ...prev,
+                          outWeightKg: value,
+                        }));
+                      }}
+                      className="h-12 text-lg w-full"
+                      placeholder="Жин оруулах (кг)"
+                      required
+                    />
+                  </div>
+                </div>
+
+                {/* Trailer Checkbox and Input */}
+                <div className="flex flex-col">
+                  <div className="mb-1.5 flex items-center">
+                    <Label className="text-sm font-medium text-gray-700">
+                      Чиргүүл
+                    </Label>
+                  </div>
+                  <div className="h-12 flex items-center gap-2">
+                    <label className="flex items-center gap-2 shrink-0 cursor-pointer">
                       <Checkbox
                         id="hasTrailer"
                         checked={formState.hasTrailer}
@@ -1348,12 +1419,10 @@ export const OutSessionForm = forwardRef<
                           }));
                         }}
                       />
-                      <Label
-                        htmlFor="hasTrailer"
-                        className="text-xs font-medium text-gray-700 cursor-pointer"
-                      >
+                      <span className="text-sm font-medium text-gray-700 leading-none">
                         Чиргүүлтэй
-                      </Label>
+                      </span>
+                    </label>
                       {formState.hasTrailer && (
                         <Input
                           id="trailerNumber"
@@ -1364,45 +1433,24 @@ export const OutSessionForm = forwardRef<
                               trailerNumber: e.target.value,
                             }))
                           }
-                          className="h-9 text-xs font-mono w-full"
+                        className="h-12 text-lg font-mono flex-1"
                           placeholder="УБ1234"
                         />
                       )}
                     </div>
-                    {/* Weight Input */}
-                    <div>
-                      <Label
-                        htmlFor="outWeightKg"
-                        className="text-xs font-medium text-gray-700 mb-1 block"
-                      >
-                        Гарах жин (кг) *
-                      </Label>
-                      <Input
-                        id="outWeightKg"
-                        type="number"
-                        value={formState.outWeightKg ?? ""}
-                        onChange={(e) => {
-                          const value =
-                            e.target.value === ""
-                              ? null
-                              : parseFloat(e.target.value);
-                          setFormState((prev) => ({
-                            ...prev,
-                            outWeightKg: value,
-                          }));
-                        }}
-                        className="h-9 text-sm w-full"
-                        placeholder="Жин оруулах (кг)"
-                        required
-                      />
                     </div>
-                    <div>
+
+                {/* Net Weight Input */}
+                <div className="flex flex-col">
+                  <div className="mb-1.5 flex items-center">
                       <Label
                         htmlFor="netWeightKg"
-                        className="text-xs font-medium text-gray-700 mb-1 block"
+                      className="text-base font-medium text-gray-700"
                       >
                         Цэвэр жин (кг) *
                       </Label>
+                  </div>
+                  <div className="h-12">
                       <Input
                         id="netWeightKg"
                         type="number"
@@ -1430,18 +1478,49 @@ export const OutSessionForm = forwardRef<
                             netWeightKg: newValue,
                           }));
                         }}
-                        className="h-9 text-sm w-full"
+                      className="h-12 text-lg w-full"
                         placeholder="Цэвэр жин (кг)"
                       />
                     </div>
-                    <div>
+                </div>
+
+                {/* Seal Number */}
+                <div className="flex flex-col">
+                  <div className="mb-1.5 flex items-center">
+                    <Label
+                      htmlFor="sealNumber"
+                      className="text-base font-medium text-gray-700"
+                    >
+                      Лацны дугаар
+                    </Label>
+                  </div>
+                  <div className="h-12">
+                    <Input
+                      id="sealNumber"
+                      value={formState.sealNumber}
+                      onChange={(e) =>
+                        setFormState((prev) => ({
+                          ...prev,
+                          sealNumber: e.target.value,
+                        }))
+                      }
+                      className="h-12 text-lg w-full"
+                      placeholder="Лацны дугаар оруулах"
+                    />
+                  </div>
+                </div>
+
+                {/* Driver */}
+                <div className="flex flex-col">
+                  <div className="mb-1.5 flex items-center">
                       <Label
                         htmlFor="driverId"
-                        className="text-xs font-medium text-gray-700 mb-1 block"
+                      className="text-base font-medium text-gray-700"
                       >
                         Жолооч *
                       </Label>
-                      <div className="flex items-center gap-2">
+                  </div>
+                  <div className="h-12 flex items-center gap-2">
                         <div className="flex-1">
                           <FilterableSelect
                             options={driverOptions}
@@ -1458,14 +1537,13 @@ export const OutSessionForm = forwardRef<
                             }}
                             disabled={isLoadingDrivers}
                             placeholder={
-                              isLoadingDrivers
-                                ? "Уншиж байна..."
-                                : "Жолооч сонгох"
+                          isLoadingDrivers ? "Уншиж байна..." : "Жолооч сонгох"
                             }
                             searchPlaceholder="Жолооч хайх..."
-                            className="h-9"
+                        className="h-12"
                           />
                         </div>
+                    <div className="h-12 flex items-center">
                         <DriverManager
                           drivers={drivers}
                           onDriverAdded={handleDriverAdded}
@@ -1473,13 +1551,19 @@ export const OutSessionForm = forwardRef<
                         />
                       </div>
                     </div>
-                    <div>
+                </div>
+
+                {/* Transport Company */}
+                <div className="flex flex-col">
+                  <div className="mb-1.5 flex items-center">
                       <Label
                         htmlFor="transporterCompanyId"
-                        className="text-xs font-medium text-gray-700 mb-1 block"
+                      className="text-base font-medium text-gray-700"
                       >
                         Тээврийн компани *
                       </Label>
+                  </div>
+                  <div className="h-12">
                       <FilterableSelect
                         options={transportCompanyOptions}
                         value={formState.transporterCompanyId}
@@ -1498,16 +1582,56 @@ export const OutSessionForm = forwardRef<
                         searchPlaceholder="Тээврийн компани хайх..."
                         onCreateNew={handleCreateTransportCompany}
                         createNewLabel="+ Нэмэх ..."
-                        className="h-9"
+                      className="h-12"
                       />
                     </div>
-                    <div>
+                </div>
+
+                {/* Product */}
+                <div className="flex flex-col">
+                  <div className="mb-1.5 flex items-center">
+                    <Label
+                      htmlFor="productId"
+                      className="text-base font-medium text-gray-700"
+                    >
+                      Бүтээгдэхүүн *
+                    </Label>
+                  </div>
+                  <div className="h-12">
+                    <FilterableSelect
+                      options={productOptions}
+                      value={formState.productId}
+                      onValueChange={(value) => {
+                        setFormState((prev) => ({
+                          ...prev,
+                          productId: value,
+                        }));
+                      }}
+                      disabled={isLoadingProducts}
+                      placeholder={
+                        isLoadingProducts
+                          ? "Уншиж байна..."
+                          : "Бүтээгдэхүүн сонгох"
+                      }
+                      searchPlaceholder="Бүтээгдэхүүн хайх..."
+                      onCreateNew={handleCreateProduct}
+                      createNewLabel="+ Нэмэх ..."
+                      className="h-12"
+                    />
+                  </div>
+                </div>
+
+                {/* Origin */}
+                <div className="flex flex-col">
+                  <div className="mb-1.5 flex items-center">
                       <Label
                         htmlFor="origin"
-                        className="text-xs font-medium text-gray-700 mb-1 block"
+                      className="text-base font-medium text-gray-700"
                       >
                         Хаанаас
                       </Label>
+                  </div>
+                  <div className="h-12">
                       <Input
                         id="origin"
                         value={formState.origin}
@@ -1517,17 +1641,23 @@ export const OutSessionForm = forwardRef<
                             origin: e.target.value,
                           }))
                         }
-                        className="h-9 text-sm w-full"
+                      className="h-12 text-lg w-full"
                         placeholder="Гарах газар"
                       />
                     </div>
-                    <div>
+                </div>
+
+                {/* Destination */}
+                <div className="flex flex-col">
+                  <div className="mb-1.5 flex items-center">
                       <Label
                         htmlFor="destination"
-                        className="text-xs font-medium text-gray-700 mb-1 block"
+                      className="text-base font-medium text-gray-700"
                       >
                         Хаашаа
                       </Label>
+                  </div>
+                  <div className="h-12">
                       <Input
                         id="destination"
                         value={formState.destination}
@@ -1537,45 +1667,23 @@ export const OutSessionForm = forwardRef<
                             destination: e.target.value,
                           }))
                         }
-                        className="h-9 text-sm w-full"
+                      className="h-12 text-lg w-full"
                         placeholder="Очих газар"
                       />
                     </div>
-                    <div>
-                      <Label
-                        htmlFor="productId"
-                        className="text-xs font-medium text-gray-700 mb-1 block"
-                      >
-                        Бүтээгдэхүүн *
-                      </Label>
-                      <FilterableSelect
-                        options={productOptions}
-                        value={formState.productId}
-                        onValueChange={(value) => {
-                          setFormState((prev) => ({
-                            ...prev,
-                            productId: value,
-                          }));
-                        }}
-                        disabled={isLoadingProducts}
-                        placeholder={
-                          isLoadingProducts
-                            ? "Уншиж байна..."
-                            : "Бүтээгдэхүүн сонгох"
-                        }
-                        searchPlaceholder="Бүтээгдэхүүн хайх..."
-                        onCreateNew={handleCreateProduct}
-                        createNewLabel="+ Нэмэх ..."
-                        className="h-9"
-                      />
                     </div>
-                    <div>
+
+                {/* Sender Organization */}
+                <div className="flex flex-col">
+                  <div className="mb-1.5 flex items-center">
                       <Label
                         htmlFor="senderOrganizationId"
-                        className="text-xs font-medium text-gray-700 mb-1 block"
+                      className="text-base font-medium text-gray-700"
                       >
                         Илгээч байгууллага
                       </Label>
+                  </div>
+                  <div className="h-12">
                       <FilterableSelect
                         options={organizationOptions}
                         value={formState.senderOrganizationId}
@@ -1594,16 +1702,22 @@ export const OutSessionForm = forwardRef<
                         searchPlaceholder="Илгээч байгууллага хайх..."
                         onCreateNew={handleCreateOrganization}
                         createNewLabel="+ Нэмэх ..."
-                        className="h-9"
+                      className="h-12"
                       />
                     </div>
-                    <div>
+                </div>
+
+                {/* Receiver Organization */}
+                <div className="flex flex-col">
+                  <div className="mb-1.5 flex items-center">
                       <Label
                         htmlFor="receiverOrganizationId"
-                        className="text-xs font-medium text-gray-700 mb-1 block"
+                      className="text-base font-medium text-gray-700"
                       >
                         Хүлээн авагч байгууллага
                       </Label>
+                  </div>
+                  <div className="h-12">
                       <FilterableSelect
                         options={organizationOptions}
                         value={formState.receiverOrganizationId}
@@ -1622,80 +1736,22 @@ export const OutSessionForm = forwardRef<
                         searchPlaceholder="Хүлээн авагч байгууллага хайх..."
                         onCreateNew={handleCreateOrganization}
                         createNewLabel="+ Нэмэх ..."
-                        className="h-9"
+                      className="h-12"
                       />
                     </div>
-                  </div>
-                </Card>
               </div>
 
-              {/* Right Column */}
-              <div className="flex flex-col gap-2 overflow-hidden min-h-0">
-                {/* Seal Number */}
-                <Card className="p-2.5 shrink-0">
-                  <div>
-                    <Label
-                      htmlFor="sealNumber"
-                      className="text-xs font-medium text-gray-700 mb-1 block"
-                    >
-                      Лацны дугаар
-                    </Label>
-                    <Input
-                      id="sealNumber"
-                      value={formState.sealNumber}
-                      onChange={(e) =>
-                        setFormState((prev) => ({
-                          ...prev,
-                          sealNumber: e.target.value,
-                        }))
-                      }
-                      className="h-9 text-sm w-full"
-                      placeholder="Лацны дугаар оруулах"
-                    />
-                  </div>
-                </Card>
-                {/* Exit Time */}
-                <Card className="p-2.5 shrink-0">
-                  <div>
-                    <Label
-                      htmlFor="outTime"
-                      className="text-xs font-medium text-gray-700 mb-1 block"
-                    >
-                      Гарах цаг *
-                    </Label>
-                    <Input
-                      id="outTime"
-                      type="datetime-local"
-                      value={formState.outTime}
-                      onChange={(e) =>
-                        setFormState((prev) => ({
-                          ...prev,
-                          outTime: e.target.value,
-                        }))
-                      }
-                      onFocus={(e) => {
-                        const currentTime = getCurrentDateTime();
-                        setFormState((prev) => ({
-                          ...prev,
-                          outTime: currentTime,
-                        }));
-                        e.target.value = currentTime;
-                      }}
-                      className="h-9 text-sm w-full"
-                      required
-                    />
-                  </div>
-                </Card>
-
-                {/* Notes - Reduced height */}
-                <Card className="p-3 shrink-0 flex flex-col overflow-hidden">
-                  <div className="flex flex-col gap-1.5 mb-3">
+                {/* Notes - Wider, Reduced Height */}
+                <div className="md:col-span-2 flex flex-col">
+                  <div className="mb-1.5 flex items-center">
                     <Label
                       htmlFor="notes"
-                      className="text-xs font-medium text-gray-700 mb-0.5 block"
+                      className="text-base font-medium text-gray-700"
                     >
                       Нэмэлт мэдээлэл
                     </Label>
+                  </div>
+                  <div className="max-w-[calc(66.666%-0.5rem)]">
                     <Textarea
                       id="notes"
                       value={formState.notes}
@@ -1705,12 +1761,15 @@ export const OutSessionForm = forwardRef<
                           notes: e.target.value,
                         }))
                       }
-                      className="text-xs resize-none"
+                      className="text-base resize-y h-20 w-full"
                       placeholder="Нэмэлт мэдээлэл..."
-                      rows={3}
                     />
                   </div>
-                  <div className="flex items-center gap-2 pt-2 border-t border-gray-200 shrink-0">
+                </div>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex items-center justify-center gap-2 mt-3 pt-3 border-t border-gray-200">
                     <Button
                       type="button"
                       variant="outline"
@@ -1735,7 +1794,7 @@ export const OutSessionForm = forwardRef<
                           inSessionId: undefined,
                         });
                       }}
-                      className="h-9 px-4 text-xs"
+                  className="h-12 px-5 text-base"
                     >
                       Цэвэрлэх
                     </Button>
@@ -1861,7 +1920,7 @@ export const OutSessionForm = forwardRef<
                         !formState.outWeightKg ||
                         !formState.netWeightKg
                       }
-                      className="h-9 px-4 text-xs"
+                  className="h-12 px-5 text-base"
                       title="PDF файл татах"
                     >
                       <Printer className="w-4 h-4 mr-1" />
@@ -1875,22 +1934,20 @@ export const OutSessionForm = forwardRef<
                         !formState.netWeightKg ||
                         isSaving
                       }
-                      className="bg-green-600 hover:bg-green-700 disabled:opacity-50 h-9 px-4 text-xs flex-1"
+                  className="bg-green-600 hover:bg-green-700 disabled:opacity-50 h-11 px-4 text-sm"
                     >
                       {isSaving ? "Хадгалж байна..." : "Хадгалах"}
                     </Button>
                     <Button
                       type="button"
                       onClick={() => router.push("/in-session")}
-                      className="bg-blue-600 hover:bg-blue-700 h-9 px-4 text-xs"
+                  className="bg-blue-600 hover:bg-blue-700 h-11 px-4 text-sm"
                     >
                       ОРОХ бүртгэл
-                      <ArrowRight className="h-3 w-3 ml-2" />
+                  <ArrowRight className="h-5 w-5 ml-2" />
                     </Button>
                   </div>
                 </Card>
-              </div>
-            </div>
           </div>
         </form>
       </div>

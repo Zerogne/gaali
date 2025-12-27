@@ -1,22 +1,22 @@
 "use client"
 
-import { useState, useEffect, useRef, useCallback } from "react"
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
 import {
   Dialog,
   DialogContent,
   DialogDescription,
   DialogFooter,
   DialogHeader,
-  DialogTitle,  
+  DialogTitle,
 } from "@/components/ui/dialog"
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog"
-import { Plus, Edit, Trash2 } from "lucide-react"
-import { useToast } from "@/hooks/use-toast"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
+import { useToast } from "@/hooks/use-toast"
 import type { Driver } from "@/lib/types"
+import { Edit, Plus, Trash2 } from "lucide-react"
+import { useCallback, useEffect, useRef, useState } from "react"
 
 interface DriverManagerProps {
   drivers: Driver[]
@@ -258,14 +258,14 @@ export function DriverManager({
             </div>
 
             <div>
-              <Label htmlFor="driver-registration-number">Регистэрийн дугаар</Label>
+              <Label htmlFor="driver-registration-number">Регистерийн дугаар</Label>
               <Input
                 id="driver-registration-number"
                 value={driverData.registrationNumber}
                 onChange={(e) =>
                   setDriverData({ ...driverData, registrationNumber: e.target.value })
                 }
-                placeholder="Регистэрийн дугаар оруулах"
+                placeholder="Регистерийн дугаар оруулах"
               />
             </div>
 

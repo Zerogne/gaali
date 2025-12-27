@@ -15,7 +15,7 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { sendTruckLogToCustoms } from "@/lib/api";
 import { exportLogToPDF } from "@/lib/pdf-export";
-import type { Direction, TruckLog } from "@/lib/types";
+import type { Direction, TruckLog, TransportCompany } from "@/lib/types";
 import { Edit, FileDown, Search, Send, ArrowRight } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
@@ -31,6 +31,7 @@ export function TruckTable({ logs, onSend, onUpdate }: TruckTableProps) {
   const router = useRouter();
   const [sendingIds, setSendingIds] = useState<Set<string>>(new Set());
   const [uniqueCodes, setUniqueCodes] = useState<Map<string, string>>(new Map());
+  const [transportCompanies, setTransportCompanies] = useState<TransportCompany[]>([]);
 
   const handleEdit = (log: TruckLog) => {
     // Redirect to the appropriate session page based on direction
@@ -41,7 +42,10 @@ export function TruckTable({ logs, onSend, onUpdate }: TruckTableProps) {
     }
   };
 
-  const filteredLogs = logs;
+  // Display the latest 50 logs (already sorted by API, but ensure newest first)
+  const filteredLogs = [...logs]
+    .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+    .slice(0, 50);
 
   const inCount = filteredLogs.filter((log) => log.direction === "IN").length;
   const outCount = filteredLogs.filter((log) => log.direction === "OUT").length;
@@ -120,6 +124,22 @@ export function TruckTable({ logs, onSend, onUpdate }: TruckTableProps) {
     setUniqueCodes(codesMap)
   }
 
+  // Fetch transport companies
+  useEffect(() => {
+    async function fetchTransportCompanies() {
+      try {
+        const response = await fetch("/api/transport-companies");
+        if (response.ok) {
+          const companies = await response.json();
+          setTransportCompanies(companies);
+        }
+      } catch (error) {
+        console.error("Error fetching transport companies:", error);
+      }
+    }
+    fetchTransportCompanies();
+  }, []);
+
   // Fetch unique codes when logs change
   useEffect(() => {
     if (logs.length > 0) {
@@ -127,6 +147,21 @@ export function TruckTable({ logs, onSend, onUpdate }: TruckTableProps) {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [logs])
+
+  // Helper function to get transport company name
+  const getTransportCompanyName = (companyId?: string): string => {
+    if (!companyId) return "—";
+    const company = transportCompanies.find((c) => c.id === companyId);
+    return company?.name || "—";
+  };
+
+  // Helper function to format from/to
+  const formatFromTo = (origin?: string, destination?: string): string => {
+    if (!origin && !destination) return "—";
+    if (!origin) return `→ ${destination}`;
+    if (!destination) return `${origin} →`;
+    return `${origin} → ${destination}`;
+  };
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleString("mn-MN", {
@@ -140,7 +175,7 @@ export function TruckTable({ logs, onSend, onUpdate }: TruckTableProps) {
 
   return (
     <Card className="border-gray-200 bg-white shadow-sm h-full flex flex-col">
-      <CardHeader className="pb-3 flex-shrink-0">
+      <CardHeader className="pb-1.5 flex-shrink-0">
         <div className="flex items-center justify-between">
           <CardTitle className="text-xl font-bold text-gray-900">
             Тээврийн хэрэгслийн түүх
@@ -157,9 +192,9 @@ export function TruckTable({ logs, onSend, onUpdate }: TruckTableProps) {
         </div>
       </CardHeader>
       <Separator className="flex-shrink-0" />
-      <CardContent className="pt-4 flex-1 min-h-0 overflow-hidden flex flex-col">
+      <CardContent className="pt-1.5 flex-1 min-h-0 overflow-hidden flex flex-col">
         {filteredLogs.length === 0 ? (
-          <div className="text-center py-12 text-gray-500">
+          <div className="text-center py-4 text-gray-500">
             <p className="text-base font-medium mb-1">
               Тээврийн хэрэгслийн бүртгэл олдсонгүй
             </p>
@@ -193,11 +228,29 @@ export function TruckTable({ logs, onSend, onUpdate }: TruckTableProps) {
               <Table>
                 <TableHeader>
                   <TableRow className="bg-gray-50">
-                    <TableHead className="text-gray-700 font-semibold">
+                    <TableHead className="text-gray-700 font-semibold relative pr-3">
                       Улсын дугаар
+                      <div className="absolute right-0 top-1/2 -translate-y-1/2 w-px h-3 bg-gray-300"></div>
                     </TableHead>
-                    <TableHead className="text-gray-700 font-semibold">
+                    <TableHead className="text-gray-700 font-semibold relative pr-3">
                       Жолооч
+                      <div className="absolute right-0 top-1/2 -translate-y-1/2 w-px h-3 bg-gray-300"></div>
+                    </TableHead>
+                    <TableHead className="text-gray-700 font-semibold relative pr-3">
+                      Дугаар
+                      <div className="absolute right-0 top-1/2 -translate-y-1/2 w-px h-3 bg-gray-300"></div>
+                    </TableHead>
+                    <TableHead className="text-gray-700 font-semibold relative pr-3">
+                      Хаанаас → Хаашаа
+                      <div className="absolute right-0 top-1/2 -translate-y-1/2 w-px h-3 bg-gray-300"></div>
+                    </TableHead>
+                    <TableHead className="text-gray-700 font-semibold relative pr-3">
+                      Чиглэл
+                      <div className="absolute right-0 top-1/2 -translate-y-1/2 w-px h-3 bg-gray-300"></div>
+                    </TableHead>
+                    <TableHead className="text-gray-700 font-semibold relative pr-3">
+                      Тээврийн компани
+                      <div className="absolute right-0 top-1/2 -translate-y-1/2 w-px h-3 bg-gray-300"></div>
                     </TableHead>
                     <TableHead className="text-gray-700 font-semibold">
                       Үйлдлүүд
@@ -216,16 +269,43 @@ export function TruckTable({ logs, onSend, onUpdate }: TruckTableProps) {
                         handleEdit(log)
                       }}
                     >
-                      <TableCell className="font-mono font-semibold text-gray-900">
+                      <TableCell className="font-mono font-semibold text-gray-900 relative pr-3">
                         {log.plate}
+                        <div className="absolute right-0 top-1/2 -translate-y-1/2 w-px h-3 bg-gray-300"></div>
                       </TableCell>
-                      <TableCell className="text-gray-700">
+                      <TableCell className="text-gray-700 relative pr-3">
                         {log.driverName}
+                        <div className="absolute right-0 top-1/2 -translate-y-1/2 w-px h-3 bg-gray-300"></div>
+                      </TableCell>
+                      <TableCell className="text-gray-700 font-mono text-sm relative pr-3">
+                        {uniqueCodes.get(log.id) || "—"}
+                        <div className="absolute right-0 top-1/2 -translate-y-1/2 w-px h-3 bg-gray-300"></div>
+                      </TableCell>
+                      <TableCell className="text-gray-700 text-sm relative pr-3">
+                        {formatFromTo(log.origin, log.destination)}
+                        <div className="absolute right-0 top-1/2 -translate-y-1/2 w-px h-3 bg-gray-300"></div>
+                      </TableCell>
+                      <TableCell className="relative pr-3">
+                        <Badge
+                          variant="outline"
+                          className={
+                            log.direction === "IN"
+                              ? "bg-blue-50 text-blue-700 border-blue-200"
+                              : "bg-green-50 text-green-700 border-green-200"
+                          }
+                        >
+                          {log.direction === "IN" ? "ОРОХ" : "ГАРАХ"}
+                        </Badge>
+                        <div className="absolute right-0 top-1/2 -translate-y-1/2 w-px h-3 bg-gray-300"></div>
+                      </TableCell>
+                      <TableCell className="text-gray-700 text-sm relative pr-3">
+                        {getTransportCompanyName(log.transportCompanyId)}
+                        <div className="absolute right-0 top-1/2 -translate-y-1/2 w-px h-3 bg-gray-300"></div>
                       </TableCell>
                       <TableCell>
                         <div className="flex items-center gap-2">
                           <Button
-                            size="sm"
+                            size="default"
                             variant="outline"
                             onClick={() => handleEdit(log)}
                             title={
@@ -233,13 +313,13 @@ export function TruckTable({ logs, onSend, onUpdate }: TruckTableProps) {
                                 ? "Бүртгэлийг дахин засах"
                                 : "Бүртгэл засах"
                             }
-                            className="border-gray-300 hover:bg-gray-50"
+                            className="border-gray-300 hover:bg-gray-50 h-9 px-4 text-sm"
                           >
-                            <Edit className="w-3.5 h-3.5 mr-1.5" />
+                            <Edit className="w-4 h-4 mr-2" />
                             {log.sentToCustoms ? "Дахин засах" : "Засах"}
                           </Button>
                           <Button
-                            size="sm"
+                            size="default"
                             variant="outline"
                             onClick={async () => {
                               try {
@@ -248,44 +328,44 @@ export function TruckTable({ logs, onSend, onUpdate }: TruckTableProps) {
                                 console.error("Error exporting PDF:", error);
                               }
                             }}
-                            title="PDF файл татах"
-                            className="border-gray-300 hover:bg-gray-50"
+                            title="Хэвлэх"
+                            className="border-gray-300 hover:bg-gray-50 h-9 px-4 text-sm"
                           >
-                            <FileDown className="w-3.5 h-3.5 mr-1.5" />
-                            PDF
+                            <FileDown className="w-4 h-4 mr-2" />
+                            Хэвлэх
                           </Button>
                           {log.sentToCustoms ? (
                             <Button
-                              size="sm"
+                              size="default"
                               variant="outline"
                               onClick={() => handleResend(log)}
                               disabled={sendingIds.has(log.id)}
-                              className="bg-green-400 text-white border-green-500 hover:bg-green-500 disabled:bg-green-200 disabled:text-white"
+                              className="bg-green-400 text-white border-green-500 hover:bg-green-500 disabled:bg-green-200 disabled:text-white h-9 px-4 text-sm"
                               title="Гаалинд дахин илгээх"
                             >
                               {sendingIds.has(log.id) ? (
                                 "Илгээж байна..."
                               ) : (
                                 <>
-                                  <Send className="w-3.5 h-3.5 mr-1.5" />
+                                  <Send className="w-4 h-4 mr-2" />
                                   Дахин илгээх
                                 </>
                               )}
                             </Button>
                           ) : (
                             <Button
-                              size="sm"
+                              size="default"
                               variant="outline"
                               onClick={() => handleResend(log)}
                               disabled={sendingIds.has(log.id)}
-                              className="bg-green-500 text-white border-green-600 hover:bg-green-600 disabled:bg-green-300 disabled:text-white"
+                              className="bg-green-500 text-white border-green-600 hover:bg-green-600 disabled:bg-green-300 disabled:text-white h-9 px-4 text-sm"
                               title="Гаалинд илгээх"
                             >
                               {sendingIds.has(log.id) ? (
                                 "Илгээж байна..."
                               ) : (
                                 <>
-                                  <Send className="w-3.5 h-3.5 mr-1.5" />
+                                  <Send className="w-4 h-4 mr-2" />
                                   Илгээх
                                 </>
                               )}

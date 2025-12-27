@@ -1,6 +1,6 @@
 "use client";
 
-import { CameraPanel } from "@/components/sessions/CameraPanel";
+import { Sidebar } from "@/components/layout/Sidebar";
 import {
   InSessionForm,
   type InSessionFormHandle,
@@ -17,7 +17,8 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Sidebar } from "@/components/layout/Sidebar";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { useLprPlateAutofill } from "@/hooks/useLprPlateAutofill";
 import { getTruckLog } from "@/lib/api";
@@ -42,6 +43,20 @@ function InSessionContent() {
   const [editLogId, setEditLogId] = useState<string | null>(null);
   const [editLog, setEditLog] = useState<TruckLog | null>(null);
   const [isLoadingLog, setIsLoadingLog] = useState(false);
+  const [inTime, setInTime] = useState<string>(
+    new Date().toISOString().slice(0, 16)
+  );
+
+  // Helper function to get current datetime in datetime-local format
+  const getCurrentDateTime = (): string => {
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, "0");
+    const day = String(now.getDate()).padStart(2, "0");
+    const hours = String(now.getHours()).padStart(2, "0");
+    const minutes = String(now.getMinutes()).padStart(2, "0");
+    return `${year}-${month}-${day}T${hours}:${minutes}`;
+  };
 
   // Check for edit parameter
   useEffect(() => {
@@ -118,7 +133,7 @@ function InSessionContent() {
         localStorage.setItem("inSessionDestination", destination);
       }
     }
-    
+
     if (hasUnsavedData && formRef.current?.hasUnsavedData()) {
       setPendingNavigation(path);
       setShowSaveDialog(true);
@@ -162,27 +177,45 @@ function InSessionContent() {
         {/* Top Navigation - Fixed */}
         <nav className="bg-white border-b border-gray-200 shrink-0 z-50">
           <div className="max-w-full mx-auto px-6 py-3">
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-4 flex-1">
               <Button
                 onClick={() => router.push("/")}
                 variant="ghost"
                 size="sm"
-                className="h-8 w-8 p-0"
+                className="h-10 w-10 p-0"
               >
-                <ArrowLeft className="h-4 w-4" />
+                <ArrowLeft className="h-5 w-5" />
               </Button>
               <div className="h-5 w-px bg-gray-300" />
-              <div>
-                <h1 className="text-lg font-semibold text-gray-900">
+              <div className="flex items-center gap-3">
+                <h1 className="text-xl font-semibold text-gray-900">
                   ОРОХ бүртгэл
                 </h1>
-                <p className="text-xs text-gray-500">
-                  Тээврийн хэрэгсэл орох бүртгэл
-                </p>
+                <div className="flex items-center gap-2 ml-4">
+                  <Label
+                    htmlFor="inTime"
+                    className="text-sm font-medium text-gray-700 whitespace-nowrap"
+                  >
+                    Орох цаг *
+                  </Label>
+                  <Input
+                    id="inTime"
+                    type="datetime-local"
+                    value={inTime}
+                    onChange={(e) => setInTime(e.target.value)}
+                    onFocus={(e) => {
+                      const currentTime = getCurrentDateTime();
+                      setInTime(currentTime);
+                      e.target.value = currentTime;
+                    }}
+                    className="h-10 text-base w-auto min-w-[180px]"
+                    required
+                  />
+                </div>
               </div>
               <Badge
                 variant="outline"
-                className="ml-2 bg-blue-50 text-blue-700 border-blue-200 text-xs"
+                className="ml-auto bg-blue-50 text-blue-700 border-blue-200 text-xs"
               >
                 IN
               </Badge>
@@ -207,6 +240,8 @@ function InSessionContent() {
                 cameraAutofill={cameraAutofill}
                 editLog={editLog}
                 editLogId={editLogId}
+                inTime={inTime}
+                onInTimeChange={setInTime}
               />
             )}
           </div>
@@ -242,14 +277,16 @@ function InSessionContent() {
 
 export default function InSessionPage() {
   return (
-    <Suspense fallback={
-      <div className="flex h-screen bg-gray-50">
-        <Sidebar />
-        <div className="flex-1 flex items-center justify-center">
-          <p className="text-gray-500">Уншиж байна...</p>
+    <Suspense
+      fallback={
+        <div className="flex h-screen bg-gray-50">
+          <Sidebar />
+          <div className="flex-1 flex items-center justify-center">
+            <p className="text-gray-500">Уншиж байна...</p>
+          </div>
         </div>
-      </div>
-    }>
+      }
+    >
       <InSessionContent />
     </Suspense>
   );

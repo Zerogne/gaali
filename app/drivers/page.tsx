@@ -1,4 +1,4 @@
-"use client"
+"use client";
 
 import { useState, useEffect } from "react"
 import { Sidebar } from "@/components/sidebar"
@@ -314,14 +314,14 @@ export default function DriversPage() {
                   />
                 </div>
                 <div>
-                  <Label htmlFor="driver-registration-number">Регистэрийн дугаар</Label>
+                  <Label htmlFor="driver-registration-number">Регистерийн дугаар</Label>
                   <Input
                     id="driver-registration-number"
                     value={driverData.registrationNumber}
                     onChange={(e) =>
                       setDriverData({ ...driverData, registrationNumber: e.target.value })
                     }
-                    placeholder="Регистэрийн дугаар оруулах"
+                    placeholder="Регистерийн дугаар оруулах"
                   />
                 </div>
                 <div>
@@ -451,7 +451,9 @@ export default function DriversPage() {
             </AlertDialogContent>
           </AlertDialog>
 
-          <AlertDialog open={duplicateDialogOpen} onOpenChange={setDuplicateDialogOpen}>
+          <AlertDialog open={duplicateDialogOpen}
+            onOpenChange={setDuplicateDialogOpen}
+          >
             <AlertDialogContent>
               <AlertDialogHeader>
                 <AlertDialogTitle>Давхардсан бүртгэлийн дугаар</AlertDialogTitle>

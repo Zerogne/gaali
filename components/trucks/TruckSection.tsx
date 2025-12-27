@@ -649,7 +649,7 @@ export function TruckSection({ direction, onSave, onSend }: TruckSectionProps) {
           direction === "IN" ? "bg-blue-500" : "bg-green-500"
         } rounded-full -mr-16 -mt-16`}></div>
         
-        <CardHeader className="pb-6 relative z-10">
+        <CardHeader className="pb-2 relative z-10">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className={`p-3 rounded-xl shadow-sm ${
@@ -664,7 +664,7 @@ export function TruckSection({ direction, onSave, onSend }: TruckSectionProps) {
                 )}
               </div>
               <div>
-                <CardTitle className="text-gray-900 text-xl font-bold mb-1">
+                <CardTitle className="text-gray-900 text-xl font-bold mb-0">
                   {title}
                 </CardTitle>
                 <p className="text-sm text-gray-500">
@@ -677,15 +677,8 @@ export function TruckSection({ direction, onSave, onSend }: TruckSectionProps) {
           </div>
         </CardHeader>
         
-        <CardContent className="relative z-10 pb-6">
+        <CardContent className="relative z-10 pb-2">
           <div className="flex items-center justify-between">
-            <div className="flex-1">
-              <p className="text-sm text-gray-600 mb-4">
-                {direction === "IN" 
-                  ? "Тээврийн хэрэгсэл орох үед бүртгэл хийх" 
-                  : "Тээврийн хэрэгсэл гарах үед бүртгэл хийх"}
-              </p>
-            </div>
             <Button
               onClick={() => {
                 // Redirect to the appropriate session page
@@ -695,14 +688,14 @@ export function TruckSection({ direction, onSave, onSend }: TruckSectionProps) {
                   router.push("/out-session")
                 }
               }}
-              className={`shadow-md hover:shadow-lg transition-all px-6 py-3 ${
+              className={`shadow-md hover:shadow-lg transition-all px-8 py-4 text-base ${
                 direction === "IN"
                   ? "bg-blue-600 hover:bg-blue-700 text-white"
                   : "bg-green-600 hover:bg-green-700 text-white"
               }`}
               size="default"
             >
-              <Plus className="w-5 h-5 mr-2" />
+              <Plus className="w-6 h-6 mr-2" />
               {direction === "IN" ? "ОРОХ" : "ГАРАХ"}
             </Button>
           </div>

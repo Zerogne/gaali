@@ -11,10 +11,38 @@ export function validateCSRF(request: Request): boolean {
   const origin = request.headers.get('origin')
   const referer = request.headers.get('referer')
   
+  // In development, allow localhost requests
+  if (process.env.NODE_ENV === 'development') {
+    if (origin) {
+      try {
+        const originUrl = new URL(origin)
+        if (originUrl.hostname === 'localhost' || originUrl.hostname === '127.0.0.1') {
+          return true
+        }
+      } catch {
+        // Invalid URL, continue with normal validation
+      }
+    }
+    if (referer) {
+      try {
+        const refererUrl = new URL(referer)
+        if (refererUrl.hostname === 'localhost' || refererUrl.hostname === '127.0.0.1') {
+          return true
+        }
+      } catch {
+        // Invalid URL, continue with normal validation
+      }
+    }
+    // In development, if no origin/referer, allow the request
+    if (!origin && !referer) {
+      return true
+    }
+  }
+  
   // Get allowed origin from environment
-  const allowedOrigin = process.env.NEXT_PUBLIC_APP_URL || process.env.VERCEL_URL
+  const allowedOrigin = process.env.NEXT_PUBLIC_APP_URL || (process.env.VERCEL_URL
     ? `https://${process.env.VERCEL_URL}`
-    : 'https://gaali.vercel.app'
+    : 'https://gaali.vercel.app')
   
   // For same-origin requests (no Origin header), check Referer
   if (!origin) {
@@ -55,4 +83,3 @@ export function csrfErrorResponse() {
     }
   )
 }
-

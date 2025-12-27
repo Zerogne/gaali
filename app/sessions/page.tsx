@@ -44,7 +44,7 @@ export default function SessionsPage() {
         // Load only the current page of logs (30 per page)
         const result = await getTruckLogs(currentPage, 30);
         setLogs(result.logs);
-        setTotalPages(result.totalPages);
+          setTotalPages(result.totalPages);
       } catch (error) {
         console.error("Error loading logs:", error);
         if (error instanceof Error && error.message.includes("redirect")) {

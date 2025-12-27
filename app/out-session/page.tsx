@@ -17,6 +17,8 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { useLprPlateAutofill } from "@/hooks/useLprPlateAutofill";
 import { getTruckLog } from "@/lib/api";
@@ -42,6 +44,18 @@ function OutSessionContent() {
   const [editLogId, setEditLogId] = useState<string | null>(null);
   const [editLog, setEditLog] = useState<TruckLog | null>(null);
   const [isLoadingLog, setIsLoadingLog] = useState(false);
+  const [outTime, setOutTime] = useState<string>(new Date().toISOString().slice(0, 16));
+
+  // Helper function to get current datetime in datetime-local format
+  const getCurrentDateTime = (): string => {
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, "0");
+    const day = String(now.getDate()).padStart(2, "0");
+    const hours = String(now.getHours()).padStart(2, "0");
+    const minutes = String(now.getMinutes()).padStart(2, "0");
+    return `${year}-${month}-${day}T${hours}:${minutes}`;
+  };
 
   // Fetch camera stream URL from config
   useEffect(() => {
@@ -157,32 +171,45 @@ function OutSessionContent() {
         {/* Top Navigation - Fixed */}
         <nav className="bg-white border-b border-gray-200 shrink-0 z-50">
           <div className="max-w-full mx-auto px-6 py-3">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-4">
-                <Button
-                  onClick={() => router.push("/")}
-                  variant="ghost"
-                  size="sm"
-                  className="h-8 w-8 p-0"
-                >
-                  <ArrowLeft className="h-4 w-4" />
-                </Button>
-                <div className="h-5 w-px bg-gray-300" />
-                <div>
-                  <h1 className="text-lg font-semibold text-gray-900">
-                    ГАРАХ бүртгэл
-                  </h1>
-                  <p className="text-xs text-gray-500">
-                    Тээврийн хэрэгсэл гарах бүртгэл
-                  </p>
+            <div className="flex items-center gap-4 flex-1">
+              <Button
+                onClick={() => router.push("/")}
+                variant="ghost"
+                size="sm"
+                className="h-10 w-10 p-0"
+              >
+                <ArrowLeft className="h-5 w-5" />
+              </Button>
+              <div className="h-5 w-px bg-gray-300" />
+              <div className="flex items-center gap-3">
+                <h1 className="text-xl font-semibold text-gray-900">
+                  ГАРАХ бүртгэл
+                </h1>
+                <div className="flex items-center gap-2 ml-4">
+                  <Label htmlFor="outTime" className="text-sm font-medium text-gray-700 whitespace-nowrap">
+                    Гарах цаг *
+                  </Label>
+                  <Input
+                    id="outTime"
+                    type="datetime-local"
+                    value={outTime}
+                    onChange={(e) => setOutTime(e.target.value)}
+                    onFocus={(e) => {
+                      const currentTime = getCurrentDateTime();
+                      setOutTime(currentTime);
+                      e.target.value = currentTime;
+                    }}
+                    className="h-10 text-base w-auto min-w-[180px]"
+                    required
+                  />
                 </div>
-                <Badge
-                  variant="outline"
-                  className="ml-2 bg-green-50 text-green-700 border-green-200 text-xs"
-                >
-                  OUT
-                </Badge>
               </div>
+              <Badge
+                variant="outline"
+                className="ml-auto bg-green-50 text-green-700 border-green-200 text-xs"
+              >
+                OUT
+              </Badge>
             </div>
           </div>
         </nav>
@@ -205,6 +232,8 @@ function OutSessionContent() {
                 cameraAutofill={cameraAutofill}
                 editLog={editLog}
                 editLogId={editLogId}
+                outTime={outTime}
+                onOutTimeChange={setOutTime}
               />
             )}
           </div>

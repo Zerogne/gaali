@@ -12,9 +12,14 @@ import { useToast } from "@/hooks/use-toast";
 import { useCameraBridgeWebSocket } from "@/hooks/useCameraBridgeWebSocket";
 import { useLprPlateAutofill } from "@/hooks/useLprPlateAutofill";
 import { useThirdPartyAutofill } from "@/hooks/useThirdPartyAutofill";
-import type { Product } from "@/lib/products/products";
-import type { Driver, Organization, TransportCompany, TruckLog } from "@/lib/types";
 import { updateTruckLog } from "@/lib/api";
+import type { Product } from "@/lib/products/products";
+import type {
+  Driver,
+  Organization,
+  TransportCompany,
+  TruckLog,
+} from "@/lib/types";
 import { ArrowRight, Camera } from "lucide-react";
 import { useRouter } from "next/navigation";
 import {
@@ -52,6 +57,8 @@ interface InSessionFormProps {
   cameraAutofill?: ReturnType<typeof useLprPlateAutofill>;
   editLog?: TruckLog | null;
   editLogId?: string | null;
+  inTime?: string;
+  onInTimeChange?: (time: string) => void;
 }
 
 export interface InSessionFormHandle {
@@ -74,6 +81,8 @@ export const InSessionForm = forwardRef<
       cameraAutofill: externalCameraAutofill,
       editLog,
       editLogId,
+      inTime: externalInTime,
+      onInTimeChange,
     },
     ref
   ) => {
@@ -162,27 +171,61 @@ export const InSessionForm = forwardRef<
       destination: "",
       senderOrganizationId: "",
       receiverOrganizationId: "",
-      inTime: new Date().toISOString().slice(0, 16),
+      inTime: externalInTime || new Date().toISOString().slice(0, 16),
       grossWeightKg: null,
       hasTrailer: false,
       trailerNumber: "",
       notes: "",
     });
 
+    // Sync external inTime with form state
+    useEffect(() => {
+      if (externalInTime) {
+        setFormState((prev) => ({ ...prev, inTime: externalInTime }));
+      }
+    }, [externalInTime]);
+
     // Populate form when editing
     useEffect(() => {
-      if (editLog && products.length > 0 && transportCompanies.length > 0 && drivers.length > 0 && organizations.length > 0) {
+      if (
+        editLog &&
+        products.length > 0 &&
+        transportCompanies.length > 0 &&
+        drivers.length > 0 &&
+        organizations.length > 0
+      ) {
         // Find matching IDs for dropdowns
-        const product = products.find(p => p.label === editLog.cargoType || p.value === editLog.cargoType);
-        const transportCompany = transportCompanies.find(tc => tc.name === editLog.transportType || tc.id === editLog.transportCompanyId);
-        const driver = drivers.find(d => d.name === editLog.driverName || d.id === editLog.driverId);
-        const senderOrg = organizations.find(o => o.name === editLog.senderOrganization || o.id === editLog.senderOrganizationId);
-        const receiverOrg = organizations.find(o => o.name === editLog.receiverOrganization || o.id === editLog.receiverOrganizationId);
+        const product = products.find(
+          (p) => p.label === editLog.cargoType || p.value === editLog.cargoType
+        );
+        const transportCompany = transportCompanies.find(
+          (tc) =>
+            tc.name === editLog.transportType ||
+            tc.id === editLog.transportCompanyId
+        );
+        const driver = drivers.find(
+          (d) => d.name === editLog.driverName || d.id === editLog.driverId
+        );
+        const senderOrg = organizations.find(
+          (o) =>
+            o.name === editLog.senderOrganization ||
+            o.id === editLog.senderOrganizationId
+        );
+        const receiverOrg = organizations.find(
+          (o) =>
+            o.name === editLog.receiverOrganization ||
+            o.id === editLog.receiverOrganizationId
+        );
 
         // Format date for datetime-local input
-        const inTime = editLog.createdAt 
+        const inTime = editLog.createdAt
           ? new Date(editLog.createdAt).toISOString().slice(0, 16)
           : new Date().toISOString().slice(0, 16);
+
+        // Update external inTime if handler is provided
+        if (onInTimeChange) {
+          onInTimeChange(inTime);
+        }
 
         setFormState({
           plateNumber: editLog.plate || "",
@@ -315,7 +358,10 @@ export const InSessionForm = forwardRef<
       try {
         const response = await fetch("/api/products", {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: {
+            "Content-Type": "application/json",
+          },
+          credentials: "same-origin",
           body: JSON.stringify({ label: name }),
         });
         if (response.ok) {
@@ -330,9 +376,13 @@ export const InSessionForm = forwardRef<
           const errorData = await response
             .json()
             .catch(() => ({ error: "Unknown error" }));
+          const errorMessage =
+            errorData.error ||
+            errorData.message ||
+            "Бүтээгдэхүүн нэмэхэд алдаа гарлаа";
           toast({
             title: "Алдаа",
-            description: errorData.error || "Бүтээгдэхүүн нэмэхэд алдаа гарлаа",
+            description: errorMessage,
             variant: "destructive",
           });
         }
@@ -351,16 +401,41 @@ export const InSessionForm = forwardRef<
       try {
         const response = await fetch("/api/transport-companies", {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: {
+            "Content-Type": "application/json",
+          },
+          credentials: "same-origin",
           body: JSON.stringify({ name }),
         });
         if (response.ok) {
           const newCompany = await response.json();
           setTransportCompanies((prev) => [...prev, newCompany]);
+          toast({
+            title: "Амжилттай",
+            description: "Тээврийн компани амжилттай нэмэгдлээ",
+          });
           return newCompany.id;
+        } else {
+          const errorData = await response
+            .json()
+            .catch(() => ({ error: "Unknown error" }));
+          const errorMessage =
+            errorData.error ||
+            errorData.message ||
+            "Тээврийн компани нэмэхэд алдаа гарлаа";
+          toast({
+            title: "Алдаа",
+            description: errorMessage,
+            variant: "destructive",
+          });
         }
       } catch (error) {
         console.error("Error creating transport company:", error);
+        toast({
+          title: "Алдаа",
+          description: "Тээврийн компани нэмэхэд алдаа гарлаа",
+          variant: "destructive",
+        });
       }
       return null;
     };
@@ -369,16 +444,41 @@ export const InSessionForm = forwardRef<
       try {
         const response = await fetch("/api/organizations", {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: {
+            "Content-Type": "application/json",
+          },
+          credentials: "same-origin",
           body: JSON.stringify({ name }),
         });
         if (response.ok) {
           const newOrg = await response.json();
           setOrganizations((prev) => [...prev, newOrg]);
+          toast({
+            title: "Амжилттай",
+            description: "Байгууллага амжилттай нэмэгдлээ",
+          });
           return newOrg.id;
+        } else {
+          const errorData = await response
+            .json()
+            .catch(() => ({ error: "Unknown error" }));
+          const errorMessage =
+            errorData.error ||
+            errorData.message ||
+            "Байгууллага нэмэхэд алдаа гарлаа";
+          toast({
+            title: "Алдаа",
+            description: errorMessage,
+            variant: "destructive",
+          });
         }
       } catch (error) {
         console.error("Error creating organization:", error);
+        toast({
+          title: "Алдаа",
+          description: "Байгууллага нэмэхэд алдаа гарлаа",
+          variant: "destructive",
+        });
       }
       return null;
     };
@@ -639,25 +739,34 @@ export const InSessionForm = forwardRef<
     const performSave = async (): Promise<boolean> => {
       setIsSaving(true);
       try {
+        // Use external inTime if provided, otherwise use form state
+        const currentInTime = externalInTime || formState.inTime;
+
         // If editing, update the existing log
         if (editLogId && editLog) {
           const productName = formState.productId
             ? products.find((p) => p.id === formState.productId)?.label || ""
             : "";
           const transportCompanyName = formState.transporterCompanyId
-            ? transportCompanies.find((t) => t.id === formState.transporterCompanyId)?.name || ""
+            ? transportCompanies.find(
+                (t) => t.id === formState.transporterCompanyId
+              )?.name || ""
             : "";
-          
+
           let senderOrgName = "";
           let receiverOrgName = "";
-          
+
           if (formState.senderOrganizationId) {
-            const org = organizations.find((o) => o.id === formState.senderOrganizationId);
+            const org = organizations.find(
+              (o) => o.id === formState.senderOrganizationId
+            );
             if (org) senderOrgName = org.name;
           }
-          
+
           if (formState.receiverOrganizationId) {
-            const org = organizations.find((o) => o.id === formState.receiverOrganizationId);
+            const org = organizations.find(
+              (o) => o.id === formState.receiverOrganizationId
+            );
             if (org) receiverOrgName = org.name;
           }
 
@@ -671,18 +780,20 @@ export const InSessionForm = forwardRef<
             destination: formState.destination.trim() || undefined,
             senderOrganizationId: formState.senderOrganizationId || undefined,
             senderOrganization: senderOrgName || undefined,
-            receiverOrganizationId: formState.receiverOrganizationId || undefined,
+            receiverOrganizationId:
+              formState.receiverOrganizationId || undefined,
             receiverOrganization: receiverOrgName || undefined,
             weightKg: formState.grossWeightKg || undefined,
             hasTrailer: formState.hasTrailer || undefined,
-            trailerPlate: formState.hasTrailer && formState.trailerNumber.trim()
-              ? formState.trailerNumber.trim().toUpperCase()
-              : undefined,
+            trailerPlate:
+              formState.hasTrailer && formState.trailerNumber.trim()
+                ? formState.trailerNumber.trim().toUpperCase()
+                : undefined,
             comments: formState.notes.trim() || undefined,
           };
 
           const result = await updateTruckLog(editLogId, updateData);
-          
+
           if (!result.success) {
             throw new Error(result.error || "Бүртгэл шинэчлэхэд алдаа гарлаа");
           }
@@ -714,9 +825,11 @@ export const InSessionForm = forwardRef<
         }
 
         // Otherwise, create a new session
-        // Update inTime to current time before saving
-        const currentTime = getCurrentDateTime();
-        setFormState((prev) => ({ ...prev, inTime: currentTime }));
+        // Use external inTime if provided, otherwise use current time
+        const saveTime = currentInTime || getCurrentDateTime();
+        if (onInTimeChange) {
+          onInTimeChange(saveTime);
+        }
 
         const requestData = {
           direction: "IN",
@@ -730,7 +843,7 @@ export const InSessionForm = forwardRef<
           senderOrganizationId: formState.senderOrganizationId || undefined,
           receiverOrganizationId: formState.receiverOrganizationId || undefined,
           grossWeightKg: formState.grossWeightKg,
-          inTime: currentTime,
+          inTime: saveTime,
           hasTrailer: formState.hasTrailer || undefined,
           trailerNumber:
             formState.hasTrailer && formState.trailerNumber.trim()
@@ -1085,28 +1198,38 @@ export const InSessionForm = forwardRef<
           onSubmit={handleSubmit}
           className="h-full flex flex-col overflow-hidden"
         >
-          {/* Form Content - No Scroll, Grid Layout */}
-          <div className="flex-1 min-h-0 overflow-hidden">
-            <div className="grid grid-cols-2 gap-1.5 h-full">
-              {/* Left Column */}
-              <div className="flex flex-col gap-1.5 overflow-hidden min-h-0">
-                {/* Basic Info */}
-                <Card className="p-2 flex-1 min-h-0 flex flex-col">
-                  <div className="flex flex-col gap-1.5 flex-1 min-h-0">
-                    {/* Plate Number - First Input */}
-                    <div>
-                      <Label
-                        htmlFor="plateNumber"
-                        className="text-xs font-medium text-gray-700 mb-1 block"
-                      >
-                        Улсын дугаар *
-                      </Label>
-                      {/* Connection Status - Above Input */}
+          {/* Form Content - Single Section Layout */}
+          <div className="flex-1 min-h-0 overflow-auto flex justify-center p-4">
+            <Card className="p-4 w-full max-w-6xl">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-2">
+                {/* Standardized FormField Wrapper Pattern:
+                    - Label area: fixed height (h-5) with mb-1
+                    - Control area: fixed height (h-11 = 44px)
+                    - Helper text: optional, fixed height area
+                */}
+
+                {/* Plate Number */}
+                <div className="flex flex-col">
+                  <div className="mb-1.5 flex items-center">
+                    <Label
+                      htmlFor="plateNumber"
+                      className="text-base font-medium text-gray-700"
+                    >
+                      Улсын дугаар *
+                    </Label>
+                  </div>
+                  {/* Connection Status - Helper Text Area */}
+                  {(cameraAutofill.status === "polling" ||
+                    cameraAutofill.status === "connected" ||
+                    cameraAutofill.status === "connecting" ||
+                    (cameraAutofill.status === "error" &&
+                      cameraAutofill.error)) && (
+                    <div className="mb-1.5">
                       {(cameraAutofill.status === "polling" ||
                         cameraAutofill.status === "connected" ||
                         cameraAutofill.status === "connecting") && (
-                        <div className="flex items-center gap-1.5 text-xs text-blue-600 mb-1 whitespace-nowrap">
-                          <Camera className="h-3 w-3 animate-pulse shrink-0" />
+                        <div className="flex items-center gap-1.5 text-base text-blue-600 whitespace-nowrap">
+                          <Camera className="h-5 w-5 animate-pulse shrink-0" />
                           <span className="whitespace-nowrap">
                             {cameraAutofill.status === "connected"
                               ? "Камера холбогдсон"
@@ -1118,36 +1241,80 @@ export const InSessionForm = forwardRef<
                       )}
                       {cameraAutofill.status === "error" &&
                         cameraAutofill.error && (
-                          <div className="flex items-center gap-1.5 text-xs text-red-600 mb-1 whitespace-nowrap">
-                            <Camera className="h-3 w-3 shrink-0" />
+                          <div className="flex items-center gap-1.5 text-base text-red-600 whitespace-nowrap">
+                            <Camera className="h-5 w-5 shrink-0" />
                             <span className="whitespace-nowrap">
                               Камера алдаа: {cameraAutofill.error}
                             </span>
                           </div>
                         )}
-                      <Input
-                        ref={setPlateInputRef}
-                        id="plateNumber"
-                        value={formState.plateNumber}
-                        onChange={(e) => {
-                          // Don't track typing if we're autofilling (prevents interference)
-                          if (!isAutofillingRef.current) {
-                            cameraAutofill.trackTyping();
-                          }
-                          setFormState((prev) => ({
-                            ...prev,
-                            plateNumber: e.target.value,
-                          }));
-                          onPlateChange?.(e.target.value);
-                        }}
-                        onFocus={() => cameraAutofill.trackTyping()}
-                        className="h-9 text-sm font-mono font-semibold w-full"
-                        placeholder="УБ1234"
-                        required
-                      />
                     </div>
-                    {/* Trailer Checkbox */}
-                    <div className="flex items-center gap-2">
+                  )}
+                  <div className="h-12">
+                    <Input
+                      ref={setPlateInputRef}
+                      id="plateNumber"
+                      value={formState.plateNumber}
+                      onChange={(e) => {
+                        // Don't track typing if we're autofilling (prevents interference)
+                        if (!isAutofillingRef.current) {
+                          cameraAutofill.trackTyping();
+                        }
+                        setFormState((prev) => ({
+                          ...prev,
+                          plateNumber: e.target.value,
+                        }));
+                        onPlateChange?.(e.target.value);
+                      }}
+                      onFocus={() => cameraAutofill.trackTyping()}
+                      className="h-12 text-lg font-mono font-semibold w-full"
+                      placeholder="УБ1234"
+                      required
+                    />
+                  </div>
+                </div>
+
+                {/* Weight Input */}
+                <div className="flex flex-col">
+                  <div className="mb-1.5 flex items-center">
+                    <Label
+                      htmlFor="grossWeightKg"
+                      className="text-base font-medium text-gray-700"
+                    >
+                      Бүрэн жин (кг) *
+                    </Label>
+                  </div>
+                  <div className="h-12">
+                    <Input
+                      id="grossWeightKg"
+                      type="number"
+                      value={formState.grossWeightKg ?? ""}
+                      onChange={(e) => {
+                        const value =
+                          e.target.value === ""
+                            ? null
+                            : parseFloat(e.target.value);
+                        setFormState((prev) => ({
+                          ...prev,
+                          grossWeightKg: value,
+                        }));
+                      }}
+                      className="h-12 text-lg w-full"
+                      placeholder="Жин оруулах (кг)"
+                      required
+                    />
+                  </div>
+                </div>
+
+                {/* Trailer Checkbox and Input */}
+                <div className="flex flex-col">
+                  <div className="mb-1.5 flex items-center">
+                    <Label className="text-base font-medium text-gray-700">
+                      Чиргүүл
+                    </Label>
+                  </div>
+                  <div className="h-12 flex items-center gap-2">
+                    <label className="flex items-center gap-2 shrink-0 cursor-pointer">
                       <Checkbox
                         id="hasTrailer"
                         checked={formState.hasTrailer}
@@ -1163,292 +1330,269 @@ export const InSessionForm = forwardRef<
                           }));
                         }}
                       />
-                      <Label
-                        htmlFor="hasTrailer"
-                        className="text-xs font-medium text-gray-700 cursor-pointer"
-                      >
+                      <span className="text-base font-medium text-gray-700 leading-none">
                         Чиргүүлтэй
-                      </Label>
-                      {formState.hasTrailer && (
-                        <Input
-                          id="trailerNumber"
-                          value={formState.trailerNumber}
-                          onChange={(e) =>
-                            setFormState((prev) => ({
-                              ...prev,
-                              trailerNumber: e.target.value,
-                            }))
-                          }
-                          className="h-9 text-xs font-mono w-full"
-                          placeholder="УБ1234"
-                        />
-                      )}
-                    </div>
-                    {/* Weight Input */}
-                    <div>
-                      <Label
-                        htmlFor="grossWeightKg"
-                        className="text-xs font-medium text-gray-700 mb-1 block"
-                      >
-                        Бүрэн жин (кг) *
-                      </Label>
+                      </span>
+                    </label>
+                    {formState.hasTrailer && (
                       <Input
-                        id="grossWeightKg"
-                        type="number"
-                        value={formState.grossWeightKg ?? ""}
-                        onChange={(e) => {
-                          const value =
-                            e.target.value === ""
-                              ? null
-                              : parseFloat(e.target.value);
-                          setFormState((prev) => ({
-                            ...prev,
-                            grossWeightKg: value,
-                          }));
-                        }}
-                        className="h-9 text-sm w-full"
-                        placeholder="Жин оруулах (кг)"
-                        required
-                      />
-                    </div>
-                    <div>
-                      <Label
-                        htmlFor="driverId"
-                        className="text-xs font-medium text-gray-700 mb-1 block"
-                      >
-                        Жолооч *
-                      </Label>
-                      <div className="flex items-center gap-2">
-                        <div className="flex-1">
-                          <FilterableSelect
-                            options={driverOptions}
-                            value={formState.driverId}
-                            onValueChange={(value) => {
-                              const selectedDriver = drivers.find(
-                                (d) => d.id === value
-                              );
-                              setFormState((prev) => ({
-                                ...prev,
-                                driverId: value,
-                                driverName: selectedDriver?.name || "",
-                              }));
-                            }}
-                            disabled={isLoadingDrivers}
-                            placeholder={
-                              isLoadingDrivers
-                                ? "Уншиж байна..."
-                                : "Жолооч сонгох"
-                            }
-                            searchPlaceholder="Жолооч хайх..."
-                            className="h-9"
-                          />
-                        </div>
-                        <DriverManager
-                          drivers={drivers}
-                          onDriverAdded={handleDriverAdded}
-                          onDriverUpdated={handleDriverAdded}
-                        />
-                      </div>
-                    </div>
-                    <div>
-                      <Label
-                        htmlFor="transporterCompanyId"
-                        className="text-xs font-medium text-gray-700 mb-1 block"
-                      >
-                        Тээврийн компани *
-                      </Label>
-                      <FilterableSelect
-                        options={transportCompanyOptions}
-                        value={formState.transporterCompanyId}
-                        onValueChange={(value) => {
-                          setFormState((prev) => ({
-                            ...prev,
-                            transporterCompanyId: value,
-                          }));
-                        }}
-                        disabled={isLoadingCompanies}
-                        placeholder={
-                          isLoadingCompanies
-                            ? "Уншиж байна..."
-                            : "Тээврийн компани сонгох"
-                        }
-                        searchPlaceholder="Тээврийн компани хайх..."
-                        onCreateNew={handleCreateTransportCompany}
-                        createNewLabel="+ Нэмэх ..."
-                        className="h-9"
-                      />
-                    </div>
-                    <div>
-                      <Label
-                        htmlFor="origin"
-                        className="text-xs font-medium text-gray-700 mb-1 block"
-                      >
-                        Хаанаас
-                      </Label>
-                      <Input
-                        id="origin"
-                        value={formState.origin}
+                        id="trailerNumber"
+                        value={formState.trailerNumber}
                         onChange={(e) =>
                           setFormState((prev) => ({
                             ...prev,
-                            origin: e.target.value,
+                            trailerNumber: e.target.value,
                           }))
                         }
-                        className="h-9 text-sm w-full"
-                        placeholder="Гарах газар"
+                        className="h-12 text-lg font-mono flex-1"
+                        placeholder="УБ1234"
                       />
-                    </div>
-                    <div>
-                      <Label
-                        htmlFor="destination"
-                        className="text-xs font-medium text-gray-700 mb-1 block"
-                      >
-                        Хаашаа
-                      </Label>
-                      <Input
-                        id="destination"
-                        value={formState.destination}
-                        onChange={(e) =>
-                          setFormState((prev) => ({
-                            ...prev,
-                            destination: e.target.value,
-                          }))
-                        }
-                        className="h-9 text-sm w-full"
-                        placeholder="Очих газар"
-                      />
-                    </div>
-                    <div>
-                      <Label
-                        htmlFor="productId"
-                        className="text-xs font-medium text-gray-700 mb-1 block"
-                      >
-                        Бүтээгдэхүүн *
-                      </Label>
+                    )}
+                  </div>
+                </div>
+
+                {/* Driver */}
+                <div className="flex flex-col">
+                  <div className="mb-1.5 flex items-center">
+                    <Label
+                      htmlFor="driverId"
+                      className="text-base font-medium text-gray-700"
+                    >
+                      Жолооч *
+                    </Label>
+                  </div>
+                  <div className="h-12 flex items-center gap-2">
+                    <div className="flex-1">
                       <FilterableSelect
-                        options={productOptions}
-                        value={formState.productId}
+                        options={driverOptions}
+                        value={formState.driverId}
                         onValueChange={(value) => {
+                          const selectedDriver = drivers.find(
+                            (d) => d.id === value
+                          );
                           setFormState((prev) => ({
                             ...prev,
-                            productId: value,
+                            driverId: value,
+                            driverName: selectedDriver?.name || "",
                           }));
                         }}
-                        disabled={isLoadingProducts}
+                        disabled={isLoadingDrivers}
                         placeholder={
-                          isLoadingProducts
-                            ? "Уншиж байна..."
-                            : "Бүтээгдэхүүн сонгох"
+                          isLoadingDrivers ? "Уншиж байна..." : "Жолооч сонгох"
                         }
-                        searchPlaceholder="Бүтээгдэхүүн хайх..."
-                        onCreateNew={handleCreateProduct}
-                        createNewLabel="+ Нэмэх ..."
-                        className="h-9"
+                        searchPlaceholder="Жолооч хайх..."
+                        className="h-12"
                       />
                     </div>
-                    <div>
-                      <Label
-                        htmlFor="senderOrganizationId"
-                        className="text-xs font-medium text-gray-700 mb-1 block"
-                      >
-                        Илгээч байгууллага
-                      </Label>
-                      <FilterableSelect
-                        options={organizationOptions}
-                        value={formState.senderOrganizationId}
-                        onValueChange={(value) => {
-                          setFormState((prev) => ({
-                            ...prev,
-                            senderOrganizationId: value,
-                          }));
-                        }}
-                        disabled={isLoadingOrganizations}
-                        placeholder={
-                          isLoadingOrganizations
-                            ? "Уншиж байна..."
-                            : "Илгээч байгууллага сонгох"
-                        }
-                        searchPlaceholder="Илгээч байгууллага хайх..."
-                        onCreateNew={handleCreateOrganization}
-                        createNewLabel="+ Нэмэх ..."
-                        className="h-9"
-                      />
-                    </div>
-                    <div>
-                      <Label
-                        htmlFor="receiverOrganizationId"
-                        className="text-xs font-medium text-gray-700 mb-1 block"
-                      >
-                        Хүлээн авагч байгууллага
-                      </Label>
-                      <FilterableSelect
-                        options={organizationOptions}
-                        value={formState.receiverOrganizationId}
-                        onValueChange={(value) => {
-                          setFormState((prev) => ({
-                            ...prev,
-                            receiverOrganizationId: value,
-                          }));
-                        }}
-                        disabled={isLoadingOrganizations}
-                        placeholder={
-                          isLoadingOrganizations
-                            ? "Уншиж байна..."
-                            : "Хүлээн авагч байгууллага сонгох"
-                        }
-                        searchPlaceholder="Хүлээн авагч байгууллага хайх..."
-                        onCreateNew={handleCreateOrganization}
-                        createNewLabel="+ Нэмэх ..."
-                        className="h-9"
+                    <div className="h-12 flex items-center">
+                      <DriverManager
+                        drivers={drivers}
+                        onDriverAdded={handleDriverAdded}
+                        onDriverUpdated={handleDriverAdded}
                       />
                     </div>
                   </div>
-                </Card>
-              </div>
+                </div>
 
-              {/* Right Column */}
-              <div className="flex flex-col gap-1.5 overflow-hidden min-h-0">
-                {/* Entry Time */}
-                <Card className="p-2.5 shrink-0">
-                  <div>
+                {/* Transport Company */}
+                <div className="flex flex-col">
+                  <div className="mb-1.5 flex items-center">
                     <Label
-                      htmlFor="inTime"
-                      className="text-xs font-medium text-gray-700 mb-1 block"
+                      htmlFor="transporterCompanyId"
+                      className="text-base font-medium text-gray-700"
                     >
-                      Орох цаг *
+                      Тээврийн компани *
                     </Label>
+                  </div>
+                  <div className="h-12">
+                    <FilterableSelect
+                      options={transportCompanyOptions}
+                      value={formState.transporterCompanyId}
+                      onValueChange={(value) => {
+                        setFormState((prev) => ({
+                          ...prev,
+                          transporterCompanyId: value,
+                        }));
+                      }}
+                      disabled={isLoadingCompanies}
+                      placeholder={
+                        isLoadingCompanies
+                          ? "Уншиж байна..."
+                          : "Тээврийн компани сонгох"
+                      }
+                      searchPlaceholder="Тээврийн компани хайх..."
+                      onCreateNew={handleCreateTransportCompany}
+                      createNewLabel="+ Нэмэх ..."
+                      className="h-12"
+                    />
+                  </div>
+                </div>
+
+                {/* Product */}
+                <div className="flex flex-col">
+                  <div className="mb-1.5 flex items-center">
+                    <Label
+                      htmlFor="productId"
+                      className="text-base font-medium text-gray-700"
+                    >
+                      Бүтээгдэхүүн *
+                    </Label>
+                  </div>
+                  <div className="h-12">
+                    <FilterableSelect
+                      options={productOptions}
+                      value={formState.productId}
+                      onValueChange={(value) => {
+                        setFormState((prev) => ({
+                          ...prev,
+                          productId: value,
+                        }));
+                      }}
+                      disabled={isLoadingProducts}
+                      placeholder={
+                        isLoadingProducts
+                          ? "Уншиж байна..."
+                          : "Бүтээгдэхүүн сонгох"
+                      }
+                      searchPlaceholder="Бүтээгдэхүүн хайх..."
+                      onCreateNew={handleCreateProduct}
+                      createNewLabel="+ Нэмэх ..."
+                      className="h-12"
+                    />
+                  </div>
+                </div>
+
+                {/* Origin */}
+                <div className="flex flex-col">
+                  <div className="mb-1.5 flex items-center">
+                    <Label
+                      htmlFor="origin"
+                      className="text-base font-medium text-gray-700"
+                    >
+                      Хаанаас
+                    </Label>
+                  </div>
+                  <div className="h-12">
                     <Input
-                      id="inTime"
-                      type="datetime-local"
-                      value={formState.inTime}
+                      id="origin"
+                      value={formState.origin}
                       onChange={(e) =>
                         setFormState((prev) => ({
                           ...prev,
-                          inTime: e.target.value,
+                          origin: e.target.value,
                         }))
                       }
-                      onFocus={(e) => {
-                        const currentTime = getCurrentDateTime();
-                        setFormState((prev) => ({
-                          ...prev,
-                          inTime: currentTime,
-                        }));
-                        e.target.value = currentTime;
-                      }}
-                      className="h-9 text-sm w-full"
-                      required
+                      className="h-12 text-lg w-full"
+                      placeholder="Гарах газар"
                     />
                   </div>
-                </Card>
-                {/* Notes - Reduced height */}
-                <Card className="p-3 flex flex-col overflow-hidden flex-1 min-h-0">
-                  <div className="flex flex-col gap-1.5 mb-3">
+                </div>
+
+                {/* Destination */}
+                <div className="flex flex-col">
+                  <div className="mb-1.5 flex items-center">
+                    <Label
+                      htmlFor="destination"
+                      className="text-base font-medium text-gray-700"
+                    >
+                      Хаашаа
+                    </Label>
+                  </div>
+                  <div className="h-12">
+                    <Input
+                      id="destination"
+                      value={formState.destination}
+                      onChange={(e) =>
+                        setFormState((prev) => ({
+                          ...prev,
+                          destination: e.target.value,
+                        }))
+                      }
+                      className="h-12 text-lg w-full"
+                      placeholder="Очих газар"
+                    />
+                  </div>
+                </div>
+
+                {/* Sender Organization */}
+                <div className="flex flex-col">
+                  <div className="mb-1.5 flex items-center">
+                    <Label
+                      htmlFor="senderOrganizationId"
+                      className="text-base font-medium text-gray-700"
+                    >
+                      Илгээч байгууллага
+                    </Label>
+                  </div>
+                  <div className="h-12">
+                    <FilterableSelect
+                      options={organizationOptions}
+                      value={formState.senderOrganizationId}
+                      onValueChange={(value) => {
+                        setFormState((prev) => ({
+                          ...prev,
+                          senderOrganizationId: value,
+                        }));
+                      }}
+                      disabled={isLoadingOrganizations}
+                      placeholder={
+                        isLoadingOrganizations
+                          ? "Уншиж байна..."
+                          : "Илгээч байгууллага сонгох"
+                      }
+                      searchPlaceholder="Илгээч байгууллага хайх..."
+                      onCreateNew={handleCreateOrganization}
+                      createNewLabel="+ Нэмэх ..."
+                      className="h-12"
+                    />
+                  </div>
+                </div>
+
+                {/* Receiver Organization */}
+                <div className="flex flex-col">
+                  <div className="mb-1.5 flex items-center">
+                    <Label
+                      htmlFor="receiverOrganizationId"
+                      className="text-base font-medium text-gray-700"
+                    >
+                      Хүлээн авагч байгууллага
+                    </Label>
+                  </div>
+                  <div className="h-12">
+                    <FilterableSelect
+                      options={organizationOptions}
+                      value={formState.receiverOrganizationId}
+                      onValueChange={(value) => {
+                        setFormState((prev) => ({
+                          ...prev,
+                          receiverOrganizationId: value,
+                        }));
+                      }}
+                      disabled={isLoadingOrganizations}
+                      placeholder={
+                        isLoadingOrganizations
+                          ? "Уншиж байна..."
+                          : "Хүлээн авагч байгууллага сонгох"
+                      }
+                      searchPlaceholder="Хүлээн авагч байгууллага хайх..."
+                      onCreateNew={handleCreateOrganization}
+                      createNewLabel="+ Нэмэх ..."
+                      className="h-12"
+                    />
+                  </div>
+                </div>
+
+                {/* Notes - Wider, Reduced Height */}
+                <div className="md:col-span-2 flex flex-col">
+                  <div className="mb-1.5 flex items-center">
                     <Label
                       htmlFor="notes"
-                      className="text-xs font-medium text-gray-700 mb-0.5 block"
+                      className="text-base font-medium text-gray-700"
                     >
                       Нэмэлт мэдээлэл
                     </Label>
+                  </div>
+                  <div className="max-w-[calc(66.666%-0.5rem)]">
                     <Textarea
                       id="notes"
                       value={formState.notes}
@@ -1458,66 +1602,67 @@ export const InSessionForm = forwardRef<
                           notes: e.target.value,
                         }))
                       }
-                      className="text-xs resize-none"
+                      className="text-base resize-y h-20 w-full"
                       placeholder="Нэмэлт мэдээлэл..."
-                      rows={3}
                     />
                   </div>
-                  <div className="flex items-center gap-2 pt-2 border-t border-gray-200 shrink-0">
-                    <Button
-                      type="button"
-                      variant="outline"
-                      onClick={() => {
-                        setFormState({
-                          plateNumber: "",
-                          driverId: "",
-                          driverName: "",
-                          productId: "",
-                          transporterCompanyId: "",
-                          origin: "",
-                          destination: "",
-                          senderOrganizationId: "",
-                          receiverOrganizationId: "",
-                          inTime: new Date().toISOString().slice(0, 16),
-                          grossWeightKg: null,
-                          hasTrailer: false,
-                          trailerNumber: "",
-                          notes: "",
-                        });
-                      }}
-                      className="h-9 px-4 text-xs"
-                    >
-                      Цэвэрлэх
-                    </Button>
-                    <Button
-                      type="submit"
-                      onClick={handleSubmit}
-                      disabled={isSaving}
-                      className="bg-green-600 hover:bg-green-700 h-9 px-4 text-xs flex-1"
-                    >
-                      {isSaving ? "Хадгалж байна..." : "Хадгалах"}
-                    </Button>
-                    <Button
-                      type="button"
-                      onClick={() => {
-                        // Store destination value for out-session auto-fill
-                        if (formState.destination.trim()) {
-                          localStorage.setItem(
-                            "inSessionDestination",
-                            formState.destination.trim()
-                          );
-                        }
-                        router.push("/out-session");
-                      }}
-                      className="bg-blue-600 hover:bg-blue-700 h-9 px-4 text-xs"
-                    >
-                      ГАРАХ бүртгэл
-                      <ArrowRight className="h-3 w-3 ml-2" />
-                    </Button>
-                  </div>
-                </Card>
+                </div>
               </div>
-            </div>
+
+              {/* Action Buttons */}
+              <div className="flex items-center justify-center gap-2 mt-3 pt-3 border-t border-gray-200">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => {
+                    setFormState({
+                      plateNumber: "",
+                      driverId: "",
+                      driverName: "",
+                      productId: "",
+                      transporterCompanyId: "",
+                      origin: "",
+                      destination: "",
+                      senderOrganizationId: "",
+                      receiverOrganizationId: "",
+                      inTime: new Date().toISOString().slice(0, 16),
+                      grossWeightKg: null,
+                      hasTrailer: false,
+                      trailerNumber: "",
+                      notes: "",
+                    });
+                  }}
+                  className="h-12 px-5 text-base"
+                >
+                  Цэвэрлэх
+                </Button>
+                <Button
+                  type="submit"
+                  onClick={handleSubmit}
+                  disabled={isSaving}
+                  className="bg-green-600 hover:bg-green-700 h-11 px-4 text-sm"
+                >
+                  {isSaving ? "Хадгалж байна..." : "Хадгалах"}
+                </Button>
+                <Button
+                  type="button"
+                  onClick={() => {
+                    // Store destination value for out-session auto-fill
+                    if (formState.destination.trim()) {
+                      localStorage.setItem(
+                        "inSessionDestination",
+                        formState.destination.trim()
+                      );
+                    }
+                    router.push("/out-session");
+                  }}
+                  className="bg-blue-600 hover:bg-blue-700 h-11 px-4 text-sm"
+                >
+                  ГАРАХ бүртгэл
+                  <ArrowRight className="h-5 w-5 ml-2" />
+                </Button>
+              </div>
+            </Card>
           </div>
         </form>
       </div>
