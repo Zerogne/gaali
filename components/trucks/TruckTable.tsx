@@ -4,14 +4,6 @@ import { EditLogDialog } from "@/components/history/EditLogDialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { SearchInput } from "@/components/ui/search-input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
 import {
   Table,
@@ -25,7 +17,7 @@ import { useToast } from "@/hooks/use-toast";
 import { sendTruckLogToCustoms } from "@/lib/api";
 import { exportLogToPDF } from "@/lib/pdf-export";
 import type { Direction, TruckLog } from "@/lib/types";
-import { Edit, FileDown, Search, Send } from "lucide-react";
+import { Edit, FileDown, Search, Send, ArrowRight } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 
@@ -38,10 +30,6 @@ interface TruckTableProps {
 export function TruckTable({ logs, onSend, onUpdate }: TruckTableProps) {
   const { toast } = useToast();
   const router = useRouter();
-  const [directionFilter, setDirectionFilter] = useState<Direction | "ALL">(
-    "ALL"
-  );
-  const [searchQuery, setSearchQuery] = useState("");
   const [sendingIds, setSendingIds] = useState<Set<string>>(new Set());
   const [editingLog, setEditingLog] = useState<TruckLog | null>(null);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
@@ -60,15 +48,7 @@ export function TruckTable({ logs, onSend, onUpdate }: TruckTableProps) {
     }
   };
 
-  const filteredLogs = logs.filter((log) => {
-    const matchesDirection =
-      directionFilter === "ALL" || log.direction === directionFilter;
-    const matchesSearch =
-      searchQuery === "" ||
-      log.plate.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      log.driverName.toLowerCase().includes(searchQuery.toLowerCase());
-    return matchesDirection && matchesSearch;
-  });
+  const filteredLogs = logs;
 
   const inCount = filteredLogs.filter((log) => log.direction === "IN").length;
   const outCount = filteredLogs.filter((log) => log.direction === "OUT").length;
@@ -167,61 +147,24 @@ export function TruckTable({ logs, onSend, onUpdate }: TruckTableProps) {
 
   return (
     <Card className="border-gray-200 bg-white shadow-sm">
-      <CardHeader className="pb-4">
-        <div className="flex items-center justify-between mb-2">
-          <div>
-            <CardTitle className="text-xl font-bold text-gray-900 mb-1">
-              Тээврийн хэрэгслийн түүх
-            </CardTitle>
-            <p className="text-sm text-gray-500">
-              Бүх тээврийн хэрэгслийн орох/гарах бүртгэлийн мэдээлэл
-            </p>
-          </div>
-        </div>
-
-        <Separator className="my-4" />
-
-        {/* Filters Section */}
-        <div className="space-y-3">
-          <div className="flex items-center gap-2 mb-2">
-            <Search className="w-4 h-4 text-gray-400" />
-            <span className="text-sm font-medium text-gray-700">
-              Хайлт ба шүүлт
-            </span>
-          </div>
-          <div className="flex flex-col sm:flex-row gap-3">
-            <div className="flex-1 max-w-md">
-              <SearchInput
-                placeholder="Улсын дугаар эсвэл жолоочийн нэрээр хайх..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-              />
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="text-sm text-gray-600 whitespace-nowrap">
-                Чиглэл:
-              </span>
-              <Select
-                value={directionFilter}
-                onValueChange={(value) =>
-                  setDirectionFilter(value as Direction | "ALL")
-                }
-              >
-                <SelectTrigger className="w-full sm:w-[180px] bg-white border-gray-300">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="ALL">Бүх чиглэл</SelectItem>
-                  <SelectItem value="IN">Зөвхөн ОРОХ</SelectItem>
-                  <SelectItem value="OUT">Зөвхөн ГАРАХ</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
+      <CardHeader className="pb-3">
+        <div className="flex items-center justify-between">
+          <CardTitle className="text-xl font-bold text-gray-900">
+            Тээврийн хэрэгслийн түүх
+          </CardTitle>
+          <Button
+            onClick={() => router.push("/sessions")}
+            variant="outline"
+            size="sm"
+            className="gap-2"
+          >
+            Бүрэн түүх
+            <ArrowRight className="w-4 h-4" />
+          </Button>
         </div>
       </CardHeader>
       <Separator />
-      <CardContent className="pt-6">
+      <CardContent className="pt-4">
         {filteredLogs.length === 0 ? (
           <div className="text-center py-12 text-gray-500">
             <p className="text-base font-medium mb-1">
@@ -233,7 +176,7 @@ export function TruckTable({ logs, onSend, onUpdate }: TruckTableProps) {
             </p>
           </div>
         ) : (
-          <div className="space-y-4">
+          <div className="space-y-3">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-4">
                 <span className="text-sm font-medium text-gray-700">
@@ -253,37 +196,15 @@ export function TruckTable({ logs, onSend, onUpdate }: TruckTableProps) {
                 </Badge>
               </div>
             </div>
-            <Separator />
             <div className="rounded-lg border border-gray-200 overflow-hidden">
               <Table>
                 <TableHeader>
                   <TableRow className="bg-gray-50">
                     <TableHead className="text-gray-700 font-semibold">
-                      Чиглэл
-                    </TableHead>
-                    <TableHead className="text-gray-700 font-semibold">
                       Улсын дугаар
                     </TableHead>
                     <TableHead className="text-gray-700 font-semibold">
                       Жолооч
-                    </TableHead>
-                    <TableHead className="text-gray-700 font-semibold">
-                      Бүтээгдэхүүн
-                    </TableHead>
-                    <TableHead className="text-gray-700 font-semibold">
-                      Жин (кг)
-                    </TableHead>
-                    <TableHead className="text-gray-700 font-semibold">
-                      Хаанаас
-                    </TableHead>
-                    <TableHead className="text-gray-700 font-semibold">
-                      Хаашаа
-                    </TableHead>
-                    <TableHead className="text-gray-700 font-semibold">
-                      Үүсгэсэн огноо
-                    </TableHead>
-                    <TableHead className="text-gray-700 font-semibold">
-                      Уникаль код
                     </TableHead>
                     <TableHead className="text-gray-700 font-semibold">
                       Үйлдлүүд
@@ -302,41 +223,11 @@ export function TruckTable({ logs, onSend, onUpdate }: TruckTableProps) {
                         handleEdit(log)
                       }}
                     >
-                      <TableCell>
-                        <Badge
-                          variant="outline"
-                          className={
-                            log.direction === "IN"
-                              ? "bg-blue-50 text-blue-700 border-blue-200"
-                              : "bg-orange-50 text-orange-700 border-orange-200"
-                          }
-                        >
-                          {log.direction}
-                        </Badge>
-                      </TableCell>
                       <TableCell className="font-mono font-semibold text-gray-900">
                         {log.plate}
                       </TableCell>
                       <TableCell className="text-gray-700">
                         {log.driverName}
-                      </TableCell>
-                      <TableCell className="text-gray-700 capitalize">
-                        {log.cargoType}
-                      </TableCell>
-                      <TableCell className="text-gray-700 font-medium">
-                        {log.weightKg?.toLocaleString() || "N/A"}
-                      </TableCell>
-                      <TableCell className="text-gray-700 text-sm">
-                        {log.origin || "—"}
-                      </TableCell>
-                      <TableCell className="text-gray-700 text-sm">
-                        {log.destination || "—"}
-                      </TableCell>
-                      <TableCell className="text-gray-600 text-sm">
-                        {formatDate(log.createdAt)}
-                      </TableCell>
-                      <TableCell className="font-mono font-semibold text-gray-900">
-                        {uniqueCodes.get(log.id) || "—"}
                       </TableCell>
                       <TableCell>
                         <div className="flex items-center gap-2">
