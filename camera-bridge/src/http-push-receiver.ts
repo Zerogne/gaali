@@ -383,16 +383,6 @@ export function startHttpPushReceiver(): void {
       console.error("Error sending welcome message:", error);
     }
 
-    ws.on("close", (code, reason) => {
-      wsClients.delete(ws);
-      console.log(`🔌 WebSocket client disconnected (code: ${code}, reason: ${reason?.toString() || 'none'}, total: ${wsClients.size})`);
-    });
-
-    ws.on("error", (error: Error) => {
-      console.error("WebSocket client error:", error);
-      wsClients.delete(ws);
-    });
-
     // Send ping to keep connection alive
     const pingInterval = setInterval(() => {
       if (ws.readyState === WebSocket.OPEN) {
@@ -406,8 +396,17 @@ export function startHttpPushReceiver(): void {
       }
     }, 30000); // Ping every 30 seconds
 
-    ws.on("close", () => {
+    // Single close handler that handles all cleanup
+    ws.on("close", (code, reason) => {
       clearInterval(pingInterval);
+      wsClients.delete(ws);
+      console.log(`🔌 WebSocket client disconnected (code: ${code}, reason: ${reason?.toString() || 'none'}, total: ${wsClients.size})`);
+    });
+
+    ws.on("error", (error: Error) => {
+      clearInterval(pingInterval);
+      console.error("WebSocket client error:", error);
+      wsClients.delete(ws);
     });
   });
 

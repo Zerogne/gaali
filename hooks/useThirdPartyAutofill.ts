@@ -60,7 +60,10 @@ export function useThirdPartyAutofill() {
       
       // If connection exists but is not open, close it first
       if (ws && ws.readyState !== WebSocket.OPEN) {
-        console.log("⚠️ Existing WebSocket is not open, closing it. State:", ws.readyState)
+        // Only log in development
+        if (process.env.NODE_ENV === "development" || process.env.NEXT_PUBLIC_ENABLE_THIRD_PARTY_LOGS === "true") {
+          console.log("⚠️ Existing WebSocket is not open, closing it. State:", ws.readyState)
+        }
         try {
           ws.close()
         } catch (e) {
@@ -83,8 +86,11 @@ export function useThirdPartyAutofill() {
       connectionAttemptRef.current++
 
       const wsUrl = getWebSocketUrl()
-      console.log("🔌 Attempting to connect to WebSocket:", wsUrl)
-      console.log("🔌 Connection attempt #:", connectionAttemptRef.current)
+      // Only log connection attempts in development or if explicitly enabled
+      if (process.env.NODE_ENV === "development" || process.env.NEXT_PUBLIC_ENABLE_THIRD_PARTY_LOGS === "true") {
+        console.log("🔌 Attempting to connect to WebSocket:", wsUrl)
+        console.log("🔌 Connection attempt #:", connectionAttemptRef.current)
+      }
 
       let connectionTimeout: NodeJS.Timeout | null = null
       let hasResolved = false
@@ -175,7 +181,9 @@ export function useThirdPartyAutofill() {
             // Connection was established but then closed - try to reconnect
             isConnecting = false
             setIsConnected(false)
-            if (connectionAttemptRef.current < 5) {
+            // Only auto-reconnect if explicitly enabled via env var
+            // Otherwise, only reconnect when sendFormData is called
+            if (process.env.NEXT_PUBLIC_THIRD_PARTY_AUTO_RECONNECT === "true" && connectionAttemptRef.current < 5) {
               if (reconnectTimeout) {
                 clearTimeout(reconnectTimeout)
               }
