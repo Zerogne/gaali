@@ -4,7 +4,6 @@
   "description": "Local bridge service to connect LPR camera to cloud API",
   "main": "server.js",
   "type": "commonjs",
-  "packageManager": "npm@10.0.0",
   "scripts": {
     "dev": "node server.js",
     "start": "node server.js",
