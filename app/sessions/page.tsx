@@ -34,27 +34,17 @@ export default function SessionsPage() {
     checkAuth();
   }, [router]);
 
-  // Load all logs
+  // Load logs for current page
   useEffect(() => {
     if (isCheckingAuth) return;
 
-    async function loadAllLogs() {
+    async function loadLogs() {
       try {
         setIsLoading(true);
-        // Load all logs by fetching multiple pages
-        let allLogs: TruckLog[] = [];
-        let page = 1;
-        let hasMore = true;
-
-        while (hasMore) {
-          const result = await getTruckLogs(page, 100);
-          allLogs = [...allLogs, ...result.logs];
-          hasMore = result.logs.length === 100 && page < 10; // Limit to 10 pages max (1000 logs)
-          setTotalPages(result.totalPages);
-          page++;
-        }
-
-        setLogs(allLogs);
+        // Load only the current page of logs (30 per page)
+        const result = await getTruckLogs(currentPage, 30);
+        setLogs(result.logs);
+        setTotalPages(result.totalPages);
       } catch (error) {
         console.error("Error loading logs:", error);
         if (error instanceof Error && error.message.includes("redirect")) {
@@ -65,29 +55,25 @@ export default function SessionsPage() {
       }
     }
 
-    loadAllLogs();
-  }, [isCheckingAuth, router]);
+    loadLogs();
+  }, [isCheckingAuth, router, currentPage]);
 
   const handleSend = async (logId: string) => {
-    // Reload logs after sending
-    const result = await getTruckLogs(1, 100);
+    // Reload current page after sending
+    const result = await getTruckLogs(currentPage, 30);
     setLogs(result.logs);
+    setTotalPages(result.totalPages);
   };
 
   const handleUpdate = async () => {
-    // Reload logs after update
-    let allLogs: TruckLog[] = [];
-    let page = 1;
-    let hasMore = true;
+    // Reload current page after update
+    const result = await getTruckLogs(currentPage, 30);
+    setLogs(result.logs);
+    setTotalPages(result.totalPages);
+  };
 
-    while (hasMore) {
-      const result = await getTruckLogs(page, 100);
-      allLogs = [...allLogs, ...result.logs];
-      hasMore = result.logs.length === 100 && page < 10;
-      page++;
-    }
-
-    setLogs(allLogs);
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
   };
 
   if (isCheckingAuth || isLoading) {
@@ -111,6 +97,9 @@ export default function SessionsPage() {
               logs={logs}
               onSend={handleSend}
               onUpdate={handleUpdate}
+              currentPage={currentPage}
+              totalPages={totalPages}
+              onPageChange={handlePageChange}
             />
           </div>
         </main>

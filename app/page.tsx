@@ -41,8 +41,8 @@ export default function DashboardPage() {
     async function loadLogs() {
       try {
         setIsLoading(true);
-        // Get first page of logs (pagination support)
-        const result = await getTruckLogs(1, 50);
+        // Get only the 5 most recent logs for the home page
+        const result = await getTruckLogs(1, 5);
         setLogs(result.logs);
       } catch (error) {
         console.error("Error loading logs:", error);
@@ -59,12 +59,12 @@ export default function DashboardPage() {
   }, [isCheckingAuth, router]);
 
   const handleSave = async (log: TruckLog) => {
-    // Add to local state immediately for optimistic UI
-    setLogs((prev) => [log, ...prev]);
+    // Add to local state immediately for optimistic UI (keep only 5 most recent)
+    setLogs((prev) => [log, ...prev].slice(0, 5));
 
-    // Reload from server to ensure consistency
+    // Reload from server to ensure consistency (only 5 most recent)
     try {
-      const result = await getTruckLogs(1, 50);
+      const result = await getTruckLogs(1, 5);
       setLogs(result.logs);
     } catch (error) {
       console.error("Error reloading logs:", error);
@@ -79,9 +79,9 @@ export default function DashboardPage() {
       )
     );
 
-    // Reload from server to ensure consistency
+    // Reload from server to ensure consistency (only 5 most recent)
     try {
-      const result = await getTruckLogs(1, 50);
+      const result = await getTruckLogs(1, 5);
       setLogs(result.logs);
     } catch (error) {
       console.error("Error reloading logs:", error);
@@ -101,17 +101,13 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="flex h-screen bg-gray-50">
+    <div className="flex h-screen bg-gray-50 overflow-hidden">
       <Sidebar />
-      <div className="flex-1 flex flex-col overflow-hidden">
-        <main className="flex-1 overflow-auto">
-          <div className="max-w-[1920px] mx-auto p-6 lg:p-8 space-y-8">
-            {/* Header */}
-
-            {/* Summary Cards */}
-
+      <div className="flex-1 flex flex-col overflow-hidden min-w-0">
+        <main className="flex-1 overflow-hidden flex flex-col">
+          <div className="flex-1 overflow-hidden flex flex-col max-w-[1920px] w-full mx-auto p-6 lg:p-8">
             {/* Truck IN and OUT Sections */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8 flex-shrink-0 mb-6">
               <TruckSection
                 direction="IN"
                 onSave={handleSave}
@@ -124,17 +120,19 @@ export default function DashboardPage() {
               />
             </div>
 
-            {/* History Table */}
-            <TruckTable
-              logs={logs}
-              onSend={handleSend}
-              onUpdate={() => {
-                // Reload logs after update
-                getTruckLogs(1, 50)
-                  .then(({ logs }) => setLogs(logs))
-                  .catch(console.error);
-              }}
-            />
+            {/* History Table - Takes remaining space */}
+            <div className="flex-1 min-h-0 overflow-hidden">
+              <TruckTable
+                logs={logs}
+                onSend={handleSend}
+                onUpdate={() => {
+                  // Reload logs after update (only 5 most recent)
+                  getTruckLogs(1, 5)
+                    .then(({ logs }) => setLogs(logs))
+                    .catch(console.error);
+                }}
+              />
+            </div>
           </div>
         </main>
       </div>

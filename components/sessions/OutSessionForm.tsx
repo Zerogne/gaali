@@ -12,6 +12,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useCameraBridgeWebSocket } from "@/hooks/useCameraBridgeWebSocket";
 import { useLprPlateAutofill } from "@/hooks/useLprPlateAutofill";
 import { useThirdPartyAutofill } from "@/hooks/useThirdPartyAutofill";
+import { updateTruckLog } from "@/lib/api";
 import { exportLogToPDF } from "@/lib/pdf-export";
 import type { Product } from "@/lib/products/products";
 import type {
@@ -59,6 +60,8 @@ interface OutSessionFormProps {
   onSaveRequest?: () => Promise<boolean>;
   streamUrl?: string;
   cameraAutofill?: ReturnType<typeof useLprPlateAutofill>;
+  editLog?: TruckLog | null;
+  editLogId?: string | null;
 }
 
 export interface OutSessionFormHandle {
@@ -80,6 +83,8 @@ export const OutSessionForm = forwardRef<
       onSaveRequest,
       streamUrl,
       cameraAutofill: externalCameraAutofill,
+      editLog,
+      editLogId,
     },
     ref
   ) => {
@@ -136,6 +141,65 @@ export const OutSessionForm = forwardRef<
       notes: "",
       inSessionId: undefined,
     });
+
+    // Populate form when editing
+    useEffect(() => {
+      if (
+        editLog &&
+        products.length > 0 &&
+        transportCompanies.length > 0 &&
+        drivers.length > 0 &&
+        organizations.length > 0
+      ) {
+        // Find matching IDs for dropdowns
+        const product = products.find(
+          (p) => p.label === editLog.cargoType || p.value === editLog.cargoType
+        );
+        const transportCompany = transportCompanies.find(
+          (tc) =>
+            tc.name === editLog.transportType ||
+            tc.id === editLog.transportCompanyId
+        );
+        const driver = drivers.find(
+          (d) => d.name === editLog.driverName || d.id === editLog.driverId
+        );
+        const senderOrg = organizations.find(
+          (o) =>
+            o.name === editLog.senderOrganization ||
+            o.id === editLog.senderOrganizationId
+        );
+        const receiverOrg = organizations.find(
+          (o) =>
+            o.name === editLog.receiverOrganization ||
+            o.id === editLog.receiverOrganizationId
+        );
+
+        // Format date for datetime-local input
+        const outTime = editLog.createdAt
+          ? new Date(editLog.createdAt).toISOString().slice(0, 16)
+          : new Date().toISOString().slice(0, 16);
+
+        setFormState({
+          plateNumber: editLog.plate || "",
+          driverId: driver?.id || "",
+          driverName: editLog.driverName || "",
+          productId: product?.id || "",
+          transporterCompanyId: transportCompany?.id || "",
+          origin: editLog.origin || "",
+          destination: editLog.destination || "",
+          senderOrganizationId: senderOrg?.id || "",
+          receiverOrganizationId: receiverOrg?.id || "",
+          outTime: outTime,
+          outWeightKg: editLog.weightKg || null,
+          netWeightKg: editLog.netWeightKg || null,
+          sealNumber: editLog.sealNumber || "",
+          hasTrailer: editLog.hasTrailer || false,
+          trailerNumber: editLog.trailerPlate || "",
+          notes: editLog.comments || "",
+          inSessionId: undefined,
+        });
+      }
+    }, [editLog, products, transportCompanies, drivers, organizations]);
 
     // Load all dropdown data
     const loadData = async () => {
@@ -734,6 +798,98 @@ export const OutSessionForm = forwardRef<
     const performSave = async (): Promise<boolean> => {
       setIsSaving(true);
       try {
+        // If editing, update the existing log
+        if (editLogId && editLog) {
+          const productName = formState.productId
+            ? products.find((p) => p.id === formState.productId)?.label || ""
+            : "";
+          const transportCompanyName = formState.transporterCompanyId
+            ? transportCompanies.find(
+                (t) => t.id === formState.transporterCompanyId
+              )?.name || ""
+            : "";
+
+          let senderOrgName = "";
+          let receiverOrgName = "";
+
+          if (formState.senderOrganizationId) {
+            const org = organizations.find(
+              (o) => o.id === formState.senderOrganizationId
+            );
+            if (org) senderOrgName = org.name;
+          }
+
+          if (formState.receiverOrganizationId) {
+            const org = organizations.find(
+              (o) => o.id === formState.receiverOrganizationId
+            );
+            if (org) receiverOrgName = org.name;
+          }
+
+          const updateData = {
+            plate: formState.plateNumber.trim().toUpperCase(),
+            driverId: formState.driverId || undefined,
+            driverName: formState.driverName.trim() || undefined,
+            cargoType: productName || undefined,
+            transportCompanyId: formState.transporterCompanyId || undefined,
+            origin: formState.origin.trim() || undefined,
+            destination: formState.destination.trim() || undefined,
+            senderOrganizationId: formState.senderOrganizationId || undefined,
+            senderOrganization: senderOrgName || undefined,
+            receiverOrganizationId:
+              formState.receiverOrganizationId || undefined,
+            receiverOrganization: receiverOrgName || undefined,
+            weightKg: formState.outWeightKg || undefined,
+            netWeightKg:
+              formState.netWeightKg !== null &&
+              formState.netWeightKg !== undefined
+                ? formState.netWeightKg
+                : undefined,
+            hasTrailer: formState.hasTrailer || undefined,
+            trailerPlate:
+              formState.hasTrailer && formState.trailerNumber.trim()
+                ? formState.trailerNumber.trim().toUpperCase()
+                : undefined,
+            sealNumber: formState.sealNumber.trim() || undefined,
+            comments: formState.notes.trim() || undefined,
+          };
+
+          const result = await updateTruckLog(editLogId, updateData);
+
+          if (!result.success) {
+            throw new Error(result.error || "Бүртгэл шинэчлэхэд алдаа гарлаа");
+          }
+
+          toast({
+            title: "Амжилттай",
+            description: "Бүртгэл амжилттай шинэчлэгдлээ",
+          });
+
+          // Reset form
+          setFormState({
+            plateNumber: "",
+            driverId: "",
+            driverName: "",
+            productId: "",
+            transporterCompanyId: "",
+            origin: "",
+            destination: "",
+            senderOrganizationId: "",
+            receiverOrganizationId: "",
+            outTime: new Date().toISOString().slice(0, 16),
+            outWeightKg: null,
+            netWeightKg: null,
+            sealNumber: "",
+            hasTrailer: false,
+            trailerNumber: "",
+            notes: "",
+            inSessionId: undefined,
+          });
+
+          return true;
+        }
+
+        // Otherwise, create a new session
         // Update outTime to current time before saving
         const currentTime = getCurrentDateTime();
         setFormState((prev) => ({ ...prev, outTime: currentTime }));

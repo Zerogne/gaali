@@ -1,6 +1,5 @@
 "use client";
 
-import { EditLogDialog } from "@/components/history/EditLogDialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -31,20 +30,14 @@ export function TruckTable({ logs, onSend, onUpdate }: TruckTableProps) {
   const { toast } = useToast();
   const router = useRouter();
   const [sendingIds, setSendingIds] = useState<Set<string>>(new Set());
-  const [editingLog, setEditingLog] = useState<TruckLog | null>(null);
-  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [uniqueCodes, setUniqueCodes] = useState<Map<string, string>>(new Map());
 
   const handleEdit = (log: TruckLog) => {
-    setEditingLog(log);
-    setIsEditDialogOpen(true);
-  };
-
-  const handleEditSuccess = () => {
-    setIsEditDialogOpen(false);
-    setEditingLog(null);
-    if (onUpdate) {
-      onUpdate();
+    // Redirect to the appropriate session page based on direction
+    if (log.direction === "IN") {
+      router.push(`/in-session?edit=${log.id}`);
+    } else {
+      router.push(`/out-session?edit=${log.id}`);
     }
   };
 
@@ -146,8 +139,8 @@ export function TruckTable({ logs, onSend, onUpdate }: TruckTableProps) {
   };
 
   return (
-    <Card className="border-gray-200 bg-white shadow-sm">
-      <CardHeader className="pb-3">
+    <Card className="border-gray-200 bg-white shadow-sm h-full flex flex-col">
+      <CardHeader className="pb-3 flex-shrink-0">
         <div className="flex items-center justify-between">
           <CardTitle className="text-xl font-bold text-gray-900">
             Тээврийн хэрэгслийн түүх
@@ -163,8 +156,8 @@ export function TruckTable({ logs, onSend, onUpdate }: TruckTableProps) {
           </Button>
         </div>
       </CardHeader>
-      <Separator />
-      <CardContent className="pt-4">
+      <Separator className="flex-shrink-0" />
+      <CardContent className="pt-4 flex-1 min-h-0 overflow-hidden flex flex-col">
         {filteredLogs.length === 0 ? (
           <div className="text-center py-12 text-gray-500">
             <p className="text-base font-medium mb-1">
@@ -176,8 +169,8 @@ export function TruckTable({ logs, onSend, onUpdate }: TruckTableProps) {
             </p>
           </div>
         ) : (
-          <div className="space-y-3">
-            <div className="flex items-center justify-between">
+          <div className="flex flex-col h-full min-h-0">
+            <div className="flex items-center justify-between flex-shrink-0 mb-3">
               <div className="flex items-center gap-4">
                 <span className="text-sm font-medium text-gray-700">
                   Нийт бүртгэл:
@@ -196,7 +189,7 @@ export function TruckTable({ logs, onSend, onUpdate }: TruckTableProps) {
                 </Badge>
               </div>
             </div>
-            <div className="rounded-lg border border-gray-200 overflow-hidden">
+            <div className="flex-1 min-h-0 overflow-auto rounded-lg border border-gray-200">
               <Table>
                 <TableHeader>
                   <TableRow className="bg-gray-50">
@@ -309,12 +302,6 @@ export function TruckTable({ logs, onSend, onUpdate }: TruckTableProps) {
         )}
       </CardContent>
 
-      <EditLogDialog
-        log={editingLog}
-        open={isEditDialogOpen}
-        onOpenChange={setIsEditDialogOpen}
-        onSuccess={handleEditSuccess}
-      />
     </Card>
   );
 }

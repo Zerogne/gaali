@@ -17,13 +17,18 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { useToast } from "@/hooks/use-toast";
 import { useLprPlateAutofill } from "@/hooks/useLprPlateAutofill";
+import { getTruckLog } from "@/lib/api";
+import type { TruckLog } from "@/lib/types";
 import { ArrowLeft } from "lucide-react";
-import { useRouter } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { Suspense, useEffect, useRef, useState } from "react";
 
-export default function OutSessionPage() {
+function OutSessionContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const { toast } = useToast();
   const cameraAutofill = useLprPlateAutofill();
   const [currentPlate, setCurrentPlate] = useState<string>("");
   const [streamUrl, setStreamUrl] = useState<string | undefined>(undefined);
@@ -34,6 +39,9 @@ export default function OutSessionPage() {
     null
   );
   const [hasUnsavedData, setHasUnsavedData] = useState(false);
+  const [editLogId, setEditLogId] = useState<string | null>(null);
+  const [editLog, setEditLog] = useState<TruckLog | null>(null);
+  const [isLoadingLog, setIsLoadingLog] = useState(false);
 
   // Fetch camera stream URL from config
   useEffect(() => {
@@ -58,15 +66,54 @@ export default function OutSessionPage() {
     fetchStreamUrl();
   }, []);
 
+  // Check for edit parameter
+  useEffect(() => {
+    const editId = searchParams.get("edit");
+    if (editId) {
+      setEditLogId(editId);
+    }
+  }, [searchParams]);
+
+  // Fetch log data when editing
+  useEffect(() => {
+    if (editLogId) {
+      setIsLoadingLog(true);
+      getTruckLog(editLogId)
+        .then((log) => {
+          if (log && log.direction === "OUT") {
+            setEditLog(log);
+          } else {
+            toast({
+              title: "Алдаа",
+              description: "Бүртгэл олдсонгүй эсвэл буруу чиглэл",
+              variant: "destructive",
+            });
+            router.push("/out-session");
+          }
+        })
+        .catch((error) => {
+          console.error("Error loading log:", error);
+          toast({
+            title: "Алдаа",
+            description: "Бүртгэл ачаалахад алдаа гарлаа",
+            variant: "destructive",
+          });
+        })
+        .finally(() => {
+          setIsLoadingLog(false);
+        });
+    }
+  }, [editLogId, router, toast]);
+
   // Load destination from in-session for auto-fill
   useEffect(() => {
     const storedDestination = localStorage.getItem("inSessionDestination");
-    if (storedDestination) {
+    if (storedDestination && !editLogId) {
       setAutoFillOrigin(storedDestination);
       // Clear it after use so it doesn't persist
       localStorage.removeItem("inSessionDestination");
     }
-  }, []);
+  }, [editLogId]);
 
   // Track if user manually edited the plate field
   const handlePlateChange = (value: string) => {
@@ -143,15 +190,23 @@ export default function OutSessionPage() {
         {/* Main Content - Fills remaining space */}
         <div className="flex-1 min-h-0 overflow-hidden">
           <div className="h-full w-full">
-            <OutSessionForm
-              ref={formRef}
-              autoFillPlate={null}
-              autoFillOrigin={autoFillOrigin}
-              onPlateChange={handlePlateChange}
-              onHasUnsavedDataChange={setHasUnsavedData}
-              streamUrl={streamUrl}
-              cameraAutofill={cameraAutofill}
-            />
+            {isLoadingLog ? (
+              <div className="flex items-center justify-center h-full">
+                <p className="text-gray-500">Уншиж байна...</p>
+              </div>
+            ) : (
+              <OutSessionForm
+                ref={formRef}
+                autoFillPlate={null}
+                autoFillOrigin={autoFillOrigin}
+                onPlateChange={handlePlateChange}
+                onHasUnsavedDataChange={setHasUnsavedData}
+                streamUrl={streamUrl}
+                cameraAutofill={cameraAutofill}
+                editLog={editLog}
+                editLogId={editLogId}
+              />
+            )}
           </div>
         </div>
       </div>
@@ -180,5 +235,20 @@ export default function OutSessionPage() {
         </AlertDialogContent>
       </AlertDialog>
     </div>
+  );
+}
+
+export default function OutSessionPage() {
+  return (
+    <Suspense fallback={
+      <div className="flex h-screen bg-gray-50">
+        <Sidebar />
+        <div className="flex-1 flex items-center justify-center">
+          <p className="text-gray-500">Уншиж байна...</p>
+        </div>
+      </div>
+    }>
+      <OutSessionContent />
+    </Suspense>
   );
 }

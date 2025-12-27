@@ -1,6 +1,5 @@
 "use client";
 
-import { EditLogDialog } from "@/components/history/EditLogDialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -34,17 +33,28 @@ interface FullHistoryTableProps {
   logs: TruckLog[];
   onSend: (logId: string) => void;
   onUpdate?: () => void;
+  currentPage?: number;
+  totalPages?: number;
+  onPageChange?: (page: number) => void;
 }
 
-export function FullHistoryTable({ logs, onSend, onUpdate }: FullHistoryTableProps) {
+export function FullHistoryTable({ 
+  logs, 
+  onSend, 
+  onUpdate,
+  currentPage: externalCurrentPage,
+  totalPages: externalTotalPages,
+  onPageChange
+}: FullHistoryTableProps) {
   const { toast } = useToast();
   const router = useRouter();
   const [sendingIds, setSendingIds] = useState<Set<string>>(new Set());
-  const [editingLog, setEditingLog] = useState<TruckLog | null>(null);
-  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [uniqueCodes, setUniqueCodes] = useState<Map<string, string>>(new Map());
-  const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 50;
+  const [internalCurrentPage, setInternalCurrentPage] = useState(1);
+  
+  // Use external pagination if provided, otherwise use internal
+  const currentPage = externalCurrentPage ?? internalCurrentPage;
+  const setCurrentPage = onPageChange ?? setInternalCurrentPage;
 
   // Filter states
   const [directionFilter, setDirectionFilter] = useState<Direction | "ALL">("ALL");
@@ -60,17 +70,14 @@ export function FullHistoryTable({ logs, onSend, onUpdate }: FullHistoryTablePro
   const [sentToCustomsFilter, setSentToCustomsFilter] = useState<"ALL" | "true" | "false">("ALL");
 
   const handleEdit = (log: TruckLog) => {
-    setEditingLog(log);
-    setIsEditDialogOpen(true);
-  };
-
-  const handleEditSuccess = () => {
-    setIsEditDialogOpen(false);
-    setEditingLog(null);
-    if (onUpdate) {
-      onUpdate();
+    // Redirect to the appropriate session page based on direction
+    if (log.direction === "IN") {
+      router.push(`/in-session?edit=${log.id}`);
+    } else {
+      router.push(`/out-session?edit=${log.id}`);
     }
   };
+
 
   // Filter logs based on all filter criteria
   const filteredLogs = useMemo(() => {
@@ -155,14 +162,15 @@ export function FullHistoryTable({ logs, onSend, onUpdate }: FullHistoryTablePro
     sentToCustomsFilter,
   ]);
 
-  // Pagination
-  const totalPages = Math.ceil(filteredLogs.length / itemsPerPage);
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const endIndex = startIndex + itemsPerPage;
-  const paginatedLogs = filteredLogs.slice(startIndex, endIndex);
+  // Use filtered logs directly if external pagination is provided, otherwise paginate client-side
+  const paginatedLogs = externalCurrentPage !== undefined ? filteredLogs : filteredLogs;
+  const totalPages = externalTotalPages ?? Math.ceil(filteredLogs.length / 30);
 
   useEffect(() => {
-    setCurrentPage(1); // Reset to first page when filters change
+    // Reset to first page when filters change (only if using internal pagination)
+    if (externalCurrentPage === undefined) {
+      setCurrentPage(1);
+    }
   }, [
     directionFilter,
     plateSearch,
@@ -175,6 +183,7 @@ export function FullHistoryTable({ logs, onSend, onUpdate }: FullHistoryTablePro
     dateFrom,
     dateTo,
     sentToCustomsFilter,
+    externalCurrentPage,
   ]);
 
   const handleResend = async (log: TruckLog) => {
@@ -668,26 +677,83 @@ export function FullHistoryTable({ logs, onSend, onUpdate }: FullHistoryTablePro
 
             {/* Pagination */}
             {totalPages > 1 && (
-              <div className="flex items-center justify-between mt-4">
+              <div className="flex flex-col items-center gap-3 mt-4">
                 <div className="text-sm text-gray-600">
-                  {startIndex + 1}-{Math.min(endIndex, filteredLogs.length)} / {filteredLogs.length}
+                  Нийт: {filteredLogs.length} бүртгэл
                 </div>
                 <div className="flex items-center gap-2">
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
+                    onClick={() => {
+                      const newPage = Math.max(1, currentPage - 1);
+                      if (onPageChange) {
+                        onPageChange(newPage);
+                      } else {
+                        setInternalCurrentPage(newPage);
+                      }
+                    }}
                     disabled={currentPage === 1}
                   >
                     <ChevronLeft className="w-4 h-4" />
                   </Button>
-                  <span className="text-sm text-gray-700">
-                    {currentPage} / {totalPages}
-                  </span>
+                  
+                  {/* Page Number Buttons */}
+                  <div className="flex items-center gap-1">
+                    {Array.from({ length: totalPages }, (_, i) => i + 1).map((pageNum) => {
+                      // Show first page, last page, current page, and pages around current
+                      const showPage = 
+                        pageNum === 1 ||
+                        pageNum === totalPages ||
+                        (pageNum >= currentPage - 1 && pageNum <= currentPage + 1);
+                      
+                      if (!showPage) {
+                        // Show ellipsis
+                        if (pageNum === currentPage - 2 || pageNum === currentPage + 2) {
+                          return (
+                            <span key={pageNum} className="px-2 text-gray-400">
+                              ...
+                            </span>
+                          );
+                        }
+                        return null;
+                      }
+                      
+                      return (
+                        <Button
+                          key={pageNum}
+                          variant={pageNum === currentPage ? "default" : "outline"}
+                          size="sm"
+                          onClick={() => {
+                            if (onPageChange) {
+                              onPageChange(pageNum);
+                            } else {
+                              setInternalCurrentPage(pageNum);
+                            }
+                          }}
+                          className={
+                            pageNum === currentPage
+                              ? "bg-blue-600 text-white hover:bg-blue-700"
+                              : ""
+                          }
+                        >
+                          {pageNum}
+                        </Button>
+                      );
+                    })}
+                  </div>
+                  
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => setCurrentPage((prev) => Math.min(totalPages, prev + 1))}
+                    onClick={() => {
+                      const newPage = Math.min(totalPages, currentPage + 1);
+                      if (onPageChange) {
+                        onPageChange(newPage);
+                      } else {
+                        setInternalCurrentPage(newPage);
+                      }
+                    }}
                     disabled={currentPage === totalPages}
                   >
                     <ChevronRight className="w-4 h-4" />
@@ -699,12 +765,6 @@ export function FullHistoryTable({ logs, onSend, onUpdate }: FullHistoryTablePro
         )}
       </CardContent>
 
-      <EditLogDialog
-        log={editingLog}
-        open={isEditDialogOpen}
-        onOpenChange={setIsEditDialogOpen}
-        onSuccess={handleEditSuccess}
-      />
     </Card>
   );
 }

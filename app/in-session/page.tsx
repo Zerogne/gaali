@@ -18,13 +18,18 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Sidebar } from "@/components/layout/Sidebar";
+import { useToast } from "@/hooks/use-toast";
 import { useLprPlateAutofill } from "@/hooks/useLprPlateAutofill";
-import { ArrowLeft, ArrowRight } from "lucide-react";
-import { useRouter } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
+import { getTruckLog } from "@/lib/api";
+import type { TruckLog } from "@/lib/types";
+import { ArrowLeft } from "lucide-react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { Suspense, useEffect, useRef, useState } from "react";
 
-export default function InSessionPage() {
+function InSessionContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const { toast } = useToast();
   const cameraAutofill = useLprPlateAutofill();
   const [currentPlate, setCurrentPlate] = useState<string>("");
   const [streamUrl, setStreamUrl] = useState<string | undefined>(undefined);
@@ -34,6 +39,48 @@ export default function InSessionPage() {
     null
   );
   const [hasUnsavedData, setHasUnsavedData] = useState(false);
+  const [editLogId, setEditLogId] = useState<string | null>(null);
+  const [editLog, setEditLog] = useState<TruckLog | null>(null);
+  const [isLoadingLog, setIsLoadingLog] = useState(false);
+
+  // Check for edit parameter
+  useEffect(() => {
+    const editId = searchParams.get("edit");
+    if (editId) {
+      setEditLogId(editId);
+    }
+  }, [searchParams]);
+
+  // Fetch log data when editing
+  useEffect(() => {
+    if (editLogId) {
+      setIsLoadingLog(true);
+      getTruckLog(editLogId)
+        .then((log) => {
+          if (log && log.direction === "IN") {
+            setEditLog(log);
+          } else {
+            toast({
+              title: "Алдаа",
+              description: "Бүртгэл олдсонгүй эсвэл буруу чиглэл",
+              variant: "destructive",
+            });
+            router.push("/in-session");
+          }
+        })
+        .catch((error) => {
+          console.error("Error loading log:", error);
+          toast({
+            title: "Алдаа",
+            description: "Бүртгэл ачаалахад алдаа гарлаа",
+            variant: "destructive",
+          });
+        })
+        .finally(() => {
+          setIsLoadingLog(false);
+        });
+    }
+  }, [editLogId, router]);
 
   // Fetch camera stream URL from config
   useEffect(() => {
@@ -115,41 +162,30 @@ export default function InSessionPage() {
         {/* Top Navigation - Fixed */}
         <nav className="bg-white border-b border-gray-200 shrink-0 z-50">
           <div className="max-w-full mx-auto px-6 py-3">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-4">
-                <Button
-                  onClick={() => router.push("/")}
-                  variant="ghost"
-                  size="sm"
-                  className="h-8 w-8 p-0"
-                >
-                  <ArrowLeft className="h-4 w-4" />
-                </Button>
-                <div className="h-5 w-px bg-gray-300" />
-                <div>
-                  <h1 className="text-lg font-semibold text-gray-900">
-                    ОРОХ бүртгэл
-                  </h1>
-                  <p className="text-xs text-gray-500">
-                    Тээврийн хэрэгсэл орох бүртгэл
-                  </p>
-                </div>
-                <Badge
-                  variant="outline"
-                  className="ml-2 bg-blue-50 text-blue-700 border-blue-200 text-xs"
-                >
-                  IN
-                </Badge>
-              </div>
+            <div className="flex items-center gap-4">
               <Button
-                onClick={() => handleNavigationClick("/out-session")}
-                variant="outline"
+                onClick={() => router.push("/")}
+                variant="ghost"
                 size="sm"
-                className="gap-2 h-8 text-xs"
+                className="h-8 w-8 p-0"
               >
-                ГАРАХ бүртгэл
-                <ArrowRight className="h-3 w-3" />
+                <ArrowLeft className="h-4 w-4" />
               </Button>
+              <div className="h-5 w-px bg-gray-300" />
+              <div>
+                <h1 className="text-lg font-semibold text-gray-900">
+                  ОРОХ бүртгэл
+                </h1>
+                <p className="text-xs text-gray-500">
+                  Тээврийн хэрэгсэл орох бүртгэл
+                </p>
+              </div>
+              <Badge
+                variant="outline"
+                className="ml-2 bg-blue-50 text-blue-700 border-blue-200 text-xs"
+              >
+                IN
+              </Badge>
             </div>
           </div>
         </nav>
@@ -157,14 +193,22 @@ export default function InSessionPage() {
         {/* Main Content - Fills remaining space */}
         <div className="flex-1 min-h-0 overflow-hidden">
           <div className="h-full max-w-full mx-auto px-3 py-2">
-            <InSessionForm
-              ref={formRef}
-              autoFillPlate={null}
-              onPlateChange={handlePlateChange}
-              onHasUnsavedDataChange={setHasUnsavedData}
-              streamUrl={streamUrl}
-              cameraAutofill={cameraAutofill}
-            />
+            {isLoadingLog ? (
+              <div className="flex items-center justify-center h-full">
+                <p className="text-gray-500">Уншиж байна...</p>
+              </div>
+            ) : (
+              <InSessionForm
+                ref={formRef}
+                autoFillPlate={null}
+                onPlateChange={handlePlateChange}
+                onHasUnsavedDataChange={setHasUnsavedData}
+                streamUrl={streamUrl}
+                cameraAutofill={cameraAutofill}
+                editLog={editLog}
+                editLogId={editLogId}
+              />
+            )}
           </div>
         </div>
       </div>
@@ -193,5 +237,20 @@ export default function InSessionPage() {
         </AlertDialogContent>
       </AlertDialog>
     </div>
+  );
+}
+
+export default function InSessionPage() {
+  return (
+    <Suspense fallback={
+      <div className="flex h-screen bg-gray-50">
+        <Sidebar />
+        <div className="flex-1 flex items-center justify-center">
+          <p className="text-gray-500">Уншиж байна...</p>
+        </div>
+      </div>
+    }>
+      <InSessionContent />
+    </Suspense>
   );
 }
