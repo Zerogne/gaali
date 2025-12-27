@@ -1,6 +1,6 @@
 "use client";
 
-import { CameraPanel } from "@/components/sessions/CameraPanel";
+import { Sidebar } from "@/components/layout/Sidebar";
 import {
   OutSessionForm,
   type OutSessionFormHandle,
@@ -27,6 +27,7 @@ export default function OutSessionPage() {
   const cameraAutofill = useLprPlateAutofill();
   const [currentPlate, setCurrentPlate] = useState<string>("");
   const [streamUrl, setStreamUrl] = useState<string | undefined>(undefined);
+  const [autoFillOrigin, setAutoFillOrigin] = useState<string | null>(null);
   const formRef = useRef<OutSessionFormHandle>(null);
   const [showSaveDialog, setShowSaveDialog] = useState(false);
   const [pendingNavigation, setPendingNavigation] = useState<string | null>(
@@ -55,6 +56,16 @@ export default function OutSessionPage() {
       }
     };
     fetchStreamUrl();
+  }, []);
+
+  // Load destination from in-session for auto-fill
+  useEffect(() => {
+    const storedDestination = localStorage.getItem("inSessionDestination");
+    if (storedDestination) {
+      setAutoFillOrigin(storedDestination);
+      // Clear it after use so it doesn't persist
+      localStorage.removeItem("inSessionDestination");
+    }
   }, []);
 
   // Track if user manually edited the plate field
@@ -93,60 +104,55 @@ export default function OutSessionPage() {
   };
 
   return (
-    <div className="fixed inset-0 h-screen w-screen overflow-hidden bg-gray-50 flex flex-col">
-      {/* Top Navigation - Fixed */}
-      <nav className="bg-white border-b border-gray-200 shrink-0 z-50">
-        <div className="max-w-full mx-auto px-6 py-3">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <Button
-                onClick={() => router.push("/")}
-                variant="ghost"
-                size="sm"
-                className="h-8 w-8 p-0"
-              >
-                <ArrowLeft className="h-4 w-4" />
-              </Button>
-              <div className="h-5 w-px bg-gray-300" />
-              <div>
-                <h1 className="text-lg font-semibold text-gray-900">
-                  ГАРАХ бүртгэл
-                </h1>
-                <p className="text-xs text-gray-500">
-                  Тээврийн хэрэгсэл гарах бүртгэл
-                </p>
+    <div className="flex h-screen bg-gray-50">
+      <Sidebar />
+      <div className="flex-1 flex flex-col overflow-hidden">
+        {/* Top Navigation - Fixed */}
+        <nav className="bg-white border-b border-gray-200 shrink-0 z-50">
+          <div className="max-w-full mx-auto px-6 py-3">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <Button
+                  onClick={() => router.push("/")}
+                  variant="ghost"
+                  size="sm"
+                  className="h-8 w-8 p-0"
+                >
+                  <ArrowLeft className="h-4 w-4" />
+                </Button>
+                <div className="h-5 w-px bg-gray-300" />
+                <div>
+                  <h1 className="text-lg font-semibold text-gray-900">
+                    ГАРАХ бүртгэл
+                  </h1>
+                  <p className="text-xs text-gray-500">
+                    Тээврийн хэрэгсэл гарах бүртгэл
+                  </p>
+                </div>
+                <Badge
+                  variant="outline"
+                  className="ml-2 bg-green-50 text-green-700 border-green-200 text-xs"
+                >
+                  OUT
+                </Badge>
               </div>
-              <Badge
-                variant="outline"
-                className="ml-2 bg-green-50 text-green-700 border-green-200 text-xs"
-              >
-                OUT
-              </Badge>
             </div>
-            <Button
-              onClick={() => handleNavigationClick("/in-session")}
-              variant="outline"
-              size="sm"
-              className="gap-2 h-8 text-xs"
-            >
-              <ArrowLeft className="h-3 w-3" />
-              ОРОХ бүртгэл
-            </Button>
           </div>
-        </div>
-      </nav>
+        </nav>
 
-      {/* Main Content - Fills remaining space */}
-      <div className="flex-1 min-h-0 overflow-hidden">
-        <div className="h-full max-w-full mx-auto px-3 py-2">
-          <OutSessionForm
-            ref={formRef}
-            autoFillPlate={null}
-            onPlateChange={handlePlateChange}
-            onHasUnsavedDataChange={setHasUnsavedData}
-            streamUrl={streamUrl}
-            cameraAutofill={cameraAutofill}
-          />
+        {/* Main Content - Fills remaining space */}
+        <div className="flex-1 min-h-0 overflow-hidden">
+          <div className="h-full w-full">
+            <OutSessionForm
+              ref={formRef}
+              autoFillPlate={null}
+              autoFillOrigin={autoFillOrigin}
+              onPlateChange={handlePlateChange}
+              onHasUnsavedDataChange={setHasUnsavedData}
+              streamUrl={streamUrl}
+              cameraAutofill={cameraAutofill}
+            />
+          </div>
         </div>
       </div>
 

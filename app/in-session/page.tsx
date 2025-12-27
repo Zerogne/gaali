@@ -17,6 +17,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Sidebar } from "@/components/layout/Sidebar";
 import { useLprPlateAutofill } from "@/hooks/useLprPlateAutofill";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -63,6 +64,14 @@ export default function InSessionPage() {
   };
 
   const handleNavigationClick = (path: string) => {
+    // Store destination value for out-session auto-fill
+    if (formRef.current && path === "/out-session") {
+      const destination = formRef.current.getDestination();
+      if (destination) {
+        localStorage.setItem("inSessionDestination", destination);
+      }
+    }
+    
     if (hasUnsavedData && formRef.current?.hasUnsavedData()) {
       setPendingNavigation(path);
       setShowSaveDialog(true);
@@ -75,6 +84,13 @@ export default function InSessionPage() {
     if (formRef.current) {
       const success = await formRef.current.triggerSave();
       if (success) {
+        // Store destination value for out-session auto-fill
+        if (pendingNavigation === "/out-session") {
+          const destination = formRef.current.getDestination();
+          if (destination) {
+            localStorage.setItem("inSessionDestination", destination);
+          }
+        }
         setShowSaveDialog(false);
         if (pendingNavigation) {
           router.push(pendingNavigation);
@@ -93,60 +109,63 @@ export default function InSessionPage() {
   };
 
   return (
-    <div className="fixed inset-0 h-screen w-screen overflow-hidden bg-gray-50 flex flex-col">
-      {/* Top Navigation - Fixed */}
-      <nav className="bg-white border-b border-gray-200 shrink-0 z-50">
-        <div className="max-w-full mx-auto px-6 py-3">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <Button
-                onClick={() => router.push("/")}
-                variant="ghost"
-                size="sm"
-                className="h-8 w-8 p-0"
-              >
-                <ArrowLeft className="h-4 w-4" />
-              </Button>
-              <div className="h-5 w-px bg-gray-300" />
-              <div>
-                <h1 className="text-lg font-semibold text-gray-900">
-                  ОРОХ бүртгэл
-                </h1>
-                <p className="text-xs text-gray-500">
-                  Тээврийн хэрэгсэл орох бүртгэл
-                </p>
+    <div className="flex h-screen bg-gray-50">
+      <Sidebar />
+      <div className="flex-1 flex flex-col overflow-hidden">
+        {/* Top Navigation - Fixed */}
+        <nav className="bg-white border-b border-gray-200 shrink-0 z-50">
+          <div className="max-w-full mx-auto px-6 py-3">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <Button
+                  onClick={() => router.push("/")}
+                  variant="ghost"
+                  size="sm"
+                  className="h-8 w-8 p-0"
+                >
+                  <ArrowLeft className="h-4 w-4" />
+                </Button>
+                <div className="h-5 w-px bg-gray-300" />
+                <div>
+                  <h1 className="text-lg font-semibold text-gray-900">
+                    ОРОХ бүртгэл
+                  </h1>
+                  <p className="text-xs text-gray-500">
+                    Тээврийн хэрэгсэл орох бүртгэл
+                  </p>
+                </div>
+                <Badge
+                  variant="outline"
+                  className="ml-2 bg-blue-50 text-blue-700 border-blue-200 text-xs"
+                >
+                  IN
+                </Badge>
               </div>
-              <Badge
+              <Button
+                onClick={() => handleNavigationClick("/out-session")}
                 variant="outline"
-                className="ml-2 bg-blue-50 text-blue-700 border-blue-200 text-xs"
+                size="sm"
+                className="gap-2 h-8 text-xs"
               >
-                IN
-              </Badge>
+                ГАРАХ бүртгэл
+                <ArrowRight className="h-3 w-3" />
+              </Button>
             </div>
-            <Button
-              onClick={() => handleNavigationClick("/out-session")}
-              variant="outline"
-              size="sm"
-              className="gap-2 h-8 text-xs"
-            >
-              ГАРАХ бүртгэл
-              <ArrowRight className="h-3 w-3" />
-            </Button>
           </div>
-        </div>
-      </nav>
+        </nav>
 
-      {/* Main Content - Fills remaining space */}
-      <div className="flex-1 min-h-0 overflow-hidden">
-        <div className="h-full max-w-full mx-auto px-3 py-2">
-          <InSessionForm
-            ref={formRef}
-            autoFillPlate={null}
-            onPlateChange={handlePlateChange}
-            onHasUnsavedDataChange={setHasUnsavedData}
-            streamUrl={streamUrl}
-            cameraAutofill={cameraAutofill}
-          />
+        {/* Main Content - Fills remaining space */}
+        <div className="flex-1 min-h-0 overflow-hidden">
+          <div className="h-full max-w-full mx-auto px-3 py-2">
+            <InSessionForm
+              ref={formRef}
+              autoFillPlate={null}
+              onPlateChange={handlePlateChange}
+              onHasUnsavedDataChange={setHasUnsavedData}
+              streamUrl={streamUrl}
+              cameraAutofill={cameraAutofill}
+            />
+          </div>
         </div>
       </div>
 
