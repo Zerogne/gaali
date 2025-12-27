@@ -168,7 +168,18 @@ app.get("/control/status", async (req, res) => {
       res.json({ success: true, running: false, status: "not found" });
     }
   } catch (error) {
-    res.status(500).json({ error: "Failed to get status", details: error.message });
+    // PM2 not available (e.g., on Render) - return running status based on process
+    res.json({
+      success: true,
+      running: true,
+      status: "online",
+      note: "PM2 not available, running directly",
+      process: {
+        pid: process.pid,
+        name: "camera-bridge",
+        status: "online"
+      }
+    });
   }
 });
 
@@ -177,7 +188,7 @@ app.use(express.static("public"));
 
 // Start HTTP server on port 3002 (3000 is used by Next.js, 3001 is WebSocket)
 // Camera should be configured to send POST requests to http://YOUR_IP:3002/plate
-const HTTP_PORT = 3002;
+const HTTP_PORT = process.env.HTTP_PORT || 3002;
 const server = app.listen(HTTP_PORT, "0.0.0.0", () => {
   console.log("🚀 HTTP Server running on http://0.0.0.0:" + HTTP_PORT);
   console.log("📡 Ready to receive camera pushes at http://0.0.0.0:" + HTTP_PORT + "/plate");
@@ -185,7 +196,8 @@ const server = app.listen(HTTP_PORT, "0.0.0.0", () => {
 });
 
 // Create WebSocket server on port 3001 (same as test2)
-const wss = new WebSocketServer({ port: 3001, host: "0.0.0.0" });
+const WS_PORT = process.env.WS_PORT || 3001;
+const wss = new WebSocketServer({ port: WS_PORT, host: "0.0.0.0" });
 
 wss.on("connection", (ws, req) => {
   const clientIp = req.socket?.remoteAddress || "unknown";
@@ -234,7 +246,7 @@ wss.on("connection", (ws, req) => {
 });
 
 wss.on("listening", () => {
-  console.log("🔌 WebSocket server listening on port 3001");
+  console.log(`🔌 WebSocket server listening on port ${WS_PORT}`);
 });
 
 // Handle graceful shutdown
