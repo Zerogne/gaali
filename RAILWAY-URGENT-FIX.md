@@ -7,6 +7,7 @@ Railway is **still** trying to build from the root (pnpm) instead of `camera-bri
 ### Option 1: Set Environment Variable (Easiest)
 
 1. **In Railway Dashboard:**
+
    - Go to your service
    - Click **"Variables"** tab
    - Click **"New Variable"**
@@ -33,6 +34,7 @@ railway up
 If Root Directory still doesn't work, force it in the build command:
 
 1. **In Railway Settings:**
+
    - Go to **"Settings"** tab
    - Find **"Build Command"** or **"Deploy"** section
    - Set Build Command to:
@@ -50,10 +52,12 @@ If Root Directory still doesn't work, force it in the build command:
 ### Option 4: Create railway.toml in Root (Alternative)
 
 I've created `railway.toml` in the root that forces Railway to:
+
 - Change to `camera-bridge` directory
 - Run `node server.js`
 
 **Push this file:**
+
 ```bash
 git add railway.toml
 git commit -m "Add railway.toml to force camera-bridge directory"
@@ -73,11 +77,13 @@ After applying any fix, check Railway logs:
 3. Check **"Logs"**
 
 **You should see:**
+
 - ✅ `npm install` (NOT `pnpm install`)
 - ✅ `cd camera-bridge` (if using workaround)
 - ✅ `🚀 HTTP Server running on...`
 
 **If you still see:**
+
 - ❌ `pnpm install` → Root Directory not set correctly
 - ❌ `ERR_PNPM_OUTDATED_LOCKFILE` → Still building from root
 
@@ -86,6 +92,7 @@ After applying any fix, check Railway logs:
 ## Why This Happens
 
 Railway detects build tools from the **root** of your repo:
+
 - Sees `pnpm-lock.yaml` → Uses pnpm
 - Sees `package.json` in root → Tries to build from root
 
@@ -102,4 +109,3 @@ The **easiest and most reliable** method:
 3. **Check logs** → Should see `npm install` now
 
 This is the official Railway way to set root directory.
-

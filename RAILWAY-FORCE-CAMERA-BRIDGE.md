@@ -116,4 +116,3 @@ After setting the environment variable and redeploying:
 4. Then deploy
 
 Sometimes Railway caches the root directory detection, so starting fresh helps.
-
