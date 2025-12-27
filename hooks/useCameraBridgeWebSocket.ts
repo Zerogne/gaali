@@ -66,24 +66,18 @@ export function useCameraBridgeWebSocket(
   options: UseCameraBridgeWebSocketOptions = {}
 ) {
   // Determine WebSocket URL
-  // Bridge service runs on same machine as Next.js, so always use localhost
   const getWsUrl = () => {
     if (typeof window === "undefined") return "ws://localhost:3001";
     
-    // Check environment variable first (allows override if needed)
+    // Check environment variable first (for production - Render, Railway, etc.)
     const envUrl = process.env.NEXT_PUBLIC_CAMERA_BRIDGE_WS_URL;
     if (envUrl) {
-      // Warn if env var has wrong port (server is on 3001)
-      if (envUrl.includes(":3002") || envUrl.includes(":3003")) {
-        console.warn("⚠️⚠️⚠️ Environment variable has wrong port! Server is on port 3001, but env var says:", envUrl);
-        console.warn("⚠️ Using correct port 3001 instead");
-        return "ws://localhost:3001";
-      }
+      console.log("✅ Using WebSocket URL from environment variable:", envUrl);
       return envUrl;
     }
     
-    // Use port 3001 (same as test2) - bridge service WebSocket port
-    // This works regardless of how Next.js is accessed (localhost or network IP)
+    // Default to localhost for local development
+    // In production, NEXT_PUBLIC_CAMERA_BRIDGE_WS_URL should be set to Render/Railway URL
     return "ws://localhost:3001";
   };
 
