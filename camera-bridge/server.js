@@ -59,8 +59,54 @@ function broadcastPlateEvent(plateNumber) {
   }
 }
 
-// HTTP POST endpoint - receives plate data from camera
-app.post("/plate", (req, res) => {
+// Forward plate to Render service (if configured)
+async function forwardToRender(plateNumber) {
+  const renderUrl = process.env.RENDER_FORWARD_URL; // e.g., https://gaali.onrender.com/plate
+  if (!renderUrl) {
+    return; // Skip if not configured
+  }
+
+  try {
+    const response = await fetch(renderUrl, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        type: "plate_event",
+        plate: plateNumber,
+        timestamp: new Date().toISOString(),
+        source: "local_bridge",
+      }),
+      signal: AbortSignal.timeout(5000), // 5 second timeout
+    });
+
+    if (response.ok) {
+      console.log(`✅ Forwarded plate ${plateNumber} to Render`);
+    } else {
+      console.warn(`⚠️ Failed to forward to Render: ${response.status}`);
+    }
+  } catch (error) {
+    console.warn(`⚠️ Error forwarding to Render:`, error.message);
+    // Don't throw - local broadcast should still work
+  }
+}
+
+// HTTP POST endpoint - receives plate data from camera OR forwarded from local bridge
+app.post("/plate", async (req, res) => {
+  // Check if this is a forwarded plate from local bridge
+  if (req.body?.type === "plate_event" && req.body?.source === "local_bridge") {
+    // Forwarded from local bridge - just broadcast to WebSocket clients
+    const plate = req.body?.plate;
+    if (plate) {
+      console.log(`✅ Received forwarded plate from local bridge: ${plate}`);
+      broadcastPlateEvent(plate);
+      res.json({ ok: true, message: "Plate forwarded and broadcast" });
+      return;
+    }
+  }
+
+  // Original camera format
   const alarm = req.body?.AlarmInfoPlate;
   const plateResultRaw = alarm?.result?.PlateResult;
 
@@ -72,10 +118,16 @@ app.post("/plate", (req, res) => {
   const plate = plateResult?.license || plateResult?.License || null;
 
   if (plate) {
-    console.log("✅ Plate received:", plate);
+    console.log("✅ Plate received from camera:", plate);
     
-    // Broadcast to WebSocket clients immediately
+    // Broadcast to local WebSocket clients immediately
     broadcastPlateEvent(plate);
+    
+    // Forward to Render service (for production frontend clients)
+    // Only forward if we're running locally (not on Render itself)
+    if (!process.env.PORT) {
+      await forwardToRender(plate);
+    }
   } else {
     console.log("⚠️ No plate detected in request");
   }
