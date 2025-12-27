@@ -7,6 +7,7 @@ If your camera has an "SSL connection" checkbox in the HTTP push settings, you c
 ### Step 1: Check Camera Settings
 
 In your camera's HTTP push settings, look for:
+
 - ✅ **SSL connection** checkbox/button (if present, camera might support HTTPS)
 - ✅ **SSL port** field (usually 443)
 - ✅ **Verification method** (Anonymous, CA Certificate, etc.)
@@ -16,13 +17,15 @@ In your camera's HTTP push settings, look for:
 Try enabling SSL and connecting directly to Vercel:
 
 1. **Configure Camera for Direct Connection:**
+
    - Server address: `your-app.vercel.app` (your Vercel domain)
    - Port: `443`
    - SSL connection: ✅ **Enable/Check**
    - SSL port: `443`
-   - Address: `/api/lpr/camera-direct?token=YOUR_SECRET`
+   - Address: `/api/lpr/ingest` (use bridge service instead)
 
 2. **Test Connection:**
+
    - Use the camera's "Push test" feature
    - Check if connection succeeds or fails
 
@@ -36,6 +39,7 @@ Try enabling SSL and connecting directly to Vercel:
 ### ✅ Camera Supports HTTPS Properly
 
 **Symptoms:**
+
 - Push test succeeds
 - Camera can connect to Vercel
 - No SSL certificate errors
@@ -44,22 +48,25 @@ Try enabling SSL and connecting directly to Vercel:
 **Result:** Use direct connection - simpler setup, no bridge needed!
 
 **Configuration:**
+
 ```
 Server address: your-app.vercel.app
 Port: 443
 SSL: Enabled
-Address: /api/lpr/camera-direct?token=YOUR_SECRET
+Address: /api/lpr/ingest (via bridge service)
 ```
 
 ### ❌ Camera Has SSL Option But Doesn't Work
 
 **Symptoms:**
+
 - Push test fails
 - SSL certificate errors
 - Connection refused
 - Certificate validation errors
 
 **Common Issues:**
+
 - Camera's SSL implementation is incomplete
 - Camera doesn't trust Vercel's SSL certificate
 - Camera's date/time is wrong (SSL requires correct time)
@@ -70,6 +77,7 @@ Address: /api/lpr/camera-direct?token=YOUR_SECRET
 ### ❌ No SSL Option Available
 
 **Symptoms:**
+
 - No "SSL connection" checkbox in settings
 - Only HTTP port configuration
 
@@ -92,6 +100,7 @@ Before deciding on direct vs bridge:
 ### SSL Certificate Errors
 
 If camera shows certificate errors:
+
 1. **Check camera date/time** - SSL validation requires correct system time
 2. **Try Anonymous verification** - Some cameras work better with "Anonymous" vs "CA Certificate"
 3. **Use Vercel's default domain** - `.vercel.app` domains have standard certificates
@@ -100,6 +109,7 @@ If camera shows certificate errors:
 ### Connection Timeout
 
 If connection times out:
+
 1. **Camera internet access** - Verify camera can reach internet
 2. **DNS resolution** - Camera must resolve `your-app.vercel.app` domain name
 3. **Firewall** - Allow outbound HTTPS (port 443)
@@ -108,6 +118,7 @@ If connection times out:
 ### Connection Refused
 
 If connection is refused:
+
 1. **Check port** - Must be 443 for HTTPS
 2. **Verify SSL enabled** - SSL connection must be checked
 3. **Check Vercel URL** - Ensure domain is correct
@@ -124,12 +135,14 @@ If connection is refused:
 5. If it fails → Use camera-bridge (camera HTTP → bridge HTTPS → Vercel)
 
 **Benefits of Direct Connection (if it works):**
+
 - ✅ Simpler setup (no bridge server needed)
 - ✅ One less service to maintain
 - ✅ Lower latency (direct connection)
 - ✅ One less point of failure
 
 **When to Use Bridge:**
+
 - ❌ Direct HTTPS connection doesn't work
 - ❌ Camera has SSL issues
 - ❌ You want camera isolated on local network
@@ -137,6 +150,4 @@ If connection is refused:
 
 ## Next Steps
 
-1. **If HTTPS works:** Follow [DIRECT-CAMERA-CONNECTION.md](./DIRECT-CAMERA-CONNECTION.md)
-2. **If HTTPS doesn't work:** Follow [CAMERA-HTTP-ONLY-SETUP.md](./CAMERA-HTTP-ONLY-SETUP.md)
-
+1. **If HTTPS doesn't work:** Follow [CAMERA-HTTP-ONLY-SETUP.md](./CAMERA-HTTP-ONLY-SETUP.md) to use the bridge service

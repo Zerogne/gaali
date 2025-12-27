@@ -8,10 +8,10 @@ Your existing code already supports both direct and bridge connections. Here's w
 
 ### Data Flow (Both Methods)
 
-**Direct Connection:**
+**Direct Connection (Removed):**
 ```
 Camera (HTTPS) 
-  → Vercel /api/lpr/camera-direct
+  → Vercel /api/lpr/ingest (via bridge service)
   → MongoDB
   → Frontend polls /api/lpr/latest ✅
 ```
@@ -70,9 +70,7 @@ The Settings panel (`components/settings-panel.tsx`) has bridge-specific fields:
 ## What You Need to Configure
 
 ### For Direct Connection:
-1. **Camera Settings:** Configure camera to POST to Vercel (see DIRECT-CAMERA-CONNECTION.md)
-2. **Vercel Environment:** Set `LPR_INGEST_SECRET` (already done)
-3. **That's it!** ✅
+**Note:** Direct connection has been removed. Use the bridge service instead.
 
 ### For Bridge Connection:
 1. **Camera Settings:** Configure camera to POST to bridge IP:3002
@@ -87,7 +85,7 @@ The Settings panel (`components/settings-panel.tsx`) has bridge-specific fields:
 | **Frontend Polling** | ✅ Works | ✅ Works | ❌ None |
 | **WebSocket** | ❌ Not available | ✅ Works (optional) | ❌ None (gracefully handles missing bridge) |
 | **Settings Panel** | ✅ Works (ignore bridge fields) | ✅ Works | ❌ None |
-| **API Endpoints** | ✅ `/api/lpr/camera-direct` exists | ✅ `/api/lpr/ingest` exists | ❌ None |
+| **API Endpoints** | ❌ Removed | ✅ `/api/lpr/ingest` exists | ❌ None |
 
 ## Conclusion
 
