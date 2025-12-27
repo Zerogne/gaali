@@ -188,7 +188,8 @@ app.use(express.static("public"));
 
 // Start HTTP server on port 3002 (3000 is used by Next.js, 3001 is WebSocket)
 // Camera should be configured to send POST requests to http://YOUR_IP:3002/plate
-const HTTP_PORT = process.env.HTTP_PORT || 3002;
+// On Render, use PORT environment variable (Render assigns dynamic port)
+const HTTP_PORT = process.env.PORT || process.env.HTTP_PORT || 3002;
 const server = app.listen(HTTP_PORT, "0.0.0.0", () => {
   console.log("🚀 HTTP Server running on http://0.0.0.0:" + HTTP_PORT);
   console.log("📡 Ready to receive camera pushes at http://0.0.0.0:" + HTTP_PORT + "/plate");
