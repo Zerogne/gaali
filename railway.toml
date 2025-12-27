@@ -1,6 +1,5 @@
 [build]
 builder = "nixpacks"
-buildCommand = "cd camera-bridge && npm install --production"
 
 [deploy]
 startCommand = "cd camera-bridge && node server.js"

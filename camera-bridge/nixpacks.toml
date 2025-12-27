@@ -6,6 +6,3 @@ cmds = ["npm install --production"]
 
 [start]
 cmd = "node server.js"
-
-[providers]
-detect = ["package.json"]
