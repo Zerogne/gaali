@@ -144,7 +144,7 @@ app.get("/control/status", async (req, res) => {
   try {
     const { stdout, stderr } = await execAsync("pm2 jlist");
     const processes = JSON.parse(stdout);
-    const cameraBridge = processes.find((p: any) => p.name === "camera-bridge");
+    const cameraBridge = processes.find((p) => p.name === "camera-bridge");
     
     if (cameraBridge) {
       res.json({
