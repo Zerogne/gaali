@@ -27,7 +27,8 @@ function broadcastPlateEvent(plateNumber) {
 
   if (wsClients.size === 0) {
     console.log(`⚠️⚠️⚠️ NO WEBSOCKET CLIENTS CONNECTED! Frontend is not connected!`);
-    console.log(`⚠️ Make sure the frontend WebSocket is connecting to ws://localhost:${WS_PORT}`);
+    const wsPort = process.env.PORT ? process.env.PORT : (process.env.WS_PORT || 3001);
+    console.log(`⚠️ Make sure the frontend WebSocket is connecting to ws://localhost:${wsPort}`);
   }
 
   let sentCount = 0;
