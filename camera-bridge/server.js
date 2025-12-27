@@ -27,7 +27,7 @@ function broadcastPlateEvent(plateNumber) {
 
   if (wsClients.size === 0) {
     console.log(`⚠️⚠️⚠️ NO WEBSOCKET CLIENTS CONNECTED! Frontend is not connected!`);
-    console.log(`⚠️ Make sure the frontend WebSocket is connecting to ws://localhost:3001`);
+    console.log(`⚠️ Make sure the frontend WebSocket is connecting to ws://localhost:${WS_PORT}`);
   }
 
   let sentCount = 0;
@@ -100,7 +100,8 @@ app.post("/control/start", async (req, res) => {
     const { stdout, stderr } = await execAsync("pm2 start server.js --name camera-bridge || pm2 restart camera-bridge");
     res.json({ success: true, message: "Camera bridge started/restarted", output: stdout });
   } catch (error) {
-    res.status(500).json({ error: "Failed to start camera bridge", details: error.message });
+    // PM2 not available - server is already running
+    res.json({ success: true, message: "Server is already running (PM2 not available)", note: "Running directly without PM2" });
   }
 });
 
@@ -115,7 +116,8 @@ app.post("/control/stop", async (req, res) => {
     const { stdout, stderr } = await execAsync("pm2 stop camera-bridge");
     res.json({ success: true, message: "Camera bridge stopped", output: stdout });
   } catch (error) {
-    res.status(500).json({ error: "Failed to stop camera bridge", details: error.message });
+    // PM2 not available - can't stop (would need process.exit)
+    res.json({ success: false, message: "PM2 not available. Cannot stop server directly.", note: "Use platform controls to stop the service" });
   }
 });
 
@@ -130,7 +132,8 @@ app.post("/control/restart", async (req, res) => {
     const { stdout, stderr } = await execAsync("pm2 restart camera-bridge");
     res.json({ success: true, message: "Camera bridge restarted", output: stdout });
   } catch (error) {
-    res.status(500).json({ error: "Failed to restart camera bridge", details: error.message });
+    // PM2 not available - return message
+    res.json({ success: false, message: "PM2 not available. Cannot restart directly.", note: "Use platform controls to restart the service" });
   }
 });
 
