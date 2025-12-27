@@ -17,6 +17,8 @@ export function SettingsPanel() {
   const [isSavingCamera, setIsSavingCamera] = useState(false)
   const [isTestingCamera, setIsTestingCamera] = useState(false)
   const [cameraStatus, setCameraStatus] = useState<"idle" | "connected" | "error">("idle")
+  const [bridgeControlStatus, setBridgeControlStatus] = useState<"idle" | "starting" | "stopping" | "restarting" | "checking">("idle")
+  const [bridgeRunning, setBridgeRunning] = useState<boolean | null>(null)
 
   // Load saved camera settings on mount
   useEffect(() => {
@@ -138,6 +140,68 @@ export function SettingsPanel() {
       })
     } finally {
       setIsSavingCamera(false)
+    }
+  }
+
+  const handleBridgeControl = async (action: "start" | "stop" | "restart" | "status") => {
+    const bridgeIp = (document.getElementById("bridge-ip") as HTMLInputElement)?.value || "192.168.1.50"
+    const controlPort = "3003" // Control server port
+    
+    // Use localhost for local connections, otherwise use bridge IP
+    const testBridgeIp = bridgeIp === "192.168.1.50" || bridgeIp === "192.168.1.106" 
+      ? "localhost" 
+      : bridgeIp
+    
+    const controlUrl = `http://${testBridgeIp}:${controlPort}/control/${action}`
+    
+    setBridgeControlStatus(action === "status" ? "checking" : action === "start" ? "starting" : action === "stop" ? "stopping" : "restarting")
+    
+    try {
+      const response = await fetch(controlUrl, {
+        method: action === "status" ? "GET" : "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${process.env.NEXT_PUBLIC_CAMERA_BRIDGE_CONTROL_TOKEN || "change-me-in-production"}`,
+        },
+        body: action === "status" ? undefined : JSON.stringify({
+          token: process.env.NEXT_PUBLIC_CAMERA_BRIDGE_CONTROL_TOKEN || "change-me-in-production",
+        }),
+        signal: AbortSignal.timeout(10000),
+      })
+      
+      const data = await response.json()
+      
+      if (response.ok && data.success) {
+        if (action === "status") {
+          setBridgeRunning(data.running)
+          toast({
+            title: data.running ? "Bridge is running" : "Bridge is not running",
+            description: data.message || `Status: ${data.status}`,
+            variant: "default",
+          })
+        } else {
+          setBridgeRunning(action === "stop" ? false : true)
+          toast({
+            title: `Bridge ${action}ed successfully`,
+            description: data.message || `Camera bridge has been ${action}ed`,
+            variant: "default",
+          })
+          // Refresh status after a moment
+          setTimeout(() => handleBridgeControl("status"), 2000)
+        }
+      } else {
+        throw new Error(data.error || data.message || `Failed to ${action} bridge`)
+      }
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : "Unknown error occurred"
+      toast({
+        title: `Failed to ${action} bridge`,
+        description: errorMessage + ". Make sure the control server is running on port 3003.",
+        variant: "destructive",
+      })
+      console.error(`Bridge control error (${action}):`, error)
+    } finally {
+      setBridgeControlStatus("idle")
     }
   }
 
@@ -301,10 +365,105 @@ export function SettingsPanel() {
             </div>
 
             <div className="border-t border-border pt-6">
+              <h3 className="font-semibold text-foreground mb-4">Camera Bridge Control</h3>
+              <div className="bg-muted/30 rounded-lg p-4 space-y-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-muted-foreground mb-1">Bridge Service Status</p>
+                    <div className="flex items-center gap-2">
+                      {bridgeRunning === true ? (
+                        <>
+                          <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+                          <span className="font-semibold text-green-500">Running</span>
+                        </>
+                      ) : bridgeRunning === false ? (
+                        <>
+                          <div className="w-2 h-2 rounded-full bg-red-500" />
+                          <span className="font-semibold text-red-500">Stopped</span>
+                        </>
+                      ) : (
+                        <>
+                          <div className="w-2 h-2 rounded-full bg-yellow-500" />
+                          <span className="font-semibold text-yellow-500">Unknown</span>
+                        </>
+                      )}
+                    </div>
+                  </div>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleBridgeControl("status")}
+                    disabled={bridgeControlStatus === "checking"}
+                  >
+                    {bridgeControlStatus === "checking" ? (
+                      <>
+                        <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                        Checking...
+                      </>
+                    ) : (
+                      "Check Status"
+                    )}
+                  </Button>
+                </div>
+                
+                <div className="flex gap-2 flex-wrap">
+                  <Button
+                    variant="default"
+                    size="sm"
+                    onClick={() => handleBridgeControl("start")}
+                    disabled={bridgeControlStatus !== "idle" || bridgeRunning === true}
+                  >
+                    {bridgeControlStatus === "starting" ? (
+                      <>
+                        <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                        Starting...
+                      </>
+                    ) : (
+                      "Start Bridge"
+                    )}
+                  </Button>
+                  <Button
+                    variant="default"
+                    size="sm"
+                    onClick={() => handleBridgeControl("stop")}
+                    disabled={bridgeControlStatus !== "idle" || bridgeRunning === false}
+                  >
+                    {bridgeControlStatus === "stopping" ? (
+                      <>
+                        <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                        Stopping...
+                      </>
+                    ) : (
+                      "Stop Bridge"
+                    )}
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleBridgeControl("restart")}
+                    disabled={bridgeControlStatus !== "idle"}
+                  >
+                    {bridgeControlStatus === "restarting" ? (
+                      <>
+                        <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                        Restarting...
+                      </>
+                    ) : (
+                      "Restart Bridge"
+                    )}
+                  </Button>
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Control the camera-bridge service on your local server. Make sure the control server is running on port 3003.
+                </p>
+              </div>
+            </div>
+
+            <div className="border-t border-border pt-6">
               <h3 className="font-semibold text-foreground mb-4">Camera Status</h3>
               <div className="grid grid-cols-2 gap-4">
                 <div className="bg-muted/30 rounded-lg p-4">
-                  <p className="text-sm text-muted-foreground mb-1">Bridge Service</p>
+                  <p className="text-sm text-muted-foreground mb-1">Bridge Connection</p>
                   <div className="flex items-center gap-2">
                     {cameraStatus === "connected" ? (
                       <>

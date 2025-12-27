@@ -2,6 +2,10 @@
 
 Local bridge service that connects an LPR camera on your LAN to the cloud API. Supports both HTTP push (camera pushes to bridge) and polling (bridge polls camera) modes.
 
+## ⚠️ Important: Vercel Hosting
+
+**If you're using Vercel to host your Next.js app:** The camera-bridge service **cannot run on Vercel** (Vercel is serverless and doesn't support long-running services). The camera-bridge **must run on a separate server** (local machine, VPS, Raspberry Pi, etc.). See [VERCEL-ARCHITECTURE.md](./VERCEL-ARCHITECTURE.md) for detailed architecture and deployment instructions.
+
 ## Architecture
 
 ```
@@ -9,6 +13,8 @@ Camera (LAN) → Bridge Service (LAN) → Vercel API (HTTPS) → MongoDB → Fro
 ```
 
 The bridge service runs on a machine in the same network as the camera, eliminating the need for the cloud server to access private IP addresses.
+
+**Key Point:** The bridge service runs on a separate server (not on Vercel), and connects your local camera network to your cloud-hosted Vercel application.
 
 ## Modes
 
@@ -78,15 +84,41 @@ npm run dev
 
 ### Production
 
-**Build:**
-```bash
-npm run build
-```
-
-**Run:**
+**Simple start (for testing):**
 ```bash
 npm start
 ```
+This runs `node server.js` directly. For production, use PM2 or systemd (see below) to run as a service.
+
+## Control API (Remote Start/Stop)
+
+The camera-bridge includes a control API that allows you to start, stop, restart, and check the status of the service remotely from your web interface.
+
+See [CONTROL-API.md](./CONTROL-API.md) for detailed documentation.
+
+**Quick setup:**
+
+1. **Start both services** (main service + control API):
+   ```bash
+   pm2 start ecosystem.config.js
+   pm2 save
+   ```
+
+2. **Set authentication token** (for security):
+   ```bash
+   export CAMERA_BRIDGE_CONTROL_TOKEN="your-secure-token"
+   pm2 restart camera-bridge-control
+   ```
+
+3. **Configure frontend** - Set `NEXT_PUBLIC_CAMERA_BRIDGE_CONTROL_TOKEN` environment variable in your Next.js app to match the token above.
+
+The control API runs on port 3003 and provides endpoints:
+- `GET /control/status` - Check if service is running
+- `POST /control/start` - Start the service
+- `POST /control/stop` - Stop the service
+- `POST /control/restart` - Restart the service
+
+**Note:** If your frontend is hosted on Vercel, the control API must be accessible from the internet (or use a VPN). The browser needs to be able to reach port 3003 on your server.
 
 ## Running as a Service
 
@@ -97,13 +129,15 @@ npm start
    ```cmd
    nssm install CameraBridge "C:\Program Files\nodejs\node.exe"
    nssm set CameraBridge AppDirectory "C:\path\to\camera-bridge"
-   nssm set CameraBridge AppParameters "dist/index.js"
+   nssm set CameraBridge AppParameters "server.js"
    nssm start CameraBridge
    ```
 
+**Important:** Replace `C:\path\to\camera-bridge` with your actual camera-bridge directory path.
+
 ### Linux (systemd)
 
-Create `/etc/systemd/system/camera-bridge.service`:
+1. Create `/etc/systemd/system/camera-bridge.service`:
 
 ```ini
 [Unit]
@@ -114,7 +148,7 @@ After=network.target
 Type=simple
 User=your-user
 WorkingDirectory=/path/to/camera-bridge
-ExecStart=/usr/bin/node dist/index.js
+ExecStart=/usr/bin/node server.js
 Restart=always
 RestartSec=10
 Environment="NODE_ENV=production"
@@ -123,21 +157,66 @@ Environment="NODE_ENV=production"
 WantedBy=multi-user.target
 ```
 
-Then:
+**Important:** Replace `/path/to/camera-bridge` with your actual camera-bridge directory path and `your-user` with the user that should run the service.
+
+2. Then run:
 ```bash
 sudo systemctl daemon-reload
 sudo systemctl enable camera-bridge
 sudo systemctl start camera-bridge
 ```
 
-### PM2 (Cross-platform)
+3. Check status:
+```bash
+sudo systemctl status camera-bridge
+```
+
+4. View logs:
+```bash
+sudo journalctl -u camera-bridge -f
+```
+
+### PM2 (Cross-platform - Recommended)
+
+**Option 1: Using ecosystem file (recommended):**
+
+1. Install PM2 globally:
+   ```bash
+   npm install -g pm2
+   ```
+
+2. Update the path in `ecosystem.config.js` if needed (it should auto-detect)
+
+3. Start the service:
+   ```bash
+   pm2 start ecosystem.config.js
+   ```
+
+4. Save the PM2 process list so it restarts on reboot:
+   ```bash
+   pm2 save
+   ```
+
+5. Generate startup script (follow the instructions it prints):
+   ```bash
+   pm2 startup
+   ```
+
+**Option 2: Simple command:**
 
 ```bash
 npm install -g pm2
-pm2 start dist/index.js --name camera-bridge
+pm2 start server.js --name camera-bridge
 pm2 save
 pm2 startup  # Follow instructions to enable on boot
 ```
+
+**PM2 Useful Commands:**
+- View logs: `pm2 logs camera-bridge`
+- Restart: `pm2 restart camera-bridge`
+- Stop: `pm2 stop camera-bridge`
+- Status: `pm2 status`
+- Monitor: `pm2 monit`
 
 ## Configuration
 

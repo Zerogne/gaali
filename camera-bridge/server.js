@@ -1,9 +1,15 @@
 const express = require("express");
 const { WebSocketServer } = require("ws");
+const { exec } = require("child_process");
+const { promisify } = require("util");
+const execAsync = promisify(exec);
 const app = express();
 
 app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ extended: true }));
+
+// Simple authentication token (set via environment variable for security)
+const CONTROL_TOKEN = process.env.CAMERA_BRIDGE_CONTROL_TOKEN || "change-me-in-production";
 
 // WebSocket clients storage
 const wsClients = new Set();
@@ -75,6 +81,92 @@ app.post("/plate", (req, res) => {
 
   // Always respond OK to camera (like the working version)
   res.send("OK");
+});
+
+// Health check endpoint
+app.get("/health", (req, res) => {
+  res.json({ status: "ok", timestamp: new Date().toISOString() });
+});
+
+// Control endpoints for PM2 management
+app.post("/control/start", async (req, res) => {
+  const token = req.headers.authorization?.replace("Bearer ", "") || req.body?.token;
+  
+  if (token !== CONTROL_TOKEN) {
+    return res.status(401).json({ error: "Unauthorized" });
+  }
+
+  try {
+    const { stdout, stderr } = await execAsync("pm2 start server.js --name camera-bridge || pm2 restart camera-bridge");
+    res.json({ success: true, message: "Camera bridge started/restarted", output: stdout });
+  } catch (error) {
+    res.status(500).json({ error: "Failed to start camera bridge", details: error.message });
+  }
+});
+
+app.post("/control/stop", async (req, res) => {
+  const token = req.headers.authorization?.replace("Bearer ", "") || req.body?.token;
+  
+  if (token !== CONTROL_TOKEN) {
+    return res.status(401).json({ error: "Unauthorized" });
+  }
+
+  try {
+    const { stdout, stderr } = await execAsync("pm2 stop camera-bridge");
+    res.json({ success: true, message: "Camera bridge stopped", output: stdout });
+  } catch (error) {
+    res.status(500).json({ error: "Failed to stop camera bridge", details: error.message });
+  }
+});
+
+app.post("/control/restart", async (req, res) => {
+  const token = req.headers.authorization?.replace("Bearer ", "") || req.body?.token;
+  
+  if (token !== CONTROL_TOKEN) {
+    return res.status(401).json({ error: "Unauthorized" });
+  }
+
+  try {
+    const { stdout, stderr } = await execAsync("pm2 restart camera-bridge");
+    res.json({ success: true, message: "Camera bridge restarted", output: stdout });
+  } catch (error) {
+    res.status(500).json({ error: "Failed to restart camera bridge", details: error.message });
+  }
+});
+
+app.get("/control/status", async (req, res) => {
+  const token = req.headers.authorization?.replace("Bearer ", "") || req.query?.token;
+  
+  if (token !== CONTROL_TOKEN) {
+    return res.status(401).json({ error: "Unauthorized" });
+  }
+
+  try {
+    const { stdout, stderr } = await execAsync("pm2 jlist");
+    const processes = JSON.parse(stdout);
+    const cameraBridge = processes.find((p: any) => p.name === "camera-bridge");
+    
+    if (cameraBridge) {
+      res.json({
+        success: true,
+        running: cameraBridge.pm2_env?.status === "online",
+        status: cameraBridge.pm2_env?.status,
+        uptime: cameraBridge.pm2_env?.pm_uptime,
+        restarts: cameraBridge.pm2_env?.restart_time,
+        process: {
+          pid: cameraBridge.pid,
+          name: cameraBridge.name,
+          status: cameraBridge.pm2_env?.status,
+          memory: cameraBridge.monit?.memory,
+          cpu: cameraBridge.monit?.cpu,
+        }
+      });
+    } else {
+      res.json({ success: true, running: false, status: "not found" });
+    }
+  } catch (error) {
+    res.status(500).json({ error: "Failed to get status", details: error.message });
+  }
 });
 
 // Serve static files (for the HTML test page)
