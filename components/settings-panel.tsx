@@ -17,8 +17,6 @@ export function SettingsPanel() {
   const [isSavingCamera, setIsSavingCamera] = useState(false)
   const [isTestingCamera, setIsTestingCamera] = useState(false)
   const [cameraStatus, setCameraStatus] = useState<"idle" | "connected" | "error">("idle")
-  const [bridgeControlStatus, setBridgeControlStatus] = useState<"idle" | "starting" | "stopping" | "restarting" | "checking">("idle")
-  const [bridgeRunning, setBridgeRunning] = useState<boolean | null>(null)
 
   // Load saved camera settings on mount
   useEffect(() => {
@@ -26,15 +24,8 @@ export function SettingsPanel() {
       const saved = localStorage.getItem("cameraSettings")
       if (saved) {
         const settings = JSON.parse(saved)
-        const cameraIpInput = document.getElementById("camera-ip") as HTMLInputElement
-        const bridgeIpInput = document.getElementById("bridge-ip") as HTMLInputElement
-        const bridgePortInput = document.getElementById("bridge-port") as HTMLInputElement
-        const connectionModeSelect = document.getElementById("connection-mode") as HTMLSelectElement
-        
-        if (cameraIpInput && settings.cameraIp) cameraIpInput.value = settings.cameraIp
-        if (bridgeIpInput && settings.bridgeIp) bridgeIpInput.value = settings.bridgeIp
-        if (bridgePortInput && settings.bridgePort) bridgePortInput.value = settings.bridgePort
-        if (connectionModeSelect && settings.connectionMode) connectionModeSelect.value = settings.connectionMode
+        const connectorUrlInput = document.getElementById("connector-url") as HTMLInputElement
+        if (connectorUrlInput && settings.connectorUrl) connectorUrlInput.value = settings.connectorUrl
       }
     } catch (error) {
       // Ignore errors loading settings
@@ -91,44 +82,36 @@ export function SettingsPanel() {
     setIsSavingCamera(true)
     
     try {
-      const cameraIpInput = document.getElementById("camera-ip") as HTMLInputElement
-      const bridgeIpInput = document.getElementById("bridge-ip") as HTMLInputElement
-      const bridgePortInput = document.getElementById("bridge-port") as HTMLInputElement
-      const connectionModeSelect = document.getElementById("connection-mode") as HTMLSelectElement
+      const connectorUrlInput = document.getElementById("connector-url") as HTMLInputElement
 
-      if (!cameraIpInput || !bridgeIpInput || !bridgePortInput || !connectionModeSelect) {
+      if (!connectorUrlInput) {
         throw new Error("Could not find settings inputs")
       }
 
-      const cameraIp = cameraIpInput.value.trim()
-      const bridgeIp = bridgeIpInput.value.trim()
-      const bridgePort = bridgePortInput.value.trim()
-      const connectionMode = connectionModeSelect.value
+      const connectorUrl = connectorUrlInput.value.trim()
 
       // Validate inputs
-      if (!cameraIp) {
-        throw new Error("Camera IP address is required")
+      if (!connectorUrl) {
+        throw new Error("Connector URL is required")
       }
-      if (!bridgeIp) {
-        throw new Error("Bridge IP address is required")
-      }
-      if (!bridgePort || isNaN(Number(bridgePort))) {
-        throw new Error("Bridge port must be a valid number")
+
+      // Validate URL format
+      try {
+        new URL(connectorUrl)
+      } catch {
+        throw new Error("Invalid URL format")
       }
 
       // Save to localStorage
       const settings = {
-        cameraIp: cameraIp || "192.168.1.100",
-        bridgeIp: bridgeIp || "192.168.1.50",
-        bridgePort: bridgePort || "3001",
-        connectionMode: connectionMode || "push",
+        connectorUrl: connectorUrl || "http://localhost:3000/events",
       }
       
       localStorage.setItem("cameraSettings", JSON.stringify(settings))
       
       toast({
         title: "Camera settings saved",
-        description: `Settings saved: Camera ${cameraIp}, Bridge ${bridgeIp}:${bridgePort}`,
+        description: `Connector URL saved. Please refresh the page to apply changes.`,
         variant: "default",
       })
     } catch (error) {
@@ -140,68 +123,6 @@ export function SettingsPanel() {
       })
     } finally {
       setIsSavingCamera(false)
-    }
-  }
-
-  const handleBridgeControl = async (action: "start" | "stop" | "restart" | "status") => {
-    const bridgeIp = (document.getElementById("bridge-ip") as HTMLInputElement)?.value || "192.168.1.50"
-    const controlPort = "3003" // Control server port
-    
-    // Use localhost for local connections, otherwise use bridge IP
-    const testBridgeIp = bridgeIp === "192.168.1.50" || bridgeIp === "192.168.1.106" 
-      ? "localhost" 
-      : bridgeIp
-    
-    const controlUrl = `http://${testBridgeIp}:${controlPort}/control/${action}`
-    
-    setBridgeControlStatus(action === "status" ? "checking" : action === "start" ? "starting" : action === "stop" ? "stopping" : "restarting")
-    
-    try {
-      const response = await fetch(controlUrl, {
-        method: action === "status" ? "GET" : "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${process.env.NEXT_PUBLIC_CAMERA_BRIDGE_CONTROL_TOKEN || "change-me-in-production"}`,
-        },
-        body: action === "status" ? undefined : JSON.stringify({
-          token: process.env.NEXT_PUBLIC_CAMERA_BRIDGE_CONTROL_TOKEN || "change-me-in-production",
-        }),
-        signal: AbortSignal.timeout(10000),
-      })
-      
-      const data = await response.json()
-      
-      if (response.ok && data.success) {
-        if (action === "status") {
-          setBridgeRunning(data.running)
-          toast({
-            title: data.running ? "Bridge is running" : "Bridge is not running",
-            description: data.message || `Status: ${data.status}`,
-            variant: "default",
-          })
-        } else {
-          setBridgeRunning(action === "stop" ? false : true)
-          toast({
-            title: `Bridge ${action}ed successfully`,
-            description: data.message || `Camera bridge has been ${action}ed`,
-            variant: "default",
-          })
-          // Refresh status after a moment
-          setTimeout(() => handleBridgeControl("status"), 2000)
-        }
-      } else {
-        throw new Error(data.error || data.message || `Failed to ${action} bridge`)
-      }
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : "Unknown error occurred"
-      toast({
-        title: `Failed to ${action} bridge`,
-        description: errorMessage + ". Make sure the control server is running on port 3003.",
-        variant: "destructive",
-      })
-      console.error(`Bridge control error (${action}):`, error)
-    } finally {
-      setBridgeControlStatus("idle")
     }
   }
 
@@ -289,102 +210,58 @@ export function SettingsPanel() {
 
           <div className="space-y-6">
             <div>
-              <Label htmlFor="camera-ip" className="text-sm font-medium mb-2 block">
-                Camera IP Address
+              <Label htmlFor="connector-url" className="text-sm font-medium mb-2 block">
+                Connector SSE URL
               </Label>
               <Input
-                id="camera-ip"
-                placeholder="192.168.1.100"
-                defaultValue="192.168.1.100"
+                id="connector-url"
+                placeholder="http://localhost:3000/events"
+                defaultValue={typeof window !== "undefined" 
+                  ? (process.env.NEXT_PUBLIC_CONNECTOR_SSE_URL || "http://localhost:3000/events")
+                  : "http://localhost:3000/events"
+                }
               />
               <p className="text-xs text-muted-foreground mt-1">
-                The IP address of your LPR camera on the local network
-              </p>
-            </div>
-
-            <div>
-              <Label htmlFor="bridge-ip" className="text-sm font-medium mb-2 block">
-                Bridge Service IP Address
-              </Label>
-              <Input
-                id="bridge-ip"
-                placeholder="192.168.1.50"
-                defaultValue="192.168.1.50"
-              />
-              <p className="text-xs text-muted-foreground mt-1">
-                Your computer's IP address where the bridge service runs
-              </p>
-            </div>
-
-            <div>
-              <Label htmlFor="bridge-port" className="text-sm font-medium mb-2 block">
-                Bridge Service Port
-              </Label>
-              <Input
-                id="bridge-port"
-                type="number"
-                placeholder="3001"
-                defaultValue="3001"
-              />
-              <p className="text-xs text-muted-foreground mt-1">
-                Port number for the bridge service (default: 3001)
-              </p>
-            </div>
-
-            <div>
-              <Label htmlFor="connection-mode" className="text-sm font-medium mb-2 block">
-                Connection Mode
-              </Label>
-              <select
-                id="connection-mode"
-                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                defaultValue="push"
-              >
-                <option value="push">HTTP Push (Recommended)</option>
-                <option value="poll">Polling</option>
-              </select>
-              <p className="text-xs text-muted-foreground mt-1">
-                HTTP Push: Camera sends data to bridge. Polling: Bridge checks camera periodically.
+                SSE endpoint URL of the Windows connector app (default: http://localhost:3000/events)
               </p>
             </div>
 
             <div className="border-t border-border pt-6">
               <h3 className="font-semibold text-foreground mb-4">Connection Instructions</h3>
               <div className="bg-muted/30 rounded-lg p-4 space-y-2 text-sm">
-                <p className="font-medium">To configure your camera:</p>
+                <p className="font-medium">Using Windows Connector App:</p>
                 <ol className="list-decimal list-inside space-y-1 text-muted-foreground">
-                  <li>Open camera web interface: <code className="bg-background px-1 rounded">http://[Camera IP]/main.htm</code></li>
-                  <li>Go to Advanced settings → Advanced Networks → HTTP push</li>
-                  <li>Set Server address to the Bridge Service IP above</li>
-                  <li>Set Port to the Bridge Service Port above</li>
-                  <li>Enable "Push license plate recognition results"</li>
-                  <li>Set address to <code className="bg-background px-1 rounded">/plate</code></li>
-                  <li>Click "Sure" to save</li>
+                  <li>Make sure your Windows connector app is running on your local machine</li>
+                  <li>The connector receives plate data from the camera via HTTP POST</li>
+                  <li>The connector broadcasts plate data via SSE (Server-Sent Events) to this browser</li>
+                  <li>Plate data will be automatically detected and auto-filled in the forms in real-time</li>
+                  <li>Default SSE endpoint: <code className="bg-background px-1 rounded">http://localhost:3000/events</code></li>
+                  <li>Use the test button below to verify the connection is working</li>
                 </ol>
               </div>
             </div>
 
             <div className="border-t border-border pt-6">
-              <h3 className="font-semibold text-foreground mb-4">Camera Bridge Control</h3>
-              <div className="bg-muted/30 rounded-lg p-4 space-y-4">
-                <div className="flex items-center justify-between">
+              <h3 className="font-semibold text-foreground mb-4">Connection Status</h3>
+              <div className="bg-muted/30 rounded-lg p-4">
+                <div className="flex items-center justify-between mb-4">
                   <div>
-                    <p className="text-sm text-muted-foreground mb-1">Bridge Service Status</p>
+                    <p className="text-sm text-muted-foreground mb-1">Windows App Connection</p>
                     <div className="flex items-center gap-2">
-                      {bridgeRunning === true ? (
+                      {cameraStatus === "connected" ? (
                         <>
                           <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
-                          <span className="font-semibold text-green-500">Running</span>
+                          <span className="font-semibold text-green-500">Connected</span>
                         </>
-                      ) : bridgeRunning === false ? (
+                      ) : cameraStatus === "error" ? (
                         <>
                           <div className="w-2 h-2 rounded-full bg-red-500" />
-                          <span className="font-semibold text-red-500">Stopped</span>
+                          <span className="font-semibold text-red-500">Error</span>
                         </>
                       ) : (
                         <>
                           <div className="w-2 h-2 rounded-full bg-yellow-500" />
-                          <span className="font-semibold text-yellow-500">Unknown</span>
+                          <span className="font-semibold text-yellow-500">Not Checked</span>
                         </>
                       )}
                     </div>
@@ -392,100 +269,18 @@ export function SettingsPanel() {
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => handleBridgeControl("status")}
-                    disabled={bridgeControlStatus === "checking"}
+                    onClick={handleTestCameraConnection}
+                    disabled={isTestingCamera}
                   >
-                    {bridgeControlStatus === "checking" ? (
+                    {isTestingCamera ? (
                       <>
                         <Loader2 className="w-4 h-4 animate-spin mr-2" />
-                        Checking...
+                        Testing...
                       </>
                     ) : (
-                      "Check Status"
+                      "Test Connection"
                     )}
                   </Button>
-                </div>
-                
-                <div className="flex gap-2 flex-wrap">
-                  <Button
-                    variant="default"
-                    size="sm"
-                    onClick={() => handleBridgeControl("start")}
-                    disabled={bridgeControlStatus !== "idle" || bridgeRunning === true}
-                  >
-                    {bridgeControlStatus === "starting" ? (
-                      <>
-                        <Loader2 className="w-4 h-4 animate-spin mr-2" />
-                        Starting...
-                      </>
-                    ) : (
-                      "Start Bridge"
-                    )}
-                  </Button>
-                  <Button
-                    variant="default"
-                    size="sm"
-                    onClick={() => handleBridgeControl("stop")}
-                    disabled={bridgeControlStatus !== "idle" || bridgeRunning === false}
-                  >
-                    {bridgeControlStatus === "stopping" ? (
-                      <>
-                        <Loader2 className="w-4 h-4 animate-spin mr-2" />
-                        Stopping...
-                      </>
-                    ) : (
-                      "Stop Bridge"
-                    )}
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handleBridgeControl("restart")}
-                    disabled={bridgeControlStatus !== "idle"}
-                  >
-                    {bridgeControlStatus === "restarting" ? (
-                      <>
-                        <Loader2 className="w-4 h-4 animate-spin mr-2" />
-                        Restarting...
-                      </>
-                    ) : (
-                      "Restart Bridge"
-                    )}
-                  </Button>
-                </div>
-                <p className="text-xs text-muted-foreground">
-                  Control the camera-bridge service on your local server. Make sure the control server is running on port 3003.
-                </p>
-              </div>
-            </div>
-
-            <div className="border-t border-border pt-6">
-              <h3 className="font-semibold text-foreground mb-4">Camera Status</h3>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="bg-muted/30 rounded-lg p-4">
-                  <p className="text-sm text-muted-foreground mb-1">Bridge Connection</p>
-                  <div className="flex items-center gap-2">
-                    {cameraStatus === "connected" ? (
-                      <>
-                        <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
-                        <span className="font-semibold text-green-500">Connected</span>
-                      </>
-                    ) : cameraStatus === "error" ? (
-                      <>
-                        <div className="w-2 h-2 rounded-full bg-red-500" />
-                        <span className="font-semibold text-red-500">Error</span>
-                      </>
-                    ) : (
-                      <>
-                        <div className="w-2 h-2 rounded-full bg-yellow-500" />
-                        <span className="font-semibold text-yellow-500">Not Checked</span>
-                      </>
-                    )}
-                  </div>
-                </div>
-                <div className="bg-muted/30 rounded-lg p-4">
-                  <p className="text-sm text-muted-foreground mb-1">Last Plate Detected</p>
-                  <p className="text-2xl font-bold text-primary">-</p>
                 </div>
               </div>
             </div>

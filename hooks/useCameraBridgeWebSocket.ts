@@ -69,9 +69,23 @@ export function useCameraBridgeWebSocket(
   const getWsUrl = () => {
     if (typeof window === "undefined") return "ws://localhost:3001";
     
+    // Check if direct connection mode is enabled (camera connects directly to Vercel)
+    // If NEXT_PUBLIC_CAMERA_DIRECT_CONNECTION is set to "true", don't use WebSocket
+    const directConnection = process.env.NEXT_PUBLIC_CAMERA_DIRECT_CONNECTION === "true";
+    if (directConnection) {
+      console.log("🔧 Direct camera connection mode enabled - WebSocket bridge not needed");
+      // Return a dummy URL that won't connect (will gracefully fail)
+      return "ws://localhost:0"; // Port 0 will fail to connect, which is fine
+    }
+    
     // Check environment variable first (for production - Render, Railway, etc.)
     const envUrl = process.env.NEXT_PUBLIC_CAMERA_BRIDGE_WS_URL;
     if (envUrl) {
+      // If explicitly set to empty or disabled, use dummy URL
+      if (envUrl === "" || envUrl === "disabled" || envUrl === "false") {
+        console.log("🔧 Camera bridge WebSocket disabled via environment variable");
+        return "ws://localhost:0"; // Port 0 will fail to connect, which is fine
+      }
       console.log("✅ Using WebSocket URL from environment variable:", envUrl);
       return envUrl;
     }
@@ -94,10 +108,10 @@ export function useCameraBridgeWebSocket(
     console.log("🔍 [useCameraBridgeWebSocket] Environment variable:", process.env.NEXT_PUBLIC_CAMERA_BRIDGE_WS_URL);
     console.log("🔍 [useCameraBridgeWebSocket] Options passed:", options);
     
-    // Warn if environment variable is not set in production
-    if (!process.env.NEXT_PUBLIC_CAMERA_BRIDGE_WS_URL && window.location.hostname !== "localhost" && window.location.hostname !== "127.0.0.1") {
-      console.warn("⚠️⚠️⚠️ NEXT_PUBLIC_CAMERA_BRIDGE_WS_URL not set! Using localhost:3001 (will fail in production)");
-      console.warn("⚠️ Set NEXT_PUBLIC_CAMERA_BRIDGE_WS_URL in Vercel environment variables to your Render service URL");
+    // CRITICAL: Warn if trying to connect to wrong port
+    if (wsUrl.includes(":3002") || wsUrl.includes(":3003")) {
+      console.error("❌❌❌ WRONG PORT! Server is on port 3001, but trying to connect to:", wsUrl);
+      console.error("❌ Fix: Update .env.local to use ws://localhost:3001 or remove the env var");
     }
   }
 
@@ -158,6 +172,13 @@ export function useCameraBridgeWebSocket(
    * Connect to WebSocket
    */
   const connect = useCallback(() => {
+    // Check if direct connection mode (no bridge needed)
+    const directConnection = typeof window !== "undefined" && process.env.NEXT_PUBLIC_CAMERA_DIRECT_CONNECTION === "true";
+    if (directConnection) {
+      console.log("⏸️ Direct camera connection mode - skipping bridge WebSocket connection");
+      return;
+    }
+    
     if (!isEnabled) {
       console.log("⏸️ WebSocket disabled, not connecting");
       return;
@@ -414,6 +435,16 @@ export function useCameraBridgeWebSocket(
    * Connect/disconnect based on enabled state
    */
   useEffect(() => {
+    // Check if direct connection mode (no bridge needed)
+    const directConnection = process.env.NEXT_PUBLIC_CAMERA_DIRECT_CONNECTION === "true";
+    if (directConnection) {
+      console.log("🔧 Direct camera connection mode - skipping WebSocket bridge connection");
+      // Don't try to connect to bridge WebSocket when using direct connection
+      shouldReconnectRef.current = false;
+      disconnect();
+      return;
+    }
+    
     console.log("🔧 Connection effect triggered, isEnabled:", isEnabled);
     if (isEnabled) {
       shouldReconnectRef.current = true;

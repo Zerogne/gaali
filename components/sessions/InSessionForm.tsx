@@ -9,8 +9,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
-import { useCameraBridgeWebSocket } from "@/hooks/useCameraBridgeWebSocket";
 import { useLprPlateAutofill } from "@/hooks/useLprPlateAutofill";
+import { useConnectorSSE } from "@/hooks/useConnectorSSE";
 import { useThirdPartyAutofill } from "@/hooks/useThirdPartyAutofill";
 import { updateTruckLog } from "@/lib/api";
 import type { Product } from "@/lib/products/products";
@@ -99,35 +99,45 @@ export const InSessionForm = forwardRef<
       null
     );
     const isAutofillingRef = useRef(false);
-    // Use WebSocket for real-time camera updates (preferred)
-    // Falls back to polling if WebSocket not available
-    const internalCameraAutofillWs = useCameraBridgeWebSocket();
+    
+    // Get connector URL from localStorage or environment variable
+    const [connectorUrl] = useState(() => {
+      if (typeof window === "undefined") {
+        return process.env.NEXT_PUBLIC_CONNECTOR_SSE_URL || "http://localhost:3000/events";
+      }
+      try {
+        const saved = localStorage.getItem("cameraSettings");
+        if (saved) {
+          const settings = JSON.parse(saved);
+          if (settings.connectorUrl) {
+            return settings.connectorUrl;
+          }
+        }
+      } catch (e) {
+        // Ignore localStorage errors
+      }
+      return process.env.NEXT_PUBLIC_CONNECTOR_SSE_URL || "http://localhost:3000/events";
+    });
+    
+    // Use SSE for real-time camera updates from Windows connector
+    // Falls back to polling if SSE not available
+    const connectorSSE = useConnectorSSE({
+      connectorUrl,
+      enabled: true,
+    });
     const internalCameraAutofill = useLprPlateAutofill();
 
-    // FORCE ENABLE WebSocket if it's disabled (user might have disabled it before)
-    useEffect(() => {
-      if (!internalCameraAutofillWs.isEnabled) {
-        console.log("🔧🔧🔧 WebSocket autofill is DISABLED - ENABLING IT NOW");
-        internalCameraAutofillWs.toggleEnabled(true);
-      }
-    }, [internalCameraAutofillWs.isEnabled, internalCameraAutofillWs]);
-
-    // Prefer WebSocket if enabled (even if connecting), otherwise use external or polling
-    const cameraAutofill = internalCameraAutofillWs.isEnabled
-      ? internalCameraAutofillWs
+    // Prefer SSE if connected, otherwise use external autofill or polling
+    const cameraAutofill = 
+      connectorSSE.status === "connected" ? connectorSSE
       : externalCameraAutofill || internalCameraAutofill;
 
     // Debug logging
     useEffect(() => {
       console.log("📡 Camera autofill status:", {
-        using: externalCameraAutofill
-          ? "external"
-          : internalCameraAutofillWs.isEnabled
-          ? "websocket"
-          : "polling",
-        wsStatus: internalCameraAutofillWs.status,
-        wsEnabled: internalCameraAutofillWs.isEnabled,
-        wsPlate: internalCameraAutofillWs.plate,
+        using: connectorSSE.status === "connected" ? "sse" : externalCameraAutofill ? "external" : "polling",
+        sseStatus: connectorSSE.status,
+        ssePlate: connectorSSE.plate,
         pollingPlate: internalCameraAutofill.plate,
         currentPlate: cameraAutofill.plate,
         hasPlate: !!cameraAutofill.plate,
@@ -141,9 +151,8 @@ export const InSessionForm = forwardRef<
       }
     }, [
       cameraAutofill.plate,
-      internalCameraAutofillWs.status,
-      internalCameraAutofillWs.isEnabled,
-      internalCameraAutofillWs.plate,
+      connectorSSE.status,
+      connectorSSE.plate,
       internalCameraAutofill.plate,
       externalCameraAutofill,
     ]);
@@ -1221,20 +1230,16 @@ export const InSessionForm = forwardRef<
                   {/* Connection Status - Helper Text Area */}
                   {(cameraAutofill.status === "polling" ||
                     cameraAutofill.status === "connected" ||
-                    cameraAutofill.status === "connecting" ||
                     (cameraAutofill.status === "error" &&
                       cameraAutofill.error)) && (
                     <div className="mb-1.5">
                       {(cameraAutofill.status === "polling" ||
-                        cameraAutofill.status === "connected" ||
-                        cameraAutofill.status === "connecting") && (
+                        cameraAutofill.status === "connected") && (
                         <div className="flex items-center gap-1.5 text-base text-blue-600 whitespace-nowrap">
                           <Camera className="h-5 w-5 animate-pulse shrink-0" />
                           <span className="whitespace-nowrap">
                             {cameraAutofill.status === "connected"
                               ? "Камера холбогдсон"
-                              : cameraAutofill.status === "connecting"
-                              ? "Камера холбогдож байна..."
                               : "Камера холбогдож байна..."}
                           </span>
                         </div>

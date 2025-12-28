@@ -43,6 +43,8 @@ export interface TruckLog {
   sealNumber?: string;
   hasTrailer?: boolean; // Chirguultei checkbox
   trailerPlate?: string; // Trailer plate (shown when hasTrailer is true)
+  vehicleRegistrationNumber?: string; // Vehicle registration number
+  vehicleRegistrationYear?: string; // Vehicle registration year
   createdAt: string;
   sentToCustoms: boolean;
 }
