@@ -12,6 +12,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useLprPlateAutofill } from "@/hooks/useLprPlateAutofill";
 import { useConnectorSSE } from "@/hooks/useConnectorSSE";
 import { useThirdPartyAutofill } from "@/hooks/useThirdPartyAutofill";
+import { useWeightStatus } from "@/hooks/useWeightStatus";
 import { updateTruckLog } from "@/lib/api";
 import { exportLogToPDF } from "@/lib/pdf-export";
 import type { Product } from "@/lib/products/products";
@@ -136,6 +137,33 @@ export const OutSessionForm = forwardRef<
     const cameraAutofill = 
       connectorSSE.status === "connected" ? connectorSSE
       : externalCameraAutofill || internalCameraAutofill;
+
+    // Check weight device connection status
+    const weightStatus = useWeightStatus({
+      enabled: true,
+      pollInterval: 10000, // Check every 10 seconds
+    });
+
+    // Log weight connection status
+    useEffect(() => {
+      if (weightStatus.status.connected) {
+        console.log("⚖️ Weight Device: ✅ CONNECTED", {
+          siteId: weightStatus.status.siteId,
+          latestWeight: weightStatus.status.latestWeight,
+          unit: weightStatus.status.unit,
+          recentActivity: weightStatus.status.recentActivity,
+          totalRecords: weightStatus.status.totalRecords,
+        });
+      } else if (weightStatus.status.totalRecords > 0) {
+        console.log("⚖️ Weight Device: ⚠️ INACTIVE (no recent data)", {
+          siteId: weightStatus.status.siteId,
+          totalRecords: weightStatus.status.totalRecords,
+          lastReceivedAt: weightStatus.status.lastReceivedAt,
+        });
+      } else {
+        console.log("⚖️ Weight Device: ❌ NOT CONNECTED (no data received)");
+      }
+    }, [weightStatus.status.connected, weightStatus.status.totalRecords, weightStatus.status.recentActivity]);
 
     // Data loading states
     const [products, setProducts] = useState<Product[]>([]);

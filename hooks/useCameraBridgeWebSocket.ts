@@ -73,7 +73,7 @@ export function useCameraBridgeWebSocket(
     // If NEXT_PUBLIC_CAMERA_DIRECT_CONNECTION is set to "true", don't use WebSocket
     const directConnection = process.env.NEXT_PUBLIC_CAMERA_DIRECT_CONNECTION === "true";
     if (directConnection) {
-      console.log("🔧 Direct camera connection mode enabled - WebSocket bridge not needed");
+      // Direct camera connection mode enabled
       // Return a dummy URL that won't connect (will gracefully fail)
       return "ws://localhost:0"; // Port 0 will fail to connect, which is fine
     }
@@ -83,7 +83,7 @@ export function useCameraBridgeWebSocket(
     if (envUrl) {
       // If explicitly set to empty or disabled, use dummy URL
       if (envUrl === "" || envUrl === "disabled" || envUrl === "false") {
-        console.log("🔧 Camera bridge WebSocket disabled via environment variable");
+        // Camera bridge WebSocket disabled
         return "ws://localhost:0"; // Port 0 will fail to connect, which is fine
       }
       console.log("✅ Using WebSocket URL from environment variable:", envUrl);
@@ -104,9 +104,7 @@ export function useCameraBridgeWebSocket(
   
   // Debug: Log the actual URL being used
   if (typeof window !== "undefined") {
-    console.log("🔍 [useCameraBridgeWebSocket] WebSocket URL determined:", wsUrl, "from function:", wsUrlFromFunction);
-    console.log("🔍 [useCameraBridgeWebSocket] Environment variable:", process.env.NEXT_PUBLIC_CAMERA_BRIDGE_WS_URL);
-    console.log("🔍 [useCameraBridgeWebSocket] Options passed:", options);
+    // Removed verbose logging
     
     // CRITICAL: Warn if trying to connect to wrong port
     if (wsUrl.includes(":3002") || wsUrl.includes(":3003")) {
@@ -122,7 +120,7 @@ export function useCameraBridgeWebSocket(
     // FORCE ENABLE by default - only disable if explicitly set to "false"
     // This ensures WebSocket autofill works out of the box
     if (stored === "false") {
-      console.log("🔧 localStorage says disabled, but we'll enable it anyway for first-time setup");
+      // localStorage says disabled, but we'll enable it anyway
       // Clear the disabled flag so it works
       localStorage.removeItem("cameraBridgeWsEnabled");
       return true;
@@ -138,8 +136,7 @@ export function useCameraBridgeWebSocket(
     // Only access localStorage in browser (not during SSR)
     if (typeof window !== "undefined") {
       const stored = localStorage.getItem("cameraBridgeWsEnabled");
-      console.log("🔧 Initial isEnabled value:", initialEnabled, "from localStorage:", stored, "default enabled:", enabled);
-      console.log("🔧 FORCING ENABLED to TRUE for WebSocket autofill");
+      // Initial isEnabled value calculated
     }
     // ALWAYS start enabled
     return true;
@@ -175,7 +172,7 @@ export function useCameraBridgeWebSocket(
     // Check if direct connection mode (no bridge needed)
     const directConnection = typeof window !== "undefined" && process.env.NEXT_PUBLIC_CAMERA_DIRECT_CONNECTION === "true";
     if (directConnection) {
-      console.log("⏸️ Direct camera connection mode - skipping bridge WebSocket connection");
+      // Direct camera connection mode - skipping bridge
       return;
     }
     
@@ -218,7 +215,7 @@ export function useCameraBridgeWebSocket(
     setData((prev) => ({ ...prev, status: "connecting", error: null }));
 
     try {
-      console.log("🔌🔌🔌 Connecting to camera bridge WebSocket:", wsUrl);
+      // Connecting to camera bridge WebSocket
       console.log("🔌 Connection attempt at:", new Date().toISOString());
       console.log("🔌 Server should be listening on port 3001");
       console.log("🔌 Make sure camera-bridge server is running: npm run dev in camera-bridge folder");
@@ -232,7 +229,7 @@ export function useCameraBridgeWebSocket(
           status: "connected",
           error: null,
         }));
-        console.log("✅✅✅ Camera bridge WebSocket CONNECTED!");
+        // Camera bridge WebSocket connected
         console.log("✅ WebSocket readyState:", ws.readyState, "(OPEN =", WebSocket.OPEN, ")");
         console.log("✅ WebSocket URL:", wsUrl);
         console.log("✅ Message handler is set:", typeof ws.onmessage === "function");
@@ -322,7 +319,7 @@ export function useCameraBridgeWebSocket(
             console.log("✅ setData called, state update queued for plate:", plateNumber);
             console.log("✅ Will trigger useEffect in next render");
           } else if (message.type === "connected") {
-            console.log("📡 Camera bridge WebSocket:", message.message);
+            // Received message from camera bridge WebSocket
             lastPayloadRef.current = message;
           } else {
             console.log("⚠️ Unknown message type:", message.type);
@@ -338,16 +335,9 @@ export function useCameraBridgeWebSocket(
 
       ws.onerror = (error) => {
         isConnectingRef.current = false;
-        console.error("❌❌❌ Camera bridge WebSocket ERROR:", error);
+        // Camera bridge WebSocket error
         console.error("❌ Failed to connect to:", wsUrl);
-        console.error("❌ Error details:", {
-          type: error.type,
-          target: error.target,
-          currentTarget: error.currentTarget,
-        });
-        console.error("💡 Make sure the bridge service is running on port 3001");
-        console.error("💡 Check if server shows: '🔌 WebSocket server listening on port 3001'");
-        console.error("💡 Check terminal where camera-bridge is running for connection logs");
+        // Bridge service connection error
         setData((prev) => ({
           ...prev,
           status: "error",
@@ -358,13 +348,7 @@ export function useCameraBridgeWebSocket(
       ws.onclose = (event) => {
         isConnectingRef.current = false;
         
-        console.log("🔌🔌🔌 Camera bridge WebSocket CLOSED:", {
-          code: event.code,
-          reason: event.reason || "No reason",
-          wasClean: event.wasClean,
-          shouldReconnect: shouldReconnectRef.current,
-          isEnabled,
-        });
+        // Camera bridge WebSocket closed
         
         // Only reconnect if it wasn't a normal closure and we should reconnect
         if (shouldReconnectRef.current && isEnabled && event.code !== 1000) {
@@ -438,7 +422,7 @@ export function useCameraBridgeWebSocket(
     // Check if direct connection mode (no bridge needed)
     const directConnection = process.env.NEXT_PUBLIC_CAMERA_DIRECT_CONNECTION === "true";
     if (directConnection) {
-      console.log("🔧 Direct camera connection mode - skipping WebSocket bridge connection");
+      // Direct camera connection mode - skipping bridge
       // Don't try to connect to bridge WebSocket when using direct connection
       shouldReconnectRef.current = false;
       disconnect();
