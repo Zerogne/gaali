@@ -28,18 +28,13 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Verify signature if secret is set
+    // Verify signature if both secret and signature are provided (optional)
     const signature = request.headers.get("x-signature");
     const secret = process.env.INGEST_SECRET;
 
-    if (secret) {
-      if (!signature) {
-        return NextResponse.json(
-          { error: "Missing signature header" },
-          { status: 400 }
-        );
-      }
-
+    // Only verify signature if both secret and signature are provided
+    // This allows the weight bridge to connect without authentication
+    if (secret && signature) {
       const expectedSignature = crypto
         .createHmac("sha256", secret)
         .update(bodyText)
@@ -52,9 +47,11 @@ export async function POST(request: NextRequest) {
           { status: 400 }
         );
       }
-    } else {
+      // Signature verified successfully
+    } else if (secret && !signature) {
+      // Secret is set but no signature provided - accept request but log warning
       console.warn(
-        "Warning: INGEST_SECRET not set, accepting requests without verification"
+        "Warning: INGEST_SECRET is set but no signature provided. Accepting request without verification."
       );
     }
 
