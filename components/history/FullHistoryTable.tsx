@@ -546,13 +546,13 @@ export function FullHistoryTable({
               variant="outline"
               className="bg-blue-50 text-blue-700 border-blue-200"
             >
-              IN: {inCount}
+              ОРОХ: {inCount}
             </Badge>
             <Badge
               variant="outline"
               className="bg-green-50 text-green-700 border-green-200"
             >
-              OUT: {outCount}
+              ГАРАХ: {outCount}
             </Badge>
           </div>
         </div>
@@ -573,6 +573,10 @@ export function FullHistoryTable({
               <Table>
                 <TableHeader>
                   <TableRow className="bg-gray-50">
+                  <TableHead className="text-gray-700 font-semibold relative pr-3">
+                      Дугаар
+                      <div className="absolute right-0 top-1/2 -translate-y-1/2 w-px h-3 bg-gray-300"></div>
+                    </TableHead>
                     <TableHead className="text-gray-700 font-semibold relative pr-3">
                       Улсын дугаар
                       <div className="absolute right-0 top-1/2 -translate-y-1/2 w-px h-3 bg-gray-300"></div>
@@ -582,15 +586,7 @@ export function FullHistoryTable({
                       <div className="absolute right-0 top-1/2 -translate-y-1/2 w-px h-3 bg-gray-300"></div>
                     </TableHead>
                     <TableHead className="text-gray-700 font-semibold relative pr-3">
-                      Дугаар
-                      <div className="absolute right-0 top-1/2 -translate-y-1/2 w-px h-3 bg-gray-300"></div>
-                    </TableHead>
-                    <TableHead className="text-gray-700 font-semibold relative pr-3">
-                      Хаанаас → Хаашаа
-                      <div className="absolute right-0 top-1/2 -translate-y-1/2 w-px h-3 bg-gray-300"></div>
-                    </TableHead>
-                    <TableHead className="text-gray-700 font-semibold relative pr-3">
-                      Чиглэл
+                      Төлөв
                       <div className="absolute right-0 top-1/2 -translate-y-1/2 w-px h-3 bg-gray-300"></div>
                     </TableHead>
                     <TableHead className="text-gray-700 font-semibold relative pr-3">
