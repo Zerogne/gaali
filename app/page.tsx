@@ -1,6 +1,6 @@
 "use client";
 
-import { Sidebar } from "@/components/layout/Sidebar";
+import { Sidebar } from "@/components/sidebar";
 import { TruckSection } from "@/components/trucks/TruckSection";
 import { TruckTable } from "@/components/trucks/TruckTable";
 import { getTruckLogs } from "@/lib/api";

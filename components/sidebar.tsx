@@ -15,7 +15,7 @@ import {
 import { handleLogout } from "@/lib/auth/logoutClient"
 
 const menuItems = [
-  { icon: LayoutDashboard, label: "Хяналтын самбар", href: "/" },
+  { icon: LayoutDashboard, label: "Нүүр", href: "/" },
   { icon: Package, label: "Бүтээгдэхүүн", href: "/products" },
   { icon: Truck, label: "Тээврийн компани", href: "/companies" },
   { icon: User, label: "Жолооч", href: "/drivers" },

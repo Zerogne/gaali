@@ -14,11 +14,20 @@ import {
 } from "@/components/ui/table";
 import { useToast } from "@/hooks/use-toast";
 import { sendTruckLogToCustoms } from "@/lib/api";
-import { exportLogToPDF } from "@/lib/pdf-export";
+import { printLog } from "@/lib/pdf-export";
 import type { Direction, TruckLog, TransportCompany } from "@/lib/types";
-import { Edit, FileDown, Search, Send, ArrowRight } from "lucide-react";
+import { Edit, FileDown, Search, ArrowRight, X } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 interface TruckTableProps {
   logs: TruckLog[];
@@ -32,6 +41,12 @@ export function TruckTable({ logs, onSend, onUpdate }: TruckTableProps) {
   const [sendingIds, setSendingIds] = useState<Set<string>>(new Set());
   const [uniqueCodes, setUniqueCodes] = useState<Map<string, string>>(new Map());
   const [transportCompanies, setTransportCompanies] = useState<TransportCompany[]>([]);
+  const [directionFilter, setDirectionFilter] = useState<Direction | "ALL">("ALL");
+  const [plateSearch, setPlateSearch] = useState("");
+  const [driverSearch, setDriverSearch] = useState("");
+  const [dateFrom, setDateFrom] = useState("");
+  const [dateTo, setDateTo] = useState("");
+  const [companyFilter, setCompanyFilter] = useState<string>("ALL");
 
   const handleEdit = (log: TruckLog) => {
     // Redirect to the appropriate session page based on direction
@@ -42,10 +57,74 @@ export function TruckTable({ logs, onSend, onUpdate }: TruckTableProps) {
     }
   };
 
-  // Display the latest 50 logs (already sorted by API, but ensure newest first)
-  const filteredLogs = [...logs]
-    .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
-    .slice(0, 50);
+  // Helper function to get transport company name
+  const getTransportCompanyName = (companyId?: string): string => {
+    if (!companyId) return "—";
+    const company = transportCompanies.find((c) => c.id === companyId);
+    return company?.name || "—";
+  };
+
+  // Filter and display logs based on search filters
+  const filteredLogs = useMemo(() => {
+    let result = [...logs];
+    
+    // Direction filter
+    if (directionFilter !== "ALL") {
+      result = result.filter((log) => log.direction === directionFilter);
+    }
+    
+    // Plate search
+    if (plateSearch.trim()) {
+      const query = plateSearch.toLowerCase().trim();
+      result = result.filter((log) => 
+        log.plate.toLowerCase().includes(query)
+      );
+    }
+    
+    // Driver search
+    if (driverSearch.trim()) {
+      const query = driverSearch.toLowerCase().trim();
+      result = result.filter((log) => 
+        log.driverName?.toLowerCase().includes(query)
+      );
+    }
+    
+    // Company filter
+    if (companyFilter !== "ALL") {
+      result = result.filter((log) => log.transportCompanyId === companyFilter);
+    }
+    
+    // Date filters
+    if (dateFrom) {
+      const fromDate = new Date(dateFrom);
+      result = result.filter((log) => {
+        const logDate = new Date(log.createdAt);
+        return logDate >= fromDate;
+      });
+    }
+    if (dateTo) {
+      const toDate = new Date(dateTo);
+      toDate.setHours(23, 59, 59, 999); // End of day
+      result = result.filter((log) => {
+        const logDate = new Date(log.createdAt);
+        return logDate <= toDate;
+      });
+    }
+    
+    // Sort by date (newest first) and limit to 50
+    return result
+      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+      .slice(0, 50);
+  }, [logs, directionFilter, plateSearch, driverSearch, companyFilter, dateFrom, dateTo]);
+  
+  const clearFilters = () => {
+    setDirectionFilter("ALL");
+    setPlateSearch("");
+    setDriverSearch("");
+    setDateFrom("");
+    setDateTo("");
+    setCompanyFilter("ALL");
+  };
 
   const inCount = filteredLogs.filter((log) => log.direction === "IN").length;
   const outCount = filteredLogs.filter((log) => log.direction === "OUT").length;
@@ -148,13 +227,6 @@ export function TruckTable({ logs, onSend, onUpdate }: TruckTableProps) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [logs])
 
-  // Helper function to get transport company name
-  const getTransportCompanyName = (companyId?: string): string => {
-    if (!companyId) return "—";
-    const company = transportCompanies.find((c) => c.id === companyId);
-    return company?.name || "—";
-  };
-
   // Helper function to format from/to
   const formatFromTo = (origin?: string, destination?: string): string => {
     if (!origin && !destination) return "—";
@@ -178,21 +250,119 @@ export function TruckTable({ logs, onSend, onUpdate }: TruckTableProps) {
       <CardHeader className="pb-1.5 flex-shrink-0">
         <div className="flex items-center justify-between">
           <CardTitle className="text-xl font-bold text-gray-900">
-            Тээврийн хэрэгслийн түүх
+            Тээврийн хэрэгслийн түүх, хайлт
           </CardTitle>
-          <Button
-            onClick={() => router.push("/sessions")}
-            variant="outline"
-            size="sm"
-            className="gap-2"
-          >
-            Бүрэн түүх
-            <ArrowRight className="w-4 h-4" />
-          </Button>
+          
         </div>
       </CardHeader>
       <Separator className="flex-shrink-0" />
       <CardContent className="pt-1.5 flex-1 min-h-0 overflow-hidden flex flex-col">
+        {/* Filters Section */}
+        <div className="space-y-4 mb-3 p-4 bg-gray-50 rounded-lg border border-gray-200 flex-shrink-0">
+          
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+            {/* Direction Filter */}
+            <div>
+              <Label htmlFor="direction" className="text-xs font-medium text-gray-700 mb-1">
+                Чиглэл
+              </Label>
+              <Select
+                value={directionFilter}
+                onValueChange={(value) => setDirectionFilter(value as Direction | "ALL")}
+              >
+                <SelectTrigger className="w-full bg-white">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="ALL">Бүх чиглэл</SelectItem>
+                  <SelectItem value="IN">ОРОХ</SelectItem>
+                  <SelectItem value="OUT">ГАРАХ</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Plate Search */}
+            <div>
+              <Label htmlFor="plate" className="text-xs font-medium text-gray-700 mb-1">
+                Улсын дугаар
+              </Label>
+              <Input
+                id="plate"
+                placeholder="Хайх..."
+                value={plateSearch}
+                onChange={(e) => setPlateSearch(e.target.value)}
+                className="bg-white"
+              />
+            </div>
+
+            {/* Driver Search */}
+            <div>
+              <Label htmlFor="driver" className="text-xs font-medium text-gray-700 mb-1">
+                Жолооч
+              </Label>
+              <Input
+                id="driver"
+                placeholder="Хайх..."
+                value={driverSearch}
+                onChange={(e) => setDriverSearch(e.target.value)}
+                className="bg-white"
+              />
+            </div>
+
+            {/* Company Filter */}
+            <div>
+              <Label htmlFor="company" className="text-xs font-medium text-gray-700 mb-1">
+                Тээврийн компани
+              </Label>
+              <Select
+                value={companyFilter}
+                onValueChange={(value) => setCompanyFilter(value)}
+              >
+                <SelectTrigger className="w-full bg-white">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="ALL">Бүх компани</SelectItem>
+                  {transportCompanies.map((company) => (
+                    <SelectItem key={company.id} value={company.id}>
+                      {company.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Date From */}
+            <div>
+              <Label htmlFor="dateFrom" className="text-xs font-medium text-gray-700 mb-1">
+                Эхлэх огноо
+              </Label>
+              <Input
+                id="dateFrom"
+                type="date"
+                value={dateFrom}
+                onChange={(e) => setDateFrom(e.target.value)}
+                className="bg-white"
+              />
+            </div>
+
+            {/* Date To */}
+            <div>
+              <Label htmlFor="dateTo" className="text-xs font-medium text-gray-700 mb-1">
+                Дуусах огноо
+              </Label>
+              <Input
+                id="dateTo"
+                type="date"
+                value={dateTo}
+                onChange={(e) => setDateTo(e.target.value)}
+                className="bg-white"
+              />
+            </div>
+          </div>
+        </div>
+        
         {filteredLogs.length === 0 ? (
           <div className="text-center py-4 text-gray-500">
             <p className="text-base font-medium mb-1">
@@ -206,54 +376,50 @@ export function TruckTable({ logs, onSend, onUpdate }: TruckTableProps) {
         ) : (
           <div className="flex flex-col h-full min-h-0">
             <div className="flex items-center justify-between flex-shrink-0 mb-3">
-              <div className="flex items-center gap-4">
-                <span className="text-sm font-medium text-gray-700">
-                  Нийт бүртгэл:
-                </span>
-                <Badge
-                  variant="outline"
-                  className="bg-blue-50 text-blue-700 border-blue-200"
-                >
-                  IN: {inCount}
-                </Badge>
-                <Badge
-                  variant="outline"
-                  className="bg-green-50 text-green-700 border-green-200"
-                >
-                  OUT: {outCount}
-                </Badge>
-              </div>
+              
             </div>
             <div className="flex-1 min-h-0 overflow-auto rounded-lg border border-gray-200">
               <Table>
                 <TableHeader>
                   <TableRow className="bg-gray-50">
-                    <TableHead className="text-gray-700 font-semibold relative pr-3">
-                      Улсын дугаар
-                      <div className="absolute right-0 top-1/2 -translate-y-1/2 w-px h-3 bg-gray-300"></div>
-                    </TableHead>
-                    <TableHead className="text-gray-700 font-semibold relative pr-3">
-                      Жолооч
-                      <div className="absolute right-0 top-1/2 -translate-y-1/2 w-px h-3 bg-gray-300"></div>
-                    </TableHead>
-                    <TableHead className="text-gray-700 font-semibold relative pr-3">
+                    <TableHead className="text-gray-700 font-semibold text-xs relative pr-3">
                       Дугаар
                       <div className="absolute right-0 top-1/2 -translate-y-1/2 w-px h-3 bg-gray-300"></div>
                     </TableHead>
-                    <TableHead className="text-gray-700 font-semibold relative pr-3">
-                      Хаанаас → Хаашаа
+                    <TableHead className="text-gray-700 font-semibold text-xs relative pr-3">
+                      Улсын дугаар
                       <div className="absolute right-0 top-1/2 -translate-y-1/2 w-px h-3 bg-gray-300"></div>
                     </TableHead>
-                    <TableHead className="text-gray-700 font-semibold relative pr-3">
-                      Чиглэл
+                    <TableHead className="text-gray-700 font-semibold text-xs relative pr-3">
+                      Чиргүүл
                       <div className="absolute right-0 top-1/2 -translate-y-1/2 w-px h-3 bg-gray-300"></div>
                     </TableHead>
-                    <TableHead className="text-gray-700 font-semibold relative pr-3">
+                    <TableHead className="text-gray-700 font-semibold text-xs relative pr-3">
+                      Жолооч
+                      <div className="absolute right-0 top-1/2 -translate-y-1/2 w-px h-3 bg-gray-300"></div>
+                    </TableHead>
+                    <TableHead className="text-gray-700 font-semibold text-xs relative pr-3">
+                      Бүтээгдхүүн
+                      <div className="absolute right-0 top-1/2 -translate-y-1/2 w-px h-3 bg-gray-300"></div>
+                    </TableHead>
+                    <TableHead className="text-gray-700 font-semibold text-xs relative pr-3">
                       Тээврийн компани
                       <div className="absolute right-0 top-1/2 -translate-y-1/2 w-px h-3 bg-gray-300"></div>
                     </TableHead>
-                    <TableHead className="text-gray-700 font-semibold">
-                      Үйлдлүүд
+                    <TableHead className="text-gray-700 font-semibold text-xs relative pr-3">
+                      Чиглэл
+                      <div className="absolute right-0 top-1/2 -translate-y-1/2 w-px h-3 bg-gray-300"></div>
+                    </TableHead>
+                    <TableHead className="text-gray-700 font-semibold text-xs relative pr-3">
+                      Статус
+                      <div className="absolute right-0 top-1/2 -translate-y-1/2 w-px h-3 bg-gray-300"></div>
+                    </TableHead>
+                    <TableHead className="text-gray-700 font-semibold text-xs relative pr-3">
+                      Засах
+                      <div className="absolute right-0 top-1/2 -translate-y-1/2 w-px h-3 bg-gray-300"></div>
+                    </TableHead>
+                    <TableHead className="text-gray-700 font-semibold text-xs">
+                      Хэвлэх
                     </TableHead>
                   </TableRow>
                 </TableHeader>
@@ -269,20 +435,28 @@ export function TruckTable({ logs, onSend, onUpdate }: TruckTableProps) {
                         handleEdit(log)
                       }}
                     >
-                      <TableCell className="font-mono font-semibold text-gray-900 relative pr-3">
-                        {log.plate}
-                        <div className="absolute right-0 top-1/2 -translate-y-1/2 w-px h-3 bg-gray-300"></div>
-                      </TableCell>
-                      <TableCell className="text-gray-700 relative pr-3">
-                        {log.driverName}
-                        <div className="absolute right-0 top-1/2 -translate-y-1/2 w-px h-3 bg-gray-300"></div>
-                      </TableCell>
-                      <TableCell className="text-gray-700 font-mono text-sm relative pr-3">
+                      <TableCell className="text-gray-700 font-mono text-xs relative pr-3">
                         {uniqueCodes.get(log.id) || "—"}
                         <div className="absolute right-0 top-1/2 -translate-y-1/2 w-px h-3 bg-gray-300"></div>
                       </TableCell>
-                      <TableCell className="text-gray-700 text-sm relative pr-3">
-                        {formatFromTo(log.origin, log.destination)}
+                      <TableCell className="font-mono font-semibold text-gray-900 text-xs relative pr-3">
+                        {log.plate}
+                        <div className="absolute right-0 top-1/2 -translate-y-1/2 w-px h-3 bg-gray-300"></div>
+                      </TableCell>
+                      <TableCell className="text-gray-700 font-mono text-xs relative pr-3">
+                        {log.trailerPlate || "—"}
+                        <div className="absolute right-0 top-1/2 -translate-y-1/2 w-px h-3 bg-gray-300"></div>
+                      </TableCell>
+                      <TableCell className="text-gray-700 text-xs relative pr-3">
+                        {log.driverName}
+                        <div className="absolute right-0 top-1/2 -translate-y-1/2 w-px h-3 bg-gray-300"></div>
+                      </TableCell>
+                      <TableCell className="text-gray-700 text-xs relative pr-3">
+                        {log.cargoType || "—"}
+                        <div className="absolute right-0 top-1/2 -translate-y-1/2 w-px h-3 bg-gray-300"></div>
+                      </TableCell>
+                      <TableCell className="text-gray-700 text-xs relative pr-3">
+                        {getTransportCompanyName(log.transportCompanyId)}
                         <div className="absolute right-0 top-1/2 -translate-y-1/2 w-px h-3 bg-gray-300"></div>
                       </TableCell>
                       <TableCell className="relative pr-3">
@@ -290,88 +464,63 @@ export function TruckTable({ logs, onSend, onUpdate }: TruckTableProps) {
                           variant="outline"
                           className={
                             log.direction === "IN"
-                              ? "bg-blue-50 text-blue-700 border-blue-200"
-                              : "bg-green-50 text-green-700 border-green-200"
+                              ? "bg-blue-50 text-blue-700 border-blue-200 text-xs"
+                              : "bg-green-50 text-green-700 border-green-200 text-xs"
                           }
                         >
-                          {log.direction === "IN" ? "ОРОХ" : "ГАРАХ"}
+                          {log.direction === "IN" ? "орсон" : "гарсан"}
                         </Badge>
                         <div className="absolute right-0 top-1/2 -translate-y-1/2 w-px h-3 bg-gray-300"></div>
                       </TableCell>
-                      <TableCell className="text-gray-700 text-sm relative pr-3">
-                        {getTransportCompanyName(log.transportCompanyId)}
+                      <TableCell className="relative pr-3">
+                        <span className={`text-xs font-medium ${
+                          log.sentToCustoms 
+                            ? "text-green-600" 
+                            : "text-gray-500"
+                        }`}>
+                          {log.sentToCustoms ? "илгээгдсэн" : "илгээгдээгүй"}
+                        </span>
+                        <div className="absolute right-0 top-1/2 -translate-y-1/2 w-px h-3 bg-gray-300"></div>
+                      </TableCell>
+                      <TableCell className="relative pr-3">
+                        <Button
+                          size="default"
+                          variant="outline"
+                          onClick={() => handleEdit(log)}
+                          title={
+                            log.sentToCustoms
+                              ? "Бүртгэлийг засах"
+                              : "Бүртгэл засах"
+                          }
+                          className="border-gray-300 hover:bg-gray-50 h-8 px-3 text-xs"
+                        >
+                          <Edit className="w-3 h-3 mr-1.5" />
+                          Засах
+                        </Button>
                         <div className="absolute right-0 top-1/2 -translate-y-1/2 w-px h-3 bg-gray-300"></div>
                       </TableCell>
                       <TableCell>
-                        <div className="flex items-center gap-2">
-                          <Button
-                            size="default"
-                            variant="outline"
-                            onClick={() => handleEdit(log)}
-                            title={
-                              log.sentToCustoms
-                                ? "Бүртгэлийг дахин засах"
-                                : "Бүртгэл засах"
+                        <Button
+                          size="default"
+                          variant="outline"
+                          onClick={async () => {
+                            try {
+                              await printLog(log);
+                            } catch (error) {
+                              console.error("Error printing:", error);
+                              toast({
+                                title: "Алдаа",
+                                description: error instanceof Error ? error.message : "Хэвлэхэд алдаа гарлаа",
+                                variant: "destructive",
+                              });
                             }
-                            className="border-gray-300 hover:bg-gray-50 h-9 px-4 text-sm"
-                          >
-                            <Edit className="w-4 h-4 mr-2" />
-                            {log.sentToCustoms ? "Дахин засах" : "Засах"}
-                          </Button>
-                          <Button
-                            size="default"
-                            variant="outline"
-                            onClick={async () => {
-                              try {
-                                await exportLogToPDF(log);
-                              } catch (error) {
-                                console.error("Error exporting PDF:", error);
-                              }
-                            }}
-                            title="Хэвлэх"
-                            className="border-gray-300 hover:bg-gray-50 h-9 px-4 text-sm"
-                          >
-                            <FileDown className="w-4 h-4 mr-2" />
-                            Хэвлэх
-                          </Button>
-                          {log.sentToCustoms ? (
-                            <Button
-                              size="default"
-                              variant="outline"
-                              onClick={() => handleResend(log)}
-                              disabled={sendingIds.has(log.id)}
-                              className="bg-green-400 text-white border-green-500 hover:bg-green-500 disabled:bg-green-200 disabled:text-white h-9 px-4 text-sm"
-                              title="Гаалинд дахин илгээх"
-                            >
-                              {sendingIds.has(log.id) ? (
-                                "Илгээж байна..."
-                              ) : (
-                                <>
-                                  <Send className="w-4 h-4 mr-2" />
-                                  Дахин илгээх
-                                </>
-                              )}
-                            </Button>
-                          ) : (
-                            <Button
-                              size="default"
-                              variant="outline"
-                              onClick={() => handleResend(log)}
-                              disabled={sendingIds.has(log.id)}
-                              className="bg-green-500 text-white border-green-600 hover:bg-green-600 disabled:bg-green-300 disabled:text-white h-9 px-4 text-sm"
-                              title="Гаалинд илгээх"
-                            >
-                              {sendingIds.has(log.id) ? (
-                                "Илгээж байна..."
-                              ) : (
-                                <>
-                                  <Send className="w-4 h-4 mr-2" />
-                                  Илгээх
-                                </>
-                              )}
-                            </Button>
-                          )}
-                        </div>
+                          }}
+                          title="Хэвлэх"
+                          className="border-gray-300 hover:bg-gray-50 h-8 px-3 text-xs"
+                        >
+                          <FileDown className="w-3 h-3 mr-1.5" />
+                          Хэвлэх
+                        </Button>
                       </TableCell>
                     </TableRow>
                   ))}

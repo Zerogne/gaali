@@ -127,6 +127,50 @@ async function fetchSessionUniqueCode(log: TruckLog): Promise<string | null> {
 }
 
 /**
+ * Open browser print dialog for a truck log
+ * @param log - The truck log data
+ * @param providedUniqueCode - Optional unique code to use instead of fetching
+ */
+export async function printLog(log: TruckLog, providedUniqueCode?: string | null): Promise<void> {
+  // Fetch related data (transport company, organizations)
+  const relatedData = await fetchRelatedData(log);
+
+  // Fetch current user (loader) information
+  let loaderName: string | undefined;
+  try {
+    const userResponse = await fetch("/api/user");
+    if (userResponse.ok) {
+      const userData = await userResponse.json();
+      loaderName = userData.name;
+    }
+  } catch (error) {
+    console.warn("Failed to fetch current user:", error);
+  }
+
+  // Use provided unique code, or fetch session's unique code (AKT)
+  const uniqueCode = providedUniqueCode !== undefined ? providedUniqueCode : await fetchSessionUniqueCode(log);
+
+  // Create HTML content with the log data
+  const htmlContent = generateLogHTML(log, relatedData, loaderName, uniqueCode);
+
+  // Create a new window for printing
+  const printWindow = window.open("", "_blank");
+  if (!printWindow) {
+    throw new Error("Failed to open print window. Please allow popups for this site.");
+  }
+
+  printWindow.document.write(htmlContent);
+  printWindow.document.close();
+
+  // Wait for content to load, then trigger print
+  printWindow.onload = () => {
+    setTimeout(() => {
+      printWindow.print();
+    }, 250);
+  };
+}
+
+/**
  * Generate a responsive PDF for a single truck log using HTML rendering
  * @param log - The truck log data
  * @param providedUniqueCode - Optional unique code to use instead of fetching

@@ -23,7 +23,7 @@ import {
 } from "@/components/ui/table";
 import { useToast } from "@/hooks/use-toast";
 import { sendTruckLogToCustoms } from "@/lib/api";
-import { exportLogToPDF } from "@/lib/pdf-export";
+import { printLog } from "@/lib/pdf-export";
 import type { Direction, TruckLog, TransportCompany } from "@/lib/types";
 import { Edit, FileDown, Search, Send, X, ChevronLeft, ChevronRight } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -663,9 +663,14 @@ export function FullHistoryTable({
                             variant="outline"
                             onClick={async () => {
                               try {
-                                await exportLogToPDF(log);
+                                await printLog(log);
                               } catch (error) {
-                                console.error("Error exporting PDF:", error);
+                                console.error("Error printing:", error);
+                                toast({
+                                  title: "Алдаа",
+                                  description: error instanceof Error ? error.message : "Хэвлэхэд алдаа гарлаа",
+                                  variant: "destructive",
+                                });
                               }
                             }}
                             title="Хэвлэх"

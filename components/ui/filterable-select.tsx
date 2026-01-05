@@ -36,6 +36,7 @@ interface FilterableSelectProps {
   editable?: boolean; // Whether items can be edited inline
   onCreateNew?: (label: string) => Promise<string | null>; // Returns the new option value or null on error
   createNewLabel?: string; // Label to show when creating new item (e.g., "Create '...'")
+  required?: boolean; // Whether the field is required
 }
 
 export function FilterableSelect({
@@ -51,6 +52,7 @@ export function FilterableSelect({
   editable = true,
   onCreateNew,
   createNewLabel,
+  required = false,
 }: FilterableSelectProps) {
   const [open, setOpen] = React.useState(false);
   const [searchQuery, setSearchQuery] = React.useState("");

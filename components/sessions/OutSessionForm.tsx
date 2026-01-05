@@ -1,6 +1,5 @@
 "use client";
 
-import { DriverManager } from "@/components/drivers/DriverManager";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -13,7 +12,7 @@ import { useLprPlateAutofill } from "@/hooks/useLprPlateAutofill";
 import { useConnectorSSE } from "@/hooks/useConnectorSSE";
 import { useThirdPartyAutofill } from "@/hooks/useThirdPartyAutofill";
 import { useWeightStatus } from "@/hooks/useWeightStatus";
-import { updateTruckLog } from "@/lib/api";
+import { updateTruckLog, sendTruckLogToCustoms } from "@/lib/api";
 import { exportLogToPDF } from "@/lib/pdf-export";
 import type { Product } from "@/lib/products/products";
 import type {
@@ -22,7 +21,7 @@ import type {
   TransportCompany,
   TruckLog,
 } from "@/lib/types";
-import { ArrowRight, Camera, Printer } from "lucide-react";
+import { ArrowRight, Camera, Printer, Send, Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import {
   forwardRef,
@@ -103,6 +102,7 @@ export const OutSessionForm = forwardRef<
       isConnected,
     } = useThirdPartyAutofill();
     const [isSaving, setIsSaving] = useState(false);
+    const [isSending, setIsSending] = useState(false);
     const [plateInputRef, setPlateInputRef] = useState<HTMLInputElement | null>(
       null
     );
@@ -410,6 +410,40 @@ export const OutSessionForm = forwardRef<
         }
       } catch (error) {
         console.error("Error creating transport company:", error);
+      }
+      return null;
+    };
+
+    const handleCreateDriver = async (name: string) => {
+      try {
+        const response = await fetch("/api/drivers", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ name }),
+        });
+        if (response.ok) {
+          const newDriver = await response.json();
+          setDrivers((prev) => [...prev, newDriver]);
+          toast({
+            title: "Амжилттай",
+            description: "Жолооч амжилттай нэмэгдлээ",
+          });
+          return newDriver.id;
+        } else {
+          const errorData = await response.json();
+          toast({
+            title: "Алдаа",
+            description: errorData.error || "Жолооч нэмэхэд алдаа гарлаа",
+            variant: "destructive",
+          });
+        }
+      } catch (error) {
+        console.error("Error creating driver:", error);
+        toast({
+          title: "Алдаа",
+          description: "Жолооч нэмэхэд алдаа гарлаа",
+          variant: "destructive",
+        });
       }
       return null;
     };
@@ -1347,45 +1381,47 @@ export const OutSessionForm = forwardRef<
           {/* Form Content - Single Section Layout */}
           <div className="flex-1 min-h-0 overflow-auto flex justify-center p-4">
             <Card className="p-4 w-full max-w-6xl">
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-2">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-4">
                 {/* Plate Number */}
                 <div className="flex flex-col">
-                  <div className="mb-1.5 flex items-center">
+                  <div className="mb-1.5 min-h-[1.5rem] flex items-center">
                       <Label
                         htmlFor="plateNumber"
                       className="text-base font-medium text-gray-700"
                       >
-                        Улсын дугаар *
+                        Улсын дугаар <span className="text-red-500">*</span>
                       </Label>
                   </div>
                   {/* Connection Status - Helper Text Area */}
-                  {(cameraAutofill.status === "polling" ||
-                    cameraAutofill.status === "connected" ||
-                    (cameraAutofill.status === "error" &&
-                      cameraAutofill.error)) && (
-                    <div className="mb-1.5">
-                      {(cameraAutofill.status === "polling" ||
-                        cameraAutofill.status === "connected") && (
-                        <div className="flex items-center gap-1.5 text-base text-blue-600 whitespace-nowrap">
-                          <Camera className="h-5 w-5 animate-pulse shrink-0" />
-                          <span className="whitespace-nowrap">
-                            {cameraAutofill.status === "connected"
-                              ? "Камера холбогдсон"
-                              : "Камера холбогдож байна..."}
-                          </span>
-                        </div>
-                      )}
-                      {cameraAutofill.status === "error" &&
-                        cameraAutofill.error && (
-                          <div className="flex items-center gap-1.5 text-base text-red-600 whitespace-nowrap">
-                            <Camera className="h-5 w-5 shrink-0" />
+                  <div className="mb-1.5 min-h-[1.5rem]">
+                    {(cameraAutofill.status === "polling" ||
+                      cameraAutofill.status === "connected" ||
+                      (cameraAutofill.status === "error" &&
+                        cameraAutofill.error)) && (
+                      <>
+                        {(cameraAutofill.status === "polling" ||
+                          cameraAutofill.status === "connected") && (
+                          <div className="flex items-center gap-1.5 text-base text-blue-600 whitespace-nowrap">
+                            <Camera className="h-5 w-5 animate-pulse shrink-0" />
                             <span className="whitespace-nowrap">
-                              Камера алдаа: {cameraAutofill.error}
+                              {cameraAutofill.status === "connected"
+                                ? "Камера холбогдсон"
+                                : "Камера холбогдож байна..."}
                             </span>
                           </div>
                         )}
-                    </div>
-                  )}
+                        {cameraAutofill.status === "error" &&
+                          cameraAutofill.error && (
+                            <div className="flex items-center gap-1.5 text-base text-red-600 whitespace-nowrap">
+                              <Camera className="h-5 w-5 shrink-0" />
+                              <span className="whitespace-nowrap">
+                                Камера алдаа: {cameraAutofill.error}
+                              </span>
+                            </div>
+                          )}
+                      </>
+                    )}
+                  </div>
                   <div className="h-12">
                       <Input
                         ref={setPlateInputRef}
@@ -1412,14 +1448,15 @@ export const OutSessionForm = forwardRef<
 
                 {/* Out Weight Input */}
                 <div className="flex flex-col">
-                  <div className="mb-1.5 flex items-center">
+                  <div className="mb-1.5 min-h-[1.5rem] flex items-center">
                     <Label
                       htmlFor="outWeightKg"
                       className="text-base font-medium text-gray-700"
                     >
-                      Гарах жин (кг) *
+                      Гарах жин (кг) <span className="text-red-500">*</span>
                     </Label>
                   </div>
+                  <div className="mb-1.5 min-h-[1.5rem]"></div>
                   <div className="h-12">
                     <Input
                       id="outWeightKg"
@@ -1444,11 +1481,12 @@ export const OutSessionForm = forwardRef<
 
                 {/* Trailer Checkbox and Input */}
                 <div className="flex flex-col">
-                  <div className="mb-1.5 flex items-center">
-                    <Label className="text-sm font-medium text-gray-700">
+                  <div className="mb-1.5 min-h-[1.5rem] flex items-center">
+                    <Label className="text-base font-medium text-gray-700">
                       Чиргүүл
                     </Label>
                   </div>
+                  <div className="mb-1.5 min-h-[1.5rem]"></div>
                   <div className="h-12 flex items-center gap-2">
                     <label className="flex items-center gap-2 shrink-0 cursor-pointer">
                       <Checkbox
@@ -1466,7 +1504,7 @@ export const OutSessionForm = forwardRef<
                           }));
                         }}
                       />
-                      <span className="text-sm font-medium text-gray-700 leading-none">
+                      <span className="text-base font-medium text-gray-700 leading-none">
                         Чиргүүлтэй
                       </span>
                     </label>
@@ -1485,18 +1523,19 @@ export const OutSessionForm = forwardRef<
                         />
                       )}
                     </div>
-                    </div>
+                </div>
 
                 {/* Net Weight Input */}
                 <div className="flex flex-col">
-                  <div className="mb-1.5 flex items-center">
+                  <div className="mb-1.5 min-h-[1.5rem] flex items-center">
                       <Label
                         htmlFor="netWeightKg"
                       className="text-base font-medium text-gray-700"
                       >
-                        Цэвэр жин (кг) *
+                        Цэвэр жин (кг) <span className="text-red-500">*</span>
                       </Label>
                   </div>
+                  <div className="mb-1.5 min-h-[1.5rem]"></div>
                   <div className="h-12">
                       <Input
                         id="netWeightKg"
@@ -1527,13 +1566,14 @@ export const OutSessionForm = forwardRef<
                         }}
                       className="h-12 text-lg w-full"
                         placeholder="Цэвэр жин (кг)"
+                        required
                       />
                     </div>
                 </div>
 
                 {/* Seal Number */}
                 <div className="flex flex-col">
-                  <div className="mb-1.5 flex items-center">
+                  <div className="mb-1.5 min-h-[1.5rem] flex items-center">
                     <Label
                       htmlFor="sealNumber"
                       className="text-base font-medium text-gray-700"
@@ -1541,6 +1581,7 @@ export const OutSessionForm = forwardRef<
                       Лацны дугаар
                     </Label>
                   </div>
+                  <div className="mb-1.5 min-h-[1.5rem]"></div>
                   <div className="h-12">
                     <Input
                       id="sealNumber"
@@ -1559,57 +1600,53 @@ export const OutSessionForm = forwardRef<
 
                 {/* Driver */}
                 <div className="flex flex-col">
-                  <div className="mb-1.5 flex items-center">
-                      <Label
-                        htmlFor="driverId"
+                  <div className="mb-1.5 min-h-[1.5rem] flex items-center">
+                    <Label
+                      htmlFor="driverId"
                       className="text-base font-medium text-gray-700"
-                      >
-                        Жолооч *
-                      </Label>
+                    >
+                      Жолооч <span className="text-red-500">*</span>
+                    </Label>
                   </div>
-                  <div className="h-12 flex items-center gap-2">
-                        <div className="flex-1">
-                          <FilterableSelect
-                            options={driverOptions}
-                            value={formState.driverId}
-                            onValueChange={(value) => {
-                              const selectedDriver = drivers.find(
-                                (d) => d.id === value
-                              );
-                              setFormState((prev) => ({
-                                ...prev,
-                                driverId: value,
-                                driverName: selectedDriver?.name || "",
-                              }));
-                            }}
-                            disabled={isLoadingDrivers}
-                            placeholder={
-                          isLoadingDrivers ? "Уншиж байна..." : "Жолооч сонгох"
-                            }
-                            searchPlaceholder="Жолооч хайх..."
-                        className="h-12"
-                          />
-                        </div>
-                    <div className="h-12 flex items-center">
-                        <DriverManager
-                          drivers={drivers}
-                          onDriverAdded={handleDriverAdded}
-                          onDriverUpdated={handleDriverAdded}
-                        />
-                      </div>
-                    </div>
+                  <div className="mb-1.5 min-h-[1.5rem]"></div>
+                  <div className="h-12">
+                    <FilterableSelect
+                      options={driverOptions}
+                      value={formState.driverId}
+                      onValueChange={(value) => {
+                        const selectedDriver = drivers.find(
+                          (d) => d.id === value
+                        );
+                        setFormState((prev) => ({
+                          ...prev,
+                          driverId: value,
+                          driverName: selectedDriver?.name || "",
+                        }));
+                      }}
+                      disabled={isLoadingDrivers}
+                      placeholder={
+                        isLoadingDrivers ? "Уншиж байна..." : "Жолооч сонгох"
+                      }
+                      searchPlaceholder="Жолооч хайх..."
+                      onCreateNew={handleCreateDriver}
+                      createNewLabel="+ Нэмэх ..."
+                      className="h-12"
+                      required
+                    />
+                  </div>
                 </div>
 
                 {/* Transport Company */}
                 <div className="flex flex-col">
-                  <div className="mb-1.5 flex items-center">
+                  <div className="mb-1.5 min-h-[1.5rem] flex items-center">
                       <Label
                         htmlFor="transporterCompanyId"
                       className="text-base font-medium text-gray-700"
                       >
-                        Тээврийн компани *
+                        Тээврийн компани <span className="text-red-500">*</span>
                       </Label>
                   </div>
+                  <div className="mb-1.5 min-h-[1.5rem]"></div>
                   <div className="h-12">
                       <FilterableSelect
                         options={transportCompanyOptions}
@@ -1630,20 +1667,22 @@ export const OutSessionForm = forwardRef<
                         onCreateNew={handleCreateTransportCompany}
                         createNewLabel="+ Нэмэх ..."
                       className="h-12"
+                        required
                       />
                     </div>
                 </div>
 
                 {/* Product */}
                 <div className="flex flex-col">
-                  <div className="mb-1.5 flex items-center">
+                  <div className="mb-1.5 min-h-[1.5rem] flex items-center">
                     <Label
                       htmlFor="productId"
                       className="text-base font-medium text-gray-700"
                     >
-                      Бүтээгдэхүүн *
+                      Бүтээгдэхүүн <span className="text-red-500">*</span>
                     </Label>
                   </div>
+                  <div className="mb-1.5 min-h-[1.5rem]"></div>
                   <div className="h-12">
                     <FilterableSelect
                       options={productOptions}
@@ -1664,13 +1703,14 @@ export const OutSessionForm = forwardRef<
                       onCreateNew={handleCreateProduct}
                       createNewLabel="+ Нэмэх ..."
                       className="h-12"
+                      required
                     />
                   </div>
                 </div>
 
                 {/* Origin */}
                 <div className="flex flex-col">
-                  <div className="mb-1.5 flex items-center">
+                  <div className="mb-1.5 min-h-[1.5rem] flex items-center">
                       <Label
                         htmlFor="origin"
                       className="text-base font-medium text-gray-700"
@@ -1678,6 +1718,7 @@ export const OutSessionForm = forwardRef<
                         Хаанаас
                       </Label>
                   </div>
+                  <div className="mb-1.5 min-h-[1.5rem]"></div>
                   <div className="h-12">
                       <Input
                         id="origin"
@@ -1696,7 +1737,7 @@ export const OutSessionForm = forwardRef<
 
                 {/* Destination */}
                 <div className="flex flex-col">
-                  <div className="mb-1.5 flex items-center">
+                  <div className="mb-1.5 min-h-[1.5rem] flex items-center">
                       <Label
                         htmlFor="destination"
                       className="text-base font-medium text-gray-700"
@@ -1704,6 +1745,7 @@ export const OutSessionForm = forwardRef<
                         Хаашаа
                       </Label>
                   </div>
+                  <div className="mb-1.5 min-h-[1.5rem]"></div>
                   <div className="h-12">
                       <Input
                         id="destination"
@@ -1722,7 +1764,7 @@ export const OutSessionForm = forwardRef<
 
                 {/* Sender Organization */}
                 <div className="flex flex-col">
-                  <div className="mb-1.5 flex items-center">
+                  <div className="mb-1.5 min-h-[1.5rem] flex items-center">
                       <Label
                         htmlFor="senderOrganizationId"
                       className="text-base font-medium text-gray-700"
@@ -1730,6 +1772,7 @@ export const OutSessionForm = forwardRef<
                         Илгээч байгууллага
                       </Label>
                   </div>
+                  <div className="mb-1.5 min-h-[1.5rem]"></div>
                   <div className="h-12">
                       <FilterableSelect
                         options={organizationOptions}
@@ -1756,7 +1799,7 @@ export const OutSessionForm = forwardRef<
 
                 {/* Receiver Organization */}
                 <div className="flex flex-col">
-                  <div className="mb-1.5 flex items-center">
+                  <div className="mb-1.5 min-h-[1.5rem] flex items-center">
                       <Label
                         htmlFor="receiverOrganizationId"
                       className="text-base font-medium text-gray-700"
@@ -1764,6 +1807,7 @@ export const OutSessionForm = forwardRef<
                         Хүлээн авагч байгууллага
                       </Label>
                   </div>
+                  <div className="mb-1.5 min-h-[1.5rem]"></div>
                   <div className="h-12">
                       <FilterableSelect
                         options={organizationOptions}
@@ -1790,7 +1834,7 @@ export const OutSessionForm = forwardRef<
 
                 {/* Notes - Wider, Reduced Height */}
                 <div className="md:col-span-2 flex flex-col">
-                  <div className="mb-1.5 flex items-center">
+                  <div className="mb-1.5 min-h-[1.5rem] flex items-center">
                     <Label
                       htmlFor="notes"
                       className="text-base font-medium text-gray-700"
@@ -1798,7 +1842,8 @@ export const OutSessionForm = forwardRef<
                       Нэмэлт мэдээлэл
                     </Label>
                   </div>
-                  <div className="max-w-[calc(66.666%-0.5rem)]">
+                  <div className="mb-1.5 min-h-[1.5rem]"></div>
+                  <div>
                     <Textarea
                       id="notes"
                       value={formState.notes}
@@ -1973,6 +2018,55 @@ export const OutSessionForm = forwardRef<
                       <Printer className="w-4 h-4 mr-1" />
                       Хэвлэх
                     </Button>
+                    {editLog && !editLog.sentToCustoms && (
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={async () => {
+                          if (!editLogId) return;
+                          setIsSending(true);
+                          try {
+                            const result = await sendTruckLogToCustoms(editLogId);
+                            if (result.success) {
+                              toast({
+                                title: "Амжилттай",
+                                description: "Мэдээлэл Монголын гаалинд амжилттай илгээгдлээ",
+                              });
+                              // Refresh the page or update the log
+                              router.refresh();
+                            } else {
+                              toast({
+                                title: "Алдаа",
+                                description: result.error || "Гаалинд илгээхэд алдаа гарлаа",
+                                variant: "destructive",
+                              });
+                            }
+                          } catch (error) {
+                            toast({
+                              title: "Алдаа",
+                              description: "Гаалинд илгээхэд алдаа гарлаа",
+                              variant: "destructive",
+                            });
+                          } finally {
+                            setIsSending(false);
+                          }
+                        }}
+                        disabled={isSaving || isSending}
+                        className="bg-green-500 text-white border-green-600 hover:bg-green-600 disabled:bg-green-300 disabled:text-white h-11 px-4 text-sm"
+                      >
+                        {isSending ? (
+                          <>
+                            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                            Илгээж байна...
+                          </>
+                        ) : (
+                          <>
+                            <Send className="w-4 h-4 mr-2" />
+                            Гаалинд илгээх
+                          </>
+                        )}
+                      </Button>
+                    )}
                     <Button
                       type="submit"
                       onClick={handleSubmit}

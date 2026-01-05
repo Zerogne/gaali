@@ -17,13 +17,14 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
+import { sendTruckLogToCustoms } from "@/lib/api";
 import type {
   Driver,
   Organization,
   TransportCompany,
   TruckLog,
 } from "@/lib/types";
-import { Camera, CheckCircle2, Loader2 } from "lucide-react";
+import { Camera, CheckCircle2, Loader2, Send } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 
 interface Product {
@@ -48,6 +49,7 @@ export function EditLogDialog({
 }: EditLogDialogProps) {
   const { toast } = useToast();
   const [isSaving, setIsSaving] = useState(false);
+  const [isSending, setIsSending] = useState(false);
   const [products, setProducts] = useState<Product[]>([]);
   const [isLoadingProducts, setIsLoadingProducts] = useState(true);
   const [transportCompanies, setTransportCompanies] = useState<
@@ -374,6 +376,44 @@ export function EditLogDialog({
       })),
     [organizations]
   );
+
+  const handleSend = async () => {
+    if (!log) {
+      toast({
+        title: "Алдаа",
+        description: "Бүртгэл олдсонгүй",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsSending(true);
+    try {
+      const result = await sendTruckLogToCustoms(log.id);
+
+      if (result.success) {
+        toast({
+          title: "Амжилттай",
+          description: "Мэдээлэл Монголын гаалинд амжилттай илгээгдлээ",
+        });
+        onSuccess();
+      } else {
+        toast({
+          title: "Алдаа",
+          description: result.error || "Гаалинд илгээхэд алдаа гарлаа",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      toast({
+        title: "Алдаа",
+        description: "Гаалинд илгээхэд алдаа гарлаа",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSending(false);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -884,14 +924,33 @@ export function EditLogDialog({
                       type="button"
                       variant="outline"
                       onClick={() => onOpenChange(false)}
-                      disabled={isSaving}
+                      disabled={isSaving || isSending}
                       className="flex-1"
                     >
                       Цуцлах
                     </Button>
                     <Button
+                      type="button"
+                      variant="outline"
+                      onClick={handleSend}
+                      disabled={isSaving || isSending || !log}
+                      className="bg-green-500 text-white border-green-600 hover:bg-green-600 disabled:bg-green-300 disabled:text-white"
+                    >
+                      {isSending ? (
+                        <>
+                          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                          Илгээж байна...
+                        </>
+                      ) : (
+                        <>
+                          <Send className="w-4 h-4 mr-2" />
+                          {log?.sentToCustoms ? "Дахин илгээх" : "Гаалинд илгээх"}
+                        </>
+                      )}
+                    </Button>
+                    <Button
                       type="submit"
-                      disabled={isSaving}
+                      disabled={isSaving || isSending}
                       className="flex-1 bg-blue-600 text-white hover:bg-blue-700"
                     >
                       {isSaving ? (

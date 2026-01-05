@@ -1,6 +1,6 @@
 "use client";
 
-import { Sidebar } from "@/components/layout/Sidebar";
+import { Sidebar } from "@/components/sidebar";
 import {
   InSessionForm,
   type InSessionFormHandle,
