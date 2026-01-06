@@ -1371,7 +1371,7 @@ export const InSessionForm = forwardRef<
 
                 {/* Plate Number */}
                 <div className="flex flex-col">
-                  <div className="mb-1.5 min-h-[1.5rem] flex items-center">
+                  <div className="mb-1 min-h-[1.25rem] flex items-center">
                     <Label
                       htmlFor="plateNumber"
                       className="text-base font-medium text-gray-700"
@@ -1380,7 +1380,7 @@ export const InSessionForm = forwardRef<
                     </Label>
                   </div>
                   {/* Connection Status - Helper Text Area */}
-                  <div className="mb-1.5 min-h-[1.5rem]">
+                  <div className="mb-0.5 min-h-[1.25rem]">
                     {(cameraAutofill.status === "polling" ||
                       cameraAutofill.status === "connected" ||
                       (cameraAutofill.status === "error" &&
@@ -1435,7 +1435,7 @@ export const InSessionForm = forwardRef<
 
                 {/* Weight Input */}
                 <div className="flex flex-col">
-                  <div className="mb-1.5 min-h-[1.5rem] flex items-center">
+                  <div className="mb-1 min-h-[1.25rem] flex items-center">
                     <Label
                       htmlFor="grossWeightKg"
                       className="text-base font-medium text-gray-700"
@@ -1443,7 +1443,6 @@ export const InSessionForm = forwardRef<
                       Бүрэн жин (кг) <span className="text-red-500">*</span>
                     </Label>
                   </div>
-                  <div className="mb-1.5 min-h-[1.5rem]"></div>
                   <div className="h-12">
                     <Input
                       id="grossWeightKg"
@@ -1468,12 +1467,11 @@ export const InSessionForm = forwardRef<
 
                 {/* Trailer Checkbox and Input */}
                 <div className="flex flex-col">
-                  <div className="mb-1.5 min-h-[1.5rem] flex items-center">
+                  <div className="mb-1 min-h-[1.25rem] flex items-center">
                     <Label className="text-base font-medium text-gray-700">
                       Чиргүүл
                     </Label>
                   </div>
-                  <div className="mb-1.5 min-h-[1.5rem]"></div>
                   <div className="h-12 flex items-center gap-2">
                     <label className="flex items-center gap-2 shrink-0 cursor-pointer">
                       <Checkbox
@@ -1514,7 +1512,7 @@ export const InSessionForm = forwardRef<
 
                 {/* Driver */}
                 <div className="flex flex-col">
-                  <div className="mb-1.5 min-h-[1.5rem] flex items-center">
+                  <div className="mb-1 min-h-[1.25rem] flex items-center">
                     <Label
                       htmlFor="driverId"
                       className="text-base font-medium text-gray-700"
@@ -1522,7 +1520,6 @@ export const InSessionForm = forwardRef<
                       Жолооч <span className="text-red-500">*</span>
                     </Label>
                   </div>
-                  <div className="mb-1.5 min-h-[1.5rem]"></div>
                   <div className="h-12">
                     <FilterableSelect
                       options={driverOptions}
@@ -1552,7 +1549,7 @@ export const InSessionForm = forwardRef<
 
                 {/* Transport Company */}
                 <div className="flex flex-col">
-                  <div className="mb-1.5 min-h-[1.5rem] flex items-center">
+                  <div className="mb-1 min-h-[1.25rem] flex items-center">
                     <Label
                       htmlFor="transporterCompanyId"
                       className="text-base font-medium text-gray-700"
@@ -1560,7 +1557,6 @@ export const InSessionForm = forwardRef<
                       Тээврийн компани <span className="text-red-500">*</span>
                     </Label>
                   </div>
-                  <div className="mb-1.5 min-h-[1.5rem]"></div>
                   <div className="h-12">
                     <FilterableSelect
                       options={transportCompanyOptions}
@@ -1575,7 +1571,7 @@ export const InSessionForm = forwardRef<
                       placeholder={
                         isLoadingCompanies
                           ? "Уншиж байна..."
-                          : "Тээврийн компани сонгох"
+                          : "Сонгох"
                       }
                       searchPlaceholder="Тээврийн компани хайх..."
                       onCreateNewDialog={(initialValue) => handleOpenCreateDialog("transportCompany", initialValue)}
@@ -1588,7 +1584,7 @@ export const InSessionForm = forwardRef<
 
                 {/* Product */}
                 <div className="flex flex-col">
-                  <div className="mb-1.5 min-h-[1.5rem] flex items-center">
+                  <div className="mb-1 min-h-[1.25rem] flex items-center">
                     <Label
                       htmlFor="productId"
                       className="text-base font-medium text-gray-700"
@@ -1596,7 +1592,6 @@ export const InSessionForm = forwardRef<
                       Бүтээгдэхүүн <span className="text-red-500">*</span>
                     </Label>
                   </div>
-                  <div className="mb-1.5 min-h-[1.5rem]"></div>
                   <div className="h-12">
                     <FilterableSelect
                       options={productOptions}
@@ -1611,7 +1606,7 @@ export const InSessionForm = forwardRef<
                       placeholder={
                         isLoadingProducts
                           ? "Уншиж байна..."
-                          : "Бүтээгдэхүүн сонгох"
+                          : "Сонгох"
                       }
                       searchPlaceholder="Бүтээгдэхүүн хайх..."
                       onCreateNewDialog={(initialValue) => handleOpenCreateDialog("product", initialValue)}
@@ -1624,7 +1619,7 @@ export const InSessionForm = forwardRef<
 
                 {/* Origin */}
                 <div className="flex flex-col">
-                  <div className="mb-1.5 min-h-[1.5rem] flex items-center">
+                  <div className="mb-1 min-h-[1.25rem] flex items-center">
                     <Label
                       htmlFor="origin"
                       className="text-base font-medium text-gray-700"
@@ -1632,7 +1627,6 @@ export const InSessionForm = forwardRef<
                       Хаанаас
                     </Label>
                   </div>
-                  <div className="mb-1.5 min-h-[1.5rem]"></div>
                   <div className="h-12">
                     <Input
                       id="origin"
@@ -1651,7 +1645,7 @@ export const InSessionForm = forwardRef<
 
                 {/* Destination */}
                 <div className="flex flex-col">
-                  <div className="mb-1.5 min-h-[1.5rem] flex items-center">
+                  <div className="mb-1 min-h-[1.25rem] flex items-center">
                     <Label
                       htmlFor="destination"
                       className="text-base font-medium text-gray-700"
@@ -1659,7 +1653,6 @@ export const InSessionForm = forwardRef<
                       Хаашаа
                     </Label>
                   </div>
-                  <div className="mb-1.5 min-h-[1.5rem]"></div>
                   <div className="h-12">
                     <Input
                       id="destination"
@@ -1678,7 +1671,7 @@ export const InSessionForm = forwardRef<
 
                 {/* Sender Organization */}
                 <div className="flex flex-col">
-                  <div className="mb-1.5 min-h-[1.5rem] flex items-center">
+                  <div className="mb-1 min-h-[1.25rem] flex items-center">
                     <Label
                       htmlFor="senderOrganizationId"
                       className="text-base font-medium text-gray-700"
@@ -1686,7 +1679,6 @@ export const InSessionForm = forwardRef<
                       Илгээч байгууллага
                     </Label>
                   </div>
-                  <div className="mb-1.5 min-h-[1.5rem]"></div>
                   <div className="h-12">
                     <FilterableSelect
                       options={organizationOptions}
@@ -1701,7 +1693,7 @@ export const InSessionForm = forwardRef<
                       placeholder={
                         isLoadingOrganizations
                           ? "Уншиж байна..."
-                          : "Илгээч байгууллага сонгох"
+                          : "Сонгох"
                       }
                         searchPlaceholder="Илгээч байгууллага хайх..."
                         onCreateNewDialog={(initialValue) => handleOpenCreateDialog("organization", initialValue)}
@@ -1713,7 +1705,7 @@ export const InSessionForm = forwardRef<
 
                 {/* Receiver Organization */}
                 <div className="flex flex-col">
-                  <div className="mb-1.5 min-h-[1.5rem] flex items-center">
+                  <div className="mb-1 min-h-[1.25rem] flex items-center">
                     <Label
                       htmlFor="receiverOrganizationId"
                       className="text-base font-medium text-gray-700"
@@ -1721,7 +1713,6 @@ export const InSessionForm = forwardRef<
                       Хүлээн авагч байгууллага
                     </Label>
                   </div>
-                  <div className="mb-1.5 min-h-[1.5rem]"></div>
                   <div className="h-12">
                     <FilterableSelect
                       options={organizationOptions}
@@ -1736,7 +1727,7 @@ export const InSessionForm = forwardRef<
                       placeholder={
                         isLoadingOrganizations
                           ? "Уншиж байна..."
-                          : "Хүлээн авагч байгууллага сонгох"
+                          : "Сонгох"
                       }
                         searchPlaceholder="Хүлээн авагч байгууллага хайх..."
                         onCreateNewDialog={(initialValue) => handleOpenCreateDialog("organization", initialValue)}
@@ -1748,7 +1739,7 @@ export const InSessionForm = forwardRef<
 
                 {/* Notes - Wider, Reduced Height */}
                 <div className="md:col-span-2 flex flex-col">
-                  <div className="mb-1.5 min-h-[1.5rem] flex items-center">
+                  <div className="mb-1 min-h-[1.25rem] flex items-center">
                     <Label
                       htmlFor="notes"
                       className="text-base font-medium text-gray-700"
@@ -1756,7 +1747,6 @@ export const InSessionForm = forwardRef<
                       Нэмэлт мэдээлэл
                     </Label>
                   </div>
-                  <div className="mb-1.5 min-h-[1.5rem]"></div>
                   <div>
                     <Textarea
                       id="notes"

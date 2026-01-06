@@ -1490,7 +1490,7 @@ export const OutSessionForm = forwardRef<
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-4">
                 {/* Plate Number */}
                 <div className="flex flex-col">
-                  <div className="mb-1.5 min-h-[1.5rem] flex items-center">
+                  <div className="mb-1 min-h-[1.25rem] flex items-center">
                       <Label
                         htmlFor="plateNumber"
                       className="text-base font-medium text-gray-700"
@@ -1499,7 +1499,7 @@ export const OutSessionForm = forwardRef<
                       </Label>
                   </div>
                   {/* Connection Status - Helper Text Area */}
-                  <div className="mb-1.5 min-h-[1.5rem]">
+                  <div className="mb-0.5 min-h-[1.25rem]">
                     {(cameraAutofill.status === "polling" ||
                       cameraAutofill.status === "connected" ||
                       (cameraAutofill.status === "error" &&
@@ -1554,7 +1554,7 @@ export const OutSessionForm = forwardRef<
 
                 {/* Out Weight Input */}
                 <div className="flex flex-col">
-                  <div className="mb-1.5 min-h-[1.5rem] flex items-center">
+                  <div className="mb-1 min-h-[1.25rem] flex items-center">
                     <Label
                       htmlFor="outWeightKg"
                       className="text-base font-medium text-gray-700"
@@ -1562,7 +1562,6 @@ export const OutSessionForm = forwardRef<
                       Гарах жин (кг) <span className="text-red-500">*</span>
                     </Label>
                   </div>
-                  <div className="mb-1.5 min-h-[1.5rem]"></div>
                   <div className="h-12">
                     <Input
                       id="outWeightKg"
@@ -1587,12 +1586,11 @@ export const OutSessionForm = forwardRef<
 
                 {/* Trailer Checkbox and Input */}
                 <div className="flex flex-col">
-                  <div className="mb-1.5 min-h-[1.5rem] flex items-center">
+                  <div className="mb-1 min-h-[1.25rem] flex items-center">
                     <Label className="text-base font-medium text-gray-700">
                       Чиргүүл
                     </Label>
                   </div>
-                  <div className="mb-1.5 min-h-[1.5rem]"></div>
                   <div className="h-12 flex items-center gap-2">
                     <label className="flex items-center gap-2 shrink-0 cursor-pointer">
                       <Checkbox
@@ -1633,7 +1631,7 @@ export const OutSessionForm = forwardRef<
 
                 {/* Net Weight Input */}
                 <div className="flex flex-col">
-                  <div className="mb-1.5 min-h-[1.5rem] flex items-center">
+                  <div className="mb-1 min-h-[1.25rem] flex items-center">
                       <Label
                         htmlFor="netWeightKg"
                       className="text-base font-medium text-gray-700"
@@ -1641,7 +1639,6 @@ export const OutSessionForm = forwardRef<
                         Цэвэр жин (кг) <span className="text-red-500">*</span>
                       </Label>
                   </div>
-                  <div className="mb-1.5 min-h-[1.5rem]"></div>
                   <div className="h-12">
                       <Input
                         id="netWeightKg"
@@ -1679,7 +1676,7 @@ export const OutSessionForm = forwardRef<
 
                 {/* Seal Number */}
                 <div className="flex flex-col">
-                  <div className="mb-1.5 min-h-[1.5rem] flex items-center">
+                  <div className="mb-1 min-h-[1.25rem] flex items-center">
                     <Label
                       htmlFor="sealNumber"
                       className="text-base font-medium text-gray-700"
@@ -1687,7 +1684,6 @@ export const OutSessionForm = forwardRef<
                       Лацны дугаар
                     </Label>
                   </div>
-                  <div className="mb-1.5 min-h-[1.5rem]"></div>
                   <div className="h-12">
                     <Input
                       id="sealNumber"
@@ -1706,7 +1702,7 @@ export const OutSessionForm = forwardRef<
 
                 {/* Driver */}
                 <div className="flex flex-col">
-                  <div className="mb-1.5 min-h-[1.5rem] flex items-center">
+                  <div className="mb-1 min-h-[1.25rem] flex items-center">
                     <Label
                       htmlFor="driverId"
                       className="text-base font-medium text-gray-700"
@@ -1714,7 +1710,6 @@ export const OutSessionForm = forwardRef<
                       Жолооч <span className="text-red-500">*</span>
                     </Label>
                   </div>
-                  <div className="mb-1.5 min-h-[1.5rem]"></div>
                   <div className="h-12">
                     <FilterableSelect
                       options={driverOptions}
@@ -1744,7 +1739,7 @@ export const OutSessionForm = forwardRef<
 
                 {/* Transport Company */}
                 <div className="flex flex-col">
-                  <div className="mb-1.5 min-h-[1.5rem] flex items-center">
+                  <div className="mb-1 min-h-[1.25rem] flex items-center">
                       <Label
                         htmlFor="transporterCompanyId"
                       className="text-base font-medium text-gray-700"
@@ -1752,7 +1747,6 @@ export const OutSessionForm = forwardRef<
                         Тээврийн компани <span className="text-red-500">*</span>
                       </Label>
                   </div>
-                  <div className="mb-1.5 min-h-[1.5rem]"></div>
                   <div className="h-12">
                       <FilterableSelect
                         options={transportCompanyOptions}
@@ -1780,7 +1774,7 @@ export const OutSessionForm = forwardRef<
 
                 {/* Product */}
                 <div className="flex flex-col">
-                  <div className="mb-1.5 min-h-[1.5rem] flex items-center">
+                  <div className="mb-1 min-h-[1.25rem] flex items-center">
                     <Label
                       htmlFor="productId"
                       className="text-base font-medium text-gray-700"
@@ -1788,7 +1782,6 @@ export const OutSessionForm = forwardRef<
                       Бүтээгдэхүүн <span className="text-red-500">*</span>
                     </Label>
                   </div>
-                  <div className="mb-1.5 min-h-[1.5rem]"></div>
                   <div className="h-12">
                     <FilterableSelect
                       options={productOptions}
@@ -1816,7 +1809,7 @@ export const OutSessionForm = forwardRef<
 
                 {/* Origin */}
                 <div className="flex flex-col">
-                  <div className="mb-1.5 min-h-[1.5rem] flex items-center">
+                  <div className="mb-1 min-h-[1.25rem] flex items-center">
                       <Label
                         htmlFor="origin"
                       className="text-base font-medium text-gray-700"
@@ -1824,7 +1817,6 @@ export const OutSessionForm = forwardRef<
                         Хаанаас
                       </Label>
                   </div>
-                  <div className="mb-1.5 min-h-[1.5rem]"></div>
                   <div className="h-12">
                       <Input
                         id="origin"
@@ -1843,7 +1835,7 @@ export const OutSessionForm = forwardRef<
 
                 {/* Destination */}
                 <div className="flex flex-col">
-                  <div className="mb-1.5 min-h-[1.5rem] flex items-center">
+                  <div className="mb-1 min-h-[1.25rem] flex items-center">
                       <Label
                         htmlFor="destination"
                       className="text-base font-medium text-gray-700"
@@ -1851,7 +1843,6 @@ export const OutSessionForm = forwardRef<
                         Хаашаа
                       </Label>
                   </div>
-                  <div className="mb-1.5 min-h-[1.5rem]"></div>
                   <div className="h-12">
                       <Input
                         id="destination"
@@ -1870,7 +1861,7 @@ export const OutSessionForm = forwardRef<
 
                 {/* Sender Organization */}
                 <div className="flex flex-col">
-                  <div className="mb-1.5 min-h-[1.5rem] flex items-center">
+                  <div className="mb-1 min-h-[1.25rem] flex items-center">
                       <Label
                         htmlFor="senderOrganizationId"
                       className="text-base font-medium text-gray-700"
@@ -1878,7 +1869,6 @@ export const OutSessionForm = forwardRef<
                         Илгээч байгууллага
                       </Label>
                   </div>
-                  <div className="mb-1.5 min-h-[1.5rem]"></div>
                   <div className="h-12">
                       <FilterableSelect
                         options={organizationOptions}
@@ -1905,7 +1895,7 @@ export const OutSessionForm = forwardRef<
 
                 {/* Receiver Organization */}
                 <div className="flex flex-col">
-                  <div className="mb-1.5 min-h-[1.5rem] flex items-center">
+                  <div className="mb-1 min-h-[1.25rem] flex items-center">
                       <Label
                         htmlFor="receiverOrganizationId"
                       className="text-base font-medium text-gray-700"
@@ -1913,7 +1903,6 @@ export const OutSessionForm = forwardRef<
                         Хүлээн авагч байгууллага
                       </Label>
                   </div>
-                  <div className="mb-1.5 min-h-[1.5rem]"></div>
                   <div className="h-12">
                       <FilterableSelect
                         options={organizationOptions}
@@ -1940,7 +1929,7 @@ export const OutSessionForm = forwardRef<
 
                 {/* Notes - Wider, Reduced Height */}
                 <div className="md:col-span-2 flex flex-col">
-                  <div className="mb-1.5 min-h-[1.5rem] flex items-center">
+                  <div className="mb-1 min-h-[1.25rem] flex items-center">
                     <Label
                       htmlFor="notes"
                       className="text-base font-medium text-gray-700"
@@ -1948,7 +1937,6 @@ export const OutSessionForm = forwardRef<
                       Нэмэлт мэдээлэл
                     </Label>
                   </div>
-                  <div className="mb-1.5 min-h-[1.5rem]"></div>
                   <div>
                     <Textarea
                       id="notes"
