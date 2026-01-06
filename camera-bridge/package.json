@@ -7,6 +7,8 @@
   "scripts": {
     "dev": "node server.js",
     "start": "node server.js",
+    "video": "node video-stream-server.js",
+    "video:dev": "node video-stream-server.js",
     "build": "echo 'No build needed, using server.js directly'",
     "dev-old": "tsx src/index.ts"
   },

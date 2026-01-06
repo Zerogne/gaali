@@ -28,9 +28,10 @@ export function RealtimeVideo({
     const connectVideoStream = () => {
       try {
         // Get WebSocket URL from environment or use default
+        // Default port is 3004 to avoid conflict with plate events server (3001)
         const wsUrl =
           process.env.NEXT_PUBLIC_VIDEO_WS_URL ||
-          `ws://localhost:3001/video/${cameraId}`;
+          `ws://localhost:3004/video/${cameraId}`;
 
         console.log(`Connecting to video stream for camera ${cameraId}...`);
         const ws = new WebSocket(wsUrl);

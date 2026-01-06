@@ -19,7 +19,19 @@ const app = express();
 const server = http.createServer(app);
 
 // WebSocket server for video streaming
-const wss = new WebSocketServer({ server, path: "/video" });
+// Don't restrict path - we'll handle it in the connection handler
+const wss = new WebSocketServer({ 
+  server,
+  verifyClient: (info) => {
+    // Only accept connections to /video/* paths
+    if (info.req.url && info.req.url.startsWith("/video")) {
+      console.log(`✅ WebSocket connection attempt: ${info.req.url}`);
+      return true;
+    }
+    console.log(`❌ Rejected WebSocket connection: ${info.req.url}`);
+    return false;
+  }
+});
 
 // Store active camera connections
 const cameraConnections = new Map();
@@ -28,7 +40,8 @@ const cameraConnections = new Map();
 const cameraClients = new Map();
 
 // Configuration
-const PORT = process.env.VIDEO_STREAM_PORT || 3001;
+// Use port 3004 to avoid conflict with server.js (which uses 3001 for plate events)
+const PORT = process.env.VIDEO_STREAM_PORT || 3004;
 const CAMERA_1_IP = process.env.CAMERA_1_IP || "192.168.1.50";
 const CAMERA_1_PORT = process.env.CAMERA_1_PORT || "8000";
 const CAMERA_1_USERNAME = process.env.CAMERA_1_USERNAME || "admin";
@@ -186,10 +199,33 @@ function initializeCameras() {
 // WebSocket connection handler
 wss.on("connection", (ws, req) => {
   // Extract camera ID from URL path: /video/camera-1 or /video/camera-2
-  const url = new URL(req.url, `http://${req.headers.host}`);
-  const cameraId = url.pathname.split("/").pop() || "camera-1";
+  let cameraId = "camera-1";
+  try {
+    if (req.url) {
+      // req.url format: /video/camera-1 or /video/camera-2
+      const pathParts = req.url.split("/").filter(p => p && p !== "video");
+      if (pathParts.length > 0) {
+        cameraId = pathParts[0]; // Get first part after /video/
+      }
+      
+      // Validate camera ID
+      if (cameraId !== "camera-1" && cameraId !== "camera-2") {
+        console.warn(`Invalid camera ID: ${cameraId}, defaulting to camera-1`);
+        cameraId = "camera-1";
+      }
+    }
+  } catch (err) {
+    console.error("Error parsing URL:", err);
+    // Fallback: try to extract from req.url directly
+    if (req.url && req.url.includes("camera-")) {
+      const match = req.url.match(/camera-[12]/);
+      if (match) {
+        cameraId = match[0];
+      }
+    }
+  }
   
-  console.log(`WebSocket client connected for camera: ${cameraId}`);
+  console.log(`✅ WebSocket client connected for camera: ${cameraId} (from URL: ${req.url})`);
   
   // Add client to camera's client set
   if (!cameraClients.has(cameraId)) {
@@ -239,7 +275,11 @@ wss.on("connection", (ws, req) => {
   });
   
   ws.on("error", (error) => {
-    console.error(`WebSocket error for camera ${cameraId}:`, error);
+    console.error(`❌ WebSocket error for camera ${cameraId}:`, error);
+  });
+  
+  ws.on("close", (code, reason) => {
+    console.log(`🔌 WebSocket closed for camera ${cameraId}: code=${code}, reason=${reason}`);
   });
 });
 
