@@ -9,7 +9,8 @@ import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog"
-import { User, Plus, Edit, Trash2, Loader2 } from "lucide-react"
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { User, Plus, Edit, Trash2, Loader2, Search, X } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import type { Driver } from "@/lib/types"
 import { findSimilarValue } from "@/lib/utils/string-similarity"
@@ -31,6 +32,8 @@ export default function DriversPage() {
   const [editingDriver, setEditingDriver] = useState<string | null>(null)
   const [duplicateDialogOpen, setDuplicateDialogOpen] = useState(false)
   const [duplicateValue, setDuplicateValue] = useState<string | null>(null)
+  const [searchQuery, setSearchQuery] = useState("")
+  const [addDialogOpen, setAddDialogOpen] = useState(false)
 
   useEffect(() => {
     async function loadDrivers() {
@@ -113,6 +116,7 @@ export default function DriversPage() {
           registrationNumber: "",
           additionalInfo: "",
         })
+        setAddDialogOpen(false)
 
         // Dispatch custom event to refresh all sections
         window.dispatchEvent(new CustomEvent("refreshDropdownData"))
@@ -179,6 +183,7 @@ export default function DriversPage() {
         registrationNumber: "",
         additionalInfo: "",
       })
+      setAddDialogOpen(false)
 
       // Dispatch custom event to refresh all sections
       window.dispatchEvent(new CustomEvent("refreshDropdownData"))
@@ -208,6 +213,7 @@ export default function DriversPage() {
       registrationNumber: driver.registrationNumber || "",
       additionalInfo: driver.additionalInfo || "",
     })
+    setAddDialogOpen(true)
   }
 
   const handleCancelEdit = () => {
@@ -218,7 +224,20 @@ export default function DriversPage() {
       registrationNumber: "",
       additionalInfo: "",
     })
+    setAddDialogOpen(false)
   }
+
+  // Filter drivers based on search query
+  const filteredDrivers = drivers.filter((driver) => {
+    if (!searchQuery.trim()) return true
+    const query = searchQuery.toLowerCase()
+    return (
+      driver.name.toLowerCase().includes(query) ||
+      driver.phone?.toLowerCase().includes(query) ||
+      driver.registrationNumber?.toLowerCase().includes(query) ||
+      driver.id.toLowerCase().includes(query)
+    )
+  })
 
   const handleDeleteClick = (driverId: string) => {
     setDriverToDelete(driverId)
@@ -279,119 +298,61 @@ export default function DriversPage() {
               </h2>
             </div>
             
-            {/* Add/Edit Driver Form */}
-            <div className="space-y-4 mb-6 p-4 border rounded-lg bg-gray-50">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <Label htmlFor="driver-name">Бүтэн нэр *</Label>
-                  <Input
-                    id="driver-name"
-                    value={driverData.name}
-                    onChange={(e) =>
-                      setDriverData({ ...driverData, name: e.target.value })
-                    }
-                    placeholder="Жолоочийн бүтэн нэр оруулах"
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter" && !isAdding && !isUpdating && driverData.name.trim()) {
-                        handleAddDriver()
-                      }
-                      if (e.key === "Escape" && editingDriver) {
-                        handleCancelEdit()
-                      }
-                    }}
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="driver-phone">Утасны дугаар</Label>
-                  <Input
-                    id="driver-phone"
-                    type="tel"
-                    value={driverData.phone}
-                    onChange={(e) =>
-                      setDriverData({ ...driverData, phone: e.target.value })
-                    }
-                    placeholder="Утасны дугаар оруулах"
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="driver-registration-number">Регистерийн дугаар</Label>
-                  <Input
-                    id="driver-registration-number"
-                    value={driverData.registrationNumber}
-                    onChange={(e) =>
-                      setDriverData({ ...driverData, registrationNumber: e.target.value })
-                    }
-                    placeholder="Регистерийн дугаар оруулах"
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="driver-additional-info">Нэмэлт мэдээлэл</Label>
-                  <Input
-                    id="driver-additional-info"
-                    value={driverData.additionalInfo}
-                    onChange={(e) =>
-                      setDriverData({ ...driverData, additionalInfo: e.target.value })
-                    }
-                    placeholder="Нэмэлт мэдээлэл оруулах"
-                  />
-                </div>
-              </div>
-              <div className="flex gap-2">
-                {editingDriver ? (
-                  <>
-                    <Button
-                      onClick={handleCancelEdit}
-                      variant="outline"
-                      disabled={isUpdating}
-                    >
-                      Цуцлах
-                    </Button>
-                    <Button
-                      onClick={handleAddDriver}
-                      disabled={isUpdating || !driverData.name.trim()}
-                      className="gap-2"
-                    >
-                      {isUpdating ? (
-                        <Loader2 className="w-4 h-4 animate-spin" />
-                      ) : (
-                        <Edit className="w-4 h-4" />
-                      )}
-                      Засах
-                    </Button>
-                  </>
-                ) : (
-                  <Button
-                    onClick={handleAddDriver}
-                    disabled={isAdding || !driverData.name.trim()}
-                    className="gap-2"
+            {/* Search Section */}
+            <div className="flex items-center gap-2 mb-6">
+              <div className="relative flex-1">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                <Input
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="Нэр, утасны дугаар, регистерийн дугаар, ID-аар хайх..."
+                  className="pl-10"
+                />
+                {searchQuery && (
+                  <button
+                    onClick={() => setSearchQuery("")}
+                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground hover:text-foreground"
                   >
-                    {isAdding ? (
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                    ) : (
-                      <Plus className="w-4 h-4" />
-                    )}
-                    Нэмэх
-                  </Button>
+                    <X className="w-4 h-4" />
+                  </button>
                 )}
               </div>
+              <Button
+                onClick={() => {
+                  setEditingDriver(null)
+                  setDriverData({
+                    name: "",
+                    phone: "",
+                    registrationNumber: "",
+                    additionalInfo: "",
+                  })
+                  setAddDialogOpen(true)
+                }}
+                className="gap-2"
+              >
+                <Plus className="w-4 h-4" />
+                Нэмэх
+              </Button>
             </div>
 
-            {drivers.length > 0 ? (
+            {filteredDrivers.length > 0 ? (
               <div className="border rounded-lg">
                 <Table>
                   <TableHeader>
                     <TableRow>
                       <TableHead>Бүтэн нэр</TableHead>
                       <TableHead>Утасны дугаар</TableHead>
+                      <TableHead>Регистерийн дугаар</TableHead>
                       <TableHead>Нэмэлт мэдээлэл</TableHead>
                       <TableHead className="w-[120px]"></TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {drivers.map((driver) => (
+                    {filteredDrivers.map((driver) => (
                       <TableRow key={driver.id}>
                         <TableCell className="font-medium">{driver.name}</TableCell>
                         <TableCell>{driver.phone || "-"}</TableCell>
+                        <TableCell>{driver.registrationNumber || "-"}</TableCell>
                         <TableCell>{driver.additionalInfo || "-"}</TableCell>
                         <TableCell>
                           <div className="flex items-center gap-1">
@@ -426,7 +387,7 @@ export default function DriversPage() {
               </div>
             ) : (
               <p className="text-sm text-muted-foreground text-center py-8">
-                Жолооч байхгүй байна. Дээрх талбарт мэдээлэл оруулаад нэмнэ үү.
+                {searchQuery ? "Хайлтын үр дүн олдсонгүй" : "Жолооч байхгүй байна. Дээрх 'Нэмэх' товч дараад нэмнэ үү."}
               </p>
             )}
           </Card>
@@ -468,6 +429,112 @@ export default function DriversPage() {
               </AlertDialogFooter>
             </AlertDialogContent>
           </AlertDialog>
+
+          {/* Add/Edit Driver Dialog */}
+          <Dialog open={addDialogOpen || !!editingDriver} onOpenChange={(open) => {
+            if (!open) {
+              setAddDialogOpen(false)
+              handleCancelEdit()
+            }
+          }}>
+            <DialogContent className="sm:max-w-[600px]">
+              <DialogHeader>
+                <DialogTitle>
+                  {editingDriver ? "Жолооч засах" : "Шинэ жолооч нэмэх"}
+                </DialogTitle>
+                <DialogDescription>
+                  {editingDriver ? "Жолоочийн мэдээллийг засах" : "Шинэ жолоочийн мэдээлэл оруулах"}
+                </DialogDescription>
+              </DialogHeader>
+              <div className="space-y-4 py-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="dialog-driver-name">Бүтэн нэр *</Label>
+                    <Input
+                      id="dialog-driver-name"
+                      value={driverData.name}
+                      onChange={(e) =>
+                        setDriverData({ ...driverData, name: e.target.value })
+                      }
+                      placeholder="Жолоочийн бүтэн нэр оруулах"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="dialog-driver-phone">Утасны дугаар</Label>
+                    <Input
+                      id="dialog-driver-phone"
+                      type="tel"
+                      value={driverData.phone}
+                      onChange={(e) =>
+                        setDriverData({ ...driverData, phone: e.target.value })
+                      }
+                      placeholder="Утасны дугаар оруулах"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="dialog-driver-registration-number">Регистерийн дугаар</Label>
+                    <Input
+                      id="dialog-driver-registration-number"
+                      value={driverData.registrationNumber}
+                      onChange={(e) =>
+                        setDriverData({ ...driverData, registrationNumber: e.target.value })
+                      }
+                      placeholder="Регистерийн дугаар оруулах"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="dialog-driver-additional-info">Нэмэлт мэдээлэл</Label>
+                    <Input
+                      id="dialog-driver-additional-info"
+                      value={driverData.additionalInfo}
+                      onChange={(e) =>
+                        setDriverData({ ...driverData, additionalInfo: e.target.value })
+                      }
+                      placeholder="Нэмэлт мэдээлэл оруулах"
+                    />
+                  </div>
+                </div>
+              </div>
+              <DialogFooter>
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    setAddDialogOpen(false)
+                    handleCancelEdit()
+                  }}
+                  disabled={isUpdating || isAdding}
+                >
+                  Цуцлах
+                </Button>
+                <Button
+                  onClick={handleAddDriver}
+                  disabled={isUpdating || isAdding || !driverData.name.trim()}
+                  className="gap-2"
+                >
+                  {isUpdating || isAdding ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      {editingDriver ? "Хадгалж байна..." : "Нэмж байна..."}
+                    </>
+                  ) : (
+                    <>
+                      {editingDriver ? (
+                        <>
+                          <Edit className="w-4 h-4" />
+                          Засах
+                        </>
+                      ) : (
+                        <>
+                          <Plus className="w-4 h-4" />
+                          Нэмэх
+                        </>
+                      )}
+                    </>
+                  )}
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
         </main>
       </div>
     </div>

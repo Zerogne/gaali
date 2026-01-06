@@ -22,9 +22,11 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import type { Organization } from "@/lib/types";
-import { Building2, Edit, Loader2, Plus, Trash2 } from "lucide-react";
+import { Building2, Edit, Loader2, Plus, Trash2, Search, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { findSimilarValue } from "@/lib/utils/string-similarity";
 
@@ -41,6 +43,8 @@ export default function OrganizationsPage() {
   const [isUpdating, setIsUpdating] = useState(false);
   const [duplicateDialogOpen, setDuplicateDialogOpen] = useState(false);
   const [duplicateValue, setDuplicateValue] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [addDialogOpen, setAddDialogOpen] = useState(false);
 
   useEffect(() => {
     async function loadOrganizations() {
@@ -110,6 +114,7 @@ export default function OrganizationsPage() {
       });
 
       setNewCompanyName("");
+      setAddDialogOpen(false);
 
       // Dispatch custom event to refresh all sections
       window.dispatchEvent(new CustomEvent("refreshDropdownData"));
@@ -137,12 +142,24 @@ export default function OrganizationsPage() {
   const handleEditClick = (org: Organization) => {
     setEditingOrg(org.id);
     setEditingOrgName(org.name);
+    setAddDialogOpen(true);
   };
 
   const handleCancelEdit = () => {
     setEditingOrg(null);
     setEditingOrgName("");
+    setAddDialogOpen(false);
   };
+
+  // Filter organizations based on search query
+  const filteredOrganizations = organizations.filter((org) => {
+    if (!searchQuery.trim()) return true;
+    const query = searchQuery.toLowerCase();
+    return (
+      org.name.toLowerCase().includes(query) ||
+      org.id.toLowerCase().includes(query)
+    );
+  });
 
   const handleSaveEdit = async (orgId: string) => {
     if (!editingOrgName.trim()) {
@@ -192,6 +209,7 @@ export default function OrganizationsPage() {
 
       setEditingOrg(null);
       setEditingOrgName("");
+      setAddDialogOpen(false);
 
       // Dispatch custom event to refresh all sections
       window.dispatchEvent(new CustomEvent("refreshDropdownData"));
@@ -273,38 +291,40 @@ export default function OrganizationsPage() {
               </h2>
             </div>
 
-            {/* Add Company Input */}
-            <div className="flex gap-2 mb-6">
-              <Input
-                value={newCompanyName}
-                onChange={(e) => setNewCompanyName(e.target.value)}
-                placeholder="Компанийн нэр оруулах"
-                onKeyDown={(e) => {
-                  if (
-                    e.key === "Enter" &&
-                    !isAdding &&
-                    newCompanyName.trim()
-                  ) {
-                    handleAddCompany();
-                  }
-                }}
-                className="flex-1"
-              />
+            {/* Search Section */}
+            <div className="flex items-center gap-2 mb-6">
+              <div className="relative flex-1">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                <Input
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="Нэр, ID-аар хайх..."
+                  className="pl-10"
+                />
+                {searchQuery && (
+                  <button
+                    onClick={() => setSearchQuery("")}
+                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                )}
+              </div>
               <Button
-                onClick={handleAddCompany}
-                disabled={isAdding || !newCompanyName.trim()}
+                onClick={() => {
+                  setEditingOrg(null);
+                  setEditingOrgName("");
+                  setNewCompanyName("");
+                  setAddDialogOpen(true);
+                }}
                 className="gap-2"
               >
-                {isAdding ? (
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                ) : (
-                  <Plus className="w-4 h-4" />
-                )}
+                <Plus className="w-4 h-4" />
                 Нэмэх
               </Button>
             </div>
 
-            {organizations.length > 0 ? (
+            {filteredOrganizations.length > 0 ? (
               <div className="border rounded-lg">
                 <Table>
                   <TableHeader>
@@ -314,79 +334,35 @@ export default function OrganizationsPage() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {organizations.map((org) => (
+                    {filteredOrganizations.map((org) => (
                       <TableRow key={org.id}>
                         <TableCell className="font-medium">
-                          {editingOrg === org.id ? (
-                            <div className="flex items-center gap-2">
-                              <Input
-                                value={editingOrgName}
-                                onChange={(e) => setEditingOrgName(e.target.value)}
-                                onKeyDown={(e) => {
-                                  if (e.key === "Enter" && editingOrgName.trim()) {
-                                    handleSaveEdit(org.id);
-                                  }
-                                  if (e.key === "Escape") {
-                                    handleCancelEdit();
-                                  }
-                                }}
-                                className="flex-1"
-                                autoFocus
-                              />
-                              <Button
-                                size="sm"
-                                onClick={() => handleSaveEdit(org.id)}
-                                disabled={isUpdating || !editingOrgName.trim()}
-                                className="h-8"
-                              >
-                                {isUpdating ? (
-                                  <Loader2 className="w-4 h-4 animate-spin" />
-                                ) : (
-                                  "Хадгалах"
-                                )}
-                              </Button>
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                onClick={handleCancelEdit}
-                                disabled={isUpdating}
-                                className="h-8"
-                              >
-                                Цуцлах
-                              </Button>
-                            </div>
-                          ) : (
-                            org.name
-                          )}
+                          {org.name}
                         </TableCell>
                         <TableCell>
                           <div className="flex items-center gap-1">
-                            {editingOrg !== org.id && (
-                              <>
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  onClick={() => handleEditClick(org)}
-                                  disabled={isDeleting === org.id}
-                                  className="h-8 w-8 p-0"
-                                >
-                                  <Edit className="w-4 h-4" />
-                                </Button>
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  onClick={() => handleDeleteClick(org.id)}
-                                  disabled={isDeleting === org.id}
-                                  className="h-8 w-8 p-0 text-red-600 hover:text-red-700 hover:bg-red-50"
-                                >
-                                  {isDeleting === org.id ? (
-                                    <Loader2 className="w-4 h-4 animate-spin" />
-                                  ) : (
-                                    <Trash2 className="w-4 h-4" />
-                                  )}
-                                </Button>
-                              </>
-                            )}
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleEditClick(org)}
+                              disabled={isDeleting === org.id}
+                              className="h-8 w-8 p-0"
+                            >
+                              <Edit className="w-4 h-4" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleDeleteClick(org.id)}
+                              disabled={isDeleting === org.id}
+                              className="h-8 w-8 p-0 text-red-600 hover:text-red-700 hover:bg-red-50"
+                            >
+                              {isDeleting === org.id ? (
+                                <Loader2 className="w-4 h-4 animate-spin" />
+                              ) : (
+                                <Trash2 className="w-4 h-4" />
+                              )}
+                            </Button>
                           </div>
                         </TableCell>
                       </TableRow>
@@ -396,7 +372,7 @@ export default function OrganizationsPage() {
               </div>
             ) : (
               <p className="text-sm text-muted-foreground text-center py-8">
-                Компани байхгүй байна. Дээрх талбарт нэр оруулаад нэмнэ үү.
+                {searchQuery ? "Хайлтын үр дүн олдсонгүй" : "Компани байхгүй байна. Дээрх 'Нэмэх' товч дараад нэмнэ үү."}
               </p>
             )}
           </Card>
@@ -439,6 +415,95 @@ export default function OrganizationsPage() {
               </AlertDialogFooter>
             </AlertDialogContent>
           </AlertDialog>
+
+          {/* Add/Edit Organization Dialog */}
+          <Dialog open={addDialogOpen || !!editingOrg} onOpenChange={(open) => {
+            if (!open) {
+              setAddDialogOpen(false);
+              handleCancelEdit();
+            }
+          }}>
+            <DialogContent className="sm:max-w-[500px]">
+              <DialogHeader>
+                <DialogTitle>
+                  {editingOrg ? "Тээврийн байгууллага засах" : "Шинэ тээврийн байгууллага нэмэх"}
+                </DialogTitle>
+                <DialogDescription>
+                  {editingOrg ? "Тээврийн байгууллагын нэрийг засах" : "Шинэ тээврийн байгууллагын нэр оруулах"}
+                </DialogDescription>
+              </DialogHeader>
+              <div className="space-y-4 py-4">
+                <div>
+                  <Label htmlFor="dialog-org-name">Нэр *</Label>
+                  <Input
+                    id="dialog-org-name"
+                    value={editingOrg ? editingOrgName : newCompanyName}
+                    onChange={(e) => {
+                      if (editingOrg) {
+                        setEditingOrgName(e.target.value);
+                      } else {
+                        setNewCompanyName(e.target.value);
+                      }
+                    }}
+                    placeholder="Тээврийн байгууллагын нэр оруулах"
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" && (editingOrg ? editingOrgName : newCompanyName).trim()) {
+                        if (editingOrg) {
+                          handleSaveEdit(editingOrg);
+                        } else {
+                          handleAddCompany();
+                        }
+                      }
+                    }}
+                  />
+                </div>
+              </div>
+              <DialogFooter>
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    setAddDialogOpen(false);
+                    handleCancelEdit();
+                  }}
+                  disabled={isUpdating || isAdding}
+                >
+                  Цуцлах
+                </Button>
+                <Button
+                  onClick={() => {
+                    if (editingOrg) {
+                      handleSaveEdit(editingOrg);
+                    } else {
+                      handleAddCompany();
+                    }
+                  }}
+                  disabled={isUpdating || isAdding || !(editingOrg ? editingOrgName : newCompanyName).trim()}
+                  className="gap-2"
+                >
+                  {isUpdating || isAdding ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      {editingOrg ? "Хадгалж байна..." : "Нэмж байна..."}
+                    </>
+                  ) : (
+                    <>
+                      {editingOrg ? (
+                        <>
+                          <Edit className="w-4 h-4" />
+                          Засах
+                        </>
+                      ) : (
+                        <>
+                          <Plus className="w-4 h-4" />
+                          Нэмэх
+                        </>
+                      )}
+                    </>
+                  )}
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
         </main>
       </div>
     </div>

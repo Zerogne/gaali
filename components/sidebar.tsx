@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Truck, Settings, LayoutDashboard, LogOut, User, Package, Building2 } from "lucide-react"
+import { Truck, Settings, LayoutDashboard, LogOut, User, Package, Building2, Car } from "lucide-react"
 import { cn } from "@/lib/utils"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
@@ -18,8 +18,9 @@ const menuItems = [
   { icon: LayoutDashboard, label: "Нүүр", href: "/" },
   { icon: Package, label: "Бүтээгдэхүүн", href: "/products" },
   { icon: Truck, label: "Тээврийн компани", href: "/companies" },
+  { icon: Car, label: "Тээврийн хэрэгсэл", href: "/vehicles" },
   { icon: User, label: "Жолооч", href: "/drivers" },
-  { icon: Building2, label: "Байгууллага", href: "/organizations" },
+  { icon: Building2, label: "Тээврийн байгууллага", href: "/organizations" },
   { icon: Settings, label: "Тохиргоо", href: "/settings" },
 ]
 

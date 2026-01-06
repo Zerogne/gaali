@@ -12,6 +12,8 @@ export interface Driver {
 export interface TransportCompany {
   id: string;
   name: string;
+  companyId?: string;
+  contract?: string;
 }
 
 export type OrganizationType = "sender" | "receiver";
@@ -20,6 +22,8 @@ export interface Organization {
   id: string;
   name: string;
   type: OrganizationType; // "sender" (илгээч) or "receiver" (хүлээн авагч)
+  companyId?: string;
+  contract?: string;
 }
 
 export interface TruckLog {

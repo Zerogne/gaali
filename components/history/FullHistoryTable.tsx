@@ -196,19 +196,19 @@ export function FullHistoryTable({
         onSend(log.id);
         toast({
           title: "Амжилттай",
-          description: "Мэдээлэл Монголын гаалинд амжилттай илгээгдлээ",
+          description: "Мэдээлэл Монголын гаальд амжилттай илгээгдлээ",
         });
       } else {
         toast({
           title: "Алдаа",
-          description: result.error || "Гаалинд илгээхэд алдаа гарлаа",
+          description: result.error || "Гаальд илгээхэд алдаа гарлаа",
           variant: "destructive",
         });
       }
     } catch (error) {
       toast({
         title: "Алдаа",
-        description: "Гаалинд илгээхэд алдаа гарлаа",
+        description: "Гаальд илгээхэд алдаа гарлаа",
         variant: "destructive",
       });
     } finally {
@@ -517,7 +517,7 @@ export function FullHistoryTable({
             {/* Sent to Customs Filter */}
             <div>
               <Label htmlFor="sentToCustoms" className="text-xs font-medium text-gray-700 mb-1">
-                Гаалинд илгээсэн
+                Гаальд илгээсэн
               </Label>
               <Select
                 value={sentToCustomsFilter}
@@ -686,7 +686,7 @@ export function FullHistoryTable({
                               onClick={() => handleResend(log)}
                               disabled={sendingIds.has(log.id)}
                               className="bg-green-400 text-white border-green-500 hover:bg-green-500 disabled:bg-green-200 disabled:text-white h-9 px-4 text-sm"
-                              title="Гаалинд дахин илгээх"
+                              title="Гаальд дахин илгээх"
                             >
                               {sendingIds.has(log.id) ? (
                                 "Илгээж байна..."
@@ -704,7 +704,7 @@ export function FullHistoryTable({
                               onClick={() => handleResend(log)}
                               disabled={sendingIds.has(log.id)}
                               className="bg-green-500 text-white border-green-600 hover:bg-green-600 disabled:bg-green-300 disabled:text-white h-9 px-4 text-sm"
-                              title="Гаалинд илгээх"
+                              title="Гаальд илгээх"
                             >
                               {sendingIds.has(log.id) ? (
                                 "Илгээж байна..."

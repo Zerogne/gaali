@@ -649,25 +649,25 @@ export function TruckSection({ direction, onSave, onSend }: TruckSectionProps) {
           direction === "IN" ? "bg-blue-500" : "bg-green-500"
         } rounded-full -mr-16 -mt-16`}></div>
         
-        <CardHeader className="pb-2 relative z-10">
+        <CardHeader className="pb-1.5 pt-3 px-3 relative z-10">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className={`p-3 rounded-xl shadow-sm ${
+            <div className="flex items-center gap-2">
+              <div className={`p-2 rounded-lg shadow-sm ${
                 direction === "IN" 
                   ? "bg-blue-100 text-blue-600" 
                   : "bg-green-100 text-green-600"
               }`}>
                 {direction === "IN" ? (
-                  <ArrowRight className="w-6 h-6" />
+                  <ArrowRight className="w-5 h-5" />
                 ) : (
-                  <ArrowLeft className="w-6 h-6" />
+                  <ArrowLeft className="w-5 h-5" />
                 )}
               </div>
               <div>
-                <CardTitle className="text-gray-900 text-xl font-bold mb-0">
+                <CardTitle className="text-gray-900 text-lg font-bold mb-0">
                   {title}
                 </CardTitle>
-                <p className="text-sm text-gray-500">
+                <p className="text-xs text-gray-500">
                   {direction === "IN" 
                     ? "Тээврийн хэрэгсэл орох бүртгэл хийх" 
                     : "Тээврийн хэрэгсэл гарах бүртгэл хийх"}
@@ -677,7 +677,7 @@ export function TruckSection({ direction, onSave, onSend }: TruckSectionProps) {
           </div>
         </CardHeader>
         
-        <CardContent className="relative z-10 pb-2">
+        <CardContent className="relative z-10 pb-2 px-3 pt-2">
           <div className="flex items-center justify-between">
             <Button
               onClick={() => {

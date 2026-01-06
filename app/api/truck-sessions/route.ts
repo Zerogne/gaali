@@ -94,6 +94,10 @@ export async function POST(request: Request) {
       driverName: body.driverName === "" ? undefined : body.driverName,
       product: productName || body.product || (body.product === "" ? undefined : body.product),
       transporterCompany: transportCompanyName || body.transporterCompany || (body.transporterCompany === "" ? undefined : body.transporterCompany),
+      senderOrganizationId: body.senderOrganizationId || undefined,
+      senderOrganization: senderOrgName || undefined,
+      receiverOrganizationId: body.receiverOrganizationId || undefined,
+      receiverOrganization: receiverOrgName || undefined,
       inSessionId: body.inSessionId === "" || body.inSessionId === null ? undefined : body.inSessionId,
       grossWeightKg: grossWeightKg,
       netWeightKg: body.netWeightKg === null || body.netWeightKg === undefined 
@@ -104,6 +108,11 @@ export async function POST(request: Request) {
       inTime: body.inTime === "" ? undefined : body.inTime,
       outTime: body.outTime === "" ? undefined : body.outTime,
       notes: body.notes === "" ? undefined : body.notes,
+      origin: body.origin || undefined,
+      destination: body.destination || undefined,
+      sealNumber: body.sealNumber || undefined,
+      hasTrailer: body.hasTrailer || undefined,
+      trailerPlate: body.trailerNumber || body.trailerPlate || undefined,
     }
     
     console.log("🧹 Cleaned request body:", cleanedBody)
@@ -218,7 +227,7 @@ export async function POST(request: Request) {
       console.error("⚠️ Error sending to 3rd party app (session still saved):", thirdPartyError)
     }
 
-    // Also create a log entry for history
+    // Also create or update a log entry for history
     try {
       // Ensure cargoType is not empty (required by schema)
       const cargoType = productName || session.product || "Бусад"
@@ -226,33 +235,139 @@ export async function POST(request: Request) {
       // Ensure driverName is not empty (required by schema)
       const driverName = session.driverName || "Тодорхойгүй"
 
-      const logData = {
-        direction: session.direction,
-        plate: session.plateNumber,
-        driverId: body.driverId || undefined,
-        driverName: driverName,
-        cargoType: cargoType,
-        weightKg: session.grossWeightKg,
-        netWeightKg: session.netWeightKg,
-        comments: session.notes,
-        origin: body.origin || undefined,
-        destination: body.destination || undefined,
-        senderOrganizationId: body.senderOrganizationId || undefined,
-        senderOrganization: senderOrgName,
-        receiverOrganizationId: body.receiverOrganizationId || undefined,
-        receiverOrganization: receiverOrgName,
-        transportCompanyId: body.transporterCompanyId || undefined,
-        sealNumber: body.sealNumber || undefined,
-        hasTrailer: body.hasTrailer || undefined,
-        trailerPlate: body.trailerNumber || body.trailerPlate || undefined,
-      }
+      // For OUT sessions, try to find and update existing IN log
+      if (session.direction === "OUT") {
+        try {
+          const logsCollection = await getCompanyCollection(companyId, "logs")
+          
+          // Find the most recent IN log for the same plate (within last 7 days)
+          const sevenDaysAgo = new Date()
+          sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7)
+          
+          const existingInLog = await logsCollection.findOne(
+            {
+              plate: session.plateNumber,
+              direction: "IN",
+              createdAt: { $gte: sevenDaysAgo.toISOString() },
+            },
+            { sort: { createdAt: -1 } }
+          )
 
-      console.log("📝 Creating log entry with data:", logData)
-      const log = await saveTruckLog(logData)
-      console.log("✅ Log entry created successfully:", log.id)
+          if (existingInLog) {
+            console.log("📝 Found existing IN log, updating with OUT data:", existingInLog.id)
+            
+            // Update the existing IN log with OUT data
+            const updateData = {
+              // Keep IN data, add/update OUT data
+              netWeightKg: session.netWeightKg || undefined,
+              // Update weight if OUT weight is provided (this might be the final weight)
+              weightKg: session.grossWeightKg || existingInLog.weightKg,
+              // Update other fields if provided in OUT session
+              driverId: body.driverId || existingInLog.driverId,
+              driverName: driverName || existingInLog.driverName,
+              cargoType: cargoType || existingInLog.cargoType,
+              origin: body.origin || existingInLog.origin,
+              destination: body.destination || existingInLog.destination,
+              senderOrganizationId: body.senderOrganizationId || existingInLog.senderOrganizationId,
+              senderOrganization: senderOrgName || existingInLog.senderOrganization,
+              receiverOrganizationId: body.receiverOrganizationId || existingInLog.receiverOrganizationId,
+              receiverOrganization: receiverOrgName || existingInLog.receiverOrganization,
+              transportCompanyId: body.transporterCompanyId || existingInLog.transportCompanyId,
+              sealNumber: body.sealNumber || existingInLog.sealNumber,
+              hasTrailer: body.hasTrailer !== undefined ? body.hasTrailer : existingInLog.hasTrailer,
+              trailerPlate: body.trailerNumber || body.trailerPlate || existingInLog.trailerPlate,
+              comments: session.notes || existingInLog.comments,
+            }
+
+            await logsCollection.updateOne(
+              { id: existingInLog.id },
+              { $set: updateData }
+            )
+
+            console.log("✅ Log entry updated successfully:", existingInLog.id)
+          } else {
+            // No IN log found, create a new OUT log
+            console.log("📝 No existing IN log found, creating new OUT log")
+            const logData = {
+              direction: session.direction,
+              plate: session.plateNumber,
+              driverId: body.driverId || undefined,
+              driverName: driverName,
+              cargoType: cargoType,
+              weightKg: session.grossWeightKg,
+              netWeightKg: session.netWeightKg,
+              comments: session.notes,
+              origin: body.origin || undefined,
+              destination: body.destination || undefined,
+              senderOrganizationId: body.senderOrganizationId || undefined,
+              senderOrganization: senderOrgName,
+              receiverOrganizationId: body.receiverOrganizationId || undefined,
+              receiverOrganization: receiverOrgName,
+              transportCompanyId: body.transporterCompanyId || undefined,
+              sealNumber: body.sealNumber || undefined,
+              hasTrailer: body.hasTrailer || undefined,
+              trailerPlate: body.trailerNumber || body.trailerPlate || undefined,
+            }
+
+            const log = await saveTruckLog(logData)
+            console.log("✅ Log entry created successfully:", log.id)
+          }
+        } catch (updateError) {
+          console.error("⚠️ Error updating/finding log entry:", updateError)
+          // Fallback: create a new log
+          const logData = {
+            direction: session.direction,
+            plate: session.plateNumber,
+            driverId: body.driverId || undefined,
+            driverName: driverName,
+            cargoType: cargoType,
+            weightKg: session.grossWeightKg,
+            netWeightKg: session.netWeightKg,
+            comments: session.notes,
+            origin: body.origin || undefined,
+            destination: body.destination || undefined,
+            senderOrganizationId: body.senderOrganizationId || undefined,
+            senderOrganization: senderOrgName,
+            receiverOrganizationId: body.receiverOrganizationId || undefined,
+            receiverOrganization: receiverOrgName,
+            transportCompanyId: body.transporterCompanyId || undefined,
+            sealNumber: body.sealNumber || undefined,
+            hasTrailer: body.hasTrailer || undefined,
+            trailerPlate: body.trailerNumber || body.trailerPlate || undefined,
+          }
+          const log = await saveTruckLog(logData)
+          console.log("✅ Fallback: Log entry created successfully:", log.id)
+        }
+      } else {
+        // For IN sessions, create a new log as usual
+        const logData = {
+          direction: session.direction,
+          plate: session.plateNumber,
+          driverId: body.driverId || undefined,
+          driverName: driverName,
+          cargoType: cargoType,
+          weightKg: session.grossWeightKg,
+          netWeightKg: session.netWeightKg,
+          comments: session.notes,
+          origin: body.origin || undefined,
+          destination: body.destination || undefined,
+          senderOrganizationId: body.senderOrganizationId || undefined,
+          senderOrganization: senderOrgName,
+          receiverOrganizationId: body.receiverOrganizationId || undefined,
+          receiverOrganization: receiverOrgName,
+          transportCompanyId: body.transporterCompanyId || undefined,
+          sealNumber: body.sealNumber || undefined,
+          hasTrailer: body.hasTrailer || undefined,
+          trailerPlate: body.trailerNumber || body.trailerPlate || undefined,
+        }
+
+        console.log("📝 Creating IN log entry with data:", logData)
+        const log = await saveTruckLog(logData)
+        console.log("✅ Log entry created successfully:", log.id)
+      }
     } catch (logError) {
       // Log the error but don't fail the request - session is already saved
-      console.error("⚠️ Error creating log entry (session still saved):", logError)
+      console.error("⚠️ Error creating/updating log entry (session still saved):", logError)
       if (logError instanceof Error) {
         console.error("⚠️ Error message:", logError.message)
         console.error("⚠️ Error stack:", logError.stack)

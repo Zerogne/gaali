@@ -32,7 +32,7 @@ export async function GET(request: Request) {
     const statusCode = error instanceof Error && 'statusCode' in error
       ? (error as { statusCode: number }).statusCode
       : 500
-    return NextResponse.json(errorResponse, { statusCode })
+    return NextResponse.json(errorResponse, { status: statusCode })
   }
 }
 
@@ -49,7 +49,7 @@ export async function POST(request: Request) {
     const companyId = session.companyId
     const orgsCollection = await getCompanyCollection(companyId, "organizations")
     const body = await request.json()
-    const { name } = body
+    const { name, companyId: companyRegistrationId, contract } = body
 
     if (!name || typeof name !== "string" || !name.trim()) {
       return NextResponse.json(
@@ -72,6 +72,8 @@ export async function POST(request: Request) {
     const newOrg = {
       id: `org_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
       name: name.trim(),
+      companyId: companyRegistrationId?.trim() || undefined,
+      contract: contract?.trim() || undefined,
       createdAt: new Date().toISOString(),
     }
 
@@ -86,6 +88,6 @@ export async function POST(request: Request) {
     const statusCode = error instanceof Error && 'statusCode' in error
       ? (error as { statusCode: number }).statusCode
       : 500
-    return NextResponse.json(errorResponse, { statusCode })
+    return NextResponse.json(errorResponse, { status: statusCode })
   }
 }

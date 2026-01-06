@@ -17,7 +17,6 @@ import { sendTruckLogToCustoms } from "@/lib/api";
 import { printLog } from "@/lib/pdf-export";
 import type { Direction, TruckLog, TransportCompany } from "@/lib/types";
 import { Edit, FileDown, Search, ArrowRight, X } from "lucide-react";
-import { useRouter } from "next/navigation";
 import { useState, useEffect, useMemo } from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -28,6 +27,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { EditLogDialog } from "@/components/history/EditLogDialog";
 
 interface TruckTableProps {
   logs: TruckLog[];
@@ -37,7 +37,6 @@ interface TruckTableProps {
 
 export function TruckTable({ logs, onSend, onUpdate }: TruckTableProps) {
   const { toast } = useToast();
-  const router = useRouter();
   const [sendingIds, setSendingIds] = useState<Set<string>>(new Set());
   const [uniqueCodes, setUniqueCodes] = useState<Map<string, string>>(new Map());
   const [transportCompanies, setTransportCompanies] = useState<TransportCompany[]>([]);
@@ -47,13 +46,23 @@ export function TruckTable({ logs, onSend, onUpdate }: TruckTableProps) {
   const [dateFrom, setDateFrom] = useState("");
   const [dateTo, setDateTo] = useState("");
   const [companyFilter, setCompanyFilter] = useState<string>("ALL");
+  const [editingLog, setEditingLog] = useState<TruckLog | null>(null);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
 
   const handleEdit = (log: TruckLog) => {
-    // Redirect to the appropriate session page based on direction
-    if (log.direction === "IN") {
-      router.push(`/in-session?edit=${log.id}`);
-    } else {
-      router.push(`/out-session?edit=${log.id}`);
+    setEditingLog(log);
+    setIsEditDialogOpen(true);
+  };
+
+  const handleEditDialogClose = () => {
+    setIsEditDialogOpen(false);
+    setEditingLog(null);
+  };
+
+  const handleEditSave = () => {
+    handleEditDialogClose();
+    if (onUpdate) {
+      onUpdate();
     }
   };
 
@@ -138,19 +147,19 @@ export function TruckTable({ logs, onSend, onUpdate }: TruckTableProps) {
         onSend(log.id);
         toast({
           title: "Амжилттай",
-          description: "Мэдээлэл Монголын гаалинд амжилттай илгээгдлээ",
+          description: "Мэдээлэл Монголын гаальд амжилттай илгээгдлээ",
         });
       } else {
         toast({
           title: "Алдаа",
-          description: result.error || "Гаалинд илгээхэд алдаа гарлаа",
+          description: result.error || "Гаальд илгээхэд алдаа гарлаа",
           variant: "destructive",
         });
       }
     } catch (error) {
       toast({
         title: "Алдаа",
-        description: "Гаалинд илгээхэд алдаа гарлаа",
+        description: "Гаальд илгээхэд алдаа гарлаа",
         variant: "destructive",
       });
     } finally {
@@ -246,25 +255,25 @@ export function TruckTable({ logs, onSend, onUpdate }: TruckTableProps) {
   };
 
   return (
-    <Card className="border-gray-200 bg-white shadow-sm h-full flex flex-col">
-      <CardHeader className="pb-1.5 flex-shrink-0">
+    <Card className="border-gray-200 bg-white shadow-sm min-h-[700px] flex flex-col">
+      <CardHeader className="pb-1 flex-shrink-0 px-4 pt-3">
         <div className="flex items-center justify-between">
-          <CardTitle className="text-xl font-bold text-gray-900">
+          <CardTitle className="text-lg font-bold text-gray-900">
             Тээврийн хэрэгслийн түүх, хайлт
           </CardTitle>
           
         </div>
       </CardHeader>
       <Separator className="flex-shrink-0" />
-      <CardContent className="pt-1.5 flex-1 min-h-0 overflow-hidden flex flex-col">
+      <CardContent className="pt-1.5 flex-1 min-h-[550px] overflow-hidden flex flex-col px-4 pb-3">
         {/* Filters Section */}
-        <div className="space-y-4 mb-3 p-4 bg-gray-50 rounded-lg border border-gray-200 flex-shrink-0">
+        <div className="space-y-2 mb-2 p-2.5 bg-gray-50 rounded-lg border border-gray-200 flex-shrink-0">
           
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2.5">
             {/* Direction Filter */}
             <div>
-              <Label htmlFor="direction" className="text-xs font-medium text-gray-700 mb-1">
+              <Label htmlFor="direction" className="text-xs font-medium text-gray-700 mb-0.5">
                 Чиглэл
               </Label>
               <Select
@@ -284,7 +293,7 @@ export function TruckTable({ logs, onSend, onUpdate }: TruckTableProps) {
 
             {/* Plate Search */}
             <div>
-              <Label htmlFor="plate" className="text-xs font-medium text-gray-700 mb-1">
+              <Label htmlFor="plate" className="text-xs font-medium text-gray-700 mb-0.5">
                 Улсын дугаар
               </Label>
               <Input
@@ -298,7 +307,7 @@ export function TruckTable({ logs, onSend, onUpdate }: TruckTableProps) {
 
             {/* Driver Search */}
             <div>
-              <Label htmlFor="driver" className="text-xs font-medium text-gray-700 mb-1">
+              <Label htmlFor="driver" className="text-xs font-medium text-gray-700 mb-0.5">
                 Жолооч
               </Label>
               <Input
@@ -312,7 +321,7 @@ export function TruckTable({ logs, onSend, onUpdate }: TruckTableProps) {
 
             {/* Company Filter */}
             <div>
-              <Label htmlFor="company" className="text-xs font-medium text-gray-700 mb-1">
+              <Label htmlFor="company" className="text-xs font-medium text-gray-700 mb-0.5">
                 Тээврийн компани
               </Label>
               <Select
@@ -335,7 +344,7 @@ export function TruckTable({ logs, onSend, onUpdate }: TruckTableProps) {
 
             {/* Date From */}
             <div>
-              <Label htmlFor="dateFrom" className="text-xs font-medium text-gray-700 mb-1">
+              <Label htmlFor="dateFrom" className="text-xs font-medium text-gray-700 mb-0.5">
                 Эхлэх огноо
               </Label>
               <Input
@@ -349,7 +358,7 @@ export function TruckTable({ logs, onSend, onUpdate }: TruckTableProps) {
 
             {/* Date To */}
             <div>
-              <Label htmlFor="dateTo" className="text-xs font-medium text-gray-700 mb-1">
+              <Label htmlFor="dateTo" className="text-xs font-medium text-gray-700 mb-0.5">
                 Дуусах огноо
               </Label>
               <Input
@@ -375,7 +384,7 @@ export function TruckTable({ logs, onSend, onUpdate }: TruckTableProps) {
           </div>
         ) : (
           <div className="flex flex-col h-full min-h-0">
-            <div className="flex items-center justify-between flex-shrink-0 mb-3">
+            <div className="flex items-center justify-between flex-shrink-0 mb-1.5">
               
             </div>
             <div className="flex-1 min-h-0 overflow-auto rounded-lg border border-gray-200">
@@ -411,7 +420,7 @@ export function TruckTable({ logs, onSend, onUpdate }: TruckTableProps) {
                       <div className="absolute right-0 top-1/2 -translate-y-1/2 w-px h-3 bg-gray-300"></div>
                     </TableHead>
                     <TableHead className="text-gray-700 font-semibold text-xs relative pr-3">
-                      Статус
+                      Төлөв
                       <div className="absolute right-0 top-1/2 -translate-y-1/2 w-px h-3 bg-gray-300"></div>
                     </TableHead>
                     <TableHead className="text-gray-700 font-semibold text-xs relative pr-3">
@@ -463,12 +472,15 @@ export function TruckTable({ logs, onSend, onUpdate }: TruckTableProps) {
                         <Badge
                           variant="outline"
                           className={
-                            log.direction === "IN"
-                              ? "bg-blue-50 text-blue-700 border-blue-200 text-xs"
-                              : "bg-green-50 text-green-700 border-green-200 text-xs"
+                            // Show "гарсан" (OUT) only if:
+                            // 1. Direction is explicitly OUT, OR
+                            // 2. Direction is IN but has netWeightKg (merged log with OUT data)
+                            (log.direction === "OUT") || (log.direction === "IN" && log.netWeightKg !== undefined && log.netWeightKg !== null)
+                              ? "bg-green-50 text-green-700 border-green-200 text-xs"
+                              : "bg-blue-50 text-blue-700 border-blue-200 text-xs"
                           }
                         >
-                          {log.direction === "IN" ? "орсон" : "гарсан"}
+                          {(log.direction === "OUT") || (log.direction === "IN" && log.netWeightKg !== undefined && log.netWeightKg !== null) ? "гарсан" : "орсон"}
                         </Badge>
                         <div className="absolute right-0 top-1/2 -translate-y-1/2 w-px h-3 bg-gray-300"></div>
                       </TableCell>
@@ -530,7 +542,12 @@ export function TruckTable({ logs, onSend, onUpdate }: TruckTableProps) {
           </div>
         )}
       </CardContent>
-
+      <EditLogDialog
+        open={isEditDialogOpen}
+        onOpenChange={setIsEditDialogOpen}
+        log={editingLog}
+        onSave={handleEditSave}
+      />
     </Card>
   );
 }

@@ -35,6 +35,7 @@ interface FilterableSelectProps {
   onEdit?: (value: string, newLabel: string) => Promise<string | null>; // Returns the updated option value or null on error
   editable?: boolean; // Whether items can be edited inline
   onCreateNew?: (label: string) => Promise<string | null>; // Returns the new option value or null on error
+  onCreateNewDialog?: (initialValue: string) => Promise<string | null>; // Opens dialog to create new item, returns the new option value or null on error
   createNewLabel?: string; // Label to show when creating new item (e.g., "Create '...'")
   required?: boolean; // Whether the field is required
 }
@@ -51,6 +52,7 @@ export function FilterableSelect({
   onEdit,
   editable = true,
   onCreateNew,
+  onCreateNewDialog,
   createNewLabel,
   required = false,
 }: FilterableSelectProps) {
@@ -151,7 +153,42 @@ export function FilterableSelect({
     [onEdit, isEditing]
   );
 
-  // Handle creating a new item
+  // Handle creating a new item via dialog
+  const handleCreateNewDialog = React.useCallback(
+    async (initialValue: string) => {
+      if (
+        !onCreateNewDialog ||
+        !initialValue.trim() ||
+        isCreating ||
+        isHandlingSelectRef.current
+      ) {
+        return;
+      }
+
+      isHandlingSelectRef.current = true;
+      setIsCreating(true);
+      try {
+        const newValue = await onCreateNewDialog(initialValue.trim());
+        if (newValue) {
+          // Use ref to prevent dependency issues
+          onValueChangeRef.current?.(newValue);
+          setOpen(false);
+          setSearchQuery("");
+        }
+      } catch (error) {
+        console.error("Error creating new value via dialog:", error);
+      } finally {
+        setIsCreating(false);
+        // Reset the ref after a short delay to allow state updates to complete
+        setTimeout(() => {
+          isHandlingSelectRef.current = false;
+        }, 100);
+      }
+    },
+    [onCreateNewDialog, isCreating]
+  );
+
+  // Handle creating a new item directly (fallback)
   const handleCreateNew = React.useCallback(
     async (label: string) => {
       if (
@@ -222,14 +259,26 @@ export function FilterableSelect({
           }
         }
 
-        // If no exact match and onCreateNew is provided, create a new item
-        if (!hasExactMatch && onCreateNew && !editingValue && !value) {
+        // If no exact match and onCreateNewDialog is provided, open dialog
+        if (!hasExactMatch && onCreateNewDialog && !editingValue && !value) {
+          handleCreateNewDialog(searchQuery.trim());
+          return;
+        }
+
+        // If we have a value selected but user typed something new, try to open dialog
+        if (!hasExactMatch && onCreateNewDialog && searchQuery.trim()) {
+          handleCreateNewDialog(searchQuery.trim());
+          return;
+        }
+
+        // Fallback to direct creation if onCreateNewDialog is not provided but onCreateNew is
+        if (!hasExactMatch && onCreateNew && !onCreateNewDialog && !editingValue && !value) {
           handleCreateNew(searchQuery.trim());
           return;
         }
 
-        // If we have a value selected but user typed something new, try to create
-        if (!hasExactMatch && onCreateNew && searchQuery.trim()) {
+        // Fallback to direct creation if onCreateNewDialog is not provided but onCreateNew is
+        if (!hasExactMatch && onCreateNew && !onCreateNewDialog && searchQuery.trim()) {
           handleCreateNew(searchQuery.trim());
           return;
         }
@@ -245,7 +294,9 @@ export function FilterableSelect({
       editable,
       value,
       onCreateNew,
+      onCreateNewDialog,
       handleCreateNew,
+      handleCreateNewDialog,
     ]
   );
 
@@ -413,11 +464,11 @@ export function FilterableSelect({
 
   // Memoize the command list content to prevent cmdk from re-rendering unnecessarily
   const commandListContent = React.useMemo(() => {
-    // Show create new option if no exact match and onCreateNew is provided
+    // Show create new option if no exact match and onCreateNew or onCreateNewDialog is provided
     const showCreateNew =
       !hasExactMatch &&
       searchQuery.trim() &&
-      onCreateNew &&
+      (onCreateNew || onCreateNewDialog) &&
       !isCreating &&
       !editingValue;
 
@@ -469,14 +520,22 @@ export function FilterableSelect({
             value={`__create__${searchQuery}`}
             onSelect={() => {
               if (!isHandlingSelectRef.current) {
-                handleCreateNew(searchQuery.trim());
+                if (onCreateNewDialog) {
+                  handleCreateNewDialog(searchQuery.trim());
+                } else if (onCreateNew) {
+                  handleCreateNew(searchQuery.trim());
+                }
               }
             }}
             onClick={(e) => {
               e.preventDefault();
               e.stopPropagation();
               if (!isHandlingSelectRef.current) {
-                handleCreateNew(searchQuery.trim());
+                if (onCreateNewDialog) {
+                  handleCreateNewDialog(searchQuery.trim());
+                } else if (onCreateNew) {
+                  handleCreateNew(searchQuery.trim());
+                }
               }
             }}
             className="cursor-pointer text-blue-600 font-medium"
@@ -502,10 +561,12 @@ export function FilterableSelect({
     hasExactMatch,
     searchQuery,
     onCreateNew,
+    onCreateNewDialog,
     isCreating,
     editingValue,
     createNewLabel,
     handleCreateNew,
+    handleCreateNewDialog,
   ]);
 
   // Reset search query when popover closes

@@ -7,7 +7,9 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog"
-import { Truck, Plus, Trash2, Loader2, Edit } from "lucide-react"
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { Label } from "@/components/ui/label"
+import { Truck, Plus, Trash2, Loader2, Edit, Search, X } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import type { TransportCompany } from "@/lib/types"
 import { findSimilarValue } from "@/lib/utils/string-similarity"
@@ -25,6 +27,8 @@ export default function CompaniesPage() {
   const [isUpdating, setIsUpdating] = useState(false)
   const [duplicateDialogOpen, setDuplicateDialogOpen] = useState(false)
   const [duplicateValue, setDuplicateValue] = useState<string | null>(null)
+  const [searchQuery, setSearchQuery] = useState("")
+  const [addDialogOpen, setAddDialogOpen] = useState(false)
 
   useEffect(() => {
     async function loadCompanies() {
@@ -90,6 +94,7 @@ export default function CompaniesPage() {
       })
 
       setNewCompanyName("")
+      setAddDialogOpen(false)
 
       // Dispatch custom event to refresh all sections
       window.dispatchEvent(new CustomEvent("refreshDropdownData"))
@@ -114,12 +119,24 @@ export default function CompaniesPage() {
   const handleEditClick = (company: TransportCompany) => {
     setEditingCompany(company.id)
     setEditingCompanyName(company.name)
+    setAddDialogOpen(true)
   }
 
   const handleCancelEdit = () => {
     setEditingCompany(null)
     setEditingCompanyName("")
+    setAddDialogOpen(false)
   }
+
+  // Filter companies based on search query
+  const filteredCompanies = transportCompanies.filter((company) => {
+    if (!searchQuery.trim()) return true
+    const query = searchQuery.toLowerCase()
+    return (
+      company.name.toLowerCase().includes(query) ||
+      company.id.toLowerCase().includes(query)
+    )
+  })
 
   const handleSaveEdit = async (companyId: string) => {
     if (!editingCompanyName.trim()) {
@@ -164,6 +181,7 @@ export default function CompaniesPage() {
 
       setEditingCompany(null)
       setEditingCompanyName("")
+      setAddDialogOpen(false)
 
       // Dispatch custom event to refresh all sections
       window.dispatchEvent(new CustomEvent("refreshDropdownData"))
@@ -245,34 +263,40 @@ export default function CompaniesPage() {
               </h2>
             </div>
             
-            {/* Add Company Input */}
-            <div className="flex gap-2 mb-6">
-              <Input
-                value={newCompanyName}
-                onChange={(e) => setNewCompanyName(e.target.value)}
-                placeholder="Тээврийн компанийн нэр оруулах"
-                onKeyDown={(e) => {
-                  if (e.key === "Enter" && !isAdding && newCompanyName.trim()) {
-                    handleAddCompany()
-                  }
-                }}
-                className="flex-1"
-              />
+            {/* Search Section */}
+            <div className="flex items-center gap-2 mb-6">
+              <div className="relative flex-1">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                <Input
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="Нэр, ID-аар хайх..."
+                  className="pl-10"
+                />
+                {searchQuery && (
+                  <button
+                    onClick={() => setSearchQuery("")}
+                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                )}
+              </div>
               <Button
-                onClick={handleAddCompany}
-                disabled={isAdding || !newCompanyName.trim()}
+                onClick={() => {
+                  setEditingCompany(null)
+                  setEditingCompanyName("")
+                  setNewCompanyName("")
+                  setAddDialogOpen(true)
+                }}
                 className="gap-2"
               >
-                {isAdding ? (
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                ) : (
-                  <Plus className="w-4 h-4" />
-                )}
+                <Plus className="w-4 h-4" />
                 Нэмэх
               </Button>
             </div>
 
-            {transportCompanies.length > 0 ? (
+            {filteredCompanies.length > 0 ? (
               <div className="border rounded-lg">
                 <Table>
                   <TableHeader>
@@ -282,79 +306,35 @@ export default function CompaniesPage() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {transportCompanies.map((company) => (
+                    {filteredCompanies.map((company) => (
                       <TableRow key={company.id}>
                         <TableCell className="font-medium">
-                          {editingCompany === company.id ? (
-                            <div className="flex items-center gap-2">
-                              <Input
-                                value={editingCompanyName}
-                                onChange={(e) => setEditingCompanyName(e.target.value)}
-                                onKeyDown={(e) => {
-                                  if (e.key === "Enter" && editingCompanyName.trim()) {
-                                    handleSaveEdit(company.id)
-                                  }
-                                  if (e.key === "Escape") {
-                                    handleCancelEdit()
-                                  }
-                                }}
-                                className="flex-1"
-                                autoFocus
-                              />
-                              <Button
-                                size="sm"
-                                onClick={() => handleSaveEdit(company.id)}
-                                disabled={isUpdating || !editingCompanyName.trim()}
-                                className="h-8"
-                              >
-                                {isUpdating ? (
-                                  <Loader2 className="w-4 h-4 animate-spin" />
-                                ) : (
-                                  "Хадгалах"
-                                )}
-                              </Button>
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                onClick={handleCancelEdit}
-                                disabled={isUpdating}
-                                className="h-8"
-                              >
-                                Цуцлах
-                              </Button>
-                            </div>
-                          ) : (
-                            company.name
-                          )}
+                          {company.name}
                         </TableCell>
                         <TableCell>
                           <div className="flex items-center gap-1">
-                            {editingCompany !== company.id && (
-                              <>
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  onClick={() => handleEditClick(company)}
-                                  disabled={isDeleting === company.id}
-                                  className="h-8 w-8 p-0"
-                                >
-                                  <Edit className="w-4 h-4" />
-                                </Button>
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  onClick={() => handleDeleteClick(company.id)}
-                                  disabled={isDeleting === company.id}
-                                  className="h-8 w-8 p-0 text-red-600 hover:text-red-700 hover:bg-red-50"
-                                >
-                                  {isDeleting === company.id ? (
-                                    <Loader2 className="w-4 h-4 animate-spin" />
-                                  ) : (
-                                    <Trash2 className="w-4 h-4" />
-                                  )}
-                                </Button>
-                              </>
-                            )}
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleEditClick(company)}
+                              disabled={isDeleting === company.id}
+                              className="h-8 w-8 p-0"
+                            >
+                              <Edit className="w-4 h-4" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleDeleteClick(company.id)}
+                              disabled={isDeleting === company.id}
+                              className="h-8 w-8 p-0 text-red-600 hover:text-red-700 hover:bg-red-50"
+                            >
+                              {isDeleting === company.id ? (
+                                <Loader2 className="w-4 h-4 animate-spin" />
+                              ) : (
+                                <Trash2 className="w-4 h-4" />
+                              )}
+                            </Button>
                           </div>
                         </TableCell>
                       </TableRow>
@@ -364,7 +344,7 @@ export default function CompaniesPage() {
               </div>
             ) : (
               <p className="text-sm text-muted-foreground text-center py-8">
-                Тээврийн компани байхгүй байна. Дээрх талбарт нэр оруулаад нэмнэ үү.
+                {searchQuery ? "Хайлтын үр дүн олдсонгүй" : "Тээврийн компани байхгүй байна. Дээрх 'Нэмэх' товч дараад нэмнэ үү."}
               </p>
             )}
           </Card>
@@ -404,6 +384,95 @@ export default function CompaniesPage() {
               </AlertDialogFooter>
             </AlertDialogContent>
           </AlertDialog>
+
+          {/* Add/Edit Company Dialog */}
+          <Dialog open={addDialogOpen || !!editingCompany} onOpenChange={(open) => {
+            if (!open) {
+              setAddDialogOpen(false)
+              handleCancelEdit()
+            }
+          }}>
+            <DialogContent className="sm:max-w-[500px]">
+              <DialogHeader>
+                <DialogTitle>
+                  {editingCompany ? "Тээврийн компани засах" : "Шинэ тээврийн компани нэмэх"}
+                </DialogTitle>
+                <DialogDescription>
+                  {editingCompany ? "Тээврийн компанийн нэрийг засах" : "Шинэ тээврийн компанийн нэр оруулах"}
+                </DialogDescription>
+              </DialogHeader>
+              <div className="space-y-4 py-4">
+                <div>
+                  <Label htmlFor="dialog-company-name">Нэр *</Label>
+                  <Input
+                    id="dialog-company-name"
+                    value={editingCompany ? editingCompanyName : newCompanyName}
+                    onChange={(e) => {
+                      if (editingCompany) {
+                        setEditingCompanyName(e.target.value)
+                      } else {
+                        setNewCompanyName(e.target.value)
+                      }
+                    }}
+                    placeholder="Тээврийн компанийн нэр оруулах"
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" && (editingCompany ? editingCompanyName : newCompanyName).trim()) {
+                        if (editingCompany) {
+                          handleSaveEdit(editingCompany)
+                        } else {
+                          handleAddCompany()
+                        }
+                      }
+                    }}
+                  />
+                </div>
+              </div>
+              <DialogFooter>
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    setAddDialogOpen(false)
+                    handleCancelEdit()
+                  }}
+                  disabled={isUpdating || isAdding}
+                >
+                  Цуцлах
+                </Button>
+                <Button
+                  onClick={() => {
+                    if (editingCompany) {
+                      handleSaveEdit(editingCompany)
+                    } else {
+                      handleAddCompany()
+                    }
+                  }}
+                  disabled={isUpdating || isAdding || !(editingCompany ? editingCompanyName : newCompanyName).trim()}
+                  className="gap-2"
+                >
+                  {isUpdating || isAdding ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      {editingCompany ? "Хадгалж байна..." : "Нэмж байна..."}
+                    </>
+                  ) : (
+                    <>
+                      {editingCompany ? (
+                        <>
+                          <Edit className="w-4 h-4" />
+                          Засах
+                        </>
+                      ) : (
+                        <>
+                          <Plus className="w-4 h-4" />
+                          Нэмэх
+                        </>
+                      )}
+                    </>
+                  )}
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
         </main>
       </div>
     </div>

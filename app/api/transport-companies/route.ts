@@ -46,7 +46,7 @@ export async function POST(request: Request) {
     const companyId = session.companyId
     const companiesCollection = await getCompanyCollection(companyId, "transportCompanies")
     const body = await request.json()
-    const { name } = body
+    const { name, companyId: companyRegistrationId, contract } = body
 
     if (!name || typeof name !== "string" || !name.trim()) {
       return NextResponse.json(
@@ -67,6 +67,8 @@ export async function POST(request: Request) {
     const newCompany = {
       id: `tc_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
       name: name.trim(),
+      companyId: companyRegistrationId?.trim() || undefined,
+      contract: contract?.trim() || undefined,
       createdAt: new Date().toISOString(),
     }
 

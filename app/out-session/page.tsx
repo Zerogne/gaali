@@ -94,7 +94,10 @@ function OutSessionContent() {
       setIsLoadingLog(true);
       getTruckLog(editLogId)
         .then((log) => {
-          if (log && log.direction === "OUT") {
+          // Allow editing if:
+          // 1. Log has direction "OUT", OR
+          // 2. Log has netWeightKg (indicating it has OUT data, even if direction is "IN")
+          if (log && (log.direction === "OUT" || log.netWeightKg !== undefined)) {
             setEditLog(log);
           } else {
             toast({

@@ -135,13 +135,15 @@ export async function printLog(log: TruckLog, providedUniqueCode?: string | null
   // Fetch related data (transport company, organizations)
   const relatedData = await fetchRelatedData(log);
 
-  // Fetch current user (loader) information
+  // Fetch current user (loader) information and company name
   let loaderName: string | undefined;
+  let companyName: string = "ТЭЭВРИЙН КОМПАНИ";
   try {
     const userResponse = await fetch("/api/user");
     if (userResponse.ok) {
       const userData = await userResponse.json();
       loaderName = userData.name;
+      companyName = userData.companyName || userData.organizationName || "ТЭЭВРИЙН КОМПАНИ";
     }
   } catch (error) {
     console.warn("Failed to fetch current user:", error);
@@ -151,7 +153,7 @@ export async function printLog(log: TruckLog, providedUniqueCode?: string | null
   const uniqueCode = providedUniqueCode !== undefined ? providedUniqueCode : await fetchSessionUniqueCode(log);
 
   // Create HTML content with the log data
-  const htmlContent = generateLogHTML(log, relatedData, loaderName, uniqueCode);
+  const htmlContent = generateLogHTML(log, relatedData, loaderName, uniqueCode, companyName);
 
   // Create a new window for printing
   const printWindow = window.open("", "_blank");
@@ -194,8 +196,20 @@ export async function exportLogToPDF(log: TruckLog, providedUniqueCode?: string 
   // Use provided unique code, or fetch session's unique code (AKT)
   const uniqueCode = providedUniqueCode !== undefined ? providedUniqueCode : await fetchSessionUniqueCode(log);
 
+  // Fetch company name
+  let companyName: string = "ТЭЭВРИЙН КОМПАНИ";
+  try {
+    const userResponse2 = await fetch("/api/user");
+    if (userResponse2.ok) {
+      const userData2 = await userResponse2.json();
+      companyName = userData2.companyName || userData2.organizationName || "ТЭЭВРИЙН КОМПАНИ";
+    }
+  } catch (error) {
+    console.warn("Failed to fetch company name:", error);
+  }
+
   // Create a temporary HTML element with the log data
-  const htmlContent = generateLogHTML(log, relatedData, loaderName, uniqueCode);
+  const htmlContent = generateLogHTML(log, relatedData, loaderName, uniqueCode, companyName);
 
   // Create an iframe to completely isolate styles
   const iframe = document.createElement("iframe");
@@ -306,7 +320,8 @@ function generateLogHTML(
     driverRegistrationNumber?: string;
   },
   loaderName?: string,
-  uniqueCode?: string | null
+  uniqueCode?: string | null,
+  companyName?: string
 ): string {
   // Use unique code (AKT) if available, otherwise generate receipt number
   const receiptNumber = uniqueCode || generateReceiptNumber(log);
@@ -323,23 +338,28 @@ function generateLogHTML(
 
   const createdDate = log.createdAt ? formatDate(new Date(log.createdAt)) : "—";
 
-  // For IN direction: entry date is the creation date, exit date is empty
-  // For OUT direction: entry date is empty (should be from previous IN log), exit date is creation date
+  // For merged logs (IN with netWeightKg), we have both entry and exit
+  // For IN-only: entry date is creation date, exit date is empty
+  // For OUT-only: entry date is empty, exit date is creation date
+  // For merged (IN with OUT data): entry date is IN creation date, exit date is OUT creation date (if available)
+  const hasOutData = log.netWeightKg !== undefined && log.netWeightKg !== null;
+  const isMergedLog = log.direction === "IN" && hasOutData;
+  
   const entryDate =
-    log.direction === "IN" && log.createdAt
+    (log.direction === "IN" || isMergedLog) && log.createdAt
       ? formatDate(new Date(log.createdAt))
       : "—";
 
   const exitDate =
-    log.direction === "OUT" && log.createdAt
+    (log.direction === "OUT" || isMergedLog) && log.createdAt
       ? formatDate(new Date(log.createdAt))
       : "—";
 
   // Calculate unloaded weight (tare weight)
-  // For OUT direction: if we have loaded weight and net weight, unloaded = loaded - net
-  // For IN direction: unloaded weight is typically not available at entry
+  // For OUT or merged logs: if we have loaded weight and net weight, unloaded = loaded - net
+  // For IN-only: unloaded weight is typically not available at entry
   const unloadedWeight =
-    log.direction === "OUT" && log.weightKg && log.netWeightKg
+    (log.direction === "OUT" || isMergedLog) && log.weightKg && log.netWeightKg
       ? log.weightKg - log.netWeightKg
       : null;
 
@@ -357,6 +377,9 @@ function generateLogHTML(
       ? `${driverInfo} ${relatedData.driverPhone} ${relatedData.driverRegistrationNumber}`
       : driverInfo;
 
+  // Use provided company name or default
+  const displayCompanyName = companyName || "ТЭЭВРИЙН КОМПАНИ";
+
   return `
     <!DOCTYPE html>
     <html>
@@ -371,121 +394,131 @@ function generateLogHTML(
         body {
           font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
           font-size: 11px;
-          line-height: 1.4;
+          line-height: 1.5;
           color: rgb(0, 0, 0);
           background: rgb(255, 255, 255);
-          padding: 10mm 8mm;
+          padding: 12mm 10mm;
           width: 210mm;
         }
-        .header-row {
-          display: flex;
-          justify-content: space-between;
-          align-items: flex-start;
+        .company-name {
+          text-align: center;
+          font-size: 16px;
+          font-weight: bold;
           margin-bottom: 8px;
-          font-size: 11px;
         }
-        .header-left {
-          text-align: left;
-          flex: 1;
-        }
-        .header-center {
-          text-align: center;
-          font-weight: bold;
-          font-size: 12px;
-          flex: 1;
-        }
-        .header-right {
-          text-align: right;
-          flex: 1;
-        }
-        .main-title {
-          text-align: center;
-          font-size: 14px;
-          font-weight: bold;
-          margin: 10px 0 8px 0;
-        }
-        .carrier-info {
+        .document-header {
           display: flex;
           justify-content: space-between;
           align-items: flex-start;
           margin-bottom: 10px;
           font-size: 11px;
         }
-        .carrier-left {
+        .document-id {
+          text-align: center;
+          flex: 1;
+          font-size: 11px;
+        }
+        .created-date {
+          text-align: right;
+          flex: 1;
+          font-size: 11px;
+        }
+        .parties-row {
+          display: flex;
+          justify-content: space-between;
+          align-items: flex-start;
+          margin-bottom: 8px;
+          font-size: 11px;
+        }
+        .sender-info {
           text-align: left;
           flex: 1;
         }
-        .carrier-right {
+        .receiver-info {
           text-align: right;
           flex: 1;
+        }
+        .transporter-info {
+          text-align: left;
+          margin-bottom: 8px;
+          font-size: 11px;
+        }
+        .contract-info {
+          text-align: left;
+          margin-bottom: 12px;
+          font-size: 11px;
         }
         .data-table {
           width: 100%;
           border-collapse: collapse;
-          margin-top: 8px;
+          margin-top: 10px;
           font-size: 11px;
-          border: 0.3px solid rgb(128, 128, 128);
+          border: 1px solid rgb(0, 0, 0);
         }
         .data-table td {
-          padding: 5px 7px;
-          border: 0.3px solid rgb(128, 128, 128);
+          padding: 8px 12px;
+          border: 1px solid rgb(0, 0, 0);
           vertical-align: middle;
+          background-color: rgb(255, 255, 255);
         }
         .data-table .label-cell {
-          background-color: rgb(255, 255, 255);
           font-weight: 600;
-          width: 16%;
           text-align: left;
+          white-space: nowrap;
+          width: 22%;
         }
         .data-table .value-cell {
-          width: 17%;
           text-align: left;
-          background-color: rgb(255, 255, 255);
+          width: 13%;
         }
         .data-table .weight-cell {
           text-align: right;
+          font-weight: 500;
         }
         .data-table .empty-cell {
-          background-color: rgb(255, 255, 255);
-          border: 0.3px solid rgb(128, 128, 128);
+          border: 1px solid rgb(0, 0, 0);
         }
       </style>
     </head>
     <body>
-      <!-- Header with three columns -->
-      <div class="header-row">
-        <div class="header-left">
+      <!-- Company name at top center -->
+      <div class="company-name">
+        ${escapeHtml(displayCompanyName)}
+      </div>
+
+      <!-- Document ID and Created Date -->
+      <div class="document-header">
+        <div class="document-id">
+          ПҮҮНИЙ БАРИМТ: ${receiptNumber}
+        </div>
+        <div class="created-date">
+          Үүссэн огноо:${createdDate}
+        </div>
+      </div>
+
+      <!-- Sender and Receiver -->
+      <div class="parties-row">
+        <div class="sender-info">
           Илгээгч байгууллага: ${escapeHtml(senderOrg)}
         </div>
-        <div class="header-center">
-          ${escapeHtml(
-            transportCompany !== "—" ? transportCompany : "ТЭЭВРИЙН КОМПАНИ"
-          )}
-        </div>
-        <div class="header-right">
+        <div class="receiver-info">
           Хүлээн авагч: ${escapeHtml(receiverOrg)}
         </div>
       </div>
 
-      <!-- Main title -->
-      <div class="main-title">
-        ПҮҮНИЙ БАРИМТ: ${receiptNumber}
+      <!-- Transporter Organization -->
+      <div class="transporter-info">
+        Тээвэрлэгч байгууллага: ${escapeHtml(transportCompany)}
       </div>
 
-      <!-- Carrier and date info -->
-      <div class="carrier-info">
-        <div class="carrier-left">
-          Тээвэрлэгч байгууллага: ${escapeHtml(transportCompany)}
-        </div>
-        <div class="carrier-right">
-          Үүссэн огноо:${createdDate}<br>
-          Гэрээ:-
-        </div>
+      <!-- Contract -->
+      <div class="contract-info">
+        Гэрээ:-
       </div>
 
       <!-- Data table -->
       <table class="data-table">
-        <!-- Row 1: Vehicle identification -->
+        <!-- Row 1: Vehicle and Weight info (6 columns) -->
         <tr>
           <td class="label-cell">Улсын дугаар:</td>
           <td class="value-cell">${escapeHtml(log.plate || "")}</td>
@@ -494,7 +527,6 @@ function generateLogHTML(
           <td class="label-cell">Гаалийн лац:</td>
           <td class="value-cell">${escapeHtml(log.sealNumber || "")}</td>
         </tr>
-        <!-- Row 2: Weight information -->
         <tr>
           <td class="label-cell">Ачаатай жин/кг/:</td>
           <td class="value-cell weight-cell">${
@@ -509,7 +541,7 @@ function generateLogHTML(
             log.netWeightKg ? log.netWeightKg.toLocaleString() : ""
           }</td>
         </tr>
-        <!-- Row 3: Product and dates -->
+        <!-- Row 2: Product, Dates, and Location codes (5 columns) -->
         <tr>
           <td class="label-cell">Бүтээгдэхүүн:</td>
           <td class="value-cell">${escapeHtml(log.cargoType || "")}</td>
@@ -518,7 +550,6 @@ function generateLogHTML(
           <td class="label-cell">Гарсан огноо:</td>
           <td class="value-cell">${exitDate !== "—" ? exitDate : ""}</td>
         </tr>
-        <!-- Row 4: Location codes -->
         <tr>
           <td class="label-cell">Ачих газрын код:</td>
           <td class="value-cell">${escapeHtml(log.origin || "")}</td>
@@ -527,7 +558,7 @@ function generateLogHTML(
           <td class="empty-cell"></td>
           <td class="empty-cell"></td>
         </tr>
-        <!-- Row 5: Container and exchange -->
+        <!-- Row 3: Container and Exchange (2 columns) -->
         <tr>
           <td class="label-cell">Чингэлэг дугаар:</td>
           <td class="value-cell"></td>
@@ -536,20 +567,16 @@ function generateLogHTML(
           <td class="empty-cell"></td>
           <td class="empty-cell"></td>
         </tr>
-        <!-- Row 6: Loader and Driver -->
+        <!-- Row 4: Loader, Driver, and Approval -->
         <tr>
           <td class="label-cell">Пүүлэгч:</td>
           <td class="value-cell">${escapeHtml(loaderName || "")}</td>
           <td class="label-cell">Жолооч:</td>
-          <td class="value-cell" colspan="3">${escapeHtml(
+          <td class="value-cell">${escapeHtml(
             driverFullInfo !== "—" ? driverFullInfo : ""
           )}</td>
-        </tr>
-        <!-- Row 7: Approval -->
-        <tr>
           <td class="label-cell">С Зөвшөөрөл:</td>
           <td class="value-cell">-</td>
-          <td class="empty-cell" colspan="4"></td>
         </tr>
       </table>
     </body>

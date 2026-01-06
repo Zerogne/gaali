@@ -34,6 +34,81 @@ export default function DashboardPage() {
     checkAuth();
   }, [router]);
 
+  // Function to merge IN and OUT logs for the same plate into one combined log
+  const mergeLogsByPlate = (logs: TruckLog[]): TruckLog[] => {
+    const plateMap = new Map<string, { inLog?: TruckLog; outLog?: TruckLog }>();
+    
+    // Group logs by plate number
+    logs.forEach((log) => {
+      const plate = log.plate.toUpperCase();
+      if (!plateMap.has(plate)) {
+        plateMap.set(plate, {});
+      }
+      const entry = plateMap.get(plate)!;
+      if (log.direction === "IN") {
+        entry.inLog = log;
+      } else if (log.direction === "OUT") {
+        entry.outLog = log;
+      }
+    });
+    
+    // Merge logs: if both IN and OUT exist for same plate, combine them
+    const mergedLogs: TruckLog[] = [];
+    const processedPlates = new Set<string>();
+    
+    logs.forEach((log) => {
+      const plate = log.plate.toUpperCase();
+      
+      // Skip if we've already processed this plate
+      if (processedPlates.has(plate)) {
+        return;
+      }
+      
+      const entry = plateMap.get(plate)!;
+      
+      // If we have both IN and OUT logs for this plate, merge them
+      if (entry.inLog && entry.outLog) {
+        // Use IN log as base (it's the original), merge OUT data into it
+        const mergedLog: TruckLog = {
+          ...entry.inLog,
+          // Add OUT-specific data
+          netWeightKg: entry.outLog.netWeightKg,
+          // Use the most recent sentToCustoms status (if either is sent, consider it sent)
+          sentToCustoms: entry.inLog.sentToCustoms || entry.outLog.sentToCustoms,
+          // Use the most recent data for other fields (prefer OUT if it exists)
+          driverId: entry.outLog.driverId || entry.inLog.driverId,
+          driverName: entry.outLog.driverName || entry.inLog.driverName,
+          cargoType: entry.outLog.cargoType || entry.inLog.cargoType,
+          weightKg: entry.outLog.weightKg || entry.inLog.weightKg,
+          comments: entry.outLog.comments || entry.inLog.comments,
+          origin: entry.outLog.origin || entry.inLog.origin,
+          destination: entry.outLog.destination || entry.inLog.destination,
+          senderOrganizationId: entry.outLog.senderOrganizationId || entry.inLog.senderOrganizationId,
+          senderOrganization: entry.outLog.senderOrganization || entry.inLog.senderOrganization,
+          receiverOrganizationId: entry.outLog.receiverOrganizationId || entry.inLog.receiverOrganizationId,
+          receiverOrganization: entry.outLog.receiverOrganization || entry.inLog.receiverOrganization,
+          transportCompanyId: entry.outLog.transportCompanyId || entry.inLog.transportCompanyId,
+          sealNumber: entry.outLog.sealNumber || entry.inLog.sealNumber,
+          hasTrailer: entry.outLog.hasTrailer !== undefined ? entry.outLog.hasTrailer : entry.inLog.hasTrailer,
+          trailerPlate: entry.outLog.trailerPlate || entry.inLog.trailerPlate,
+        };
+        mergedLogs.push(mergedLog);
+        processedPlates.add(plate);
+      } else {
+        // Only one log exists (IN or OUT), add it as is
+        // Make sure we use the correct log (IN or OUT) from the entry
+        const singleLog = entry.inLog || entry.outLog || log;
+        mergedLogs.push(singleLog);
+        processedPlates.add(plate);
+      }
+    });
+    
+    // Sort by creation date (newest first)
+    return mergedLogs.sort((a, b) => 
+      new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+    );
+  };
+
   // Load company-scoped logs on mount (only if authenticated)
   useEffect(() => {
     if (isCheckingAuth) return; // Wait for auth check
@@ -43,7 +118,9 @@ export default function DashboardPage() {
         setIsLoading(true);
         // Get the 50 most recent logs for the home page
         const result = await getTruckLogs(1, 50);
-        setLogs(result.logs);
+        // Merge IN and OUT logs for the same plate
+        const mergedLogs = mergeLogsByPlate(result.logs);
+        setLogs(mergedLogs);
       } catch (error) {
         console.error("Error loading logs:", error);
         // If error loading logs, might be auth issue, redirect to login
@@ -59,30 +136,24 @@ export default function DashboardPage() {
   }, [isCheckingAuth, router]);
 
   const handleSave = async (log: TruckLog) => {
-    // Add to local state immediately for optimistic UI (keep only 50 most recent)
-    setLogs((prev) => [log, ...prev].slice(0, 50));
-
     // Reload from server to ensure consistency (only 50 most recent)
     try {
       const result = await getTruckLogs(1, 50);
-      setLogs(result.logs);
+      // Merge IN and OUT logs for the same plate
+      const mergedLogs = mergeLogsByPlate(result.logs);
+      setLogs(mergedLogs);
     } catch (error) {
       console.error("Error reloading logs:", error);
     }
   };
 
   const handleSend = async (logId: string) => {
-    // Update local state immediately for optimistic UI
-    setLogs((prev) =>
-      prev.map((log) =>
-        log.id === logId ? { ...log, sentToCustoms: true } : log
-      )
-    );
-
     // Reload from server to ensure consistency (only 50 most recent)
     try {
       const result = await getTruckLogs(1, 50);
-      setLogs(result.logs);
+      // Merge IN and OUT logs for the same plate
+      const mergedLogs = mergeLogsByPlate(result.logs);
+      setLogs(mergedLogs);
     } catch (error) {
       console.error("Error reloading logs:", error);
     }
@@ -103,11 +174,11 @@ export default function DashboardPage() {
   return (
     <div className="flex h-screen bg-gray-50 overflow-hidden">
       <Sidebar />
-      <div className="flex-1 flex flex-col overflow-hidden min-w-0">
-        <main className="flex-1 overflow-hidden flex flex-col">
-          <div className="flex-1 overflow-hidden flex flex-col max-w-[1920px] w-full mx-auto p-2 lg:p-3">
+      <div className="flex-1 flex flex-col overflow-y-auto min-w-0">
+        <main className="flex-1 flex flex-col">
+          <div className="flex flex-col max-w-[1920px] w-full mx-auto p-1.5 lg:p-2">
             {/* Truck IN and OUT Sections */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-2 lg:gap-3 flex-shrink-0 mb-2">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-1.5 lg:gap-2 flex-shrink-0 mb-1.5">
               <TruckSection
                 direction="IN"
                 onSave={handleSave}
@@ -120,15 +191,19 @@ export default function DashboardPage() {
               />
             </div>
 
-            {/* History Table - Takes remaining space */}
-            <div className="flex-1 min-h-0 overflow-hidden">
+            {/* History Table - Increased height */}
+            <div className="min-h-[700px] mb-2">
             <TruckTable
               logs={logs}
               onSend={handleSend}
               onUpdate={() => {
                   // Reload logs after update (only 50 most recent)
                   getTruckLogs(1, 50)
-                  .then(({ logs }) => setLogs(logs))
+                  .then(({ logs }) => {
+                    // Merge IN and OUT logs for the same plate
+                    const mergedLogs = mergeLogsByPlate(logs);
+                    setLogs(mergedLogs);
+                  })
                   .catch(console.error);
               }}
             />

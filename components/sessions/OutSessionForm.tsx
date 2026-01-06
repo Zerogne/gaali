@@ -22,6 +22,7 @@ import type {
   TruckLog,
 } from "@/lib/types";
 import { ArrowRight, Camera, Printer, Send, Loader2 } from "lucide-react";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useRouter } from "next/navigation";
 import {
   forwardRef,
@@ -103,6 +104,16 @@ export const OutSessionForm = forwardRef<
     } = useThirdPartyAutofill();
     const [isSaving, setIsSaving] = useState(false);
     const [isSending, setIsSending] = useState(false);
+    const [createDialogOpen, setCreateDialogOpen] = useState(false);
+    const [createDialogType, setCreateDialogType] = useState<"transportCompany" | "product" | "organization" | "driver" | null>(null);
+    const [createDialogInitialValue, setCreateDialogInitialValue] = useState("");
+    const [createDialogName, setCreateDialogName] = useState("");
+    const [createDialogCompanyId, setCreateDialogCompanyId] = useState("");
+    const [createDialogContract, setCreateDialogContract] = useState("");
+    const [createDialogPhone, setCreateDialogPhone] = useState("");
+    const [createDialogRegistrationNumber, setCreateDialogRegistrationNumber] = useState("");
+    const [createDialogAdditionalInfo, setCreateDialogAdditionalInfo] = useState("");
+    const [isCreatingInDialog, setIsCreatingInDialog] = useState(false);
     const [plateInputRef, setPlateInputRef] = useState<HTMLInputElement | null>(
       null
     );
@@ -396,12 +407,12 @@ export const OutSessionForm = forwardRef<
       return null;
     };
 
-    const handleCreateTransportCompany = async (name: string) => {
+    const handleCreateTransportCompany = async (name: string, companyId?: string, contract?: string) => {
       try {
         const response = await fetch("/api/transport-companies", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ name }),
+          body: JSON.stringify({ name, companyId, contract }),
         });
         if (response.ok) {
           const newCompany = await response.json();
@@ -414,12 +425,12 @@ export const OutSessionForm = forwardRef<
       return null;
     };
 
-    const handleCreateDriver = async (name: string) => {
+    const handleCreateDriver = async (name: string, phone?: string, registrationNumber?: string, additionalInfo?: string) => {
       try {
         const response = await fetch("/api/drivers", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ name }),
+          body: JSON.stringify({ name, phone, registrationNumber, additionalInfo }),
         });
         if (response.ok) {
           const newDriver = await response.json();
@@ -448,12 +459,12 @@ export const OutSessionForm = forwardRef<
       return null;
     };
 
-    const handleCreateOrganization = async (name: string) => {
+    const handleCreateOrganization = async (name: string, companyId?: string, contract?: string) => {
       try {
         const response = await fetch("/api/organizations", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ name }),
+          body: JSON.stringify({ name, companyId, contract }),
         });
         if (response.ok) {
           const newOrg = await response.json();
@@ -464,6 +475,101 @@ export const OutSessionForm = forwardRef<
         console.error("Error creating organization:", error);
       }
       return null;
+    };
+
+    // Dialog handlers for creating new entities
+    const handleOpenCreateDialog = async (type: "transportCompany" | "product" | "organization" | "driver", initialValue: string): Promise<string | null> => {
+      return new Promise((resolve) => {
+        setCreateDialogType(type);
+        setCreateDialogInitialValue(initialValue);
+        setCreateDialogName(initialValue);
+        setCreateDialogCompanyId("");
+        setCreateDialogContract("");
+        setCreateDialogPhone("");
+        setCreateDialogRegistrationNumber("");
+        setCreateDialogAdditionalInfo("");
+        setCreateDialogOpen(true);
+        
+        // Store resolve function to call when dialog closes
+        (window as any).__createDialogResolve = resolve;
+      });
+    };
+
+    const handleCreateDialogSubmit = async () => {
+      if (!createDialogName.trim() || !createDialogType) {
+        toast({
+          title: "Алдаа",
+          description: "Нэр оруулах шаардлагатай",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      setIsCreatingInDialog(true);
+      try {
+        let newId: string | null = null;
+
+        if (createDialogType === "transportCompany") {
+          newId = await handleCreateTransportCompany(
+            createDialogName.trim(),
+            createDialogCompanyId.trim() || undefined,
+            createDialogContract.trim() || undefined
+          );
+        } else if (createDialogType === "product") {
+          newId = await handleCreateProduct(createDialogName.trim());
+        } else if (createDialogType === "organization") {
+          newId = await handleCreateOrganization(
+            createDialogName.trim(),
+            createDialogCompanyId.trim() || undefined,
+            createDialogContract.trim() || undefined
+          );
+        } else if (createDialogType === "driver") {
+          newId = await handleCreateDriver(
+            createDialogName.trim(),
+            createDialogPhone.trim() || undefined,
+            createDialogRegistrationNumber.trim() || undefined,
+            createDialogAdditionalInfo.trim() || undefined
+          );
+        }
+
+        if (newId) {
+          setCreateDialogOpen(false);
+          setCreateDialogType(null);
+          setCreateDialogName("");
+          setCreateDialogCompanyId("");
+          setCreateDialogContract("");
+          setCreateDialogPhone("");
+          setCreateDialogRegistrationNumber("");
+          setCreateDialogAdditionalInfo("");
+          setCreateDialogInitialValue("");
+          // Resolve the promise with the new ID
+          if ((window as any).__createDialogResolve) {
+            (window as any).__createDialogResolve(newId);
+            (window as any).__createDialogResolve = null;
+          }
+        }
+      } catch (error) {
+        console.error("Error creating in dialog:", error);
+      } finally {
+        setIsCreatingInDialog(false);
+      }
+    };
+
+    const handleCreateDialogCancel = () => {
+      setCreateDialogOpen(false);
+      setCreateDialogType(null);
+      setCreateDialogName("");
+      setCreateDialogCompanyId("");
+      setCreateDialogContract("");
+      setCreateDialogPhone("");
+      setCreateDialogRegistrationNumber("");
+      setCreateDialogAdditionalInfo("");
+      setCreateDialogInitialValue("");
+      // Resolve with null to indicate cancellation
+      if ((window as any).__createDialogResolve) {
+        (window as any).__createDialogResolve(null);
+        (window as any).__createDialogResolve = null;
+      }
     };
 
     // Bind camera autofill to plate input
@@ -1628,7 +1734,7 @@ export const OutSessionForm = forwardRef<
                         isLoadingDrivers ? "Уншиж байна..." : "Жолооч сонгох"
                       }
                       searchPlaceholder="Жолооч хайх..."
-                      onCreateNew={handleCreateDriver}
+                      onCreateNewDialog={(initialValue) => handleOpenCreateDialog("driver", initialValue)}
                       createNewLabel="+ Нэмэх ..."
                       className="h-12"
                       required
@@ -1664,7 +1770,7 @@ export const OutSessionForm = forwardRef<
                             : "Тээврийн компани сонгох"
                         }
                         searchPlaceholder="Тээврийн компани хайх..."
-                        onCreateNew={handleCreateTransportCompany}
+                        onCreateNewDialog={(initialValue) => handleOpenCreateDialog("transportCompany", initialValue)}
                         createNewLabel="+ Нэмэх ..."
                       className="h-12"
                         required
@@ -1700,7 +1806,7 @@ export const OutSessionForm = forwardRef<
                           : "Бүтээгдэхүүн сонгох"
                       }
                       searchPlaceholder="Бүтээгдэхүүн хайх..."
-                      onCreateNew={handleCreateProduct}
+                      onCreateNewDialog={(initialValue) => handleOpenCreateDialog("product", initialValue)}
                       createNewLabel="+ Нэмэх ..."
                       className="h-12"
                       required
@@ -1790,7 +1896,7 @@ export const OutSessionForm = forwardRef<
                             : "Илгээч байгууллага сонгох"
                         }
                         searchPlaceholder="Илгээч байгууллага хайх..."
-                        onCreateNew={handleCreateOrganization}
+                        onCreateNewDialog={(initialValue) => handleOpenCreateDialog("organization", initialValue)}
                         createNewLabel="+ Нэмэх ..."
                       className="h-12"
                       />
@@ -1825,7 +1931,7 @@ export const OutSessionForm = forwardRef<
                             : "Хүлээн авагч байгууллага сонгох"
                         }
                         searchPlaceholder="Хүлээн авагч байгууллага хайх..."
-                        onCreateNew={handleCreateOrganization}
+                        onCreateNewDialog={(initialValue) => handleOpenCreateDialog("organization", initialValue)}
                         createNewLabel="+ Нэмэх ..."
                       className="h-12"
                       />
@@ -2030,21 +2136,21 @@ export const OutSessionForm = forwardRef<
                             if (result.success) {
                               toast({
                                 title: "Амжилттай",
-                                description: "Мэдээлэл Монголын гаалинд амжилттай илгээгдлээ",
+                                description: "Мэдээлэл Монголын гаальд амжилттай илгээгдлээ",
                               });
                               // Refresh the page or update the log
                               router.refresh();
                             } else {
                               toast({
                                 title: "Алдаа",
-                                description: result.error || "Гаалинд илгээхэд алдаа гарлаа",
+                                description: result.error || "Гаальд илгээхэд алдаа гарлаа",
                                 variant: "destructive",
                               });
                             }
                           } catch (error) {
                             toast({
                               title: "Алдаа",
-                              description: "Гаалинд илгээхэд алдаа гарлаа",
+                              description: "Гаальд илгээхэд алдаа гарлаа",
                               variant: "destructive",
                             });
                           } finally {
@@ -2062,7 +2168,7 @@ export const OutSessionForm = forwardRef<
                         ) : (
                           <>
                             <Send className="w-4 h-4 mr-2" />
-                            Гаалинд илгээх
+                            Гаальд илгээх
                           </>
                         )}
                       </Button>
@@ -2091,6 +2197,152 @@ export const OutSessionForm = forwardRef<
                 </Card>
           </div>
         </form>
+
+        {/* Create Entity Dialog */}
+        <Dialog open={createDialogOpen} onOpenChange={(open) => {
+          if (!open) {
+            handleCreateDialogCancel();
+          }
+        }}>
+          <DialogContent className="sm:max-w-[500px]">
+            <DialogHeader>
+              <DialogTitle>
+                {createDialogType === "transportCompany" && "Шинэ тээврийн компани нэмэх"}
+                {createDialogType === "product" && "Шинэ бүтээгдэхүүн нэмэх"}
+                {createDialogType === "organization" && "Шинэ тээврийн байгууллага нэмэх"}
+                {createDialogType === "driver" && "Шинэ жолооч нэмэх"}
+              </DialogTitle>
+              <DialogDescription>
+                {createDialogType === "transportCompany" && "Тээврийн компанийн мэдээлэл оруулна уу"}
+                {createDialogType === "product" && "Бүтээгдэхүүний нэрийг оруулна уу"}
+                {createDialogType === "organization" && "Тээврийн байгууллагын мэдээлэл оруулна уу"}
+                {createDialogType === "driver" && "Жолоочийн мэдээлэл оруулна уу"}
+              </DialogDescription>
+            </DialogHeader>
+            <div className="space-y-4 py-4">
+              {/* Name field - always shown */}
+              <div>
+                <Label htmlFor="create-dialog-name">
+                  {createDialogType === "transportCompany" && "Тээврийн компанийн нэр"}
+                  {createDialogType === "product" && "Бүтээгдэхүүний нэр"}
+                  {createDialogType === "organization" && "Тээврийн байгууллагын нэр"}
+                  {createDialogType === "driver" && "Жолоочийн нэр"}
+                  <span className="text-red-500">*</span>
+                </Label>
+                <Input
+                  id="create-dialog-name"
+                  value={createDialogName}
+                  onChange={(e) => setCreateDialogName(e.target.value)}
+                  placeholder={
+                    createDialogType === "transportCompany" ? "Тээврийн компанийн нэр оруулах"
+                    : createDialogType === "product" ? "Бүтээгдэхүүний нэр оруулах"
+                    : createDialogType === "organization" ? "Тээврийн байгууллагын нэр оруулах"
+                    : "Жолоочийн нэр оруулах"
+                  }
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" && createDialogName.trim() && 
+                        (createDialogType === "product" || 
+                         (createDialogType === "driver" && createDialogName.trim()))) {
+                      handleCreateDialogSubmit();
+                    }
+                  }}
+                  autoFocus
+                />
+              </div>
+
+              {/* Company ID and Contract - for transportCompany and organization */}
+              {(createDialogType === "transportCompany" || createDialogType === "organization") && (
+                <>
+                  <div>
+                    <Label htmlFor="create-dialog-company-id">
+                      Компаны регистер
+                    </Label>
+                    <Input
+                      id="create-dialog-company-id"
+                      value={createDialogCompanyId}
+                      onChange={(e) => setCreateDialogCompanyId(e.target.value)}
+                      placeholder="Компаны регистер оруулах"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="create-dialog-contract">
+                      Гэрээ
+                    </Label>
+                    <Input
+                      id="create-dialog-contract"
+                      value={createDialogContract}
+                      onChange={(e) => setCreateDialogContract(e.target.value)}
+                      placeholder="Гэрээний дугаар оруулах"
+                    />
+                  </div>
+                </>
+              )}
+
+              {/* Driver specific fields */}
+              {createDialogType === "driver" && (
+                <>
+                  <div>
+                    <Label htmlFor="create-dialog-phone">
+                      Утасны дугаар
+                    </Label>
+                    <Input
+                      id="create-dialog-phone"
+                      type="tel"
+                      value={createDialogPhone}
+                      onChange={(e) => setCreateDialogPhone(e.target.value)}
+                      placeholder="Утасны дугаар оруулах"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="create-dialog-registration">
+                      Регистерийн дугаар
+                    </Label>
+                    <Input
+                      id="create-dialog-registration"
+                      value={createDialogRegistrationNumber}
+                      onChange={(e) => setCreateDialogRegistrationNumber(e.target.value)}
+                      placeholder="Регистерийн дугаар оруулах"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="create-dialog-additional">
+                      Нэмэлт мэдээлэл
+                    </Label>
+                    <Input
+                      id="create-dialog-additional"
+                      value={createDialogAdditionalInfo}
+                      onChange={(e) => setCreateDialogAdditionalInfo(e.target.value)}
+                      placeholder="Нэмэлт мэдээлэл оруулах"
+                    />
+                  </div>
+                </>
+              )}
+            </div>
+            <DialogFooter>
+              <Button
+                variant="outline"
+                onClick={handleCreateDialogCancel}
+                disabled={isCreatingInDialog}
+              >
+                Цуцлах
+              </Button>
+              <Button
+                onClick={handleCreateDialogSubmit}
+                disabled={isCreatingInDialog || !createDialogName.trim()}
+                className="gap-2"
+              >
+                {isCreatingInDialog ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    Нэмж байна...
+                  </>
+                ) : (
+                  "Нэмэх"
+                )}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </div>
     );
   }
