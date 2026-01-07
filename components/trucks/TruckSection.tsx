@@ -50,6 +50,8 @@ export function TruckSection({ direction, onSave, onSend }: TruckSectionProps) {
   const [isLoadingDrivers, setIsLoadingDrivers] = useState(true)
   const [organizations, setOrganizations] = useState<Organization[]>([])
   const [isLoadingOrganizations, setIsLoadingOrganizations] = useState(true)
+  const [trailers, setTrailers] = useState<Array<{ id: string; plateNumber: string; ownerName: string; ownerId: string; ownerPhone: string }>>([])
+  const [isLoadingTrailers, setIsLoadingTrailers] = useState(true)
   const [duplicateDialogOpen, setDuplicateDialogOpen] = useState(false)
   const [duplicateValue, setDuplicateValue] = useState<string | null>(null)
 
@@ -126,6 +128,20 @@ export function TruckSection({ direction, onSave, onSend }: TruckSectionProps) {
       console.error("Error loading organizations:", error)
     } finally {
       setIsLoadingOrganizations(false)
+    }
+
+    // Load trailers
+    try {
+      setIsLoadingTrailers(true)
+      const response = await fetch("/api/trailers")
+      if (response.ok) {
+        const data = await response.json()
+        setTrailers(data)
+      }
+    } catch (error) {
+      console.error("Error loading trailers:", error)
+    } finally {
+      setIsLoadingTrailers(false)
     }
   }
 
@@ -991,15 +1007,21 @@ export function TruckSection({ direction, onSave, onSend }: TruckSectionProps) {
           {/* Trailer fields (shown when hasTrailer is true) */}
           {hasTrailer && (
             <div>
-              <Label htmlFor={`trailer-plate-${direction}`} className="text-sm font-medium text-gray-700">
+              <Label htmlFor={`trailer-plate-${direction}`} className="text-sm font-medium text-gray-700 mb-2 block">
                 Чиргүүлийн улсын дугаар
               </Label>
-              <Input
-                id={`trailer-plate-${direction}`}
+              <FilterableSelect
+                options={trailers.map((trailer) => ({
+                  value: trailer.plateNumber,
+                  label: `${trailer.plateNumber}${trailer.ownerName ? ` - ${trailer.ownerName}` : ""}`,
+                }))}
                 value={trailerPlate}
-                onChange={(e) => handleFieldChange(setTrailerPlate, e.target.value)}
-                className="mt-2 bg-white border-gray-300 focus:border-blue-500 focus:ring-blue-500"
-                placeholder="Чиргүүлийн улсын дугаар"
+                onValueChange={(value) => {
+                  handleFieldChange(setTrailerPlate, value)
+                }}
+                disabled={isLoadingTrailers}
+                placeholder={isLoadingTrailers ? "Уншиж байна..." : "Чиргүүл сонгох"}
+                searchPlaceholder="Чиргүүлийн улсын дугаар хайх..."
               />
             </div>
           )}

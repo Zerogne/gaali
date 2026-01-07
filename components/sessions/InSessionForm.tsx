@@ -182,6 +182,8 @@ export const InSessionForm = forwardRef<
     const [isLoadingDrivers, setIsLoadingDrivers] = useState(true);
     const [organizations, setOrganizations] = useState<Organization[]>([]);
     const [isLoadingOrganizations, setIsLoadingOrganizations] = useState(true);
+    const [trailers, setTrailers] = useState<Array<{ id: string; plateNumber: string; ownerName: string; ownerId: string; ownerPhone: string }>>([]);
+    const [isLoadingTrailers, setIsLoadingTrailers] = useState(true);
     const [isDriverDialogOpen, setIsDriverDialogOpen] = useState(false);
 
     const [formState, setFormState] = useState<InSessionFormState>({
@@ -326,6 +328,20 @@ export const InSessionForm = forwardRef<
       } finally {
         setIsLoadingOrganizations(false);
       }
+
+      // Load trailers
+      try {
+        setIsLoadingTrailers(true);
+        const response = await fetch("/api/trailers");
+        if (response.ok) {
+          const data = await response.json();
+          setTrailers(data);
+        }
+      } catch (error) {
+        console.error("Error loading trailers:", error);
+      } finally {
+        setIsLoadingTrailers(false);
+      }
     };
 
     useEffect(() => {
@@ -374,6 +390,14 @@ export const InSessionForm = forwardRef<
           .filter((o) => o.name != null && o.name !== "")
           .map((o) => ({ value: o.id, label: o.name })),
       [organizations]
+    );
+
+    const trailerOptions = useMemo(
+      () => trailers.map((t) => ({
+        value: t.plateNumber,
+        label: `${t.plateNumber}${t.ownerName ? ` - ${t.ownerName}` : ""}`,
+      })),
+      [trailers]
     );
 
     // Handle creating new items
@@ -1409,36 +1433,36 @@ export const InSessionForm = forwardRef<
                       Улсын дугаар <span className="text-red-500">*</span>
                     </Label>
                   </div>
-                  {/* Connection Status - Helper Text Area */}
-                  <div className="mb-0.5 min-h-[1.25rem]">
-                    {(cameraAutofill.status === "polling" ||
-                      cameraAutofill.status === "connected" ||
-                      (cameraAutofill.status === "error" &&
-                        cameraAutofill.error)) && (
-                      <>
-                        {(cameraAutofill.status === "polling" ||
-                          cameraAutofill.status === "connected") && (
-                          <div className="flex items-center gap-1.5 text-base text-blue-600 whitespace-nowrap">
-                            <Camera className="h-5 w-5 animate-pulse shrink-0" />
-                            <span className="whitespace-nowrap">
-                              {cameraAutofill.status === "connected"
-                                ? "Камера холбогдсон"
-                                : "Камера холбогдож байна..."}
-                            </span>
-                          </div>
-                        )}
-                        {cameraAutofill.status === "error" &&
-                          cameraAutofill.error && (
-                            <div className="flex items-center gap-1.5 text-base text-red-600 whitespace-nowrap">
-                              <Camera className="h-5 w-5 shrink-0" />
-                              <span className="whitespace-nowrap">
-                                Камера алдаа: {cameraAutofill.error}
-                              </span>
-                            </div>
-                          )}
-                      </>
-                    )}
-                  </div>
+                  {/* Camera Video Display */}
+                  {streamUrl && (
+                    <div className="mb-4 aspect-video bg-black rounded-lg overflow-hidden relative border-2 border-gray-200">
+                      {streamUrl.endsWith(".mjpeg") || streamUrl.includes("mjpeg") || streamUrl.includes("stream") ? (
+                        <img 
+                          src={streamUrl}
+                          alt="Camera stream"
+                          className="w-full h-full object-contain"
+                          onError={(e) => {
+                            console.error("Failed to load camera stream:", streamUrl);
+                          }}
+                        />
+                      ) : streamUrl.includes("iframe") || streamUrl.includes(".htm") ? (
+                        <iframe
+                          src={streamUrl}
+                          className="w-full h-full border-0"
+                          allow="camera; microphone"
+                        />
+                      ) : (
+                        <video
+                          src={streamUrl}
+                          autoPlay
+                          playsInline
+                          muted
+                          loop
+                          className="w-full h-full object-contain"
+                        />
+                      )}
+                    </div>
+                  )}
                   <div className="h-12">
                     <Input
                       ref={setPlateInputRef}
@@ -1524,17 +1548,19 @@ export const InSessionForm = forwardRef<
                       </span>
                     </label>
                     {formState.hasTrailer && (
-                      <Input
-                        id="trailerNumber"
+                      <FilterableSelect
+                        options={trailerOptions}
                         value={formState.trailerNumber}
-                        onChange={(e) =>
+                        onValueChange={(value) =>
                           setFormState((prev) => ({
                             ...prev,
-                            trailerNumber: e.target.value,
+                            trailerNumber: value,
                           }))
                         }
-                        className="h-12 text-lg font-mono flex-1"
-                        placeholder="УБ1234"
+                        disabled={isLoadingTrailers}
+                        placeholder={isLoadingTrailers ? "Уншиж байна..." : "Чиргүүл сонгох"}
+                        searchPlaceholder="Чиргүүлийн улсын дугаар хайх..."
+                        className="flex-1"
                       />
                     )}
                   </div>
