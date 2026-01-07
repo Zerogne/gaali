@@ -64,17 +64,27 @@ function OutSessionContent() {
         const response = await fetch("/api/camera/config");
         if (response.ok) {
           const config = await response.json();
+          console.log("Camera config received:", config);
           // Use NEXT_PUBLIC env var if set, otherwise use config streamUrl
-          setStreamUrl(
+          const url = 
             process.env.NEXT_PUBLIC_CAMERA_STREAM_URL ||
-              config.streamUrl ||
-              undefined
-          );
+            config.streamUrl ||
+            undefined;
+          console.log("Setting streamUrl to:", url);
+          setStreamUrl(url);
+        } else {
+          console.warn("Camera config API returned non-OK status:", response.status);
+          // Fallback to env var if API fails
+          const fallbackUrl = process.env.NEXT_PUBLIC_CAMERA_STREAM_URL;
+          console.log("Using fallback streamUrl:", fallbackUrl);
+          setStreamUrl(fallbackUrl);
         }
       } catch (error) {
         console.error("Failed to fetch camera stream URL:", error);
         // Fallback to env var if API fails
-        setStreamUrl(process.env.NEXT_PUBLIC_CAMERA_STREAM_URL);
+        const fallbackUrl = process.env.NEXT_PUBLIC_CAMERA_STREAM_URL;
+        console.log("Using fallback streamUrl after error:", fallbackUrl);
+        setStreamUrl(fallbackUrl);
       }
     };
     fetchStreamUrl();

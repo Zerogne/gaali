@@ -1575,37 +1575,53 @@ export const OutSessionForm = forwardRef<
         >
           {/* Form Content - Single Section Layout */}
           <div className="flex-1 min-h-0 overflow-auto flex justify-center p-4">
-            <Card className="p-4 w-full max-w-6xl">
-              {/* Camera Video Display - At the top, spanning full width */}
-              {streamUrl && (
-                <div className="mb-6 aspect-video bg-black rounded-lg overflow-hidden relative border-2 border-gray-200 shadow-lg">
-                  {streamUrl.endsWith(".mjpeg") || streamUrl.includes("mjpeg") || streamUrl.includes("stream") ? (
-                    <img 
-                      src={streamUrl}
-                      alt="Camera stream"
-                      className="w-full h-full object-contain"
-                      onError={(e) => {
-                        console.error("Failed to load camera stream:", streamUrl);
-                      }}
-                    />
-                  ) : streamUrl.includes("iframe") || streamUrl.includes(".htm") ? (
-                    <iframe
-                      src={streamUrl}
-                      className="w-full h-full border-0"
-                      allow="camera; microphone"
-                    />
+            <Card className="p-4 pb-8 w-full max-w-6xl min-h-[calc(100vh-4rem)]">
+              {/* Camera Video Display - At the top, 50% width with warning */}
+              <div className="mb-1 flex gap-4">
+                <div className="w-1/2 aspect-video bg-black rounded-lg overflow-hidden relative border-2 border-gray-200 shadow-lg flex items-center justify-center">
+                  {streamUrl ? (
+                    streamUrl.endsWith(".mjpeg") || streamUrl.includes("mjpeg") || streamUrl.includes("stream") ? (
+                      <img 
+                        src={streamUrl}
+                        alt="Camera stream"
+                        className="w-full h-full object-contain"
+                        onError={(e) => {
+                          console.error("Failed to load camera stream:", streamUrl);
+                        }}
+                      />
+                    ) : streamUrl.includes("iframe") || streamUrl.includes(".htm") ? (
+                      <iframe
+                        src={streamUrl}
+                        className="w-full h-full border-0"
+                        allow="camera; microphone"
+                      />
+                    ) : (
+                      <video
+                        src={streamUrl}
+                        autoPlay
+                        playsInline
+                        muted
+                        loop
+                        className="w-full h-full object-contain"
+                      />
+                    )
                   ) : (
-                    <video
-                      src={streamUrl}
-                      autoPlay
-                      playsInline
-                      muted
-                      loop
-                      className="w-full h-full object-contain"
-                    />
+                    <div className="text-white text-sm p-4 text-center">
+                      <p>Камерын дүрс холбогдохыг хүлээж байна...</p>
+                      <p className="text-xs text-gray-400 mt-2">
+                        Camera stream URL нь тохиргоонд байхгүй байна.
+                      </p>
+                    </div>
                   )}
                 </div>
-              )}
+                <div className="w-1/2 flex items-center">
+                  <div className="bg-blue-50 border border-blue-200 rounded p-4 h-full flex items-center aspect-video">
+                    <p className="text-gray-700 text-lg leading-relaxed">
+                      Камер ачааллахын тулд дэлгэцэн дээр байрлах <span className="text-[#0073c4]">Gaali Camera Bridge</span> программыг ажиллуулж байж дүрс гарах тул уг программыг эхлээд асаасан байх шаардлагатай.
+                    </p>
+                  </div>
+                </div>
+              </div>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-4">
                 {/* Plate Number */}
                 <div className="flex flex-col">
@@ -1634,7 +1650,7 @@ export const OutSessionForm = forwardRef<
                           onPlateChange?.(e.target.value);
                         }}
                         onFocus={() => cameraAutofill.trackTyping()}
-                      className="h-12 text-base font-mono font-semibold w-full bg-red-200"
+                      className="h-12 text-base font-mono font-semibold w-full bg-[#380ecf] text-white placeholder:text-white"
                         placeholder="1234ААА"
                         required
                       />
@@ -1666,7 +1682,7 @@ export const OutSessionForm = forwardRef<
                           outWeightKg: value,
                         }));
                       }}
-                      className="h-12 text-base w-full bg-green-50"
+                      className="h-12 text-base w-full bg-green-600 text-white placeholder:text-white [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none [-moz-appearance:textfield]"
                       placeholder="Жин оруулах (кг)"
                       required
                     />
@@ -1696,7 +1712,7 @@ export const OutSessionForm = forwardRef<
                         isLoadingTrailers ? "Уншиж байна..." : "Чиргүүл сонгох"
                       }
                       searchPlaceholder="Чиргүүлийн улсын дугаар хайх..."
-                      className="h-12"
+                      className="h-12 [&>button]:!bg-blue-400 [&>button]:!text-white [&>button]:!border-blue-400 [&>button>span]:!text-white [&>button>span.text-muted-foreground]:!text-white/90 [&>button:hover]:!bg-blue-400 [&>button:hover]:!border-blue-400"
                     />
                   </div>
                 </div>
@@ -1739,7 +1755,7 @@ export const OutSessionForm = forwardRef<
                             netWeightKg: newValue,
                           }));
                         }}
-                      className="h-12 text-base w-full bg-green-50"
+                      className="h-12 text-base w-full bg-green-600 text-white placeholder:text-white [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none [-moz-appearance:textfield]"
                         placeholder="Цэвэр жин (кг)"
                         required
                       />
@@ -2218,7 +2234,7 @@ export const OutSessionForm = forwardRef<
                         !formState.netWeightKg ||
                         isSaving
                       }
-                  className="bg-green-600 hover:bg-green-700 disabled:opacity-50 h-11 px-4 text-sm"
+                  className="bg-green-600 hover:bg-green-700 disabled:opacity-50 h-14 px-6 text-base"
                     >
                       {isSaving ? "Хадгалж байна..." : "Хадгалах"}
                     </Button>
