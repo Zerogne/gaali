@@ -1632,25 +1632,35 @@ export const OutSessionForm = forwardRef<
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-4">
-                {/* In Weight Input - Same width as other inputs */}
+                {/* Out Weight Input - Same width as other inputs with warning */}
                 <div className="flex flex-col md:col-span-3">
                   <div className="mb-1 min-h-[1.25rem] flex items-center">
                     <Label
-                      htmlFor="inWeightKg"
+                      htmlFor="outWeightKg"
                       className="text-base font-medium text-gray-700"
                     >
-                      Орох жин (кг)
+                      Гарах жин (кг) <span className="text-red-500">*</span>
                     </Label>
                   </div>
                   <div className="flex gap-2">
                     <div className="w-1/3">
                       <Input
-                        id="inWeightKg"
+                        id="outWeightKg"
                         type="number"
-                        value={inWeightKg ?? ""}
-                        readOnly
+                        value={formState.outWeightKg ?? ""}
+                        onChange={(e) => {
+                          const value =
+                            e.target.value === ""
+                              ? null
+                              : parseFloat(e.target.value);
+                          setFormState((prev) => ({
+                            ...prev,
+                            outWeightKg: value,
+                          }));
+                        }}
                         className="h-12 text-base w-full bg-green-600 text-white placeholder:text-white [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none [-moz-appearance:textfield]"
-                        placeholder="Орох жин (кг)"
+                        placeholder="Жин оруулах (кг)"
+                        required
                       />
                     </div>
                     <div className="w-2/3 flex items-center">
@@ -1697,34 +1707,24 @@ export const OutSessionForm = forwardRef<
                     </div>
                 </div>
 
-                {/* Out Weight Input */}
+                {/* In Weight Input */}
                 <div className="flex flex-col">
                   <div className="mb-1 min-h-[1.25rem] flex items-center">
                     <Label
-                      htmlFor="outWeightKg"
+                      htmlFor="inWeightKg"
                       className="text-base font-medium text-gray-700"
                     >
-                      Гарах жин (кг) <span className="text-red-500">*</span>
+                      Орох жин (кг)
                     </Label>
                   </div>
                   <div className="h-12">
                     <Input
-                      id="outWeightKg"
+                      id="inWeightKg"
                       type="number"
-                      value={formState.outWeightKg ?? ""}
-                      onChange={(e) => {
-                        const value =
-                          e.target.value === ""
-                            ? null
-                            : parseFloat(e.target.value);
-                        setFormState((prev) => ({
-                          ...prev,
-                          outWeightKg: value,
-                        }));
-                      }}
+                      value={inWeightKg ?? ""}
+                      readOnly
                       className="h-12 text-base w-full bg-green-600 text-white placeholder:text-white [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none [-moz-appearance:textfield]"
-                      placeholder="Жин оруулах (кг)"
-                      required
+                      placeholder="Орох жин (кг)"
                     />
                   </div>
                 </div>
