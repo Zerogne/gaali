@@ -72,3 +72,13 @@ export interface Contract {
   endDate?: string; // Дуусах огноо
   createdAt: string;
 }
+
+export type LocationType = "seller" | "buyer";
+
+export interface Location {
+  id: string;
+  locationName: string; // Байршил
+  companyName: string; // Компанийн нэр
+  type: LocationType; // "seller" (борлуулагч) or "buyer" (худалдан авагч)
+  createdAt: string;
+}

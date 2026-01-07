@@ -451,25 +451,28 @@ function generateLogHTML(
         .data-table {
           width: 100%;
           border-collapse: collapse;
-          margin-top: 10px;
-          font-size: 11px;
+          margin-top: 6px;
+          font-size: 9px;
           border: 1px solid rgb(156, 163, 175);
         }
         .data-table td {
-          padding: 8px 12px;
+          padding: 4px 6px;
           border: 1px solid rgb(156, 163, 175);
           vertical-align: middle;
           background-color: rgb(255, 255, 255);
+          line-height: 1.3;
         }
         .data-table .label-cell {
           font-weight: 600;
           text-align: left;
           white-space: nowrap;
           width: 22%;
+          padding: 4px 4px 4px 6px;
         }
         .data-table .value-cell {
           text-align: left;
           width: 13%;
+          padding: 4px 4px;
         }
         .data-table .weight-cell {
           text-align: right;

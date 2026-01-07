@@ -16,7 +16,7 @@ import { useToast } from "@/hooks/use-toast"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog"
 import { ScrollArea } from "@/components/ui/scroll-area"
-import type { TransportCompany, Organization, Driver } from "@/lib/types"
+import type { TransportCompany, Organization, Driver, Location } from "@/lib/types"
 import { DriverManager } from "@/components/drivers/DriverManager"
 import { findSimilarValue } from "@/lib/utils/string-similarity"
 import { AlertDialog, AlertDialogAction, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog"
@@ -52,6 +52,8 @@ export function TruckSection({ direction, onSave, onSend }: TruckSectionProps) {
   const [isLoadingOrganizations, setIsLoadingOrganizations] = useState(true)
   const [trailers, setTrailers] = useState<Array<{ id: string; plateNumber: string; ownerName: string; ownerId: string; ownerPhone: string }>>([])
   const [isLoadingTrailers, setIsLoadingTrailers] = useState(true)
+  const [locations, setLocations] = useState<Location[]>([])
+  const [isLoadingLocations, setIsLoadingLocations] = useState(true)
   const [duplicateDialogOpen, setDuplicateDialogOpen] = useState(false)
   const [duplicateValue, setDuplicateValue] = useState<string | null>(null)
 
@@ -143,6 +145,30 @@ export function TruckSection({ direction, onSave, onSend }: TruckSectionProps) {
     } finally {
       setIsLoadingTrailers(false)
     }
+
+    // Load locations (sellers and buyers)
+    try {
+      setIsLoadingLocations(true)
+      const [sellersResponse, buyersResponse] = await Promise.all([
+        fetch("/api/locations?type=seller"),
+        fetch("/api/locations?type=buyer")
+      ])
+      
+      const allLocations: Location[] = []
+      if (sellersResponse.ok) {
+        const sellersData = await sellersResponse.json()
+        allLocations.push(...sellersData)
+      }
+      if (buyersResponse.ok) {
+        const buyersData = await buyersResponse.json()
+        allLocations.push(...buyersData)
+      }
+      setLocations(allLocations)
+    } catch (error) {
+      console.error("Error loading locations:", error)
+    } finally {
+      setIsLoadingLocations(false)
+    }
   }
 
   // Load all data on mount
@@ -178,6 +204,15 @@ export function TruckSection({ direction, onSave, onSend }: TruckSectionProps) {
       label: `${driver.name}${driver.phone ? ` (${driver.phone})` : ""}`,
     })), 
     [drivers]
+  );
+
+  // Memoize location options to prevent infinite re-renders
+  const locationOptions = useMemo(() => 
+    locations.map((location) => ({
+      value: location.locationName,
+      label: `${location.locationName} - ${location.companyName}`,
+    })), 
+    [locations]
   );
 
   // Auto-calculate net weight for OUT direction
@@ -854,24 +889,32 @@ export function TruckSection({ direction, onSave, onSend }: TruckSectionProps) {
               <Label htmlFor={`origin-${direction}`} className="text-sm font-medium text-gray-700">
                 Хаанаас
               </Label>
-              <Input
-                id={`origin-${direction}`}
+              <FilterableSelect
+                options={locationOptions}
                 value={origin}
-                onChange={(e) => handleFieldChange(setOrigin, e.target.value)}
-                className="mt-2 bg-white border-gray-300 focus:border-blue-500 focus:ring-blue-500"
-                placeholder="Гарах газар"
+                onValueChange={(value) => {
+                  handleFieldChange(setOrigin, value)
+                }}
+                disabled={isLoadingLocations}
+                placeholder={isLoadingLocations ? "Уншиж байна..." : "Байршил сонгох"}
+                searchPlaceholder="Байршил хайх..."
+                className="mt-2"
               />
             </div>
             <div>
               <Label htmlFor={`destination-${direction}`} className="text-sm font-medium text-gray-700">
                 Хаашаа
               </Label>
-              <Input
-                id={`destination-${direction}`}
+              <FilterableSelect
+                options={locationOptions}
                 value={destination}
-                onChange={(e) => handleFieldChange(setDestination, e.target.value)}
-                className="mt-2 bg-white border-gray-300 focus:border-blue-500 focus:ring-blue-500"
-                placeholder="Очих газар"
+                onValueChange={(value) => {
+                  handleFieldChange(setDestination, value)
+                }}
+                disabled={isLoadingLocations}
+                placeholder={isLoadingLocations ? "Уншиж байна..." : "Байршил сонгох"}
+                searchPlaceholder="Байршил хайх..."
+                className="mt-2"
               />
             </div>
           </div>

@@ -19,6 +19,7 @@ import type {
   Organization,
   TransportCompany,
   TruckLog,
+  Location,
 } from "@/lib/types";
 import { ArrowRight, Camera, Send, Loader2 } from "lucide-react";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -184,6 +185,8 @@ export const InSessionForm = forwardRef<
     const [isLoadingOrganizations, setIsLoadingOrganizations] = useState(true);
     const [trailers, setTrailers] = useState<Array<{ id: string; plateNumber: string; ownerName: string; ownerId: string; ownerPhone: string }>>([]);
     const [isLoadingTrailers, setIsLoadingTrailers] = useState(true);
+    const [locations, setLocations] = useState<Location[]>([]);
+    const [isLoadingLocations, setIsLoadingLocations] = useState(true);
     const [isDriverDialogOpen, setIsDriverDialogOpen] = useState(false);
 
     const [formState, setFormState] = useState<InSessionFormState>({
@@ -342,6 +345,30 @@ export const InSessionForm = forwardRef<
       } finally {
         setIsLoadingTrailers(false);
       }
+
+      // Load locations (sellers and buyers)
+      try {
+        setIsLoadingLocations(true);
+        const [sellersResponse, buyersResponse] = await Promise.all([
+          fetch("/api/locations?type=seller"),
+          fetch("/api/locations?type=buyer")
+        ]);
+        
+        const allLocations: Location[] = [];
+        if (sellersResponse.ok) {
+          const sellersData = await sellersResponse.json();
+          allLocations.push(...sellersData);
+        }
+        if (buyersResponse.ok) {
+          const buyersData = await buyersResponse.json();
+          allLocations.push(...buyersData);
+        }
+        setLocations(allLocations);
+      } catch (error) {
+        console.error("Error loading locations:", error);
+      } finally {
+        setIsLoadingLocations(false);
+      }
     };
 
     useEffect(() => {
@@ -398,6 +425,14 @@ export const InSessionForm = forwardRef<
         label: `${t.plateNumber}${t.ownerName ? ` - ${t.ownerName}` : ""}`,
       })),
       [trailers]
+    );
+
+    const locationOptions = useMemo(
+      () => locations.map((location) => ({
+        value: location.locationName,
+        label: `${location.locationName} - ${location.companyName}`,
+      })),
+      [locations]
     );
 
     // Handle creating new items
@@ -1684,17 +1719,19 @@ export const InSessionForm = forwardRef<
                     </Label>
                   </div>
                   <div className="h-12">
-                    <Input
-                      id="origin"
+                    <FilterableSelect
+                      options={locationOptions}
                       value={formState.origin}
-                      onChange={(e) =>
+                      onValueChange={(value) =>
                         setFormState((prev) => ({
                           ...prev,
-                          origin: e.target.value,
+                          origin: value,
                         }))
                       }
+                      disabled={isLoadingLocations}
+                      placeholder={isLoadingLocations ? "Уншиж байна..." : "Байршил сонгох"}
+                      searchPlaceholder="Байршил хайх..."
                       className="h-12 text-lg w-full"
-                      placeholder="Гарах газар"
                     />
                   </div>
                 </div>
@@ -1710,17 +1747,19 @@ export const InSessionForm = forwardRef<
                     </Label>
                   </div>
                   <div className="h-12">
-                    <Input
-                      id="destination"
+                    <FilterableSelect
+                      options={locationOptions}
                       value={formState.destination}
-                      onChange={(e) =>
+                      onValueChange={(value) =>
                         setFormState((prev) => ({
                           ...prev,
-                          destination: e.target.value,
+                          destination: value,
                         }))
                       }
+                      disabled={isLoadingLocations}
+                      placeholder={isLoadingLocations ? "Уншиж байна..." : "Байршил сонгох"}
+                      searchPlaceholder="Байршил хайх..."
                       className="h-12 text-lg w-full"
-                      placeholder="Очих газар"
                     />
                   </div>
                 </div>
