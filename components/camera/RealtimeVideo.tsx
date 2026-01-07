@@ -161,8 +161,12 @@ export function RealtimeVideo({
       <div className="p-2 border-t border-gray-200">
         <Button
           onClick={handleActionClick}
-          className="w-full h-9 text-sm font-medium"
-          variant={direction === "IN" ? "default" : "outline"}
+          className={`w-full h-9 text-sm font-medium ${
+            direction === "OUT" 
+              ? "bg-green-500 text-white border-green-600 hover:bg-green-600" 
+              : ""
+          }`}
+          variant={direction === "IN" ? "default" : undefined}
         >
           {direction === "IN" ? "ОРОХ" : "ГАРАХ"}
         </Button>
