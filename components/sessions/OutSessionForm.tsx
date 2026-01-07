@@ -191,6 +191,7 @@ export const OutSessionForm = forwardRef<
     const [isLoadingTrailers, setIsLoadingTrailers] = useState(true);
     const [locations, setLocations] = useState<Location[]>([]);
     const [isLoadingLocations, setIsLoadingLocations] = useState(true);
+    const [inWeightKg, setInWeightKg] = useState<number | null>(null);
 
     const [formState, setFormState] = useState<OutSessionFormState>({
       plateNumber: "",
@@ -756,6 +757,9 @@ export const OutSessionForm = forwardRef<
                 inLog ? JSON.stringify(inLog, null, 2) : "No log"
               );
 
+              // Store IN weight for display
+              setInWeightKg(inSession.grossWeightKg || null);
+
               // Auto-fill all available data (only if fields are empty or not set)
               setFormState((prev) => {
                 const updates: Partial<OutSessionFormState> = {
@@ -1000,6 +1004,9 @@ export const OutSessionForm = forwardRef<
                 netWeightKg: netWeight,
               }));
 
+              // Store IN weight for display
+              setInWeightKg(inSession.grossWeightKg || null);
+
               console.log("📊 Net weight calculation:", {
                 inWeight,
                 outWeight,
@@ -1164,6 +1171,7 @@ export const OutSessionForm = forwardRef<
           });
 
           // Reset form
+          setInWeightKg(null);
           setFormState({
             plateNumber: "",
             driverId: "",
@@ -1575,7 +1583,7 @@ export const OutSessionForm = forwardRef<
         >
           {/* Form Content - Single Section Layout */}
           <div className="flex-1 min-h-0 overflow-auto flex justify-center p-4">
-            <Card className="p-4 pb-8 w-full max-w-6xl min-h-[calc(100vh-4rem)]">
+            <Card className="p-4 pb-8 w-full max-w-6xl min-h-screen">
               {/* Camera Video Display - At the top, 50% width with warning */}
               <div className="mb-1 flex gap-4">
                 <div className="w-1/2 aspect-video bg-black rounded-lg overflow-hidden relative border-2 border-gray-200 shadow-lg flex items-center justify-center">
@@ -1622,7 +1630,39 @@ export const OutSessionForm = forwardRef<
                   </div>
                 </div>
               </div>
+
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-4">
+                {/* In Weight Input - Same width as other inputs */}
+                <div className="flex flex-col md:col-span-3">
+                  <div className="mb-1 min-h-[1.25rem] flex items-center">
+                    <Label
+                      htmlFor="inWeightKg"
+                      className="text-base font-medium text-gray-700"
+                    >
+                      Орох жин (кг)
+                    </Label>
+                  </div>
+                  <div className="flex gap-2">
+                    <div className="w-1/3">
+                      <Input
+                        id="inWeightKg"
+                        type="number"
+                        value={inWeightKg ?? ""}
+                        readOnly
+                        className="h-12 text-base w-full bg-green-600 text-white placeholder:text-white [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none [-moz-appearance:textfield]"
+                        placeholder="Орох жин (кг)"
+                      />
+                    </div>
+                    <div className="w-2/3 flex items-center">
+                      <div className="bg-red-50 border border-red-300 rounded p-2 h-12 flex items-center w-full">
+                        <p className="text-red-600 text-xs leading-tight">
+                          Гараас өгөгдөл оруулах дохиололд Гаалийн газраас зөвшөөрөгдөөгүй тул анхаарна уу!
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
                 {/* Plate Number */}
                 <div className="flex flex-col">
                   <div className="mb-1 min-h-[1.25rem] flex items-center">
@@ -2043,6 +2083,15 @@ export const OutSessionForm = forwardRef<
                       className="text-base resize-none h-12 min-h-0 w-full"
                       placeholder="Нэмэлт мэдээлэл..."
                     />
+                  </div>
+                </div>
+
+                {/* Warning message under receiver organization - full width row */}
+                <div className="md:col-span-2 lg:col-span-3">
+                  <div className="bg-red-50 border border-red-300 rounded p-2 w-full">
+                    <p className="text-red-600 text-sm leading-tight">
+                      <span className="text-lg font-bold">"*"</span> Улаан одоор тэмдэглэгдсэн нүдний мэдээлэл Гаалын мэдээллийн санд өгөгдөл болон дамжуулагдах тул анхааралтай бөглөнө үү.
+                    </p>
                   </div>
                 </div>
               </div>
