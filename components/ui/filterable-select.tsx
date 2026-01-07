@@ -591,14 +591,20 @@ export function FilterableSelect({
           aria-expanded={open}
           disabled={disabled}
           className={cn(
-            "w-full justify-between bg-white border-gray-300 focus:border-blue-500 focus:ring-blue-500 h-10",
+            // Use input-like typography (Buttons default to font-medium which makes placeholders look bold)
+            "w-full justify-between bg-white border-gray-300 focus:border-blue-500 focus:ring-blue-500 h-10 font-normal",
             className
           )}
         >
-          <span className="truncate">
-            {selectedOption && selectedOption.label
-              ? selectedOption.label
-              : placeholder}
+          <span
+            className={cn(
+              "truncate font-normal",
+              selectedOption && selectedOption.label
+                ? "text-base"
+                : "text-sm text-muted-foreground"
+            )}
+          >
+            {selectedOption && selectedOption.label ? selectedOption.label : placeholder}
           </span>
           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>

@@ -2,7 +2,6 @@
 
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Checkbox } from "@/components/ui/checkbox";
 import { FilterableSelect } from "@/components/ui/filterable-select";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -1020,6 +1019,7 @@ export const InSessionForm = forwardRef<
             if (org) receiverOrgName = org.name;
           }
 
+          const hasTrailer = !!formState.trailerNumber.trim();
           const updateData = {
             plate: formState.plateNumber.trim().toUpperCase(),
             driverId: formState.driverId || undefined,
@@ -1034,11 +1034,10 @@ export const InSessionForm = forwardRef<
               formState.receiverOrganizationId || undefined,
             receiverOrganization: receiverOrgName || undefined,
             weightKg: formState.grossWeightKg || undefined,
-            hasTrailer: formState.hasTrailer || undefined,
-            trailerPlate:
-              formState.hasTrailer && formState.trailerNumber.trim()
-                ? formState.trailerNumber.trim().toUpperCase()
-                : undefined,
+            hasTrailer: hasTrailer || undefined,
+            trailerPlate: hasTrailer
+              ? formState.trailerNumber.trim().toUpperCase()
+              : undefined,
             comments: formState.notes.trim() || undefined,
           };
 
@@ -1451,34 +1450,43 @@ export const InSessionForm = forwardRef<
           {/* Form Content - Single Section Layout */}
           <div className="flex-1 min-h-0 overflow-auto flex justify-center p-4">
             <Card className="p-4 w-full max-w-6xl">
-              {/* Camera Video Display - At the top, spanning full width */}
+              {/* Camera Video Display - At the top, 50% width with warning */}
               {streamUrl && (
-                <div className="mb-6 aspect-video bg-black rounded-lg overflow-hidden relative border-2 border-gray-200 shadow-lg">
-                  {streamUrl.endsWith(".mjpeg") || streamUrl.includes("mjpeg") || streamUrl.includes("stream") ? (
-                    <img 
-                      src={streamUrl}
-                      alt="Camera stream"
-                      className="w-full h-full object-contain"
-                      onError={(e) => {
-                        console.error("Failed to load camera stream:", streamUrl);
-                      }}
-                    />
-                  ) : streamUrl.includes("iframe") || streamUrl.includes(".htm") ? (
-                    <iframe
-                      src={streamUrl}
-                      className="w-full h-full border-0"
-                      allow="camera; microphone"
-                    />
-                  ) : (
-                    <video
-                      src={streamUrl}
-                      autoPlay
-                      playsInline
-                      muted
-                      loop
-                      className="w-full h-full object-contain"
-                    />
-                  )}
+                <div className="mb-6 flex gap-4">
+                  <div className="w-1/2 aspect-video bg-black rounded-lg overflow-hidden relative border-2 border-gray-200 shadow-lg">
+                    {streamUrl.endsWith(".mjpeg") || streamUrl.includes("mjpeg") || streamUrl.includes("stream") ? (
+                      <img 
+                        src={streamUrl}
+                        alt="Camera stream"
+                        className="w-full h-full object-contain"
+                        onError={(e) => {
+                          console.error("Failed to load camera stream:", streamUrl);
+                        }}
+                      />
+                    ) : streamUrl.includes("iframe") || streamUrl.includes(".htm") ? (
+                      <iframe
+                        src={streamUrl}
+                        className="w-full h-full border-0"
+                        allow="camera; microphone"
+                      />
+                    ) : (
+                      <video
+                        src={streamUrl}
+                        autoPlay
+                        playsInline
+                        muted
+                        loop
+                        className="w-full h-full object-contain"
+                      />
+                    )}
+                  </div>
+                  <div className="w-1/2 flex items-center">
+                    <div className="bg-red-50 border border-red-300 rounded p-2">
+                      <p className="text-red-600 text-xs leading-tight">
+                        Камера ачааллахын тулд дэлгэцэн дээр байрлах Gaali Camera Bridge программыг ажиллуулж байж дүрс гарах тул уг программыг эхлээд асаасан байх шаардлагатай.
+                      </p>
+                    </div>
+                  </div>
                 </div>
               )}
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-4">
@@ -1515,89 +1523,79 @@ export const InSessionForm = forwardRef<
                         onPlateChange?.(e.target.value);
                       }}
                       onFocus={() => cameraAutofill.trackTyping()}
-                      className="h-12 text-lg font-mono font-semibold w-full"
+                      className="h-12 text-base font-mono font-semibold w-full bg-red-200"
                       placeholder="1234ААА"
                       required
                     />
                   </div>
                 </div>
 
-                {/* Weight Input */}
-                <div className="flex flex-col">
+                {/* Weight Input - decreased width with warning beside it - spans 2 columns to push trailer to next row */}
+                <div className="flex flex-col md:col-span-2">
                   <div className="mb-1 min-h-[1.25rem] flex items-center">
                     <Label
                       htmlFor="grossWeightKg"
                       className="text-base font-medium text-gray-700"
                     >
-                      Бүрэн жин (кг) <span className="text-red-500">*</span>
+                      Орох жин (кг) <span className="text-red-500">*</span>
                     </Label>
                   </div>
-                  <div className="h-12">
-                    <Input
-                      id="grossWeightKg"
-                      type="number"
-                      value={formState.grossWeightKg ?? ""}
-                      onChange={(e) => {
-                        const value =
-                          e.target.value === ""
-                            ? null
-                            : parseFloat(e.target.value);
-                        setFormState((prev) => ({
-                          ...prev,
-                          grossWeightKg: value,
-                        }));
-                      }}
-                      className="h-12 text-lg w-full"
-                      placeholder="Жин оруулах (кг)"
-                      required
-                    />
+                  <div className="flex gap-2 h-12">
+                    <div className="w-1/2">
+                      <Input
+                        id="grossWeightKg"
+                        type="number"
+                        value={formState.grossWeightKg ?? ""}
+                        onChange={(e) => {
+                          const value =
+                            e.target.value === ""
+                              ? null
+                              : parseFloat(e.target.value);
+                          setFormState((prev) => ({
+                            ...prev,
+                            grossWeightKg: value,
+                          }));
+                        }}
+                        className="h-12 text-base w-full bg-green-50"
+                        placeholder="Жин оруулах (кг)"
+                        required
+                      />
+                    </div>
+                    <div className="w-1/2 flex items-center">
+                      <div className="bg-red-50 border border-red-300 rounded p-2 h-full flex items-center">
+                        <p className="text-red-600 text-xs leading-tight">
+                          Гараас өгөгдөл оруулах дохиололд гаалийн газраас зөвшөөрөгдөөгүй тул анхаарна уу.
+                        </p>
+                      </div>
+                    </div>
                   </div>
                 </div>
 
-                {/* Trailer Checkbox and Input */}
+                {/* Trailer - Now on next row */}
                 <div className="flex flex-col">
                   <div className="mb-1 min-h-[1.25rem] flex items-center">
                     <Label className="text-base font-medium text-gray-700">
                       Чиргүүл
                     </Label>
                   </div>
-                  <div className="h-12 flex items-center gap-2">
-                    <label className="flex items-center gap-2 shrink-0 cursor-pointer">
-                      <Checkbox
-                        id="hasTrailer"
-                        checked={formState.hasTrailer}
-                        onCheckedChange={(checked) => {
-                          const isChecked = checked === true;
-                          setFormState((prev) => ({
-                            ...prev,
-                            hasTrailer: isChecked,
-                            trailerNumber:
-                              isChecked && !prev.trailerNumber
-                                ? prev.plateNumber
-                                : prev.trailerNumber,
-                          }));
-                        }}
-                      />
-                      <span className="text-base font-medium text-gray-700 leading-none">
-                        Чиргүүлтэй
-                      </span>
-                    </label>
-                    {formState.hasTrailer && (
-                      <FilterableSelect
-                        options={trailerOptions}
-                        value={formState.trailerNumber}
-                        onValueChange={(value) =>
-                          setFormState((prev) => ({
-                            ...prev,
-                            trailerNumber: value,
-                          }))
-                        }
-                        disabled={isLoadingTrailers}
-                        placeholder={isLoadingTrailers ? "Уншиж байна..." : "Чиргүүл сонгох"}
-                        searchPlaceholder="Чиргүүлийн улсын дугаар хайх..."
-                        className="flex-1"
-                      />
-                    )}
+                  <div className="h-12">
+                    <FilterableSelect
+                      options={trailerOptions}
+                      value={formState.trailerNumber}
+                      onValueChange={(value) =>
+                        setFormState((prev) => ({
+                          ...prev,
+                          trailerNumber: value,
+                          hasTrailer: !!value.trim(),
+                        }))
+                      }
+                      disabled={isLoadingTrailers}
+                      placeholder={
+                        isLoadingTrailers ? "Уншиж байна..." : "Чиргүүл сонгох"
+                      }
+                      searchPlaceholder="Чиргүүлийн улсын дугаар хайх..."
+                      className="h-12 bg-pink-200"
+                    />
                   </div>
                 </div>
 
@@ -1731,7 +1729,7 @@ export const InSessionForm = forwardRef<
                       disabled={isLoadingLocations}
                       placeholder={isLoadingLocations ? "Уншиж байна..." : "Байршил сонгох"}
                       searchPlaceholder="Байршил хайх..."
-                      className="h-12 text-lg w-full"
+                      className="h-12 text-base w-full"
                     />
                   </div>
                 </div>
@@ -1759,7 +1757,7 @@ export const InSessionForm = forwardRef<
                       disabled={isLoadingLocations}
                       placeholder={isLoadingLocations ? "Уншиж байна..." : "Байршил сонгох"}
                       searchPlaceholder="Байршил хайх..."
-                      className="h-12 text-lg w-full"
+                      className="h-12 text-base w-full"
                     />
                   </div>
                 </div>
@@ -1832,9 +1830,9 @@ export const InSessionForm = forwardRef<
                   </div>
                 </div>
 
-                {/* Notes - Wider, Reduced Height */}
-                <div className="md:col-span-2 flex flex-col">
-                  <div className="mb-1 min-h-[1.25rem] flex items-center">
+                {/* Notes - Next to Receiver Organization */}
+                <div className="flex flex-col">
+                  <div className="mb-1 min-h-[1.25rem] flex items-center width-full">
                     <Label
                       htmlFor="notes"
                       className="text-base font-medium text-gray-700"
@@ -1842,7 +1840,7 @@ export const InSessionForm = forwardRef<
                       Нэмэлт мэдээлэл
                     </Label>
                   </div>
-                  <div>
+                  <div className="h-12">
                     <Textarea
                       id="notes"
                       value={formState.notes}
@@ -1852,40 +1850,25 @@ export const InSessionForm = forwardRef<
                           notes: e.target.value,
                         }))
                       }
-                      className="text-base resize-y h-20 w-full"
+                      // Textarea has a default `min-h-16` in the shared component, so we must override it here.
+                      className="text-base resize-none h-12 min-h-0 w-full"
                       placeholder="Нэмэлт мэдээлэл..."
                     />
+                  </div>
+                </div>
+
+                {/* Warning message under receiver organization - full width row */}
+                <div className="md:col-span-2 lg:col-span-3">
+                  <div className="bg-red-50 border border-red-300 rounded p-2 max-w-md">
+                    <p className="text-red-600 text-xs leading-tight">
+                      Улаан одоор тэмдэглэгдсэн нүдний мэдээлэл гаалид өгөгдөл болон дамжуулагдах тул анхааралтай бөглөнө үү.
+                    </p>
                   </div>
                 </div>
               </div>
 
               {/* Action Buttons */}
               <div className="flex items-center justify-center gap-2 mt-3 pt-3 border-t border-gray-200">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => {
-                    setFormState({
-                      plateNumber: "",
-                      driverId: "",
-                      driverName: "",
-                      productId: "",
-                      transporterCompanyId: "",
-                      origin: "",
-                      destination: "",
-                      senderOrganizationId: "",
-                      receiverOrganizationId: "",
-                      inTime: new Date().toISOString().slice(0, 16),
-                      grossWeightKg: null,
-                      hasTrailer: false,
-                      trailerNumber: "",
-                      notes: "",
-                    });
-                  }}
-                  className="h-12 px-5 text-base"
-                >
-                  Цэвэрлэх
-                </Button>
                 {editLog && !editLog.sentToCustoms && (
                   <Button
                     type="button"

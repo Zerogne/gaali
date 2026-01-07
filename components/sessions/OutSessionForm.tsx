@@ -2,7 +2,6 @@
 
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Checkbox } from "@/components/ui/checkbox";
 import { FilterableSelect } from "@/components/ui/filterable-select";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -1125,6 +1124,7 @@ export const OutSessionForm = forwardRef<
             if (org) receiverOrgName = org.name;
           }
 
+          const hasTrailer = !!formState.trailerNumber.trim();
           const updateData = {
             plate: formState.plateNumber.trim().toUpperCase(),
             driverId: formState.driverId || undefined,
@@ -1144,11 +1144,10 @@ export const OutSessionForm = forwardRef<
               formState.netWeightKg !== undefined
                 ? formState.netWeightKg
                 : undefined,
-            hasTrailer: formState.hasTrailer || undefined,
-            trailerPlate:
-              formState.hasTrailer && formState.trailerNumber.trim()
-                ? formState.trailerNumber.trim().toUpperCase()
-                : undefined,
+            hasTrailer: hasTrailer || undefined,
+            trailerPlate: hasTrailer
+              ? formState.trailerNumber.trim().toUpperCase()
+              : undefined,
             sealNumber: formState.sealNumber.trim() || undefined,
             comments: formState.notes.trim() || undefined,
           };
@@ -1195,6 +1194,7 @@ export const OutSessionForm = forwardRef<
           onOutTimeChange(saveTime);
         }
 
+        const hasTrailer = !!formState.trailerNumber.trim();
         const requestData = {
           direction: "OUT",
           plateNumber: formState.plateNumber.trim().toUpperCase(),
@@ -1217,8 +1217,8 @@ export const OutSessionForm = forwardRef<
             : undefined,
           outTime: saveTime,
           sealNumber: formState.sealNumber.trim() || undefined,
-          hasTrailer: formState.hasTrailer || undefined,
-          trailerNumber: formState.trailerNumber.trim() || undefined,
+          hasTrailer: hasTrailer || undefined,
+          trailerNumber: hasTrailer ? formState.trailerNumber.trim() : undefined,
           notes: formState.notes.trim() || undefined,
         };
 
@@ -1634,7 +1634,7 @@ export const OutSessionForm = forwardRef<
                           onPlateChange?.(e.target.value);
                         }}
                         onFocus={() => cameraAutofill.trackTyping()}
-                      className="h-12 text-lg font-mono font-semibold w-full"
+                      className="h-12 text-base font-mono font-semibold w-full bg-red-200"
                         placeholder="1234ААА"
                         required
                       />
@@ -1666,58 +1666,39 @@ export const OutSessionForm = forwardRef<
                           outWeightKg: value,
                         }));
                       }}
-                      className="h-12 text-lg w-full"
+                      className="h-12 text-base w-full bg-green-50"
                       placeholder="Жин оруулах (кг)"
                       required
                     />
                   </div>
                 </div>
 
-                {/* Trailer Checkbox and Input */}
+                {/* Trailer */}
                 <div className="flex flex-col">
                   <div className="mb-1 min-h-[1.25rem] flex items-center">
                     <Label className="text-base font-medium text-gray-700">
                       Чиргүүл
                     </Label>
                   </div>
-                  <div className="h-12 flex items-center gap-2">
-                    <label className="flex items-center gap-2 shrink-0 cursor-pointer">
-                      <Checkbox
-                        id="hasTrailer"
-                        checked={formState.hasTrailer}
-                        onCheckedChange={(checked) => {
-                          const isChecked = checked === true;
-                          setFormState((prev) => ({
-                            ...prev,
-                            hasTrailer: isChecked,
-                            trailerNumber:
-                              isChecked && !prev.trailerNumber
-                                ? prev.plateNumber
-                                : prev.trailerNumber,
-                          }));
-                        }}
-                      />
-                      <span className="text-base font-medium text-gray-700 leading-none">
-                        Чиргүүлтэй
-                      </span>
-                    </label>
-                      {formState.hasTrailer && (
-                        <FilterableSelect
-                          options={trailerOptions}
-                          value={formState.trailerNumber}
-                          onValueChange={(value) =>
-                            setFormState((prev) => ({
-                              ...prev,
-                              trailerNumber: value,
-                            }))
-                          }
-                          disabled={isLoadingTrailers}
-                          placeholder={isLoadingTrailers ? "Уншиж байна..." : "Чиргүүл сонгох"}
-                          searchPlaceholder="Чиргүүлийн улсын дугаар хайх..."
-                          className="flex-1"
-                        />
-                      )}
-                    </div>
+                  <div className="h-12">
+                    <FilterableSelect
+                      options={trailerOptions}
+                      value={formState.trailerNumber}
+                      onValueChange={(value) =>
+                        setFormState((prev) => ({
+                          ...prev,
+                          trailerNumber: value,
+                          hasTrailer: !!value.trim(),
+                        }))
+                      }
+                      disabled={isLoadingTrailers}
+                      placeholder={
+                        isLoadingTrailers ? "Уншиж байна..." : "Чиргүүл сонгох"
+                      }
+                      searchPlaceholder="Чиргүүлийн улсын дугаар хайх..."
+                      className="h-12"
+                    />
+                  </div>
                 </div>
 
                 {/* Net Weight Input */}
@@ -1758,7 +1739,7 @@ export const OutSessionForm = forwardRef<
                             netWeightKg: newValue,
                           }));
                         }}
-                      className="h-12 text-lg w-full"
+                      className="h-12 text-base w-full bg-green-50"
                         placeholder="Цэвэр жин (кг)"
                         required
                       />
@@ -1785,7 +1766,7 @@ export const OutSessionForm = forwardRef<
                           sealNumber: e.target.value,
                         }))
                       }
-                      className="h-12 text-lg w-full"
+                      className="h-12 text-base w-full"
                       placeholder="Лацны дугаар оруулах"
                     />
                   </div>
@@ -1921,7 +1902,7 @@ export const OutSessionForm = forwardRef<
                         disabled={isLoadingLocations}
                         placeholder={isLoadingLocations ? "Уншиж байна..." : "Байршил сонгох"}
                         searchPlaceholder="Байршил хайх..."
-                        className="h-12 text-lg w-full"
+                        className="h-12 text-base w-full"
                       />
                     </div>
                 </div>
@@ -1949,7 +1930,7 @@ export const OutSessionForm = forwardRef<
                         disabled={isLoadingLocations}
                         placeholder={isLoadingLocations ? "Уншиж байна..." : "Байршил сонгох"}
                         searchPlaceholder="Байршил хайх..."
-                        className="h-12 text-lg w-full"
+                        className="h-12 text-base w-full"
                       />
                     </div>
                     </div>
@@ -2032,7 +2013,7 @@ export const OutSessionForm = forwardRef<
                       Нэмэлт мэдээлэл
                     </Label>
                   </div>
-                  <div>
+                  <div className="h-12">
                     <Textarea
                       id="notes"
                       value={formState.notes}
@@ -2042,7 +2023,8 @@ export const OutSessionForm = forwardRef<
                           notes: e.target.value,
                         }))
                       }
-                      className="text-base resize-y h-20 w-full"
+                      // Textarea has a default `min-h-16` in the shared component, so we must override it here.
+                      className="text-base resize-none h-12 min-h-0 w-full"
                       placeholder="Нэмэлт мэдээлэл..."
                     />
                   </div>
@@ -2051,34 +2033,6 @@ export const OutSessionForm = forwardRef<
 
               {/* Action Buttons */}
               <div className="flex items-center justify-center gap-2 mt-3 pt-3 border-t border-gray-200">
-                    <Button
-                      type="button"
-                      variant="outline"
-                      onClick={() => {
-                        setFormState({
-                          plateNumber: "",
-                          driverId: "",
-                          driverName: "",
-                          productId: "",
-                          transporterCompanyId: "",
-                          origin: "",
-                          destination: "",
-                          senderOrganizationId: "",
-                          receiverOrganizationId: "",
-                          outTime: new Date().toISOString().slice(0, 16),
-                          outWeightKg: null,
-                          netWeightKg: null,
-                          sealNumber: "",
-                          hasTrailer: false,
-                          trailerNumber: "",
-                          notes: "",
-                          inSessionId: undefined,
-                        });
-                      }}
-                  className="h-12 px-5 text-base"
-                    >
-                      Цэвэрлэх
-                    </Button>
                     <Button
                       type="button"
                       variant="outline"
@@ -2268,14 +2222,7 @@ export const OutSessionForm = forwardRef<
                     >
                       {isSaving ? "Хадгалж байна..." : "Хадгалах"}
                     </Button>
-                    <Button
-                      type="button"
-                      onClick={() => router.push("/in-session")}
-                  className="bg-blue-600 hover:bg-blue-700 h-11 px-4 text-sm"
-                    >
-                      ОРОХ бүртгэл
-                  <ArrowRight className="h-5 w-5 ml-2" />
-                    </Button>
+                    
                   </div>
                 </Card>
           </div>
