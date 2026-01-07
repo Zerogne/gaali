@@ -1,0 +1,6 @@
+{
+  "git.autoRepositoryDetection": true,
+  "git.detectSubmodules": false,
+  "git.enableSmartCommit": true,
+  "git.useEditorAsCommitInput": true
+}

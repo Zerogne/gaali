@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>WebSocket Connection Test</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 800px;
+      margin: 50px auto;
+      padding: 20px;
+      background: #f5f5f5;
+    }
+    .container {
+      background: white;
+      padding: 30px;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    h1 {
+      color: #333;
+      margin-bottom: 10px;
+    }
+    .subtitle {
+      color: #666;
+      margin-bottom: 30px;
+    }
+    .status {
+      padding: 15px;
+      margin: 20px 0;
+      border-radius: 4px;
+      font-weight: bold;
+      text-align: center;
+    }
+    .status.connected {
+      background: #d4edda;
+      color: #155724;
+      border: 1px solid #c3e6cb;
+    }
+    .status.disconnected {
+      background: #f8d7da;
+      color: #721c24;
+      border: 1px solid #f5c6cb;
+    }
+    .status.connecting {
+      background: #d1ecf1;
+      color: #0c5460;
+      border: 1px solid #bee5eb;
+    }
+    .button-group {
+      display: flex;
+      gap: 10px;
+      margin: 20px 0;
+      justify-content: center;
+    }
+    button {
+      padding: 12px 24px;
+      background: #007bff;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 16px;
+      font-weight: 500;
+      transition: background 0.2s;
+    }
+    button:hover {
+      background: #0056b3;
+    }
+    button:disabled {
+      background: #ccc;
+      cursor: not-allowed;
+    }
+    button.secondary {
+      background: #28a745;
+    }
+    button.secondary:hover {
+      background: #218838;
+    }
+    #log {
+      background: #f8f9fa;
+      border: 1px solid #dee2e6;
+      border-radius: 4px;
+      padding: 15px;
+      margin-top: 20px;
+      max-height: 400px;
+      overflow-y: auto;
+      font-family: monospace;
+      font-size: 12px;
+    }
+    .log-entry {
+      margin: 5px 0;
+      padding: 5px;
+      border-left: 3px solid #007bff;
+      padding-left: 10px;
+    }
+    .log-entry.error {
+      border-left-color: #dc3545;
+      color: #dc3545;
+    }
+    .log-entry.success {
+      border-left-color: #28a745;
+      color: #28a745;
+    }
+    .sample-data-preview {
+      background: #f9f9f9;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      padding: 15px;
+      margin: 20px 0;
+      font-family: monospace;
+      font-size: 12px;
+      max-height: 300px;
+      overflow-y: auto;
+    }
+    .info-box {
+      background: #e7f3ff;
+      border: 1px solid #b3d9ff;
+      border-radius: 4px;
+      padding: 15px;
+      margin: 20px 0;
+      color: #004085;
+    }
+    .info-box strong {
+      display: block;
+      margin-bottom: 5px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>WebSocket Connection Test</h1>
+    <p class="subtitle">Test connection to 3rd party app WebSocket server</p>
+    
+    <div class="info-box">
+      <strong>WebSocket URL:</strong>
+      <code>ws://127.0.0.1:9000/service</code>
+    </div>
+    
+    <div class="button-group">
+      <button id="connectBtn" onclick="connect()">Connect</button>
+      <button id="sendSampleBtn" onclick="sendSampleData()" disabled class="secondary">Send Sample Data</button>
+    </div>
+    
+    <div id="status" class="status disconnected">Disconnected</div>
+
+    <div class="sample-data-preview">
+      <strong>Sample Data to Send:</strong>
+      <div style="margin-bottom: 10px; padding: 10px; background: #fff3cd; border: 1px solid #ffc107; border-radius: 4px;">
+        <strong>🔑 Пүүний актын дугаар (AKT):</strong> <code id="aktNumberDisplay" style="font-size: 14px; font-weight: bold; color: #856404;"></code>
+        <p style="margin: 5px 0 0 0; font-size: 11px; color: #856404;">
+          Формат: [Гаалийн код 6 орон][Огноо YYYYMMDD 8 орон][Дарааллын дугаар 6 орон]
+        </p>
+        <p style="margin: 5px 0 0 0; font-size: 11px; color: #856404;">
+          Дараагийн удаа илгээхэд шинэ актын дугаар үүсгэгдэнэ. Актын дугаар нь өдөр бүр дарааллаар нэмэгддэг.
+        </p>
+      </div>
+      <pre id="sampleDataPreview"></pre>
+    </div>
+    
+    <div>
+      <h3>Connection Log:</h3>
+      <div id="log"></div>
+    </div>
+  </div>
+
+  <script>
+    let ws = null;
+    const statusEl = document.getElementById('status');
+    const logEl = document.getElementById('log');
+    const connectBtn = document.getElementById('connectBtn');
+    const sendSampleBtn = document.getElementById('sendSampleBtn');
+    const wsUrl = 'ws://127.0.0.1:9000/service';
+
+    // Store sequential number per day (resets when date changes)
+    let sequentialNumber = 1;
+    let lastDate = new Date().toISOString().slice(0, 10);
+
+    // Generate customs act number (AKT) in format: {companyPrefix}{date}{sequentialNumber}
+    // Format: 312025121700009 (15 digits total)
+    // - 31: Company-specific prefix (2 digits)
+    // - 20251217: Date YYYYMMDD (8 digits)
+    // - 00009: Sequential number for that day (5 digits)
+    function generateActNumber() {
+      const companyPrefix = "31"; // Company-specific prefix
+      const now = new Date();
+      const dateStr = now.toISOString().slice(0, 10).replace(/-/g, ""); // YYYYMMDD
+      
+      // Check if date changed, reset sequential number if so
+      const currentDate = now.toISOString().slice(0, 10);
+      if (currentDate !== lastDate) {
+        lastDate = currentDate;
+        sequentialNumber = 1;
+      }
+      
+      const seqNum = String(sequentialNumber).padStart(5, '0');
+      const actNumber = `${companyPrefix}${dateStr}${seqNum}`;
+      
+      // Increment for next call
+      sequentialNumber += 1;
+      
+      return actNumber;
+    }
+
+    // Generate sample data - matches exact requirements
+    function generateSampleData() {
+      const randomNum = Math.floor(Math.random() * 10000);
+      const year = new Date().getFullYear();
+      const month = String(new Date().getMonth() + 1).padStart(2, '0');
+      
+      // Generate act number
+      const aktNumber = generateActNumber();
+      
+      // Generate sample data - exact format as specified
+      // Only AKT (unique code) changes for each request
+      return [
+        {
+          "AKT": aktNumber,
+          "CAR": "МӨНХ ШИЖИР АЛТ ХХК",
+          "CMN": "",
+          "CON": "AHO/2025/0730",
+          "CT1": "",
+          "DRN": "Н.БАТТОГТОХ ИЮ84070575 88844805",
+          "LPC": "ПАТРИКЕЙН ХХК",
+          "NET": 27400,
+          "SLN": "ZW0345457-ZW0345469",
+          "TRL": "3590AP",
+          "UPC": "Erlian",
+          "VNO": "3590ДГА",
+          "WGT": 43100
+      }
+    ];
+    }
+
+    // Generate initial sample data
+    let sampleData = generateSampleData();
+
+    // Update display function
+    function updateSampleDataDisplay() {
+      document.getElementById('sampleDataPreview').textContent = JSON.stringify(sampleData, null, 2);
+      document.getElementById('aktNumberDisplay').textContent = sampleData[0].AKT;
+    }
+
+    // Display sample data on load
+    updateSampleDataDisplay();
+
+    function log(message, type = 'info') {
+      const entry = document.createElement('div');
+      entry.className = `log-entry ${type}`;
+      const timestamp = new Date().toLocaleTimeString();
+      entry.textContent = `[${timestamp}] ${message}`;
+      logEl.appendChild(entry);
+      logEl.scrollTop = logEl.scrollHeight;
+      console.log(message);
+    }
+
+    function updateStatus(status, message) {
+      statusEl.className = `status ${status}`;
+      statusEl.textContent = message;
+    }
+
+    function connect() {
+      log(`Attempting to connect to: ${wsUrl}`, 'info');
+      updateStatus('connecting', 'Connecting...');
+      connectBtn.disabled = true;
+
+      try {
+        ws = new WebSocket(wsUrl);
+
+        ws.onopen = () => {
+          log('✅ WebSocket connected successfully!', 'success');
+          updateStatus('connected', 'Connected');
+          connectBtn.disabled = true;
+          sendSampleBtn.disabled = false;
+        };
+
+        ws.onmessage = (event) => {
+          log('═══════════════════════════════════════════════════════', 'success');
+          log('📥 MESSAGE RECEIVED FROM 3RD PARTY APP!', 'success');
+          log('═══════════════════════════════════════════════════════', 'success');
+          log(`📥 Response: ${event.data}`, 'success');
+          log('✅ This confirms the 3rd party app received your data', 'success');
+        };
+
+        ws.onerror = (error) => {
+          log(`❌ WebSocket error: ${error}`, 'error');
+          updateStatus('disconnected', 'Connection Error');
+        };
+
+        ws.onclose = (event) => {
+          log(`⚠️ WebSocket closed. Code: ${event.code}, Reason: ${event.reason || 'No reason provided'}`, 'error');
+          updateStatus('disconnected', 'Disconnected');
+          connectBtn.disabled = false;
+          sendSampleBtn.disabled = true;
+          ws = null;
+        };
+      } catch (error) {
+        log(`❌ Failed to create WebSocket: ${error.message}`, 'error');
+        updateStatus('disconnected', 'Connection Failed');
+        connectBtn.disabled = false;
+      }
+    }
+
+    async function sendSampleData() {
+      if (!ws || ws.readyState !== WebSocket.OPEN) {
+        log('❌ WebSocket is not connected. Current state: ' + (ws ? ws.readyState : 'null'), 'error');
+        log('❌ WebSocket states: CONNECTING=0, OPEN=1, CLOSING=2, CLOSED=3', 'error');
+        return;
+      }
+
+      try {
+        // Step 1: Generate new sample data with new act number each time
+        sampleData = generateSampleData();
+        updateSampleDataDisplay();
+
+      const jsonData = JSON.stringify(sampleData, null, 2);
+      
+      log('═══════════════════════════════════════════════════════', 'info');
+        log('📤 3-Р ТАЛЫН АПП РУУ ТЕСТ ӨГӨГДӨЛ ИЛГЭЭЖ БАЙНА', 'info');
+      log('═══════════════════════════════════════════════════════', 'info');
+        log(`🔑 Пүүний актын дугаар (AKT): ${sampleData[0].AKT}`, 'info');
+        log(`📦 Өгөгдлийн хэмжээ: ${jsonData.length} байт`, 'info');
+        log('📋 JSON өгөгдөл:', 'info');
+      log(jsonData, 'info');
+
+        // Step 2: Save data to file-like storage
+        log('💾 Өгөгдөл файлд хадгалж байна...', 'info');
+        const appBaseUrl = window.location.origin;
+        
+        const saveResponse = await fetch(`${appBaseUrl}/api/third-party/save`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            uniqueCode: sampleData[0].AKT, // Use AKT as unique code
+            data: sampleData,
+          }),
+        });
+
+        if (!saveResponse.ok) {
+          const errorData = await saveResponse.json().catch(() => ({}));
+          throw new Error(errorData.error || `Файл хадгалахад алдаа гарлаа: ${saveResponse.statusText}`);
+        }
+
+        const saveResult = await saveResponse.json();
+        const fileUrl = saveResult.url;
+        const uniqueCode = saveResult.code;
+        const dataBaseUrl = `${appBaseUrl}/api/third-party/data`;
+
+        log('✅ Өгөгдөл файлд амжилттай хадгалагдлаа', 'success');
+        log(`🔑 Уникал код: ${uniqueCode}`, 'info');
+        log(`📁 Файлын URL: ${fileUrl}`, 'info');
+        log(`📁 Base URL (3-р талын апп-д тохируулах): ${dataBaseUrl}`, 'info');
+
+        // Step 3: Send full URL via WebSocket (3rd party app expects URL string)
+        // The 3rd party app will fetch data from this URL and can forward to another site
+        const dataUrl = `${dataBaseUrl}/${uniqueCode}`;
+        log('📤 URL-г WebSocket-оор илгээж байна...', 'info');
+        log(`🔑 Уникал код: ${uniqueCode}`, 'info');
+        log(`📁 Бүтэн URL: ${dataUrl}`, 'info');
+        log(`💡 3-р талын апп энэ URL-аас өгөгдөл татна`, 'info');
+        log(`💡 3-р талын апп өгөгдлийг өөр сайт руу дамжуулна`, 'info');
+        
+        // Verify connection one more time
+        if (ws.readyState !== WebSocket.OPEN) {
+          log('❌ ERROR: WebSocket closed before send! State: ' + ws.readyState, 'error');
+          return;
+        }
+        
+        // Send the full URL (3rd party app expects URL string, will fetch and can forward)
+        ws.send(dataUrl);
+        
+        log('═══════════════════════════════════════════════════════', 'success');
+        log('✅ URL АМЖИЛТТАЙ ИЛГЭЭГДЛЭЭ!', 'success');
+        log('═══════════════════════════════════════════════════════', 'success');
+        log(`✅ Илгээсэн URL: ${dataUrl}`, 'success');
+        log(`✅ Пүүний актын дугаар: ${sampleData[0].AKT}`, 'success');
+        log(`🔑 Уникал код: ${uniqueCode}`, 'info');
+        log(`💡 3-р талын апп энэ URL-аас өгөгдөл татна`, 'info');
+        log(`💡 3-р талын апп өгөгдлийг өөр сайт руу дамжуулна`, 'info');
+        
+        // Check connection after a short delay
+        setTimeout(() => {
+          if (ws && ws.readyState === WebSocket.OPEN) {
+            log('✅ WebSocket still connected after send', 'success');
+          } else {
+            log('⚠️ WebSocket closed after send. State: ' + (ws ? ws.readyState : 'null'), 'error');
+          }
+        }, 100);
+        
+      } catch (error) {
+        log('═══════════════════════════════════════════════════════', 'error');
+        log('❌ ERROR SENDING DATA', 'error');
+        log('═══════════════════════════════════════════════════════', 'error');
+        log(`❌ Error: ${error.message}`, 'error');
+        log(`❌ Error type: ${error.name}`, 'error');
+        if (error.stack) {
+          log(`❌ Stack: ${error.stack}`, 'error');
+        }
+      }
+    }
+
+    // Initialize on page load
+    window.addEventListener('load', () => {
+      log('WebSocket Test Page Loaded', 'info');
+      log('Click "Connect" to establish WebSocket connection', 'info');
+      log('Then click "Send Sample Data" to send test data', 'info');
+    });
+  </script>
+</body>
+</html>
