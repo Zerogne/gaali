@@ -20,7 +20,7 @@ import type {
   TruckLog,
   Location,
 } from "@/lib/types";
-import { ArrowRight, Camera, Send, Loader2 } from "lucide-react";
+import { Camera, Send, Loader2 } from "lucide-react";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useRouter } from "next/navigation";
 import {
@@ -1449,12 +1449,12 @@ export const InSessionForm = forwardRef<
         >
           {/* Form Content - Single Section Layout */}
           <div className="flex-1 min-h-0 overflow-auto flex justify-center p-4">
-            <Card className="p-4 w-full max-w-6xl">
+            <Card className="p-4 pb-8 w-full max-w-6xl min-h-[calc(100vh-4rem)]">
               {/* Camera Video Display - At the top, 50% width with warning */}
-              {streamUrl && (
-                <div className="mb-6 flex gap-4">
-                  <div className="w-1/2 aspect-video bg-black rounded-lg overflow-hidden relative border-2 border-gray-200 shadow-lg">
-                    {streamUrl.endsWith(".mjpeg") || streamUrl.includes("mjpeg") || streamUrl.includes("stream") ? (
+              <div className="mb-1 flex gap-4">
+                <div className="w-1/2 aspect-video bg-black rounded-lg overflow-hidden relative border-2 border-gray-200 shadow-lg flex items-center justify-center">
+                  {streamUrl ? (
+                    streamUrl.endsWith(".mjpeg") || streamUrl.includes("mjpeg") || streamUrl.includes("stream") ? (
                       <img 
                         src={streamUrl}
                         alt="Camera stream"
@@ -1478,17 +1478,24 @@ export const InSessionForm = forwardRef<
                         loop
                         className="w-full h-full object-contain"
                       />
-                    )}
-                  </div>
-                  <div className="w-1/2 flex items-center">
-                    <div className="bg-red-50 border border-red-300 rounded p-2">
-                      <p className="text-red-600 text-xs leading-tight">
-                        Камера ачааллахын тулд дэлгэцэн дээр байрлах Gaali Camera Bridge программыг ажиллуулж байж дүрс гарах тул уг программыг эхлээд асаасан байх шаардлагатай.
+                    )
+                  ) : (
+                    <div className="text-white text-sm p-4 text-center">
+                      <p>Камерын дүрс холбогдохыг хүлээж байна...</p>
+                      <p className="text-xs text-gray-400 mt-2">
+                        Camera stream URL нь тохиргоонд байхгүй байна.
                       </p>
                     </div>
+                  )}
+                </div>
+                <div className="w-1/2 flex items-center">
+                  <div className="bg-red-50 border border-red-300 rounded p-4 h-full flex items-center aspect-video">
+                    <p className="text-red-600 text-lg leading-relaxed">
+                      Камер ачааллахын тулд дэлгэцэн дээр байрлах Gaali Camera Bridge программыг ажиллуулж байж дүрс гарах тул уг программыг эхлээд асаасан байх шаардлагатай.
+                    </p>
                   </div>
                 </div>
-              )}
+              </div>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-4">
                 {/* Standardized FormField Wrapper Pattern:
                     - Label area: fixed height (h-5) with mb-1
@@ -1523,7 +1530,7 @@ export const InSessionForm = forwardRef<
                         onPlateChange?.(e.target.value);
                       }}
                       onFocus={() => cameraAutofill.trackTyping()}
-                      className="h-12 text-base font-mono font-semibold w-full bg-red-200"
+                      className="h-12 text-base font-mono font-semibold w-full bg-purple-200"
                       placeholder="1234ААА"
                       required
                     />
@@ -1556,7 +1563,7 @@ export const InSessionForm = forwardRef<
                             grossWeightKg: value,
                           }));
                         }}
-                        className="h-12 text-base w-full bg-green-50"
+                        className="h-12 text-base w-full bg-green-200"
                         placeholder="Жин оруулах (кг)"
                         required
                       />
@@ -1564,7 +1571,7 @@ export const InSessionForm = forwardRef<
                     <div className="w-1/2 flex items-center">
                       <div className="bg-red-50 border border-red-300 rounded p-2 h-full flex items-center">
                         <p className="text-red-600 text-xs leading-tight">
-                          Гараас өгөгдөл оруулах дохиололд гаалийн газраас зөвшөөрөгдөөгүй тул анхаарна уу.
+                          Гараас өгөгдөл оруулах дохиололд Гаалийн газраас зөвшөөрөгдөөгүй тул анхаарна уу!
                         </p>
                       </div>
                     </div>
@@ -1594,7 +1601,7 @@ export const InSessionForm = forwardRef<
                         isLoadingTrailers ? "Уншиж байна..." : "Чиргүүл сонгох"
                       }
                       searchPlaceholder="Чиргүүлийн улсын дугаар хайх..."
-                      className="h-12 bg-pink-200"
+                      className="h-12 bg-blue-200"
                     />
                   </div>
                 </div>
@@ -1859,16 +1866,16 @@ export const InSessionForm = forwardRef<
 
                 {/* Warning message under receiver organization - full width row */}
                 <div className="md:col-span-2 lg:col-span-3">
-                  <div className="bg-red-50 border border-red-300 rounded p-2 max-w-md">
-                    <p className="text-red-600 text-xs leading-tight">
-                      Улаан одоор тэмдэглэгдсэн нүдний мэдээлэл гаалид өгөгдөл болон дамжуулагдах тул анхааралтай бөглөнө үү.
+                  <div className="bg-red-50 border border-red-300 rounded p-2 w-full">
+                    <p className="text-red-600 text-sm leading-tight">
+                      <span className="text-lg font-bold">"*"</span> Улаан одоор тэмдэглэгдсэн нүдний мэдээлэл Гаалын мэдээллийн санд өгөгдөл болон дамжуулагдах тул анхааралтай бөглөнө үү.
                     </p>
                   </div>
                 </div>
               </div>
 
               {/* Action Buttons */}
-              <div className="flex items-center justify-center gap-2 mt-3 pt-3 border-t border-gray-200">
+              <div className="flex items-center justify-end gap-2 mt-3 pt-3 border-t border-gray-200">
                 {editLog && !editLog.sentToCustoms && (
                   <Button
                     type="button"
@@ -1924,23 +1931,6 @@ export const InSessionForm = forwardRef<
                   className="bg-green-600 hover:bg-green-700 h-11 px-4 text-sm"
                 >
                   {isSaving ? "Хадгалж байна..." : "Хадгалах"}
-                </Button>
-                <Button
-                  type="button"
-                  onClick={() => {
-                    // Store destination value for out-session auto-fill
-                    if (formState.destination.trim()) {
-                      localStorage.setItem(
-                        "inSessionDestination",
-                        formState.destination.trim()
-                      );
-                    }
-                    router.push("/out-session");
-                  }}
-                  className="bg-blue-600 hover:bg-blue-700 h-11 px-4 text-sm"
-                >
-                  ГАРАХ бүртгэл
-                  <ArrowRight className="h-5 w-5 ml-2" />
                 </Button>
               </div>
             </Card>
