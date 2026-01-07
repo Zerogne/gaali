@@ -163,7 +163,7 @@ export function RealtimeVideo({
           onClick={handleActionClick}
           className={`w-full h-9 text-sm font-medium ${
             direction === "OUT" 
-              ? "bg-green-500 text-white border-green-600 hover:bg-green-600" 
+              ? "bg-green-600 hover:bg-green-700 text-white" 
               : ""
           }`}
           variant={direction === "IN" ? "default" : undefined}

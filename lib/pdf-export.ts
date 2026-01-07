@@ -453,11 +453,11 @@ function generateLogHTML(
           border-collapse: collapse;
           margin-top: 10px;
           font-size: 11px;
-          border: 1px solid rgb(0, 0, 0);
+          border: 1px solid rgb(156, 163, 175);
         }
         .data-table td {
           padding: 8px 12px;
-          border: 1px solid rgb(0, 0, 0);
+          border: 1px solid rgb(156, 163, 175);
           vertical-align: middle;
           background-color: rgb(255, 255, 255);
         }
@@ -476,7 +476,7 @@ function generateLogHTML(
           font-weight: 500;
         }
         .data-table .empty-cell {
-          border: 1px solid rgb(0, 0, 0);
+          border: 1px solid rgb(156, 163, 175);
         }
       </style>
     </head>

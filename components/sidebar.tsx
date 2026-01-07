@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Truck, Settings, LayoutDashboard, LogOut, User, Package, Building2, Car, FileText } from "lucide-react"
+import { Truck, Settings, LayoutDashboard, LogOut, User, Package, Building2, Car, FileText, ArrowRight, ArrowLeft } from "lucide-react"
 import { cn } from "@/lib/utils"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
@@ -94,7 +94,58 @@ export function Sidebar() {
 
       <nav className="flex-1 p-4 overflow-y-auto">
         <ul className="space-y-2">
-          {menuItems.map((item) => {
+          {/* Dashboard */}
+          {menuItems.slice(0, 1).map((item) => {
+            const Icon = item.icon
+            const isActive = pathname === item.href
+            return (
+              <li key={item.label}>
+                <Link
+                  href={item.href}
+                  className={cn(
+                    "flex items-center gap-3 px-3 py-2 rounded-lg transition-colors text-sm",
+                    isActive
+                      ? "bg-sidebar-accent text-sidebar-accent-foreground font-medium"
+                      : "text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground",
+                  )}
+                >
+                  <Icon className="w-5 h-5" />
+                  {item.label}
+                </Link>
+              </li>
+            )
+          })}
+          {/* Орох and Гарах buttons */}
+          <li>
+            <Link
+              href="/in-session"
+              className={cn(
+                "flex items-center gap-3 px-3 py-2 rounded-lg transition-colors text-sm",
+                pathname === "/in-session"
+                  ? "bg-sidebar-accent text-sidebar-accent-foreground font-medium"
+                  : "text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground",
+              )}
+            >
+              <ArrowRight className="w-5 h-5" />
+              Орох
+            </Link>
+          </li>
+          <li>
+            <Link
+              href="/out-session"
+              className={cn(
+                "flex items-center gap-3 px-3 py-2 rounded-lg transition-colors text-sm",
+                pathname === "/out-session"
+                  ? "bg-sidebar-accent text-sidebar-accent-foreground font-medium"
+                  : "text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground",
+              )}
+            >
+              <ArrowLeft className="w-5 h-5" />
+              Гарах
+            </Link>
+          </li>
+          {/* Rest of menu items */}
+          {menuItems.slice(1).map((item) => {
             const Icon = item.icon
             const isActive = pathname === item.href
             return (
