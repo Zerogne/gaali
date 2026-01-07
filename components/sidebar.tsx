@@ -16,12 +16,12 @@ import { handleLogout } from "@/lib/auth/logoutClient"
 
 const menuItems = [
   { icon: LayoutDashboard, label: "Нүүр", href: "/" },
-  { icon: Package, label: "Бүтээгдэхүүн", href: "/products" },
-  { icon: Truck, label: "Тээврийн компани", href: "/companies" },
   { icon: Car, label: "Тээврийн хэрэгсэл", href: "/vehicles" },
+  { icon: FileText, label: "Гадаад худалдааны гэрээ", href: "/contracts" },
+  { icon: Building2, label: "Тээвэрлэгч байгууллага", href: "/organizations" },
   { icon: User, label: "Жолооч", href: "/drivers" },
-  { icon: Building2, label: "Тээврийн байгууллага", href: "/organizations" },
   { icon: FileText, label: "Тайлан", href: "/reports" },
+  { icon: Package, label: "Бүтээгдэхүүн", href: "/products" },
   { icon: Settings, label: "Тохиргоо", href: "/settings" },
 ]
 

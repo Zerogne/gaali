@@ -45,7 +45,7 @@ export async function POST(request: Request) {
     let transportCompanyName: string | undefined = undefined
     if (body.transporterCompanyId) {
       try {
-        const transportCompaniesCollection = await getCompanyCollection<TransportCompany>(companyId, "transport_companies")
+        const transportCompaniesCollection = await getCompanyCollection<TransportCompany>(companyId, "transportCompanies")
         const transportCompany = await transportCompaniesCollection.findOne({ id: body.transporterCompanyId })
         transportCompanyName = transportCompany?.name || undefined
       } catch (error) {
