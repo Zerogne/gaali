@@ -214,7 +214,7 @@ wss.on("connection", (ws, req) => {
       } else {
         // Try alternative parsing
         const pathParts = urlPath.split("/").filter(p => p && p !== "video");
-        if (pathParts.length > 0) {
+      if (pathParts.length > 0) {
           cameraId = pathParts[0];
         }
       }
@@ -265,12 +265,12 @@ wss.on("connection", (ws, req) => {
   
   // Send connection confirmation immediately
   try {
-    ws.send(JSON.stringify({
-      type: "connected",
-      cameraId,
-      message: "Video stream connected",
+  ws.send(JSON.stringify({
+    type: "connected",
+    cameraId,
+    message: "Video stream connected",
       timestamp: new Date().toISOString(),
-    }));
+  }));
     console.log(`✅ Sent connection confirmation to client for ${cameraId}`);
   } catch (err) {
     console.error(`❌ Error sending connection confirmation:`, err);

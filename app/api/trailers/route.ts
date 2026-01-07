@@ -46,11 +46,32 @@ export async function POST(request: Request) {
     const companyId = session.companyId
     const trailersCollection = await getCompanyCollection(companyId, "trailers")
     const body = await request.json()
-    const { plateNumber, trailerType, make, model, year, notes } = body
+    const { plateNumber, ownerName, ownerId, ownerPhone } = body
 
     if (!plateNumber || typeof plateNumber !== "string" || !plateNumber.trim()) {
       return NextResponse.json(
-        { error: "Улсын дугаар (Plate number) is required" },
+        { error: "Чиргүүлийн улсын дугаар (Plate number) is required" },
+        { status: 400 }
+      )
+    }
+
+    if (!ownerName || typeof ownerName !== "string" || !ownerName.trim()) {
+      return NextResponse.json(
+        { error: "Эзэмшлийн нэр (Owner name) is required" },
+        { status: 400 }
+      )
+    }
+
+    if (!ownerId || typeof ownerId !== "string" || !ownerId.trim()) {
+      return NextResponse.json(
+        { error: "Эзэмшлийн регистер (Owner registration) is required" },
+        { status: 400 }
+      )
+    }
+
+    if (!ownerPhone || typeof ownerPhone !== "string" || !ownerPhone.trim()) {
+      return NextResponse.json(
+        { error: "Эзэмшлийн утасны дугаар (Owner phone) is required" },
         { status: 400 }
       )
     }
@@ -67,11 +88,9 @@ export async function POST(request: Request) {
     const newTrailer = {
       id: `trailer_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
       plateNumber: plateNumber.trim().toUpperCase(),
-      trailerType: trailerType?.trim() || undefined,
-      make: make?.trim() || undefined,
-      model: model?.trim() || undefined,
-      year: year ? parseInt(year) : undefined,
-      notes: notes?.trim() || undefined,
+      ownerName: ownerName.trim(),
+      ownerId: ownerId.trim(),
+      ownerPhone: ownerPhone.trim(),
       createdAt: new Date().toISOString(),
     }
 
