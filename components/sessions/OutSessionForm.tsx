@@ -1541,6 +1541,36 @@ export const OutSessionForm = forwardRef<
           {/* Form Content - Single Section Layout */}
           <div className="flex-1 min-h-0 overflow-auto flex justify-center p-4">
             <Card className="p-4 w-full max-w-6xl">
+              {/* Camera Video Display - At the top, spanning full width */}
+              {streamUrl && (
+                <div className="mb-6 aspect-video bg-black rounded-lg overflow-hidden relative border-2 border-gray-200 shadow-lg">
+                  {streamUrl.endsWith(".mjpeg") || streamUrl.includes("mjpeg") || streamUrl.includes("stream") ? (
+                    <img 
+                      src={streamUrl}
+                      alt="Camera stream"
+                      className="w-full h-full object-contain"
+                      onError={(e) => {
+                        console.error("Failed to load camera stream:", streamUrl);
+                      }}
+                    />
+                  ) : streamUrl.includes("iframe") || streamUrl.includes(".htm") ? (
+                    <iframe
+                      src={streamUrl}
+                      className="w-full h-full border-0"
+                      allow="camera; microphone"
+                    />
+                  ) : (
+                    <video
+                      src={streamUrl}
+                      autoPlay
+                      playsInline
+                      muted
+                      loop
+                      className="w-full h-full object-contain"
+                    />
+                  )}
+                </div>
+              )}
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-4">
                 {/* Plate Number */}
                 <div className="flex flex-col">
@@ -1552,36 +1582,6 @@ export const OutSessionForm = forwardRef<
                         Улсын дугаар <span className="text-red-500">*</span>
                       </Label>
                   </div>
-                  {/* Camera Video Display */}
-                  {streamUrl && (
-                    <div className="mb-4 aspect-video bg-black rounded-lg overflow-hidden relative border-2 border-gray-200">
-                      {streamUrl.endsWith(".mjpeg") || streamUrl.includes("mjpeg") || streamUrl.includes("stream") ? (
-                        <img 
-                          src={streamUrl}
-                          alt="Camera stream"
-                          className="w-full h-full object-contain"
-                          onError={(e) => {
-                            console.error("Failed to load camera stream:", streamUrl);
-                          }}
-                        />
-                      ) : streamUrl.includes("iframe") || streamUrl.includes(".htm") ? (
-                        <iframe
-                          src={streamUrl}
-                          className="w-full h-full border-0"
-                          allow="camera; microphone"
-                        />
-                      ) : (
-                        <video
-                          src={streamUrl}
-                          autoPlay
-                          playsInline
-                          muted
-                          loop
-                          className="w-full h-full object-contain"
-                        />
-                      )}
-                    </div>
-                  )}
                   <div className="h-12">
                       <Input
                         ref={setPlateInputRef}
