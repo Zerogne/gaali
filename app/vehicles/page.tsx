@@ -516,7 +516,7 @@ export default function VehiclesPage() {
                     id="dialog-plateNumber"
                     value={vehicleData.plateNumber}
                     onChange={(e) => setVehicleData({ ...vehicleData, plateNumber: e.target.value.toUpperCase() })}
-                    placeholder="УБ1234"
+                    placeholder="1234ААА"
                     className="font-mono"
                   />
                 </div>

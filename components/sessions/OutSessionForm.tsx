@@ -1600,7 +1600,7 @@ export const OutSessionForm = forwardRef<
                         }}
                         onFocus={() => cameraAutofill.trackTyping()}
                       className="h-12 text-lg font-mono font-semibold w-full"
-                        placeholder="УБ1234"
+                        placeholder="1234ААА"
                         required
                       />
                     </div>

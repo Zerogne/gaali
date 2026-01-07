@@ -332,7 +332,7 @@ export function EditLogDialog({
                   value={plate}
                   onChange={(e) => setPlate(e.target.value)}
                   className="h-10 text-sm font-mono font-semibold"
-                  placeholder="УБ1234"
+                  placeholder="1234ААА"
                   required
                 />
                 {errors.plate && (
@@ -502,7 +502,7 @@ export function EditLogDialog({
                       value={trailerPlate}
                       onChange={(e) => setTrailerPlate(e.target.value)}
                       className="h-10 text-sm font-mono flex-1 max-w-[200px]"
-                      placeholder="УБ1234"
+                      placeholder="1234ААА"
                     />
                   )}
                 </div>

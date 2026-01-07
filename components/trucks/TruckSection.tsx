@@ -56,7 +56,7 @@ export function TruckSection({ direction, onSave, onSend }: TruckSectionProps) {
   const [duplicateValue, setDuplicateValue] = useState<string | null>(null)
 
   // Form state
-  const [plate, setPlate] = useState("Б1234АВ")
+  const [plate, setPlate] = useState("1234БАВ")
   const [driverId, setDriverId] = useState<string>("")
   const [driverName, setDriverName] = useState("") // Fallback for manual entry
   const [cargoType, setCargoType] = useState("")
@@ -630,7 +630,7 @@ export function TruckSection({ direction, onSave, onSend }: TruckSectionProps) {
         setSealNumber("")
         setHasTrailer(false)
         setTrailerPlate("")
-        setPlate("Б1234АВ")
+        setPlate("1234БАВ")
         setIsDialogOpen(false)
       } else {
         toast({

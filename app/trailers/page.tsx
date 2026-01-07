@@ -507,7 +507,7 @@ export default function TrailersPage() {
                     id="trailer-dialog-plateNumber"
                     value={trailerData.plateNumber}
                     onChange={(e) => setTrailerData({ ...trailerData, plateNumber: e.target.value.toUpperCase() })}
-                    placeholder="УБ1234"
+                    placeholder="1234ААА"
                     className="font-mono"
                   />
                 </div>
