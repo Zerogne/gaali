@@ -21,8 +21,8 @@ const menuItems = [
   { icon: Building2, label: "Тээвэрлэгч байгууллага", href: "/organizations" },
   { icon: Truck, label: "Чиргүүл", href: "/trailers" },
   { icon: User, label: "Жолооч", href: "/drivers" },
-  { icon: FileText, label: "Тайлан", href: "/reports" },
   { icon: Package, label: "Бүтээгдэхүүн", href: "/products" },
+  { icon: FileText, label: "Тайлан", href: "/reports" },
   { icon: Settings, label: "Тохиргоо", href: "/settings" },
 ]
 
