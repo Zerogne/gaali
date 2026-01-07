@@ -79,7 +79,7 @@ export default function TrailersPage() {
     if (!trailerData.ownerName.trim()) {
       toast({
         title: "Алдаа",
-        description: "Эзэмшлийн нэр оруулах шаардлагатай",
+        description: "Эзэмшигчийн нэр оруулах шаардлагатай",
         variant: "destructive",
       });
       return;
@@ -88,7 +88,7 @@ export default function TrailersPage() {
     if (!trailerData.ownerId.trim()) {
       toast({
         title: "Алдаа",
-        description: "Эзэмшлийн регистер оруулах шаардлагатай",
+        description: "Эзэмшигчийн регистер оруулах шаардлагатай",
         variant: "destructive",
       });
       return;
@@ -97,7 +97,7 @@ export default function TrailersPage() {
     if (!trailerData.ownerPhone.trim()) {
       toast({
         title: "Алдаа",
-        description: "Эзэмшлийн утасны дугаар оруулах шаардлагатай",
+        description: "Эзэмшигчийн утасны дугаар оруулах шаардлагатай",
         variant: "destructive",
       });
       return;
@@ -148,7 +148,7 @@ export default function TrailersPage() {
     if (!trailerData.ownerName.trim()) {
       toast({
         title: "Алдаа",
-        description: "Эзэмшлийн нэр оруулах шаардлагатай",
+        description: "Эзэмшигчийн нэр оруулах шаардлагатай",
         variant: "destructive",
       });
       return;
@@ -157,7 +157,7 @@ export default function TrailersPage() {
     if (!trailerData.ownerId.trim()) {
       toast({
         title: "Алдаа",
-        description: "Эзэмшлийн регистер оруулах шаардлагатай",
+        description: "Эзэмшигчийн регистер оруулах шаардлагатай",
         variant: "destructive",
       });
       return;
@@ -166,7 +166,7 @@ export default function TrailersPage() {
     if (!trailerData.ownerPhone.trim()) {
       toast({
         title: "Алдаа",
-        description: "Эзэмшлийн утасны дугаар оруулах шаардлагатай",
+        description: "Эзэмшигчийн утасны дугаар оруулах шаардлагатай",
         variant: "destructive",
       });
       return;
@@ -315,7 +315,7 @@ export default function TrailersPage() {
                   <Input
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    placeholder="Улсын дугаар, эзэмшлийн нэр, регистер, утасны дугаараар хайх..."
+                    placeholder="Улсын дугаар, эзэмшигчийн нэр, регистер, утасны дугаараар хайх..."
                     className="pl-10"
                   />
                   {searchQuery && (
@@ -355,7 +355,7 @@ export default function TrailersPage() {
                     <TableHeader>
                       <TableRow>
                         <TableHead>Улсын дугаар</TableHead>
-                        <TableHead>Эзэмшлийн нэр</TableHead>
+                        <TableHead>Эзэмшигчийн нэр</TableHead>
                         <TableHead>Регистер</TableHead>
                         <TableHead>Утасны дугаар</TableHead>
                         <TableHead className="w-[120px]"></TableHead>
@@ -460,7 +460,7 @@ export default function TrailersPage() {
                     <p className="mt-1 text-sm font-mono font-semibold">{selectedTrailer.plateNumber}</p>
                   </div>
                   <div>
-                    <Label className="text-sm font-semibold">Эзэмшлийн нэр:</Label>
+                    <Label className="text-sm font-semibold">Эзэмшигчийн нэр:</Label>
                     <p className="mt-1 text-sm">{selectedTrailer.ownerName}</p>
                   </div>
                   <div>
@@ -512,16 +512,16 @@ export default function TrailersPage() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="trailer-dialog-ownerName">Эзэмшлийн нэр *</Label>
+                  <Label htmlFor="trailer-dialog-ownerName">Эзэмшигчийн нэр *</Label>
                   <Input
                     id="trailer-dialog-ownerName"
                     value={trailerData.ownerName}
                     onChange={(e) => setTrailerData({ ...trailerData, ownerName: e.target.value })}
-                    placeholder="Эзэмшлийн нэр оруулах"
+                    placeholder="Эзэмшигчийн нэр оруулах"
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="trailer-dialog-ownerId">Эзэмшлийн регистер *</Label>
+                  <Label htmlFor="trailer-dialog-ownerId">Эзэмшигчийн регистер *</Label>
                   <Input
                     id="trailer-dialog-ownerId"
                     value={trailerData.ownerId}
@@ -530,7 +530,7 @@ export default function TrailersPage() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="trailer-dialog-ownerPhone">Эзэмшлийн утасны дугаар *</Label>
+                  <Label htmlFor="trailer-dialog-ownerPhone">Эзэмшигчийн утасны дугаар *</Label>
                   <Input
                     id="trailer-dialog-ownerPhone"
                     value={trailerData.ownerPhone}

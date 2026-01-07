@@ -37,21 +37,21 @@ export async function PUT(
 
     if (!ownerName || typeof ownerName !== "string" || !ownerName.trim()) {
       return NextResponse.json(
-        { error: "Эзэмшлийн нэр (Owner name) is required" },
+        { error: "Эзэмшигчийн нэр (Owner name) is required" },
         { status: 400 }
       )
     }
 
     if (!ownerId || typeof ownerId !== "string" || !ownerId.trim()) {
       return NextResponse.json(
-        { error: "Эзэмшлийн регистер (Owner registration) is required" },
+        { error: "Эзэмшигчийн регистер (Owner registration) is required" },
         { status: 400 }
       )
     }
 
     if (!ownerPhone || typeof ownerPhone !== "string" || !ownerPhone.trim()) {
       return NextResponse.json(
-        { error: "Эзэмшлийн утасны дугаар (Owner phone) is required" },
+        { error: "Эзэмшигчийн утасны дугаар (Owner phone) is required" },
         { status: 400 }
       )
     }
