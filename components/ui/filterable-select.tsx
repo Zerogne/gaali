@@ -582,6 +582,9 @@ export function FilterableSelect({
     }
   }, []);
 
+  // Check if custom background is provided in className
+  const hasCustomBg = className?.includes("[&>button]:bg-") || className?.includes("[&>button]:!bg-");
+
   return (
     <Popover open={open} onOpenChange={handleOpenChange}>
       <PopoverTrigger asChild>
@@ -592,7 +595,9 @@ export function FilterableSelect({
           disabled={disabled}
           className={cn(
             // Use input-like typography (Buttons default to font-medium which makes placeholders look bold)
-            "w-full justify-between bg-white border-gray-300 focus:border-blue-500 focus:ring-blue-500 h-10 font-normal",
+            "w-full justify-between border-gray-300 focus:border-blue-500 focus:ring-blue-500 h-10 font-normal",
+            // Only apply bg-white if no custom background is provided
+            !hasCustomBg && "bg-white",
             className
           )}
         >

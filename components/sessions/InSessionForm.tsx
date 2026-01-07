@@ -1601,7 +1601,7 @@ export const InSessionForm = forwardRef<
                         isLoadingTrailers ? "Уншиж байна..." : "Чиргүүл сонгох"
                       }
                       searchPlaceholder="Чиргүүлийн улсын дугаар хайх..."
-                      className="h-12 bg-blue-200"
+                      className="h-12 bg-blue-400 text-white placeholder:text-white"
                     />
                   </div>
                 </div>
@@ -1928,7 +1928,7 @@ export const InSessionForm = forwardRef<
                   type="submit"
                   onClick={handleSubmit}
                   disabled={isSaving}
-                  className="bg-green-600 hover:bg-green-700 h-12 px-6 text-base"
+                  className="bg-green-600 hover:bg-green-700 h-14 px-6 text-base"
                 >
                   {isSaving ? "Хадгалж байна..." : "Хадгалах"}
                 </Button>
