@@ -1489,9 +1489,9 @@ export const InSessionForm = forwardRef<
                   )}
                 </div>
                 <div className="w-1/2 flex items-center">
-                  <div className="bg-red-50 border border-red-300 rounded p-4 h-full flex items-center aspect-video">
-                    <p className="text-red-600 text-lg leading-relaxed">
-                      Камер ачааллахын тулд дэлгэцэн дээр байрлах Gaali Camera Bridge программыг ажиллуулж байж дүрс гарах тул уг программыг эхлээд асаасан байх шаардлагатай.
+                  <div className="bg-blue-50 border border-blue-200 rounded p-4 h-full flex items-center aspect-video">
+                    <p className="text-gray-700 text-lg leading-relaxed">
+                      Камер ачааллахын тулд дэлгэцэн дээр байрлах <span className="text-[#0073c4]">Gaali Camera Bridge</span> программыг ажиллуулж байж дүрс гарах тул уг программыг эхлээд асаасан байх шаардлагатай.
                     </p>
                   </div>
                 </div>
@@ -1530,7 +1530,7 @@ export const InSessionForm = forwardRef<
                         onPlateChange?.(e.target.value);
                       }}
                       onFocus={() => cameraAutofill.trackTyping()}
-                      className="h-12 text-base font-mono font-semibold w-full bg-purple-200"
+                      className="h-12 text-base font-mono font-semibold w-full bg-[#380ecf] text-white placeholder:text-white"
                       placeholder="1234ААА"
                       required
                     />
@@ -1563,7 +1563,7 @@ export const InSessionForm = forwardRef<
                             grossWeightKg: value,
                           }));
                         }}
-                        className="h-12 text-base w-full bg-green-200"
+                        className="h-12 text-base w-full bg-green-600 text-white placeholder:text-white [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none [-moz-appearance:textfield]"
                         placeholder="Жин оруулах (кг)"
                         required
                       />
@@ -1928,7 +1928,7 @@ export const InSessionForm = forwardRef<
                   type="submit"
                   onClick={handleSubmit}
                   disabled={isSaving}
-                  className="bg-green-600 hover:bg-green-700 h-11 px-4 text-sm"
+                  className="bg-green-600 hover:bg-green-700 h-12 px-6 text-base"
                 >
                   {isSaving ? "Хадгалж байна..." : "Хадгалах"}
                 </Button>
