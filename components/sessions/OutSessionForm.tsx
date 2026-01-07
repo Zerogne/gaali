@@ -407,12 +407,12 @@ export const OutSessionForm = forwardRef<
       return null;
     };
 
-    const handleCreateTransportCompany = async (name: string, companyId?: string, contract?: string) => {
+    const handleCreateTransportCompany = async (name: string, companyId?: string, contract?: string, phone?: string) => {
       try {
         const response = await fetch("/api/transport-companies", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ name, companyId, contract }),
+          body: JSON.stringify({ name, companyId, contract, phone }),
         });
         if (response.ok) {
           const newCompany = await response.json();
@@ -459,12 +459,12 @@ export const OutSessionForm = forwardRef<
       return null;
     };
 
-    const handleCreateOrganization = async (name: string, companyId?: string, contract?: string) => {
+    const handleCreateOrganization = async (name: string, companyId?: string, contract?: string, phone?: string) => {
       try {
         const response = await fetch("/api/organizations", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ name, companyId, contract }),
+          body: JSON.stringify({ name, companyId, contract, phone }),
         });
         if (response.ok) {
           const newOrg = await response.json();
@@ -505,6 +505,34 @@ export const OutSessionForm = forwardRef<
         return;
       }
 
+      // Validate required fields for transportCompany and organization
+      if (createDialogType === "transportCompany" || createDialogType === "organization") {
+        if (!createDialogCompanyId.trim()) {
+          toast({
+            title: "Алдаа",
+            description: "Регистер шаардлагатай",
+            variant: "destructive",
+          });
+          return;
+        }
+        if (!createDialogContract.trim()) {
+          toast({
+            title: "Алдаа",
+            description: "Гадаад худалдааны гэрээ шаардлагатай",
+            variant: "destructive",
+          });
+          return;
+        }
+        if (!createDialogPhone.trim()) {
+          toast({
+            title: "Алдаа",
+            description: "Утасны дугаар шаардлагатай",
+            variant: "destructive",
+          });
+          return;
+        }
+      }
+
       setIsCreatingInDialog(true);
       try {
         let newId: string | null = null;
@@ -513,7 +541,8 @@ export const OutSessionForm = forwardRef<
           newId = await handleCreateTransportCompany(
             createDialogName.trim(),
             createDialogCompanyId.trim() || undefined,
-            createDialogContract.trim() || undefined
+            createDialogContract.trim() || undefined,
+            createDialogPhone.trim() || undefined
           );
         } else if (createDialogType === "product") {
           newId = await handleCreateProduct(createDialogName.trim());
@@ -521,7 +550,8 @@ export const OutSessionForm = forwardRef<
           newId = await handleCreateOrganization(
             createDialogName.trim(),
             createDialogCompanyId.trim() || undefined,
-            createDialogContract.trim() || undefined
+            createDialogContract.trim() || undefined,
+            createDialogPhone.trim() || undefined
           );
         } else if (createDialogType === "driver") {
           newId = await handleCreateDriver(
@@ -2238,29 +2268,41 @@ export const OutSessionForm = forwardRef<
                 />
               </div>
 
-              {/* Company ID and Contract - for transportCompany and organization */}
+              {/* Company ID, Contract, and Phone - for transportCompany and organization */}
               {(createDialogType === "transportCompany" || createDialogType === "organization") && (
                 <>
                   <div>
                     <Label htmlFor="create-dialog-company-id">
-                      Компаны регистер
+                      Регистер <span className="text-red-500">*</span>
                     </Label>
                     <Input
                       id="create-dialog-company-id"
                       value={createDialogCompanyId}
                       onChange={(e) => setCreateDialogCompanyId(e.target.value)}
-                      placeholder="Компаны регистер оруулах"
+                      placeholder="Регистрийн дугаар оруулах"
                     />
                   </div>
                   <div>
                     <Label htmlFor="create-dialog-contract">
-                      Гэрээ
+                      Гадаад худалдааны гэрээ <span className="text-red-500">*</span>
                     </Label>
                     <Input
                       id="create-dialog-contract"
                       value={createDialogContract}
                       onChange={(e) => setCreateDialogContract(e.target.value)}
-                      placeholder="Гэрээний дугаар оруулах"
+                      placeholder="Гадаад худалдааны гэрээний дугаар оруулах"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="create-dialog-phone">
+                      Утасны дугаар <span className="text-red-500">*</span>
+                    </Label>
+                    <Input
+                      id="create-dialog-phone"
+                      type="tel"
+                      value={createDialogPhone}
+                      onChange={(e) => setCreateDialogPhone(e.target.value)}
+                      placeholder="Утасны дугаар оруулах"
                     />
                   </div>
                 </>
@@ -2316,7 +2358,15 @@ export const OutSessionForm = forwardRef<
               </Button>
               <Button
                 onClick={handleCreateDialogSubmit}
-                disabled={isCreatingInDialog || !createDialogName.trim()}
+                disabled={
+                  isCreatingInDialog || 
+                  !createDialogName.trim() ||
+                  ((createDialogType === "transportCompany" || createDialogType === "organization") && (
+                    !createDialogCompanyId.trim() ||
+                    !createDialogContract.trim() ||
+                    !createDialogPhone.trim()
+                  ))
+                }
                 className="gap-2"
               >
                 {isCreatingInDialog ? (

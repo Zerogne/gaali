@@ -46,11 +46,32 @@ export async function POST(request: Request) {
     const companyId = session.companyId
     const companiesCollection = await getCompanyCollection(companyId, "transportCompanies")
     const body = await request.json()
-    const { name, companyId: companyRegistrationId, contract } = body
+    const { name, companyId: companyRegistrationId, contract, phone } = body
 
     if (!name || typeof name !== "string" || !name.trim()) {
       return NextResponse.json(
         { error: "Company name is required" },
+        { status: 400 }
+      )
+    }
+
+    if (!companyRegistrationId || typeof companyRegistrationId !== "string" || !companyRegistrationId.trim()) {
+      return NextResponse.json(
+        { error: "Регистер (Company ID) is required" },
+        { status: 400 }
+      )
+    }
+
+    if (!contract || typeof contract !== "string" || !contract.trim()) {
+      return NextResponse.json(
+        { error: "Гадаад худалдааны гэрээ (Contract) is required" },
+        { status: 400 }
+      )
+    }
+
+    if (!phone || typeof phone !== "string" || !phone.trim()) {
+      return NextResponse.json(
+        { error: "Утасны дугаар (Phone) is required" },
         { status: 400 }
       )
     }
@@ -67,8 +88,9 @@ export async function POST(request: Request) {
     const newCompany = {
       id: `tc_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
       name: name.trim(),
-      companyId: companyRegistrationId?.trim() || undefined,
-      contract: contract?.trim() || undefined,
+      companyId: companyRegistrationId.trim(),
+      contract: contract.trim(),
+      phone: phone.trim(),
       createdAt: new Date().toISOString(),
     }
 

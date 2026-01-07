@@ -35,6 +35,9 @@ export function OrganizationManager({
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const [editingOrg, setEditingOrg] = useState<Organization | null>(null)
   const [orgName, setOrgName] = useState("")
+  const [orgId, setOrgId] = useState("")
+  const [contract, setContract] = useState("")
+  const [phone, setPhone] = useState("")
   const [isSaving, setIsSaving] = useState(false)
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [orgToDelete, setOrgToDelete] = useState<string | null>(null)
@@ -42,20 +45,53 @@ export function OrganizationManager({
   const handleAdd = () => {
     setEditingOrg(null)
     setOrgName("")
+    setOrgId("")
+    setContract("")
+    setPhone("")
     setIsDialogOpen(true)
   }
 
   const handleEdit = (org: Organization) => {
     setEditingOrg(org)
     setOrgName(org.name)
+    setOrgId(org.companyId || "")
+    setContract(org.contract || "")
+    setPhone(org.phone || "")
     setIsDialogOpen(true)
   }
 
   const handleSave = async () => {
     if (!orgName.trim()) {
       toast({
-        title: "Error",
-        description: "Organization name is required",
+        title: "Алдаа",
+        description: "Нэр шаардлагатай",
+        variant: "destructive",
+      })
+      return
+    }
+
+    if (!orgId.trim()) {
+      toast({
+        title: "Алдаа",
+        description: "Регистер шаардлагатай",
+        variant: "destructive",
+      })
+      return
+    }
+
+    if (!contract.trim()) {
+      toast({
+        title: "Алдаа",
+        description: "Гадаад худалдааны гэрээ шаардлагатай",
+        variant: "destructive",
+      })
+      return
+    }
+
+    if (!phone.trim()) {
+      toast({
+        title: "Алдаа",
+        description: "Утасны дугаар шаардлагатай",
         variant: "destructive",
       })
       return
@@ -75,23 +111,30 @@ export function OrganizationManager({
         },
         body: JSON.stringify({ 
           name: orgName.trim(),
+          companyId: orgId.trim(),
+          contract: contract.trim(),
+          phone: phone.trim(),
           ...(editingOrg ? {} : { type: type }) // Only send type when creating new, preserve existing type when editing
         }),
       })
 
       if (!response.ok) {
-        throw new Error("Failed to save organization")
+        const errorData = await response.json().catch(() => ({ error: "Failed to save organization" }))
+        throw new Error(errorData.error || "Failed to save organization")
       }
 
       toast({
-        title: "Success",
+        title: "Амжилттай",
         description: editingOrg
-          ? "Organization updated successfully"
-          : "Organization added successfully",
+          ? "Байгууллага амжилттай засагдлаа"
+          : "Байгууллага амжилттай нэмэгдлээ",
       })
 
       setIsDialogOpen(false)
       setOrgName("")
+      setOrgId("")
+      setContract("")
+      setPhone("")
       setEditingOrg(null)
 
       // Dispatch custom event to refresh all sections
@@ -104,8 +147,8 @@ export function OrganizationManager({
       }
     } catch (error) {
       toast({
-        title: "Error",
-        description: "Failed to save organization",
+        title: "Алдаа",
+        description: error instanceof Error ? error.message : "Байгууллага хадгалахад алдаа гарлаа",
         variant: "destructive",
       })
     } finally {
@@ -169,25 +212,52 @@ export function OrganizationManager({
           <DialogHeader>
             <DialogTitle>
               {editingOrg 
-                ? `Edit ${type === "sender" ? "Sender" : "Receiver"} Organization` 
-                : `Add New ${type === "sender" ? "Sender" : "Receiver"} Organization`}
+                ? `${type === "sender" ? "Илгээч" : "Хүлээн авагч"} байгууллага засах` 
+                : `Шинэ ${type === "sender" ? "илгээч" : "хүлээн авагч"} байгууллага нэмэх`}
             </DialogTitle>
             <DialogDescription>
               {editingOrg
-                ? `Update the ${type === "sender" ? "sender" : "receiver"} organization name below.`
-                : `Enter a new ${type === "sender" ? "sender" : "receiver"} organization name.`}
+                ? `${type === "sender" ? "Илгээч" : "Хүлээн авагч"} байгууллагын мэдээллийг засах`
+                : `Шинэ ${type === "sender" ? "илгээч" : "хүлээн авагч"} байгууллагын мэдээлэл оруулах`}
             </DialogDescription>
           </DialogHeader>
 
           <div className="space-y-4">
             <div>
-              <Label htmlFor="org-name">Organization Name</Label>
+              <Label htmlFor="org-name">Нэр *</Label>
               <Input
                 id="org-name"
                 value={orgName}
                 onChange={(e) => setOrgName(e.target.value)}
-                placeholder="Enter organization name"
+                placeholder="Байгууллагын нэр оруулах"
                 autoFocus
+              />
+            </div>
+            <div>
+              <Label htmlFor="org-id">Регистер *</Label>
+              <Input
+                id="org-id"
+                value={orgId}
+                onChange={(e) => setOrgId(e.target.value)}
+                placeholder="Регистрийн дугаар оруулах"
+              />
+            </div>
+            <div>
+              <Label htmlFor="org-contract">Гадаад худалдааны гэрээ *</Label>
+              <Input
+                id="org-contract"
+                value={contract}
+                onChange={(e) => setContract(e.target.value)}
+                placeholder="Гадаад худалдааны гэрээний дугаар оруулах"
+              />
+            </div>
+            <div>
+              <Label htmlFor="org-phone">Утасны дугаар *</Label>
+              <Input
+                id="org-phone"
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+                placeholder="Утасны дугаар оруулах"
               />
             </div>
 
@@ -235,10 +305,19 @@ export function OrganizationManager({
               onClick={() => setIsDialogOpen(false)}
               disabled={isSaving}
             >
-              Cancel
+              Цуцлах
             </Button>
-            <Button onClick={handleSave} disabled={isSaving}>
-              {isSaving ? "Saving..." : editingOrg ? "Update" : "Add"}
+            <Button 
+              onClick={handleSave} 
+              disabled={
+                isSaving || 
+                !orgName.trim() || 
+                !orgId.trim() || 
+                !contract.trim() || 
+                !phone.trim()
+              }
+            >
+              {isSaving ? "Хадгалж байна..." : editingOrg ? "Засах" : "Нэмэх"}
             </Button>
           </DialogFooter>
         </DialogContent>

@@ -34,17 +34,25 @@ export default function OrganizationsPage() {
   const { toast } = useToast();
   const [organizations, setOrganizations] = useState<Organization[]>([]);
   const [newCompanyName, setNewCompanyName] = useState("");
+  const [newCompanyId, setNewCompanyId] = useState("");
+  const [newContract, setNewContract] = useState("");
+  const [newPhone, setNewPhone] = useState("");
   const [isAdding, setIsAdding] = useState(false);
   const [isDeleting, setIsDeleting] = useState<string | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [orgToDelete, setOrgToDelete] = useState<string | null>(null);
   const [editingOrg, setEditingOrg] = useState<string | null>(null);
   const [editingOrgName, setEditingOrgName] = useState("");
+  const [editingOrgId, setEditingOrgId] = useState("");
+  const [editingContract, setEditingContract] = useState("");
+  const [editingPhone, setEditingPhone] = useState("");
   const [isUpdating, setIsUpdating] = useState(false);
   const [duplicateDialogOpen, setDuplicateDialogOpen] = useState(false);
   const [duplicateValue, setDuplicateValue] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [addDialogOpen, setAddDialogOpen] = useState(false);
+  const [infoDialogOpen, setInfoDialogOpen] = useState(false);
+  const [selectedOrg, setSelectedOrg] = useState<Organization | null>(null);
 
   useEffect(() => {
     async function loadOrganizations() {
@@ -74,8 +82,35 @@ export default function OrganizationsPage() {
   const handleAddCompany = async () => {
     if (!newCompanyName.trim()) {
       toast({
-        title: "Error",
-        description: "Company name is required",
+        title: "Алдаа",
+        description: "Нэр шаардлагатай",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!newCompanyId.trim()) {
+      toast({
+        title: "Алдаа",
+        description: "Регистер шаардлагатай",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!newContract.trim()) {
+      toast({
+        title: "Алдаа",
+        description: "Гадаад худалдааны гэрээ шаардлагатай",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!newPhone.trim()) {
+      toast({
+        title: "Алдаа",
+        description: "Утасны дугаар шаардлагатай",
         variant: "destructive",
       });
       return;
@@ -100,11 +135,14 @@ export default function OrganizationsPage() {
         },
         body: JSON.stringify({
           name: newCompanyName.trim(),
+          companyId: newCompanyId.trim(),
+          contract: newContract.trim(),
+          phone: newPhone.trim(),
         }),
       });
 
       if (!response.ok) {
-        const errorData = await response.json();
+        const errorData = await response.json().catch(() => ({ error: "Failed to save company" }));
         throw new Error(errorData.error || "Failed to save company");
       }
 
@@ -114,6 +152,9 @@ export default function OrganizationsPage() {
       });
 
       setNewCompanyName("");
+      setNewCompanyId("");
+      setNewContract("");
+      setNewPhone("");
       setAddDialogOpen(false);
 
       // Dispatch custom event to refresh all sections
@@ -142,13 +183,24 @@ export default function OrganizationsPage() {
   const handleEditClick = (org: Organization) => {
     setEditingOrg(org.id);
     setEditingOrgName(org.name);
+    setEditingOrgId(org.companyId || "");
+    setEditingContract(org.contract || "");
+    setEditingPhone(org.phone || "");
     setAddDialogOpen(true);
   };
 
   const handleCancelEdit = () => {
     setEditingOrg(null);
     setEditingOrgName("");
+    setEditingOrgId("");
+    setEditingContract("");
+    setEditingPhone("");
     setAddDialogOpen(false);
+  };
+
+  const handleDoubleClick = (org: Organization) => {
+    setSelectedOrg(org);
+    setInfoDialogOpen(true);
   };
 
   // Filter organizations based on search query
@@ -157,15 +209,45 @@ export default function OrganizationsPage() {
     const query = searchQuery.toLowerCase();
     return (
       org.name.toLowerCase().includes(query) ||
-      org.id.toLowerCase().includes(query)
+      org.id.toLowerCase().includes(query) ||
+      org.companyId?.toLowerCase().includes(query) ||
+      org.contract?.toLowerCase().includes(query) ||
+      org.phone?.toLowerCase().includes(query)
     );
   });
 
   const handleSaveEdit = async (orgId: string) => {
     if (!editingOrgName.trim()) {
       toast({
-        title: "Error",
-        description: "Company name is required",
+        title: "Алдаа",
+        description: "Нэр шаардлагатай",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!editingOrgId.trim()) {
+      toast({
+        title: "Алдаа",
+        description: "Регистер шаардлагатай",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!editingContract.trim()) {
+      toast({
+        title: "Алдаа",
+        description: "Гадаад худалдааны гэрээ шаардлагатай",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!editingPhone.trim()) {
+      toast({
+        title: "Алдаа",
+        description: "Утасны дугаар шаардлагатай",
         variant: "destructive",
       });
       return;
@@ -195,11 +277,15 @@ export default function OrganizationsPage() {
         },
         body: JSON.stringify({
           name: editingOrgName.trim(),
+          companyId: editingOrgId.trim(),
+          contract: editingContract.trim(),
+          phone: editingPhone.trim(),
         }),
       });
 
       if (!response.ok) {
-        throw new Error("Failed to update company");
+        const errorData = await response.json().catch(() => ({ error: "Failed to update company" }));
+        throw new Error(errorData.error || "Failed to update company");
       }
 
       toast({
@@ -209,6 +295,9 @@ export default function OrganizationsPage() {
 
       setEditingOrg(null);
       setEditingOrgName("");
+      setEditingOrgId("");
+      setEditingContract("");
+      setEditingPhone("");
       setAddDialogOpen(false);
 
       // Dispatch custom event to refresh all sections
@@ -223,7 +312,7 @@ export default function OrganizationsPage() {
     } catch (error) {
       toast({
         title: "Алдаа",
-        description: "Компани засахад алдаа гарлаа",
+        description: error instanceof Error ? error.message : "Компани засахад алдаа гарлаа",
         variant: "destructive",
       });
     } finally {
@@ -314,7 +403,13 @@ export default function OrganizationsPage() {
                 onClick={() => {
                   setEditingOrg(null);
                   setEditingOrgName("");
+                  setEditingOrgId("");
+                  setEditingContract("");
+                  setEditingPhone("");
                   setNewCompanyName("");
+                  setNewCompanyId("");
+                  setNewContract("");
+                  setNewPhone("");
                   setAddDialogOpen(true);
                 }}
                 className="gap-2"
@@ -325,21 +420,37 @@ export default function OrganizationsPage() {
             </div>
 
             {filteredOrganizations.length > 0 ? (
-              <div className="border rounded-lg">
+              <div className="border rounded-lg overflow-x-auto">
                 <Table>
                   <TableHeader>
                     <TableRow>
                       <TableHead>Нэр</TableHead>
+                      <TableHead>Регистер</TableHead>
+                      <TableHead>Гадаад худалдааны гэрээ</TableHead>
+                      <TableHead>Утасны дугаар</TableHead>
                       <TableHead className="w-[120px]"></TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {filteredOrganizations.map((org) => (
-                      <TableRow key={org.id}>
+                      <TableRow 
+                        key={org.id}
+                        onDoubleClick={() => handleDoubleClick(org)}
+                        className="cursor-pointer hover:bg-muted/50"
+                      >
                         <TableCell className="font-medium">
                           {org.name}
                         </TableCell>
                         <TableCell>
+                          {org.companyId || "-"}
+                        </TableCell>
+                        <TableCell>
+                          {org.contract || "-"}
+                        </TableCell>
+                        <TableCell>
+                          {org.phone || "-"}
+                        </TableCell>
+                        <TableCell onClick={(e) => e.stopPropagation()}>
                           <div className="flex items-center gap-1">
                             <Button
                               variant="ghost"
@@ -445,16 +556,52 @@ export default function OrganizationsPage() {
                         setNewCompanyName(e.target.value);
                       }
                     }}
-                    placeholder="Тээврийн байгууллагын нэр оруулах"
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter" && (editingOrg ? editingOrgName : newCompanyName).trim()) {
-                        if (editingOrg) {
-                          handleSaveEdit(editingOrg);
-                        } else {
-                          handleAddCompany();
-                        }
+                    placeholder="Компанийн нэр оруулах"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="dialog-org-id">Регистер *</Label>
+                  <Input
+                    id="dialog-org-id"
+                    value={editingOrg ? editingOrgId : newCompanyId}
+                    onChange={(e) => {
+                      if (editingOrg) {
+                        setEditingOrgId(e.target.value);
+                      } else {
+                        setNewCompanyId(e.target.value);
                       }
                     }}
+                    placeholder="Регистрийн дугаар оруулах"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="dialog-org-contract">Гадаад худалдааны гэрээ *</Label>
+                  <Input
+                    id="dialog-org-contract"
+                    value={editingOrg ? editingContract : newContract}
+                    onChange={(e) => {
+                      if (editingOrg) {
+                        setEditingContract(e.target.value);
+                      } else {
+                        setNewContract(e.target.value);
+                      }
+                    }}
+                    placeholder="Гадаад худалдааны гэрээний дугаар оруулах"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="dialog-org-phone">Утасны дугаар *</Label>
+                  <Input
+                    id="dialog-org-phone"
+                    value={editingOrg ? editingPhone : newPhone}
+                    onChange={(e) => {
+                      if (editingOrg) {
+                        setEditingPhone(e.target.value);
+                      } else {
+                        setNewPhone(e.target.value);
+                      }
+                    }}
+                    placeholder="Утасны дугаар оруулах"
                   />
                 </div>
               </div>
@@ -477,7 +624,14 @@ export default function OrganizationsPage() {
                       handleAddCompany();
                     }
                   }}
-                  disabled={isUpdating || isAdding || !(editingOrg ? editingOrgName : newCompanyName).trim()}
+                  disabled={
+                    isUpdating || 
+                    isAdding || 
+                    !(editingOrg ? editingOrgName : newCompanyName).trim() ||
+                    !(editingOrg ? editingOrgId : newCompanyId).trim() ||
+                    !(editingOrg ? editingContract : newContract).trim() ||
+                    !(editingOrg ? editingPhone : newPhone).trim()
+                  }
                   className="gap-2"
                 >
                   {isUpdating || isAdding ? (
@@ -500,6 +654,40 @@ export default function OrganizationsPage() {
                       )}
                     </>
                   )}
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+
+          {/* Organization Info Dialog */}
+          <Dialog open={infoDialogOpen} onOpenChange={setInfoDialogOpen}>
+            <DialogContent className="sm:max-w-[500px]">
+              <DialogHeader>
+                <DialogTitle>Компанийн мэдээлэл</DialogTitle>
+              </DialogHeader>
+              {selectedOrg && (
+                <div className="space-y-4 py-4">
+                  <div>
+                    <Label className="text-sm font-semibold">Нэр:</Label>
+                    <p className="mt-1 text-sm">{selectedOrg.name}</p>
+                  </div>
+                  <div>
+                    <Label className="text-sm font-semibold">Регистер:</Label>
+                    <p className="mt-1 text-sm">{selectedOrg.companyId || "-"}</p>
+                  </div>
+                  <div>
+                    <Label className="text-sm font-semibold">Гадаад худалдааны гэрээ:</Label>
+                    <p className="mt-1 text-sm">{selectedOrg.contract || "-"}</p>
+                  </div>
+                  <div>
+                    <Label className="text-sm font-semibold">Утасны дугаар:</Label>
+                    <p className="mt-1 text-sm">{selectedOrg.phone || "-"}</p>
+                  </div>
+                </div>
+              )}
+              <DialogFooter>
+                <Button onClick={() => setInfoDialogOpen(false)}>
+                  Хаах
                 </Button>
               </DialogFooter>
             </DialogContent>

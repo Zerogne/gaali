@@ -829,8 +829,6 @@ export function TruckSection({ direction, onSave, onSend }: TruckSectionProps) {
               disabled={isLoadingCompanies}
               placeholder={isLoadingCompanies ? "Уншиж байна..." : "Тээврийн компани сонгох"}
               searchPlaceholder="Тээврийн компани хайх..."
-              onCreateNew={handleCreateTransportCompany}
-              createNewLabel="+ Нэмэх ..."
             />
           </div>
 
@@ -900,8 +898,6 @@ export function TruckSection({ direction, onSave, onSend }: TruckSectionProps) {
                 disabled={isLoadingOrganizations}
                 placeholder={isLoadingOrganizations ? "Уншиж байна..." : "Илгээч байгууллага сонгох"}
                 searchPlaceholder="Илгээч байгууллага хайх..."
-                onCreateNew={handleCreateOrganization}
-                createNewLabel="+ Нэмэх ..."
               />
             </div>
             <div>
@@ -917,8 +913,6 @@ export function TruckSection({ direction, onSave, onSend }: TruckSectionProps) {
                 disabled={isLoadingOrganizations}
                 placeholder={isLoadingOrganizations ? "Уншиж байна..." : "Хүлээн авагч байгууллага сонгох"}
                 searchPlaceholder="Хүлээн авагч байгууллага хайх..."
-                onCreateNew={handleCreateOrganization}
-                createNewLabel="+ Нэмэх ..."
               />
             </div>
           </div>

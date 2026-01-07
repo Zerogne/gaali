@@ -19,7 +19,7 @@ export async function PUT(
     const companyId = session.companyId
     const orgsCollection = await getCompanyCollection(companyId, "organizations")
     const body = await request.json()
-    const { name, type } = body
+    const { name, type, companyId: companyRegistrationId, contract, phone } = body
 
     if (!id) {
       return NextResponse.json(
@@ -35,6 +35,27 @@ export async function PUT(
       )
     }
 
+    if (!companyRegistrationId || typeof companyRegistrationId !== "string" || !companyRegistrationId.trim()) {
+      return NextResponse.json(
+        { error: "Регистер (Company ID) is required" },
+        { status: 400 }
+      )
+    }
+
+    if (!contract || typeof contract !== "string" || !contract.trim()) {
+      return NextResponse.json(
+        { error: "Гадаад худалдааны гэрээ (Contract) is required" },
+        { status: 400 }
+      )
+    }
+
+    if (!phone || typeof phone !== "string" || !phone.trim()) {
+      return NextResponse.json(
+        { error: "Утасны дугаар (Phone) is required" },
+        { status: 400 }
+      )
+    }
+
     // If type is provided, validate it
     if (type && type !== "sender" && type !== "receiver") {
       return NextResponse.json(
@@ -45,6 +66,9 @@ export async function PUT(
 
     const update: any = {
       name: name.trim(),
+      companyId: companyRegistrationId.trim(),
+      contract: contract.trim(),
+      phone: phone.trim(),
       updatedAt: new Date().toISOString(),
     }
 

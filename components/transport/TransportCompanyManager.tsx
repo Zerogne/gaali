@@ -36,6 +36,9 @@ export function TransportCompanyManager({
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const [editingCompany, setEditingCompany] = useState<TransportCompany | null>(null)
   const [companyName, setCompanyName] = useState("")
+  const [companyId, setCompanyId] = useState("")
+  const [contract, setContract] = useState("")
+  const [phone, setPhone] = useState("")
   const [isSaving, setIsSaving] = useState(false)
   const [isDeleting, setIsDeleting] = useState<string | null>(null)
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
@@ -44,20 +47,53 @@ export function TransportCompanyManager({
   const handleAdd = () => {
     setEditingCompany(null)
     setCompanyName("")
+    setCompanyId("")
+    setContract("")
+    setPhone("")
     setIsDialogOpen(true)
   }
 
   const handleEdit = (company: TransportCompany) => {
     setEditingCompany(company)
     setCompanyName(company.name)
+    setCompanyId(company.companyId || "")
+    setContract(company.contract || "")
+    setPhone(company.phone || "")
     setIsDialogOpen(true)
   }
 
   const handleSave = async () => {
     if (!companyName.trim()) {
       toast({
-        title: "Error",
-        description: "Company name is required",
+        title: "Алдаа",
+        description: "Нэр шаардлагатай",
+        variant: "destructive",
+      })
+      return
+    }
+
+    if (!companyId.trim()) {
+      toast({
+        title: "Алдаа",
+        description: "Регистер шаардлагатай",
+        variant: "destructive",
+      })
+      return
+    }
+
+    if (!contract.trim()) {
+      toast({
+        title: "Алдаа",
+        description: "Гадаад худалдааны гэрээ шаардлагатай",
+        variant: "destructive",
+      })
+      return
+    }
+
+    if (!phone.trim()) {
+      toast({
+        title: "Алдаа",
+        description: "Утасны дугаар шаардлагатай",
         variant: "destructive",
       })
       return
@@ -75,22 +111,31 @@ export function TransportCompanyManager({
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ name: companyName.trim() }),
+        body: JSON.stringify({ 
+          name: companyName.trim(),
+          companyId: companyId.trim(),
+          contract: contract.trim(),
+          phone: phone.trim(),
+        }),
       })
 
       if (!response.ok) {
-        throw new Error("Failed to save transport company")
+        const errorData = await response.json().catch(() => ({ error: "Failed to save transport company" }))
+        throw new Error(errorData.error || "Failed to save transport company")
       }
 
       toast({
-        title: "Success",
+        title: "Амжилттай",
         description: editingCompany
-          ? "Transport company updated successfully"
-          : "Transport company added successfully",
+          ? "Тээврийн компани амжилттай засагдлаа"
+          : "Тээврийн компани амжилттай нэмэгдлээ",
       })
 
       setIsDialogOpen(false)
       setCompanyName("")
+      setCompanyId("")
+      setContract("")
+      setPhone("")
       setEditingCompany(null)
 
       // Dispatch custom event to refresh all sections
@@ -103,8 +148,8 @@ export function TransportCompanyManager({
       }
     } catch (error) {
       toast({
-        title: "Error",
-        description: "Failed to save transport company",
+        title: "Алдаа",
+        description: error instanceof Error ? error.message : "Тээврийн компани хадгалахад алдаа гарлаа",
         variant: "destructive",
       })
     } finally {
@@ -173,24 +218,51 @@ export function TransportCompanyManager({
         <DialogContent>
           <DialogHeader>
             <DialogTitle>
-              {editingCompany ? "Edit Transport Company" : "Add New Transport Company"}
+              {editingCompany ? "Тээврийн компани засах" : "Шинэ тээврийн компани нэмэх"}
             </DialogTitle>
             <DialogDescription>
               {editingCompany
-                ? "Update the transport company name below."
-                : "Enter a new transport company name."}
+                ? "Тээврийн компанийн мэдээллийг засах"
+                : "Шинэ тээврийн компанийн мэдээлэл оруулах"}
             </DialogDescription>
           </DialogHeader>
 
           <div className="space-y-4">
             <div>
-              <Label htmlFor="company-name">Company Name</Label>
+              <Label htmlFor="company-name">Нэр *</Label>
               <Input
                 id="company-name"
                 value={companyName}
                 onChange={(e) => setCompanyName(e.target.value)}
-                placeholder="Enter company name"
+                placeholder="Тээврийн компанийн нэр оруулах"
                 autoFocus
+              />
+            </div>
+            <div>
+              <Label htmlFor="company-id">Регистер *</Label>
+              <Input
+                id="company-id"
+                value={companyId}
+                onChange={(e) => setCompanyId(e.target.value)}
+                placeholder="Регистрийн дугаар оруулах"
+              />
+            </div>
+            <div>
+              <Label htmlFor="company-contract">Гадаад худалдааны гэрээ *</Label>
+              <Input
+                id="company-contract"
+                value={contract}
+                onChange={(e) => setContract(e.target.value)}
+                placeholder="Гадаад худалдааны гэрээний дугаар оруулах"
+              />
+            </div>
+            <div>
+              <Label htmlFor="company-phone">Утасны дугаар *</Label>
+              <Input
+                id="company-phone"
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+                placeholder="Утасны дугаар оруулах"
               />
             </div>
 
@@ -243,10 +315,19 @@ export function TransportCompanyManager({
               onClick={() => setIsDialogOpen(false)}
               disabled={isSaving}
             >
-              Cancel
+              Цуцлах
             </Button>
-            <Button onClick={handleSave} disabled={isSaving}>
-              {isSaving ? "Saving..." : editingCompany ? "Update" : "Add"}
+            <Button 
+              onClick={handleSave} 
+              disabled={
+                isSaving || 
+                !companyName.trim() || 
+                !companyId.trim() || 
+                !contract.trim() || 
+                !phone.trim()
+              }
+            >
+              {isSaving ? "Хадгалж байна..." : editingCompany ? "Засах" : "Нэмэх"}
             </Button>
           </DialogFooter>
         </DialogContent>
