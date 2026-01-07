@@ -60,3 +60,15 @@ export interface PlateRecognition {
   confidence: number;
   timestamp: string;
 }
+
+export interface Contract {
+  id: string;
+  number: string; // Гэрээний дугаар
+  company: string; // Компани
+  companyId: string; // Компанийн регистер
+  companyPhone: string; // Компанийн утасны дугаар
+  description?: string; // Тайлбар
+  startDate?: string; // Эхлэх огноо
+  endDate?: string; // Дуусах огноо
+  createdAt: string;
+}

@@ -674,7 +674,7 @@ export default function OrganizationsPage() {
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-xl font-semibold text-foreground flex items-center gap-2">
                 <Building2 className="w-5 h-5" />
-                Компани ба Байгууллага
+                Тээвэрлэгч байгууллага
               </h2>
             </div>
 
