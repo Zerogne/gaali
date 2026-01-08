@@ -8,13 +8,15 @@ import { useRouter } from "next/navigation";
 interface RealtimeVideoProps {
   cameraId: string;
   direction: "IN" | "OUT";
-  onActionClick: (direction: "IN" | "OUT") => void;
+  onActionClick?: (direction: "IN" | "OUT") => void; // Optional for session pages
+  showActionButton?: boolean; // Optional, defaults to true
 }
 
 export function RealtimeVideo({
   cameraId,
   direction,
   onActionClick,
+  showActionButton = true, // Default to true for dashboard
 }: RealtimeVideoProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -24,6 +26,17 @@ export function RealtimeVideo({
   const objectUrlRef = useRef<string | null>(null); // Track object URLs to prevent memory leaks
   const isMountedRef = useRef(true);
   const router = useRouter();
+  
+  // Diagnostic tracking
+  const statsRef = useRef({
+    connectionAttempts: 0,
+    messagesReceived: 0,
+    framesReceived: 0,
+    errors: 0,
+    reconnectAttempts: 0,
+    lastMessageTime: null as number | null,
+    connectionStartTime: null as number | null,
+  });
 
   useEffect(() => {
     isMountedRef.current = true;
@@ -34,38 +47,103 @@ export function RealtimeVideo({
       if (!isMountedRef.current) return;
       
       try {
+        // Diagnostic: Track connection attempt
+        statsRef.current.connectionAttempts++;
+        statsRef.current.connectionStartTime = Date.now();
+        
+        console.log(`🔌 [${cameraId}] Connection attempt #${statsRef.current.connectionAttempts}`, {
+          timestamp: new Date().toISOString(),
+          direction,
+        });
+        
         // Get camera configuration from API (includes WebSocket URL)
         let wsUrl: string | null = null;
         
         try {
+          console.log(`📡 [${cameraId}] Fetching camera configuration from /api/camera/video...`);
+          const configStartTime = Date.now();
           const configResponse = await fetch('/api/camera/video');
+          const configFetchTime = Date.now() - configStartTime;
+          
           if (!isMountedRef.current) return; // Check again after async operation
+          
+          console.log(`📡 [${cameraId}] Config fetch completed in ${configFetchTime}ms`, {
+            status: configResponse.status,
+            ok: configResponse.ok,
+          });
           
           if (configResponse.ok) {
             const config = await configResponse.json();
+            console.log(`📡 [${cameraId}] Camera config received:`, {
+              camera1Configured: !!config.camera1?.webSocketUrl,
+              camera2Configured: !!config.camera2?.webSocketUrl,
+              camera1Url: config.camera1?.webSocketUrl || 'not set',
+              camera2Url: config.camera2?.webSocketUrl || 'not set',
+            });
+            
             // Get WebSocket URL for this camera
             if (cameraId === 'camera-1' && config.camera1?.webSocketUrl) {
               wsUrl = config.camera1.webSocketUrl;
-              console.log(`📹 Using camera 1 WebSocket: ${wsUrl}`);
+              console.log(`✅ [${cameraId}] Using camera 1 WebSocket: ${wsUrl}`, {
+                ip: config.camera1.ip,
+                port: config.camera1.webSocketPort,
+              });
             } else if (cameraId === 'camera-2' && config.camera2?.webSocketUrl) {
               wsUrl = config.camera2.webSocketUrl;
-              console.log(`📹 Using camera 2 WebSocket: ${wsUrl}`);
+              console.log(`✅ [${cameraId}] Using camera 2 WebSocket: ${wsUrl}`, {
+                ip: config.camera2.ip,
+                port: config.camera2.webSocketPort,
+              });
+            } else {
+              console.warn(`⚠️ [${cameraId}] Camera WebSocket URL not found in config`, {
+                cameraId,
+                configKeys: Object.keys(config),
+              });
             }
+          } else {
+            console.error(`❌ [${cameraId}] Config API returned error:`, {
+              status: configResponse.status,
+              statusText: configResponse.statusText,
+            });
           }
         } catch (error) {
           if (!isMountedRef.current) return;
-          console.warn('Failed to get camera config, using fallback:', error);
+          statsRef.current.errors++;
+          console.error(`❌ [${cameraId}] Failed to get camera config:`, {
+            error: error instanceof Error ? error.message : String(error),
+            stack: error instanceof Error ? error.stack : undefined,
+          });
         }
 
-        // Fallback: Use environment variable or default localhost (for Electron bridge)
+        // Fallback: Use environment variable if camera WebSocket not configured
         if (!wsUrl) {
-          wsUrl = process.env.NEXT_PUBLIC_VIDEO_WS_URL || `ws://localhost:3004/video/${cameraId}`;
-          console.log(`📹 Using fallback WebSocket: ${wsUrl}`);
+          wsUrl = process.env.NEXT_PUBLIC_VIDEO_WS_URL;
+          if (wsUrl) {
+            console.log(`📹 Using fallback WebSocket from environment: ${wsUrl}`);
+          } else {
+            console.warn(`⚠️ No WebSocket URL configured for camera ${cameraId}. Please configure camera WebSocket in company settings.`);
+            setError("Camera WebSocket не настроен. Пожалуйста, настройте WebSocket камеры в настройках компании.");
+            setIsLoading(false);
+            return;
+          }
         }
 
         if (!isMountedRef.current) return; // Check before creating WebSocket
 
-        console.log(`Connecting to video stream for camera ${cameraId} at ${wsUrl}...`);
+        if (!wsUrl) {
+          console.error(`❌ [${cameraId}] No WebSocket URL available, cannot connect`);
+          statsRef.current.errors++;
+          setError("WebSocket URL не настроен");
+          setIsLoading(false);
+          return;
+        }
+
+        const connectionStartTime = Date.now();
+        console.log(`🔌 [${cameraId}] Creating WebSocket connection...`, {
+          url: wsUrl,
+          protocol: wsUrl.startsWith('wss://') ? 'WSS (Secure)' : 'WS (Plain)',
+          timestamp: new Date().toISOString(),
+        });
         
         // Create WebSocket connection
         // Note: WebSocket API doesn't support custom headers for authentication
@@ -73,29 +151,56 @@ export function RealtimeVideo({
         const ws = new WebSocket(wsUrl);
 
         ws.onopen = () => {
+          const connectionTime = Date.now() - connectionStartTime;
           if (!isMountedRef.current) {
+            console.warn(`⚠️ [${cameraId}] WebSocket opened but component unmounted, closing...`);
             ws.close();
             return;
           }
-          console.log(`Video stream connected for camera ${cameraId}`);
+          
+          console.log(`✅ [${cameraId}] WebSocket connected successfully!`, {
+            connectionTime: `${connectionTime}ms`,
+            readyState: ws.readyState,
+            protocol: ws.protocol || 'default',
+            url: wsUrl,
+            timestamp: new Date().toISOString(),
+          });
+          
           setIsConnected(true);
           setIsLoading(false);
           setError(null);
+          statsRef.current.reconnectAttempts = 0; // Reset on successful connection
         };
 
         ws.onmessage = (event) => {
-          // DEBUG: Log every message received
-          console.log(`📨 [${cameraId}] Message received:`, {
-            isBlob: event.data instanceof Blob,
-            isString: typeof event.data === 'string',
-            length: event.data?.length || 0,
-            preview: typeof event.data === 'string' ? event.data.substring(0, 100) : 'blob'
-          });
+          // Diagnostic: Track messages
+          statsRef.current.messagesReceived++;
+          statsRef.current.lastMessageTime = Date.now();
+          
+          // Log message details (throttled for performance)
+          if (statsRef.current.messagesReceived % 30 === 0 || statsRef.current.messagesReceived <= 5) {
+            console.log(`📨 [${cameraId}] Message #${statsRef.current.messagesReceived} received:`, {
+              isBlob: event.data instanceof Blob,
+              isString: typeof event.data === 'string',
+              length: event.data?.length || 0,
+              preview: typeof event.data === 'string' ? event.data.substring(0, 100) : 'blob',
+              timeSinceLastMessage: statsRef.current.lastMessageTime && statsRef.current.messagesReceived > 1
+                ? `${Date.now() - (statsRef.current.lastMessageTime - (event.data?.length || 0))}ms`
+                : 'first message',
+            });
+          }
 
           // Handle video frame data
           if (event.data instanceof Blob) {
             // Binary video data (H.264 stream or similar)
-            console.log(`📨 [${cameraId}] Received Blob data`);
+            statsRef.current.framesReceived++;
+            if (statsRef.current.framesReceived % 30 === 0 || statsRef.current.framesReceived <= 5) {
+              console.log(`🎬 [${cameraId}] Frame #${statsRef.current.framesReceived} received (Blob)`, {
+                size: `${(event.data.size / 1024).toFixed(2)}KB`,
+                type: event.data.type || 'unknown',
+              });
+            }
+            
             if (videoRef.current && isMountedRef.current) {
               // Revoke previous object URL to prevent memory leaks
               if (objectUrlRef.current) {
@@ -105,7 +210,9 @@ export function RealtimeVideo({
               objectUrlRef.current = url;
               if (videoRef.current.src !== url) {
                 videoRef.current.src = url;
-                console.log(`✅ [${cameraId}] Set video src from Blob`);
+                if (statsRef.current.framesReceived <= 5) {
+                  console.log(`✅ [${cameraId}] Video src updated from Blob frame #${statsRef.current.framesReceived}`);
+                }
               }
             }
           } else {
@@ -120,17 +227,34 @@ export function RealtimeVideo({
 
               if (message.type === "frame" && videoRef.current) {
                 // Base64 encoded JPEG frame
-                console.log(`✅ [${cameraId}] Setting video src from frame data`);
+                statsRef.current.framesReceived++;
+                if (statsRef.current.framesReceived % 30 === 0 || statsRef.current.framesReceived <= 5) {
+                  console.log(`🎬 [${cameraId}] Frame #${statsRef.current.framesReceived} received (base64)`, {
+                    dataLength: message.data?.length || 0,
+                    estimatedSize: message.data ? `${(message.data.length * 0.75 / 1024).toFixed(2)}KB` : 'unknown',
+                  });
+                }
                 videoRef.current.src = `data:image/jpeg;base64,${message.data}`;
-                console.log(`✅ [${cameraId}] Video src set, length: ${videoRef.current.src.length}`);
+                if (statsRef.current.framesReceived <= 5) {
+                  console.log(`✅ [${cameraId}] Video src updated from base64 frame #${statsRef.current.framesReceived}`);
+                }
               } else if (message.type === "stream_url" && videoRef.current) {
                 // Direct stream URL (RTSP, HLS, etc.)
-                console.log(`✅ [${cameraId}] Setting video src from stream URL: ${message.url}`);
+                console.log(`🔗 [${cameraId}] Received stream URL:`, {
+                  url: message.url,
+                  type: message.type,
+                });
                 videoRef.current.src = message.url;
               } else if (message.type === "connected") {
-                console.log(`✅ [${cameraId}] Connected to camera ${message.cameraId}`);
+                console.log(`✅ [${cameraId}] Connection confirmed by camera:`, {
+                  cameraId: message.cameraId,
+                  timestamp: new Date().toISOString(),
+                });
               } else {
-                console.log(`ℹ️ [${cameraId}] Unknown message type: ${message.type}`);
+                console.log(`ℹ️ [${cameraId}] Unknown message type:`, {
+                  type: message.type,
+                  keys: Object.keys(message),
+                });
               }
             } catch (err) {
               // If not JSON, might be base64 string directly
@@ -147,31 +271,73 @@ export function RealtimeVideo({
 
         ws.onerror = (err) => {
           if (!isMountedRef.current) return;
-          console.error(`Video stream error for camera ${cameraId}:`, err);
+          statsRef.current.errors++;
+          console.error(`❌ [${cameraId}] WebSocket error:`, {
+            error: err,
+            readyState: ws.readyState,
+            url: wsUrl,
+            timestamp: new Date().toISOString(),
+            stats: {
+              connectionAttempts: statsRef.current.connectionAttempts,
+              messagesReceived: statsRef.current.messagesReceived,
+              framesReceived: statsRef.current.framesReceived,
+              errors: statsRef.current.errors,
+            },
+          });
           setError("Видео серверт холбогдох боломжгүй. Сервер ажиллаж байгаа эсэхийг шалгана уу.");
           setIsLoading(false);
         };
 
         ws.onclose = (event) => {
           if (!isMountedRef.current) return;
-          console.log(`Video stream closed for camera ${cameraId}`, event);
+          
+          const connectionDuration = statsRef.current.connectionStartTime
+            ? `${((Date.now() - statsRef.current.connectionStartTime) / 1000).toFixed(1)}s`
+            : 'unknown';
+          
+          console.log(`🔌 [${cameraId}] WebSocket closed:`, {
+            code: event.code,
+            reason: event.reason || 'no reason provided',
+            wasClean: event.wasClean,
+            connectionDuration,
+            timestamp: new Date().toISOString(),
+            stats: {
+              messagesReceived: statsRef.current.messagesReceived,
+              framesReceived: statsRef.current.framesReceived,
+              errors: statsRef.current.errors,
+            },
+          });
+          
           setIsConnected(false);
           
           // Only attempt to reconnect if it wasn't a normal closure and component is still mounted
           if (event.code !== 1000 && isMountedRef.current) {
-            console.log(`Attempting to reconnect in 3 seconds...`);
+            statsRef.current.reconnectAttempts++;
+            const reconnectDelay = Math.min(3000 * statsRef.current.reconnectAttempts, 30000); // Max 30s
+            console.log(`🔄 [${cameraId}] Attempting to reconnect (attempt #${statsRef.current.reconnectAttempts}) in ${reconnectDelay}ms...`);
             setTimeout(() => {
               if (isMountedRef.current && (!wsRef.current || wsRef.current.readyState === WebSocket.CLOSED)) {
                 connectVideoStream();
               }
-            }, 3000);
+            }, reconnectDelay);
+          } else if (event.code === 1000) {
+            console.log(`✅ [${cameraId}] WebSocket closed normally (code 1000)`);
           }
         };
 
         wsRef.current = ws;
       } catch (err) {
         if (!isMountedRef.current) return;
-        console.error(`Error connecting to video stream:`, err);
+        statsRef.current.errors++;
+        console.error(`❌ [${cameraId}] Exception during connection setup:`, {
+          error: err instanceof Error ? err.message : String(err),
+          stack: err instanceof Error ? err.stack : undefined,
+          timestamp: new Date().toISOString(),
+          stats: {
+            connectionAttempts: statsRef.current.connectionAttempts,
+            errors: statsRef.current.errors,
+          },
+        });
         setError("Холбогдох боломжгүй");
         setIsLoading(false);
       }
@@ -181,6 +347,16 @@ export function RealtimeVideo({
 
     // Cleanup on unmount
     return () => {
+      console.log(`🧹 [${cameraId}] Cleaning up WebSocket connection...`, {
+        finalStats: {
+          connectionAttempts: statsRef.current.connectionAttempts,
+          messagesReceived: statsRef.current.messagesReceived,
+          framesReceived: statsRef.current.framesReceived,
+          errors: statsRef.current.errors,
+          reconnectAttempts: statsRef.current.reconnectAttempts,
+        },
+      });
+      
       isMountedRef.current = false;
       if (wsRef.current) {
         wsRef.current.close();
@@ -195,7 +371,9 @@ export function RealtimeVideo({
   }, [cameraId]);
 
   const handleActionClick = () => {
-    onActionClick(direction);
+    if (onActionClick) {
+      onActionClick(direction);
+    }
   };
 
   return (
@@ -236,20 +414,22 @@ export function RealtimeVideo({
         )}
       </div>
 
-      {/* Action Button */}
-      <div className="p-2 border-t border-gray-200">
-        <Button
-          onClick={handleActionClick}
-          className={`w-full h-9 text-sm font-medium ${
-            direction === "OUT" 
-              ? "bg-green-600 hover:bg-green-700 text-white" 
-              : ""
-          }`}
-          variant={direction === "IN" ? "default" : undefined}
-        >
-          {direction === "IN" ? "ОРОХ" : "ГАРАХ"}
-        </Button>
-      </div>
+      {/* Action Button - Only show if enabled */}
+      {showActionButton && (
+        <div className="p-2 border-t border-gray-200">
+          <Button
+            onClick={handleActionClick}
+            className={`w-full h-9 text-sm font-medium ${
+              direction === "OUT" 
+                ? "bg-green-600 hover:bg-green-700 text-white" 
+                : ""
+            }`}
+            variant={direction === "IN" ? "default" : undefined}
+          >
+            {direction === "IN" ? "ОРОХ" : "ГАРАХ"}
+          </Button>
+        </div>
+      )}
     </div>
   );
 }

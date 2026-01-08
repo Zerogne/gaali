@@ -67,7 +67,7 @@ function OutSessionContent() {
           console.log("Camera config received:", config);
           // Don't use MJPEG - use WebSocket instead (RealtimeVideo component)
           // streamUrl is null to prevent MJPEG loading errors
-          // Video will come from WebSocket: ws://localhost:3004/video/camera-2
+          // Video will come from direct camera WebSocket connection
           const url = config.streamUrl || undefined; // Will be null, which is correct
           console.log("Setting streamUrl to:", url, "(null = use WebSocket)");
           setStreamUrl(url);

@@ -23,6 +23,7 @@ import type {
 import { Camera, Send, Loader2 } from "lucide-react";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useRouter } from "next/navigation";
+import { RealtimeVideo } from "@/components/camera/RealtimeVideo";
 import {
   forwardRef,
   useEffect,
@@ -1460,30 +1461,13 @@ export const InSessionForm = forwardRef<
             <Card className="p-4 pb-8 w-full max-w-6xl min-h-[calc(100vh-4rem)]">
               {/* Camera Video Display - At the top, 50% width */}
               <div className="mb-1 flex gap-4">
-                <div className="w-1/2 aspect-video bg-black rounded-lg overflow-hidden relative border-2 border-gray-200 shadow-lg flex items-center justify-center">
-                  {/* Use video proxy endpoint for direct camera connection via HTTPS */}
-                  <video
-                    src="/api/camera/proxy?camera=1"
-                    autoPlay
-                    playsInline
-                    muted
-                    loop
-                    className="w-full h-full object-contain"
-                    onError={(e) => {
-                      console.error("Failed to load camera 1 video stream");
-                    }}
-                    onLoadStart={() => {
-                      console.log("📹 Loading camera 1 video stream from HTTPS...");
-                    }}
+                <div className="w-1/2 aspect-video bg-black rounded-lg overflow-hidden relative border-2 border-gray-200 shadow-lg">
+                  {/* Use WebSocket 9080 for direct camera connection (real-time video) */}
+                  <RealtimeVideo
+                    cameraId="camera-1"
+                    direction="IN"
+                    showActionButton={false}
                   />
-                  {/* Loading/fallback overlay */}
-                  <div className="absolute inset-0 flex items-center justify-center pointer-events-none bg-black/50">
-                    <div className="text-white text-xs text-center">
-                      <Camera className="h-8 w-8 mx-auto mb-2 opacity-50" />
-                      <p>Камерын дүрс</p>
-                      <p className="text-gray-400 mt-1 text-[10px]">Camera 1 (IN) - HTTPS</p>
-                    </div>
-                  </div>
                 </div>
                 <div className="w-1/2 flex items-center">
                   <div className="bg-blue-50 border border-blue-200 rounded p-4 h-full flex items-center aspect-video">
