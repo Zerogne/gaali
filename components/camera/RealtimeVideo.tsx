@@ -120,9 +120,9 @@ export function RealtimeVideo({
   };
 
   return (
-    <div className="flex flex-col h-full bg-white rounded-lg border border-gray-200 overflow-hidden">
+    <div className="flex flex-col h-full w-full bg-white rounded-lg border border-gray-200 overflow-hidden">
       {/* Video Display Area */}
-      <div className="flex-1 relative bg-black min-h-[400px] flex items-center justify-center">
+      <div className="flex-1 relative bg-black min-h-[400px] h-full flex items-center justify-center">
         {isLoading && (
           <div className="absolute inset-0 flex items-center justify-center">
             <div className="text-center">

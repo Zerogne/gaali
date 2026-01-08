@@ -178,21 +178,25 @@ export default function DashboardPage() {
         <main className="flex-1 flex flex-col">
           <div className="flex flex-col max-w-[1920px] w-full mx-auto p-1.5 lg:p-2">
             {/* Real-time Video Streams */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-1.5 lg:gap-2 flex-shrink-0 mb-1.5">
-              <RealtimeVideo
-                cameraId="camera-1"
-                direction="IN"
-                onActionClick={(dir) => {
-                  router.push("/in-session");
-                }}
-              />
-              <RealtimeVideo
-                cameraId="camera-2"
-                direction="OUT"
-                onActionClick={(dir) => {
-                  router.push("/out-session");
-                }}
-              />
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-1.5 lg:gap-2 flex-shrink-0 mb-1.5 items-stretch">
+              <div className="h-full min-h-[450px]">
+                <RealtimeVideo
+                  cameraId="camera-1"
+                  direction="IN"
+                  onActionClick={(dir) => {
+                    router.push("/in-session");
+                  }}
+                />
+              </div>
+              <div className="h-full min-h-[450px]">
+                <RealtimeVideo
+                  cameraId="camera-2"
+                  direction="OUT"
+                  onActionClick={(dir) => {
+                    router.push("/out-session");
+                  }}
+                />
+              </div>
             </div>
 
             {/* History Table - Increased height */}
