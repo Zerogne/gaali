@@ -36,7 +36,7 @@ export async function GET(request: NextRequest) {
       ? cameraSettings.camera1Ip 
       : cameraSettings.camera2Ip;
     
-    // Get ports (HTTP/HTTPS: 443, RTSP: 8557, WebSocket: 9080)
+    // Get ports (HTTP/HTTPS: 443, RTSP: 8557 for real-time video, WebSocket: 9080 for other data)
     const httpPort = cameraNum === 1
       ? (cameraSettings.camera1HttpPort || 443)
       : (cameraSettings.camera2HttpPort || 443);

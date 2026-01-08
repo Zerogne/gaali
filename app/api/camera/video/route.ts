@@ -27,14 +27,14 @@ export async function GET(request: NextRequest) {
     const camera1Ip = cameraSettings.camera1Ip;
     const camera2Ip = cameraSettings.camera2Ip;
     
-    // Ports: HTTP/HTTPS (443), RTSP (8557), WebSocket (9080)
+    // Ports: HTTP/HTTPS (443), RTSP (8557 for real-time video), WebSocket (9080 for other data)
     const camera1HttpPort = cameraSettings.camera1HttpPort || 443;
     const camera1RtspPort = cameraSettings.camera1RtspPort || 8557;
-    const camera1WebSocketPort = cameraSettings.camera1WebSocketPort || 9080;
+    const camera1WebSocketPort = cameraSettings.camera1WebSocketPort || 8557; // Real-time video uses port 8557
     
     const camera2HttpPort = cameraSettings.camera2HttpPort || 443;
     const camera2RtspPort = cameraSettings.camera2RtspPort || 8557;
-    const camera2WebSocketPort = cameraSettings.camera2WebSocketPort || 9080;
+    const camera2WebSocketPort = cameraSettings.camera2WebSocketPort || 8557; // Real-time video uses port 8557
 
     // Build URLs for different protocols
     const videoPath = "/video.mjpeg"; // MJPEG path for HTTP/HTTPS

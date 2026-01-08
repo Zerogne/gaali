@@ -1590,7 +1590,7 @@ export const OutSessionForm = forwardRef<
               {/* Camera Video Display - At the top, 50% width with warning */}
               <div className="mb-1 flex gap-4">
                 <div className="w-1/2 aspect-video bg-black rounded-lg overflow-hidden relative border-2 border-gray-200 shadow-lg">
-                  {/* Use WebSocket 9080 for direct camera connection (real-time video) */}
+                  {/* Use WebSocket 8557 for direct camera connection (real-time video) */}
                   <RealtimeVideo
                     cameraId="camera-2"
                     direction="OUT"
