@@ -1458,43 +1458,32 @@ export const InSessionForm = forwardRef<
           {/* Form Content - Single Section Layout */}
           <div className="flex-1 min-h-0 overflow-auto flex justify-center p-4">
             <Card className="p-4 pb-8 w-full max-w-6xl min-h-[calc(100vh-4rem)]">
-              {/* Camera Video Display - At the top, 50% width with warning */}
+              {/* Camera Video Display - At the top, 50% width */}
               <div className="mb-1 flex gap-4">
                 <div className="w-1/2 aspect-video bg-black rounded-lg overflow-hidden relative border-2 border-gray-200 shadow-lg flex items-center justify-center">
-                  {streamUrl ? (
-                    streamUrl.endsWith(".mjpeg") || streamUrl.includes("mjpeg") || streamUrl.includes("stream") ? (
-                      <img 
-                        src={streamUrl}
-                        alt="Camera stream"
-                        className="w-full h-full object-contain"
-                        onError={(e) => {
-                          console.error("Failed to load camera stream:", streamUrl);
-                        }}
-                      />
-                    ) : streamUrl.includes("iframe") || streamUrl.includes(".htm") ? (
-                      <iframe
-                        src={streamUrl}
-                        className="w-full h-full border-0"
-                        allow="camera; microphone"
-                      />
-                    ) : (
-                      <video
-                        src={streamUrl}
-                        autoPlay
-                        playsInline
-                        muted
-                        loop
-                        className="w-full h-full object-contain"
-                      />
-                    )
-                  ) : (
-                    <div className="text-white text-sm p-4 text-center">
-                      <p>Камерын дүрс холбогдохыг хүлээж байна...</p>
-                      <p className="text-xs text-gray-400 mt-2">
-                        Camera stream URL нь тохиргоонд байхгүй байна.
-                      </p>
+                  {/* Use video proxy endpoint for direct camera connection via HTTPS */}
+                  <video
+                    src="/api/camera/proxy?camera=1"
+                    autoPlay
+                    playsInline
+                    muted
+                    loop
+                    className="w-full h-full object-contain"
+                    onError={(e) => {
+                      console.error("Failed to load camera 1 video stream");
+                    }}
+                    onLoadStart={() => {
+                      console.log("📹 Loading camera 1 video stream from HTTPS...");
+                    }}
+                  />
+                  {/* Loading/fallback overlay */}
+                  <div className="absolute inset-0 flex items-center justify-center pointer-events-none bg-black/50">
+                    <div className="text-white text-xs text-center">
+                      <Camera className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                      <p>Камерын дүрс</p>
+                      <p className="text-gray-400 mt-1 text-[10px]">Camera 1 (IN) - HTTPS</p>
                     </div>
-                  )}
+                  </div>
                 </div>
                 <div className="w-1/2 flex items-center">
                   <div className="bg-blue-50 border border-blue-200 rounded p-4 h-full flex items-center aspect-video">

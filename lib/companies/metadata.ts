@@ -14,11 +14,15 @@ export interface CompanyMetadata {
   // Camera settings per company (each company has different camera IPs)
   cameraSettings?: {
     camera1Ip?: string      // e.g., "192.168.1.50"
-    camera1Port?: number   // e.g., 8000
+    camera1HttpPort?: number   // HTTP/HTTPS port (e.g., 443)
+    camera1RtspPort?: number   // RTSP port (e.g., 8557)
+    camera1WebSocketPort?: number // WebSocket port (e.g., 9080)
     camera1Username?: string
     camera1Password?: string
     camera2Ip?: string      // e.g., "192.168.1.49"
-    camera2Port?: number   // e.g., 8000
+    camera2HttpPort?: number   // HTTP/HTTPS port (e.g., 443)
+    camera2RtspPort?: number   // RTSP port (e.g., 8557)
+    camera2WebSocketPort?: number // WebSocket port (e.g., 9080)
     camera2Username?: string
     camera2Password?: string
   }
