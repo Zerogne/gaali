@@ -1601,7 +1601,7 @@ export const InSessionForm = forwardRef<
                         isLoadingTrailers ? "Уншиж байна..." : "Чиргүүл сонгох"
                       }
                       searchPlaceholder="Чиргүүлийн улсын дугаар хайх..."
-                      className="h-12 bg-blue-400 text-white placeholder:text-white"
+                      className="h-12 !bg-blue-400 !text-white !border-blue-400 hover:!bg-blue-500 hover:!border-blue-500 [&>span]:!text-white [&>span.text-muted-foreground]:!text-white/90"
                     />
                   </div>
                 </div>

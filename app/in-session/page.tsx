@@ -206,7 +206,7 @@ function InSessionContent() {
                     htmlFor="inTime"
                     className="text-sm font-medium text-gray-700 whitespace-nowrap"
                   >
-                    Орох цаг *
+                    Орсон *
                   </Label>
                   <Input
                     id="inTime"

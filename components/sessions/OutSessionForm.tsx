@@ -711,64 +711,53 @@ export const OutSessionForm = forwardRef<
         return;
       }
 
-      console.log(
-        "🔍 Auto-fill: Plate number entered:",
-        formState.plateNumber.trim()
-      );
-
       // Don't auto-fill if user is currently typing (debounce)
+      let isMounted = true;
+      const abortController = new AbortController();
+      
       const timeoutId = setTimeout(async () => {
         try {
-          const plateNumber = formState.plateNumber.trim();
-          console.log(
-            "🔍 Auto-fill: Fetching IN session for plate:",
-            plateNumber
-          );
+          const currentPlateNumber = formState.plateNumber.trim();
+          // Double-check plate number hasn't changed during debounce
+          if (!isMounted || currentPlateNumber !== plateNumber) {
+            return;
+          }
 
           // Find the latest IN session and log for this plate number
           const response = await fetch(
             `/api/truck-sessions/find-in?plateNumber=${encodeURIComponent(
-              plateNumber
-            )}`
+              currentPlateNumber
+            )}`,
+            { signal: abortController.signal }
           );
-
-          console.log("🔍 Auto-fill: Response status:", response.status);
 
           if (response.ok) {
             const data = await response.json();
-            console.log("🔍 Auto-fill: Response data:", data);
 
-            if (data.success && data.session) {
+            if (data.success && data.session && isMounted) {
               const inSession = data.session;
               const inLog = data.log; // Log has all the fields
-
-              console.log("✅ Auto-fill: Found IN session:", inSession.id);
-              console.log("✅ Auto-fill: Found IN log:", inLog ? "Yes" : "No");
-              console.log(
-                "✅ Auto-fill: IN session plate:",
-                inSession.plateNumber
-              );
-              console.log(
-                "✅ Auto-fill: IN session weight:",
-                inSession.grossWeightKg
-              );
-              console.log(
-                "✅ Auto-fill: IN log data:",
-                inLog ? JSON.stringify(inLog, null, 2) : "No log"
-              );
 
               // Store IN weight for display
               setInWeightKg(inSession.grossWeightKg || null);
 
               // Auto-fill all available data (only if fields are empty or not set)
               setFormState((prev) => {
+                // Verify we're still processing the same plate number
+                if (prev.plateNumber.trim() !== currentPlateNumber) {
+                  return prev;
+                }
+
                 const updates: Partial<OutSessionFormState> = {
                   inSessionId: inSession.id,
                 };
 
                 // Helper to check if field is empty
-                const isEmpty = (value: any) =>
-                  !value || (typeof value === "string" && value.trim() === "");
+                const isEmpty = (value: unknown): boolean => {
+                  if (value === null || value === undefined) return true;
+                  if (typeof value === "string") return value.trim() === "";
+                  return false;
+                };
 
                 // Auto-fill driver - try log first, then session
                 if (isEmpty(prev.driverId)) {
@@ -964,69 +953,74 @@ export const OutSessionForm = forwardRef<
 
     // Auto-calculate net weight when plate number and out weight are filled
     useEffect(() => {
-      const calculateNetWeight = async () => {
-        // Only calculate if we have plate number and out weight is set (can be 0)
-        if (
-          !formState.plateNumber.trim() ||
-          formState.outWeightKg === null ||
-          formState.outWeightKg === undefined
-        ) {
-          return;
-        }
+      // Only calculate if we have plate number and out weight is set (can be 0)
+      const plateNumber = formState.plateNumber.trim();
+      const outWeight = formState.outWeightKg;
+      
+      if (!plateNumber || outWeight === null || outWeight === undefined) {
+        return;
+      }
 
+      let isMounted = true;
+      const abortController = new AbortController();
+
+      const calculateNetWeight = async () => {
         try {
           // Find the latest IN session for this plate number
           const response = await fetch(
-            `/api/truck-sessions/find-in?plateNumber=${encodeURIComponent(
-              formState.plateNumber.trim()
-            )}`
+            `/api/truck-sessions/find-in?plateNumber=${encodeURIComponent(plateNumber)}`,
+            { signal: abortController.signal }
           );
 
-          if (response.ok) {
+          if (response.ok && isMounted) {
             const data = await response.json();
-            if (data.success && data.session) {
+            if (data.success && data.session && isMounted) {
               const inSession = data.session;
+
+              // Verify plate number and weight haven't changed
+              if (!isMounted || formState.plateNumber.trim() !== plateNumber || formState.outWeightKg !== outWeight) {
+                return;
+              }
 
               // Calculate net weight: IN weight - OUT weight
               // Positive = cargo unloaded, Negative = cargo loaded
               const inWeight = inSession.grossWeightKg || 0;
-              const outWeight = formState.outWeightKg || 0;
-              const netWeight = inWeight - outWeight;
-
-              // Show the actual calculated value (can be negative if cargo was loaded)
-              // Negative values indicate cargo was loaded (OUT > IN)
-              // Positive values indicate cargo was unloaded (IN > OUT)
+              const outWeightValue = outWeight || 0;
+              const netWeight = inWeight - outWeightValue;
 
               // Update form state with calculated net weight
-              setFormState((prev) => ({
-                ...prev,
-                inSessionId: inSession.id,
-                netWeightKg: netWeight,
-              }));
+              setFormState((prev) => {
+                // Double-check values haven't changed
+                if (!isMounted || prev.plateNumber.trim() !== plateNumber || prev.outWeightKg !== outWeight) {
+                  return prev;
+                }
+                return {
+                  ...prev,
+                  inSessionId: inSession.id,
+                  netWeightKg: netWeight,
+                };
+              });
 
               // Store IN weight for display
-              setInWeightKg(inSession.grossWeightKg || null);
-
-              console.log("📊 Net weight calculation:", {
-                inWeight,
-                outWeight,
-                netWeight,
-                meaning:
-                  netWeight > 0
-                    ? "Cargo unloaded"
-                    : netWeight < 0
-                    ? "Cargo loaded"
-                    : "No change",
-              });
+              if (isMounted) {
+                setInWeightKg(inSession.grossWeightKg || null);
+              }
             }
           }
         } catch (error) {
-          console.error("Error calculating net weight:", error);
-          // Don't show error - just silently fail
+          // Only log errors if not aborted and in development
+          if (!abortController.signal.aborted && isMounted && process.env.NODE_ENV === "development") {
+            console.error("Error calculating net weight:", error);
+          }
         }
       };
 
       calculateNetWeight();
+
+      return () => {
+        isMounted = false;
+        abortController.abort();
+      };
     }, [formState.plateNumber, formState.outWeightKg]);
 
     // Check if form has unsaved data
@@ -1583,7 +1577,7 @@ export const OutSessionForm = forwardRef<
         >
           {/* Form Content - Single Section Layout */}
           <div className="flex-1 min-h-0 overflow-auto flex justify-center p-4">
-            <Card className="p-4 pb-8 w-full max-w-6xl min-h-screen">
+            <Card className="p-4 pb-8 w-full max-w-6xl min-h-[calc(100vh+6rem)] flex flex-col">
               {/* Camera Video Display - At the top, 50% width with warning */}
               <div className="mb-1 flex gap-4">
                 <div className="w-1/2 aspect-video bg-black rounded-lg overflow-hidden relative border-2 border-gray-200 shadow-lg flex items-center justify-center">
@@ -1631,7 +1625,7 @@ export const OutSessionForm = forwardRef<
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-4 auto-rows-min">
                 {/* Out Weight Input - Same width as other inputs with warning */}
                 <div className="flex flex-col md:col-span-3">
                   <div className="mb-1 min-h-[1.25rem] flex items-center">
@@ -1708,7 +1702,7 @@ export const OutSessionForm = forwardRef<
                 </div>
 
                 {/* In Weight Input */}
-                <div className="flex flex-col">
+                <div className="flex flex-col min-w-0">
                   <div className="mb-1 min-h-[1.25rem] flex items-center">
                     <Label
                       htmlFor="inWeightKg"
@@ -1717,13 +1711,13 @@ export const OutSessionForm = forwardRef<
                       Орох жин (кг)
                     </Label>
                   </div>
-                  <div className="h-12">
+                  <div className="h-12 min-w-0 max-w-full overflow-hidden">
                     <Input
                       id="inWeightKg"
                       type="number"
                       value={inWeightKg ?? ""}
                       readOnly
-                      className="h-12 text-base w-full bg-green-600 text-white placeholder:text-white [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none [-moz-appearance:textfield]"
+                      className="h-12 text-base w-full max-w-full bg-green-600 text-white placeholder:text-white [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none [-moz-appearance:textfield] box-border"
                       placeholder="Орох жин (кг)"
                     />
                   </div>
@@ -1752,7 +1746,7 @@ export const OutSessionForm = forwardRef<
                         isLoadingTrailers ? "Уншиж байна..." : "Чиргүүл сонгох"
                       }
                       searchPlaceholder="Чиргүүлийн улсын дугаар хайх..."
-                      className="h-12 [&>button]:!bg-blue-400 [&>button]:!text-white [&>button]:!border-blue-400 [&>button>span]:!text-white [&>button>span.text-muted-foreground]:!text-white/90 [&>button:hover]:!bg-blue-400 [&>button:hover]:!border-blue-400"
+                      className="h-12 !bg-blue-400 !text-white !border-blue-400 hover:!bg-blue-500 hover:!border-blue-500 [&>span]:!text-white [&>span.text-muted-foreground]:!text-white/90"
                     />
                   </div>
                 </div>
@@ -2097,7 +2091,7 @@ export const OutSessionForm = forwardRef<
               </div>
 
               {/* Action Buttons */}
-              <div className="flex items-center justify-center gap-2 mt-3 pt-3 border-t border-gray-200">
+              <div className="flex items-center justify-end gap-2 mt-auto pt-3 border-t border-gray-200">
                     <Button
                       type="button"
                       variant="outline"

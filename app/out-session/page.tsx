@@ -200,7 +200,7 @@ function OutSessionContent() {
                 </h1>
                 <div className="flex items-center gap-2 ml-4">
                   <Label htmlFor="outTime" className="text-sm font-medium text-gray-700 whitespace-nowrap">
-                    Гарах цаг *
+                    Гарсан *
                   </Label>
                   <Input
                     id="outTime"
