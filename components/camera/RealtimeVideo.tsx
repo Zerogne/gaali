@@ -21,22 +21,62 @@ export function RealtimeVideo({
   const [isConnected, setIsConnected] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const wsRef = useRef<WebSocket | null>(null);
+  const objectUrlRef = useRef<string | null>(null); // Track object URLs to prevent memory leaks
+  const isMountedRef = useRef(true);
   const router = useRouter();
 
   useEffect(() => {
-    // Connect to video stream WebSocket
-    const connectVideoStream = () => {
+    isMountedRef.current = true;
+    
+    // Connect to video stream WebSocket directly from camera
+    const connectVideoStream = async () => {
+      // Check if component is still mounted
+      if (!isMountedRef.current) return;
+      
       try {
-        // Get WebSocket URL from environment or use default
-        // Default port is 3004 to avoid conflict with plate events server (3001)
-        const wsUrl =
-          process.env.NEXT_PUBLIC_VIDEO_WS_URL ||
-          `ws://localhost:3004/video/${cameraId}`;
+        // Get camera configuration from API (includes WebSocket URL)
+        let wsUrl: string | null = null;
+        
+        try {
+          const configResponse = await fetch('/api/camera/video');
+          if (!isMountedRef.current) return; // Check again after async operation
+          
+          if (configResponse.ok) {
+            const config = await configResponse.json();
+            // Get WebSocket URL for this camera
+            if (cameraId === 'camera-1' && config.camera1?.webSocketUrl) {
+              wsUrl = config.camera1.webSocketUrl;
+              console.log(`📹 Using camera 1 WebSocket: ${wsUrl}`);
+            } else if (cameraId === 'camera-2' && config.camera2?.webSocketUrl) {
+              wsUrl = config.camera2.webSocketUrl;
+              console.log(`📹 Using camera 2 WebSocket: ${wsUrl}`);
+            }
+          }
+        } catch (error) {
+          if (!isMountedRef.current) return;
+          console.warn('Failed to get camera config, using fallback:', error);
+        }
 
-        console.log(`Connecting to video stream for camera ${cameraId}...`);
+        // Fallback: Use environment variable or default localhost (for Electron bridge)
+        if (!wsUrl) {
+          wsUrl = process.env.NEXT_PUBLIC_VIDEO_WS_URL || `ws://localhost:3004/video/${cameraId}`;
+          console.log(`📹 Using fallback WebSocket: ${wsUrl}`);
+        }
+
+        if (!isMountedRef.current) return; // Check before creating WebSocket
+
+        console.log(`Connecting to video stream for camera ${cameraId} at ${wsUrl}...`);
+        
+        // Create WebSocket connection
+        // Note: WebSocket API doesn't support custom headers for authentication
+        // If camera requires auth, it might be in the URL or handled after connection
         const ws = new WebSocket(wsUrl);
 
         ws.onopen = () => {
+          if (!isMountedRef.current) {
+            ws.close();
+            return;
+          }
           console.log(`Video stream connected for camera ${cameraId}`);
           setIsConnected(true);
           setIsLoading(false);
@@ -56,8 +96,13 @@ export function RealtimeVideo({
           if (event.data instanceof Blob) {
             // Binary video data (H.264 stream or similar)
             console.log(`📨 [${cameraId}] Received Blob data`);
-            if (videoRef.current) {
+            if (videoRef.current && isMountedRef.current) {
+              // Revoke previous object URL to prevent memory leaks
+              if (objectUrlRef.current) {
+                URL.revokeObjectURL(objectUrlRef.current);
+              }
               const url = URL.createObjectURL(event.data);
+              objectUrlRef.current = url;
               if (videoRef.current.src !== url) {
                 videoRef.current.src = url;
                 console.log(`✅ [${cameraId}] Set video src from Blob`);
@@ -101,20 +146,22 @@ export function RealtimeVideo({
         };
 
         ws.onerror = (err) => {
+          if (!isMountedRef.current) return;
           console.error(`Video stream error for camera ${cameraId}:`, err);
           setError("Видео серверт холбогдох боломжгүй. Сервер ажиллаж байгаа эсэхийг шалгана уу.");
           setIsLoading(false);
         };
 
         ws.onclose = (event) => {
+          if (!isMountedRef.current) return;
           console.log(`Video stream closed for camera ${cameraId}`, event);
           setIsConnected(false);
           
-          // Only attempt to reconnect if it wasn't a normal closure
-          if (event.code !== 1000) {
+          // Only attempt to reconnect if it wasn't a normal closure and component is still mounted
+          if (event.code !== 1000 && isMountedRef.current) {
             console.log(`Attempting to reconnect in 3 seconds...`);
             setTimeout(() => {
-              if (!wsRef.current || wsRef.current.readyState === WebSocket.CLOSED) {
+              if (isMountedRef.current && (!wsRef.current || wsRef.current.readyState === WebSocket.CLOSED)) {
                 connectVideoStream();
               }
             }, 3000);
@@ -123,6 +170,7 @@ export function RealtimeVideo({
 
         wsRef.current = ws;
       } catch (err) {
+        if (!isMountedRef.current) return;
         console.error(`Error connecting to video stream:`, err);
         setError("Холбогдох боломжгүй");
         setIsLoading(false);
@@ -133,9 +181,15 @@ export function RealtimeVideo({
 
     // Cleanup on unmount
     return () => {
+      isMountedRef.current = false;
       if (wsRef.current) {
         wsRef.current.close();
         wsRef.current = null;
+      }
+      // Revoke object URL to prevent memory leaks
+      if (objectUrlRef.current) {
+        URL.revokeObjectURL(objectUrlRef.current);
+        objectUrlRef.current = null;
       }
     };
   }, [cameraId]);

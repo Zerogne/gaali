@@ -58,12 +58,15 @@ export async function GET(request: NextRequest) {
       : null;
 
     // WebSocket URLs (ws://ip:port or wss://ip:port)
+    // Common WebSocket paths: /, /stream, /video, /ws
+    // Using root path by default, camera may require specific path
+    const wsPath = ""; // Empty for root, or "/stream", "/video", etc.
     const camera1WebSocketUrl = camera1Ip
-      ? `wss://${camera1Ip}:${camera1WebSocketPort}`
+      ? `wss://${camera1Ip}:${camera1WebSocketPort}${wsPath}`
       : null;
     
     const camera2WebSocketUrl = camera2Ip
-      ? `wss://${camera2Ip}:${camera2WebSocketPort}`
+      ? `wss://${camera2Ip}:${camera2WebSocketPort}${wsPath}`
       : null;
 
     return NextResponse.json({

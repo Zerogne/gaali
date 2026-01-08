@@ -49,7 +49,7 @@ export async function GET() {
       streamPath: streamPath || "not set",
       // streamUrl is null to use WebSocket instead of MJPEG
       streamUrl: streamUrl,
-      message: "Use WebSocket for video streaming (ws://localhost:3004/video/camera-1)",
+          message: "Use WebSocket for video streaming (direct camera WebSocket or /api/camera/proxy for HTTP)",
     });
   } catch (error) {
     console.error("Error getting camera config:", error);
