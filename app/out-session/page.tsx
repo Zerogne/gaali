@@ -65,26 +65,21 @@ function OutSessionContent() {
         if (response.ok) {
           const config = await response.json();
           console.log("Camera config received:", config);
-          // Use NEXT_PUBLIC env var if set, otherwise use config streamUrl
-          const url = 
-            process.env.NEXT_PUBLIC_CAMERA_STREAM_URL ||
-            config.streamUrl ||
-            undefined;
-          console.log("Setting streamUrl to:", url);
+          // Don't use MJPEG - use WebSocket instead (RealtimeVideo component)
+          // streamUrl is null to prevent MJPEG loading errors
+          // Video will come from WebSocket: ws://localhost:3004/video/camera-2
+          const url = config.streamUrl || undefined; // Will be null, which is correct
+          console.log("Setting streamUrl to:", url, "(null = use WebSocket)");
           setStreamUrl(url);
         } else {
           console.warn("Camera config API returned non-OK status:", response.status);
-          // Fallback to env var if API fails
-          const fallbackUrl = process.env.NEXT_PUBLIC_CAMERA_STREAM_URL;
-          console.log("Using fallback streamUrl:", fallbackUrl);
-          setStreamUrl(fallbackUrl);
+          // Don't use fallback MJPEG - use WebSocket instead
+          setStreamUrl(undefined);
         }
       } catch (error) {
         console.error("Failed to fetch camera stream URL:", error);
-        // Fallback to env var if API fails
-        const fallbackUrl = process.env.NEXT_PUBLIC_CAMERA_STREAM_URL;
-        console.log("Using fallback streamUrl after error:", fallbackUrl);
-        setStreamUrl(fallbackUrl);
+        // Don't use fallback MJPEG - use WebSocket instead
+        setStreamUrl(undefined);
       }
     };
     fetchStreamUrl();

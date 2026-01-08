@@ -11,6 +11,17 @@ export interface CompanyMetadata {
   password?: string  // Company password for authentication
   createdAt: string | Date  // Can be Date from DB or ISO string after serialization
   updatedAt: string | Date
+  // Camera settings per company (each company has different camera IPs)
+  cameraSettings?: {
+    camera1Ip?: string      // e.g., "192.168.1.50"
+    camera1Port?: number   // e.g., 8000
+    camera1Username?: string
+    camera1Password?: string
+    camera2Ip?: string      // e.g., "192.168.1.49"
+    camera2Port?: number   // e.g., 8000
+    camera2Username?: string
+    camera2Password?: string
+  }
 }
 
 /**
@@ -40,6 +51,7 @@ export async function getAllCompanies(): Promise<CompanyMetadata[]> {
           description: companyData.description,
           logoUrl: companyData.logoUrl,
           logoInitials: companyData.logoInitials,
+          cameraSettings: companyData.cameraSettings || undefined, // Include camera settings (without passwords in client)
           createdAt: companyData.createdAt instanceof Date 
             ? companyData.createdAt.toISOString() 
             : (typeof companyData.createdAt === 'string' 
@@ -84,6 +96,7 @@ export async function getCompany(companyId: string): Promise<CompanyMetadata | n
     description: companyData.description,
     logoUrl: companyData.logoUrl,
     logoInitials: companyData.logoInitials,
+    cameraSettings: companyData.cameraSettings || undefined, // Include camera settings
     createdAt: companyData.createdAt instanceof Date 
       ? companyData.createdAt.toISOString() 
       : (typeof companyData.createdAt === 'string' 

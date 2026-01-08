@@ -1,38 +1,62 @@
 import { NextResponse } from "next/server";
+import { getActiveCompany } from "@/lib/auth/session";
+import { getCompany } from "@/lib/companies/metadata";
 
 /**
- * Debug endpoint to check camera configuration
- * Returns whether env vars are loaded (without exposing secrets)
+ * Get camera configuration for current company
+ * Returns camera IPs from company settings (not hardcoded)
+ * Returns null for streamUrl to use WebSocket instead of MJPEG
  */
 export async function GET() {
-  const baseUrl = process.env.CAMERA_BASE_URL;
-  const eventPath = process.env.CAMERA_EVENT_PATH;
-  const streamPath = process.env.CAMERA_STREAM_PATH || "/video.mjpeg";
-  const hasAuth = !!process.env.CAMERA_AUTH;
-  const pollMs = process.env.CAMERA_POLL_MS;
-  
-  // Allow override via NEXT_PUBLIC env var (for direct camera access)
-  const publicStreamUrl = process.env.NEXT_PUBLIC_CAMERA_STREAM_URL;
-  
-  // Build stream URL - prefer public env var, then build from baseUrl
-  let streamUrl = null;
-  if (publicStreamUrl) {
-    streamUrl = publicStreamUrl;
-  } else if (baseUrl) {
-    streamUrl = `${baseUrl}${streamPath}`;
+  try {
+    // Get current company
+    const companyId = await getActiveCompany().catch(() => null);
+    
+    let camera1Ip = null;
+    let camera2Ip = null;
+    
+    // Try to get camera IPs from company settings
+    if (companyId) {
+      try {
+        const company = await getCompany(companyId);
+        if (company?.cameraSettings) {
+          camera1Ip = company.cameraSettings.camera1Ip || null;
+          camera2Ip = company.cameraSettings.camera2Ip || null;
+        }
+      } catch (error) {
+        console.warn("Could not get company camera settings:", error);
+      }
+    }
+    
+    // Fallback to environment variables if company settings not available
+    // (for backward compatibility and local development)
+    const baseUrl = process.env.CAMERA_BASE_URL;
+    const eventPath = process.env.CAMERA_EVENT_PATH;
+    const streamPath = process.env.CAMERA_STREAM_PATH || "/video.mjpeg";
+    
+    // Don't build MJPEG URL - use WebSocket instead
+    // Setting streamUrl to null prevents MJPEG loading errors
+    const streamUrl = null;
+    
+    return NextResponse.json({
+      configured: !!(camera1Ip || baseUrl),
+      companyId: companyId || null,
+      camera1Ip: camera1Ip || null,
+      camera2Ip: camera2Ip || null,
+      // Legacy fields (for backward compatibility)
+      baseUrl: baseUrl || "not set",
+      eventPath: eventPath || "not set",
+      streamPath: streamPath || "not set",
+      // streamUrl is null to use WebSocket instead of MJPEG
+      streamUrl: streamUrl,
+      message: "Use WebSocket for video streaming (ws://localhost:3004/video/camera-1)",
+    });
+  } catch (error) {
+    console.error("Error getting camera config:", error);
+    return NextResponse.json({
+      configured: false,
+      streamUrl: null, // Don't try to load MJPEG
+      error: "Failed to get camera config",
+    }, { status: 500 });
   }
-  
-  // If no stream URL configured, return null (video won't show)
-  // User needs to set up RTSP proxy separately or configure NEXT_PUBLIC_CAMERA_STREAM_URL
-
-  return NextResponse.json({
-    configured: !!baseUrl,
-    baseUrl: baseUrl || "not set",
-    eventPath: eventPath || "not set",
-    streamPath: streamPath || "not set",
-    hasAuth,
-    pollMs: pollMs ? parseInt(pollMs, 10) : 500,
-    fullUrl: baseUrl && eventPath ? `${baseUrl}${eventPath}` : null,
-    streamUrl: streamUrl,
-  });
 }
