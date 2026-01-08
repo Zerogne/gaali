@@ -44,32 +44,57 @@ export function RealtimeVideo({
         };
 
         ws.onmessage = (event) => {
+          // DEBUG: Log every message received
+          console.log(`📨 [${cameraId}] Message received:`, {
+            isBlob: event.data instanceof Blob,
+            isString: typeof event.data === 'string',
+            length: event.data?.length || 0,
+            preview: typeof event.data === 'string' ? event.data.substring(0, 100) : 'blob'
+          });
+
           // Handle video frame data
           if (event.data instanceof Blob) {
             // Binary video data (H.264 stream or similar)
+            console.log(`📨 [${cameraId}] Received Blob data`);
             if (videoRef.current) {
               const url = URL.createObjectURL(event.data);
               if (videoRef.current.src !== url) {
                 videoRef.current.src = url;
+                console.log(`✅ [${cameraId}] Set video src from Blob`);
               }
             }
           } else {
             // Text/JSON data
             try {
               const message = JSON.parse(event.data);
+              console.log(`📨 [${cameraId}] Parsed message:`, {
+                type: message.type,
+                hasData: !!message.data,
+                dataLength: message.data?.length || 0
+              });
+
               if (message.type === "frame" && videoRef.current) {
                 // Base64 encoded JPEG frame
+                console.log(`✅ [${cameraId}] Setting video src from frame data`);
                 videoRef.current.src = `data:image/jpeg;base64,${message.data}`;
+                console.log(`✅ [${cameraId}] Video src set, length: ${videoRef.current.src.length}`);
               } else if (message.type === "stream_url" && videoRef.current) {
                 // Direct stream URL (RTSP, HLS, etc.)
+                console.log(`✅ [${cameraId}] Setting video src from stream URL: ${message.url}`);
                 videoRef.current.src = message.url;
               } else if (message.type === "connected") {
-                console.log(`Connected to camera ${message.cameraId}`);
+                console.log(`✅ [${cameraId}] Connected to camera ${message.cameraId}`);
+              } else {
+                console.log(`ℹ️ [${cameraId}] Unknown message type: ${message.type}`);
               }
             } catch (err) {
               // If not JSON, might be base64 string directly
+              console.log(`📨 [${cameraId}] Not JSON, trying as base64 string`);
               if (typeof event.data === "string" && videoRef.current) {
                 videoRef.current.src = `data:image/jpeg;base64,${event.data}`;
+                console.log(`✅ [${cameraId}] Set video src from base64 string`);
+              } else {
+                console.warn(`⚠️ [${cameraId}] Could not parse message:`, err);
               }
             }
           }

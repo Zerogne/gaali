@@ -1,0 +1,26 @@
+// QUICK BROWSER CONSOLE TEST
+// Copy this entire block and paste into browser console (F12)
+
+const test = () => {
+  console.log('🧪 TEST STARTING...');
+  const ws = new WebSocket('ws://localhost:3004/video/camera-1');
+  let count = 0;
+  
+  ws.onopen = () => console.log('✅ CONNECTED!');
+  ws.onmessage = (e) => {
+    count++;
+    console.log(`📨 #${count}`, typeof e.data, e.data.length || 0);
+    try {
+      const m = JSON.parse(e.data);
+      console.log(`   Type: ${m.type}`, m.data ? `Data: ${m.data.length} chars` : '');
+      if (m.type === 'frame') console.log(`   📹 FRAME!`);
+    } catch (err) {
+      console.log('   ❌ Not JSON');
+    }
+  };
+  ws.onerror = (e) => console.error('❌ ERROR:', e);
+  ws.onclose = () => console.log(`🔌 CLOSED. Got ${count} messages`);
+  setTimeout(() => ws.close(), 10000);
+};
+
+test();
