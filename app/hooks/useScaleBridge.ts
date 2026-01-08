@@ -85,6 +85,14 @@ export function useScaleBridge(): UseScaleBridgeResult {
         try {
           const parsed = JSON.parse(rawData)
           setLastJson(parsed)
+          
+          // Handle weight data from scale bridge (automatic broadcasts)
+          // Format: { type: 'weight', weight: number, unit: string, ... }
+          if (parsed && typeof parsed === 'object' && parsed.type === 'weight') {
+            // Weight data received automatically from scale bridge
+            // This is different from requestScaleData which sends URLs
+            // The scale bridge automatically broadcasts weight when received from TCP
+          }
         } catch {
           // Not JSON, that's okay
           setLastJson(null)
@@ -149,6 +157,10 @@ export function useScaleBridge(): UseScaleBridgeResult {
   }, [connect])
 
   // Request scale data by sending URL
+  // Note: With the new scale bridge (TCP server mode), weight data is automatically
+  // broadcast when received from the scale device. This function is kept for backward
+  // compatibility but may not be needed if using the automatic scale bridge.
+  // The scale bridge can handle "request_weight" messages if needed.
   const requestScaleData = useCallback(
     (url: string) => {
       if (!url || typeof url !== "string") {
@@ -178,6 +190,8 @@ export function useScaleBridge(): UseScaleBridgeResult {
       }
 
       try {
+        // Send URL (for legacy scale service) or request message (for scale bridge)
+        // Scale bridge can handle JSON messages like: { type: 'request_weight' }
         ws.send(url)
         setIsRequestPending(true)
         setErrorMessage(null)

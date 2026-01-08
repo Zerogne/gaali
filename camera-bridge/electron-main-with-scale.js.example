@@ -1,0 +1,199 @@
+/**
+ * Example: Electron main.js with Real-Time Weight Passing
+ * 
+ * Copy this code into your Electron main.js file to enable real-time weight passing.
+ * 
+ * Requirements:
+ * 1. Install: npm install ws
+ * 2. Copy electron-scale-bridge.js to your Electron app
+ * 3. Configure scale device to TCP Server mode
+ */
+
+const { app, BrowserWindow } = require('electron');
+const ScaleBridge = require('./camera-bridge/electron-scale-bridge');
+// const VideoStreamServer = require('./camera-bridge/electron-video-stream-server'); // If you have cameras
+
+let mainWindow;
+let scaleBridge;
+// let videoStreamServer; // If you have cameras
+
+function createWindow() {
+  mainWindow = new BrowserWindow({
+    width: 1200,
+    height: 800,
+    webPreferences: {
+      nodeIntegration: false,
+      contextIsolation: true,
+      // Add preload script if you need IPC communication
+      // preload: path.join(__dirname, 'preload.js')
+    }
+  });
+
+  // Load your app (adjust URL as needed)
+  if (process.env.NODE_ENV === 'development') {
+    mainWindow.loadURL('http://localhost:3000');
+    mainWindow.webContents.openDevTools();
+  } else {
+    mainWindow.loadFile('index.html'); // Or your production URL
+  }
+}
+
+app.whenReady().then(async () => {
+  createWindow();
+
+  try {
+    // ========================================================================
+    // REAL-TIME WEIGHT PASSING SETUP
+    // ========================================================================
+    console.log('⚖️ Initializing real-time weight passing...');
+    
+    scaleBridge = new ScaleBridge({
+      // Scale device TCP server configuration
+      scaleHost: process.env.SCALE_HOST || '192.168.1.100',
+      scalePort: parseInt(process.env.SCALE_PORT || '4001', 10),
+      
+      // WebSocket server port (frontend connects here)
+      wsPort: parseInt(process.env.SCALE_WS_PORT || '9000', 10),
+      
+      // Optional: Customize data parsing based on your scale device
+      dataEncoding: 'utf8',
+      dataDelimiter: '\n', // Common: '\n', '\r\n', '\r'
+      parseWeightRegex: null, // Optional: /Weight[:\s]+(\d+\.?\d*)/i
+      
+      // Event handlers - weight data is automatically passed in real-time
+      onWeightReceived: (weightData) => {
+        console.log(`⚖️ Real-time weight received: ${weightData.weight} ${weightData.unit}`);
+        
+        // Optional: Send to renderer process via IPC if needed
+        if (mainWindow && !mainWindow.isDestroyed()) {
+          mainWindow.webContents.send('weight-update', {
+            weight: weightData.weight,
+            unit: weightData.unit,
+            timestamp: weightData.timestamp
+          });
+        }
+        
+        // Optional: Save to database, send to API, etc.
+        // await saveWeightToDatabase(weightData);
+      },
+      
+      onScaleConnected: () => {
+        console.log('✅ Scale device connected - real-time weight passing active');
+        
+        // Optional: Notify renderer process
+        if (mainWindow && !mainWindow.isDestroyed()) {
+          mainWindow.webContents.send('scale-status', { 
+            connected: true,
+            message: 'Scale connected - weight data will be passed in real-time'
+          });
+        }
+      },
+      
+      onScaleDisconnected: (hadError) => {
+        console.log(`⚠️ Scale device disconnected${hadError ? ' (with error)' : ''}`);
+        
+        // Optional: Notify renderer process
+        if (mainWindow && !mainWindow.isDestroyed()) {
+          mainWindow.webContents.send('scale-status', { 
+            connected: false,
+            message: 'Scale disconnected'
+          });
+        }
+      },
+      
+      onError: (error) => {
+        console.error('❌ Scale bridge error:', error);
+        
+        // Optional: Notify renderer process
+        if (mainWindow && !mainWindow.isDestroyed()) {
+          mainWindow.webContents.send('scale-error', {
+            message: error.message
+          });
+        }
+      }
+    });
+    
+    // Add health check endpoint (optional but recommended)
+    scaleBridge.addHealthEndpoint();
+    
+    // Start the scale bridge - this enables real-time weight passing
+    await scaleBridge.start();
+    console.log('✅ Real-time weight passing enabled!');
+    console.log('   - Scale device: ' + (process.env.SCALE_HOST || '192.168.1.100') + ':' + (process.env.SCALE_PORT || '4001'));
+    console.log('   - WebSocket: ws://localhost:' + (process.env.SCALE_WS_PORT || '9000') + '/service');
+    console.log('   - Frontend will automatically receive weight data in real-time');
+    
+    // Optional: Log status periodically
+    setInterval(() => {
+      const status = scaleBridge.getStatus();
+      if (status.scaleConnected) {
+        console.log(`📊 Scale bridge: Connected, ${status.wsClients} WebSocket client(s)`);
+      } else {
+        console.log(`📊 Scale bridge: Disconnected (attempting to reconnect...)`);
+      }
+    }, 30000); // Every 30 seconds
+    
+    // ========================================================================
+    // OPTIONAL: Video Stream Server (if you have cameras)
+    // ========================================================================
+    /*
+    videoStreamServer = new VideoStreamServer(3004);
+    videoStreamServer.addHealthEndpoint();
+    await videoStreamServer.start();
+    console.log('✅ Video stream server ready');
+    */
+    
+  } catch (error) {
+    console.error('❌ Failed to initialize bridges:', error);
+    // Optional: Show error dialog to user
+    // dialog.showErrorBox('Initialization Error', error.message);
+  }
+});
+
+// Cleanup on app quit
+app.on('before-quit', async () => {
+  console.log('👋 Shutting down...');
+  
+  if (scaleBridge) {
+    console.log('   Stopping scale bridge...');
+    await scaleBridge.stop();
+  }
+  
+  // if (videoStreamServer) {
+  //   console.log('   Stopping video stream server...');
+  //   await videoStreamServer.stop();
+  // }
+});
+
+app.on('window-all-closed', () => {
+  if (process.platform !== 'darwin') {
+    app.quit();
+  }
+});
+
+app.on('activate', () => {
+  if (BrowserWindow.getAllWindows().length === 0) {
+    createWindow();
+  }
+});
+
+// ========================================================================
+// OPTIONAL: IPC Handlers for Renderer Process
+// ========================================================================
+// If you want to send weight data to renderer via IPC instead of WebSocket:
+/*
+const { ipcMain } = require('electron');
+
+ipcMain.handle('get-scale-status', () => {
+  if (scaleBridge) {
+    return scaleBridge.getStatus();
+  }
+  return { scaleConnected: false };
+});
+
+ipcMain.handle('request-weight', () => {
+  // If your scale supports commands, you could send a request here
+  // For now, weight is automatically sent when received
+  return { message: 'Weight is automatically sent when received from scale' };
+});
+*/
