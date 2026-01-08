@@ -161,6 +161,9 @@ export async function printLog(log: TruckLog, providedUniqueCode?: string | null
     throw new Error("Failed to open print window. Please allow popups for this site.");
   }
 
+  // Set window title
+  printWindow.document.title = "Пүүний баримт";
+
   printWindow.document.write(htmlContent);
   printWindow.document.close();
 
@@ -385,7 +388,22 @@ function generateLogHTML(
     <html>
     <head>
       <meta charset="UTF-8">
+      <title>Пүүний баримт</title>
       <style>
+        @page {
+          margin: 0;
+          size: A4;
+        }
+        @media print {
+          @page {
+            margin: 0;
+            size: A4;
+          }
+          body {
+            margin: 0;
+            padding: 5mm 10mm 12mm 10mm;
+          }
+        }
         * {
           margin: 0;
           padding: 0;
@@ -397,7 +415,7 @@ function generateLogHTML(
           line-height: 1.5;
           color: rgb(0, 0, 0);
           background: rgb(255, 255, 255);
-          padding: 12mm 10mm;
+          padding: 5mm 10mm 12mm 10mm;
           width: 210mm;
         }
         .company-name {
@@ -405,6 +423,7 @@ function generateLogHTML(
           font-size: 16px;
           font-weight: bold;
           margin-bottom: 8px;
+          margin-top: 0;
         }
         .document-header {
           display: flex;
@@ -417,6 +436,9 @@ function generateLogHTML(
           text-align: center;
           flex: 1;
           font-size: 11px;
+          font-family: "Courier New", Courier, "Lucida Console", Monaco, monospace;
+          font-weight: 600;
+          letter-spacing: 0.5px;
         }
         .created-date {
           text-align: right;
@@ -452,15 +474,15 @@ function generateLogHTML(
           width: 100%;
           border-collapse: collapse;
           margin-top: 6px;
-          font-size: 9px;
-          border: 1px solid rgb(156, 163, 175);
+          font-size: 10px;
+          border: 0.5px solid rgb(156, 163, 175);
         }
         .data-table td {
           padding: 4px 6px;
-          border: 1px solid rgb(156, 163, 175);
+          border: 0.5px solid rgb(156, 163, 175);
           vertical-align: middle;
           background-color: rgb(255, 255, 255);
-          line-height: 1.3;
+          line-height: 1.4;
         }
         .data-table .label-cell {
           font-weight: 600;
@@ -479,7 +501,7 @@ function generateLogHTML(
           font-weight: 500;
         }
         .data-table .empty-cell {
-          border: 1px solid rgb(156, 163, 175);
+          border: 0.5px solid rgb(156, 163, 175);
         }
       </style>
     </head>
@@ -489,13 +511,12 @@ function generateLogHTML(
         ${escapeHtml(displayCompanyName)}
       </div>
 
-      <!-- Document ID and Created Date -->
+      <!-- Document ID -->
       <div class="document-header">
         <div class="document-id">
           ПҮҮНИЙ БАРИМТ: ${receiptNumber}
         </div>
         <div class="created-date">
-          Үүссэн огноо:${createdDate}
         </div>
       </div>
 

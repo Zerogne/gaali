@@ -192,6 +192,7 @@ export const OutSessionForm = forwardRef<
     const [locations, setLocations] = useState<Location[]>([]);
     const [isLoadingLocations, setIsLoadingLocations] = useState(true);
     const [inWeightKg, setInWeightKg] = useState<number | null>(null);
+    const [savedUniqueCode, setSavedUniqueCode] = useState<string | null>(null);
 
     const [formState, setFormState] = useState<OutSessionFormState>({
       plateNumber: "",
@@ -1166,6 +1167,7 @@ export const OutSessionForm = forwardRef<
 
           // Reset form
           setInWeightKg(null);
+          setSavedUniqueCode(null);
           setFormState({
             plateNumber: "",
             driverId: "",
@@ -1246,6 +1248,11 @@ export const OutSessionForm = forwardRef<
         }
 
         const savedSession = await response.json();
+
+        // Store the unique code from the saved session
+        if (savedSession.session?.uniqueCode) {
+          setSavedUniqueCode(savedSession.session.uniqueCode);
+        }
 
         toast({
           title: "Амжилттай",
@@ -1511,6 +1518,7 @@ export const OutSessionForm = forwardRef<
         }
 
         // Reset form
+        setSavedUniqueCode(null);
         setFormState({
           plateNumber: "",
           driverId: "",
@@ -2103,64 +2111,28 @@ export const OutSessionForm = forwardRef<
                                 ?.label || ""
                             : "";
 
-                          // Try to fetch the OUT session's unique code if it exists
-                          let uniqueCode: string | null = null;
-                          try {
-                            const sessionsResponse = await fetch(
-                              `/api/truck-sessions?direction=OUT&plateNumber=${encodeURIComponent(
-                                formState.plateNumber.trim()
-                              )}&limit=10`
-                            );
-                            if (sessionsResponse.ok) {
-                              const sessionsData =
-                                await sessionsResponse.json();
-                              // Find the session that matches the out time (if available)
-                              const outTime = formState.outTime
-                                ? new Date(formState.outTime)
-                                : new Date();
-                              const outSession =
-                                sessionsData.sessions?.find((s: any) => {
-                                  const sessionDate = new Date(s.createdAt);
-                                  return (
-                                    Math.abs(
-                                      sessionDate.getTime() - outTime.getTime()
-                                    ) < 3600000
-                                  );
-                                }) || sessionsData.sessions?.[0];
-
-                              if (outSession?.uniqueCode) {
-                                uniqueCode = outSession.uniqueCode;
-                                console.log(
-                                  "✅ Print: Found OUT session unique code:",
-                                  uniqueCode
-                                );
-                              }
-                            }
-                          } catch (e) {
-                            console.warn(
-                              "Could not fetch OUT session unique code:",
-                              e
-                            );
-                          }
-
-                          // If no OUT session found, generate a new unique code for the OUT session
+                          // Use the saved unique code if available, otherwise try to fetch it
+                          let uniqueCode: string | null = savedUniqueCode;
+                          
                           if (!uniqueCode) {
                             try {
-                              const generateResponse = await fetch(
-                                "/api/truck-sessions/generate-code"
+                              const sessionsResponse = await fetch(
+                                `/api/truck-sessions?direction=OUT&plateNumber=${encodeURIComponent(
+                                  formState.plateNumber.trim()
+                                )}&limit=1&sort=createdAt`
                               );
-                              if (generateResponse.ok) {
-                                const generateData =
-                                  await generateResponse.json();
-                                uniqueCode = generateData.uniqueCode;
-                                console.log(
-                                  "✅ Print: Generated new unique code for OUT session:",
-                                  uniqueCode
-                                );
+                              if (sessionsResponse.ok) {
+                                const sessionsData =
+                                  await sessionsResponse.json();
+                                // Get the most recent session (first one since sorted)
+                                const outSession = sessionsData.sessions?.[0];
+                                if (outSession?.uniqueCode) {
+                                  uniqueCode = outSession.uniqueCode;
+                                }
                               }
                             } catch (e) {
                               console.warn(
-                                "Could not generate unique code:",
+                                "Could not fetch OUT session unique code:",
                                 e
                               );
                             }

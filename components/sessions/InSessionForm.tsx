@@ -187,6 +187,7 @@ export const InSessionForm = forwardRef<
     const [locations, setLocations] = useState<Location[]>([]);
     const [isLoadingLocations, setIsLoadingLocations] = useState(true);
     const [isDriverDialogOpen, setIsDriverDialogOpen] = useState(false);
+    const [savedUniqueCode, setSavedUniqueCode] = useState<string | null>(null);
 
     const [formState, setFormState] = useState<InSessionFormState>({
       plateNumber: "",
@@ -1053,6 +1054,7 @@ export const InSessionForm = forwardRef<
           });
 
           // Reset form
+          setSavedUniqueCode(null);
           setFormState({
             plateNumber: "",
             driverId: "",
@@ -1123,6 +1125,11 @@ export const InSessionForm = forwardRef<
         }
 
         const savedSession = await response.json();
+
+        // Store the unique code from the saved session
+        if (savedSession.session?.uniqueCode) {
+          setSavedUniqueCode(savedSession.session.uniqueCode);
+        }
 
         toast({
           title: "Амжилттай",
@@ -1388,6 +1395,7 @@ export const InSessionForm = forwardRef<
         }
 
         // Reset form
+        setSavedUniqueCode(null);
         setFormState({
           plateNumber: "",
           driverId: "",
