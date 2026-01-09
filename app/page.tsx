@@ -2,7 +2,9 @@
 
 import { Sidebar } from "@/components/sidebar";
 import { TruckTable } from "@/components/trucks/TruckTable";
-import { HttpVideoStream } from "@/components/camera/HttpVideoStream";
+// Use RealtimeVideoProxy for Electron bridge (RTSP support)
+// Falls back to HttpVideoStream if Electron bridge not available
+import { RealtimeVideoProxy } from "@/components/camera/RealtimeVideoProxy";
 import { getTruckLogs } from "@/lib/api";
 import type { TruckLog } from "@/lib/types";
 import { useRouter } from "next/navigation";
@@ -180,7 +182,7 @@ export default function DashboardPage() {
             {/* Real-time Video Streams */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-1.5 lg:gap-2 flex-shrink-0 mb-1.5 items-stretch">
               <div className="h-full min-h-[450px]">
-                <HttpVideoStream
+                <RealtimeVideoProxy
                   cameraId="1"
                   direction="IN"
                   onActionClick={() => {
@@ -189,7 +191,7 @@ export default function DashboardPage() {
                 />
               </div>
               <div className="h-full min-h-[450px]">
-                <HttpVideoStream
+                <RealtimeVideoProxy
                   cameraId="2"
                   direction="OUT"
                   onActionClick={() => {

@@ -1,0 +1,211 @@
+Create an Electron application that acts as a real-time video bridge between RTSP cameras and a Next.js web application. The app converts RTSP video streams to WebSocket streams using FFmpeg.
+
+## Core Functionality
+
+1. **RTSP to WebSocket Bridge**
+   - Connect to 2 RTSP cameras simultaneously
+   - Camera 1: rtsp://192.168.1.50:8557/h264
+   - Camera 2: rtsp://192.168.1.49:8557/h264
+   - Convert RTSP streams to MPEG-TS format using FFmpeg
+   - Stream MPEG-TS over WebSocket for browser consumption
+   - Camera 1 WebSocket: ws://localhost:9999/camera/1
+   - Camera 2 WebSocket: ws://localhost:10000/camera/2
+
+2. **Technical Requirements**
+   - Use `node-rtsp-stream` package for RTSP handling
+   - Use `ws` package for WebSocket servers
+   - FFmpeg settings:
+     * Output: MPEG-TS format (for JSMpeg compatibility)
+     * Frame rate: 30 fps
+     * Resolution: 1280x720
+     * Bitrate: 2000k
+     * Codec: mpeg1video
+   - Support multiple concurrent WebSocket connections per camera
+   - Handle binary data (MPEG-TS stream)
+
+3. **App Structure**
+   - Main process (main.js):
+     * Initialize Electron app
+     * Create WebSocket servers on ports 9999 and 10000
+     * Start RTSP streams using node-rtsp-stream
+     * Bridge RTSP data events to WebSocket clients
+     * Handle app lifecycle (start streams on ready, stop on quit)
+   - Renderer process (renderer.js + index.html):
+     * Simple UI showing camera connection status
+     * Display WebSocket client count per camera
+     * Show RTSP stream status (connected/disconnected)
+     * Display errors/logs
+     * Allow basic configuration
+
+4. **Configuration**
+   - Store camera settings in config/cameras.json:
+     ```json
+     {
+       "cameras": [
+         {
+           "id": "1",
+           "rtspUrl": "rtsp://192.168.1.50:8557/h264",
+           "wsPort": 9999,
+           "username": "admin",
+           "password": "admin"
+         },
+         {
+           "id": "2",
+           "rtspUrl": "rtsp://192.168.1.49:8557/h264",
+           "wsPort": 10000,
+           "username": "admin",
+           "password": "admin"
+         }
+       ],
+       "ffmpeg": {
+         "fps": 30,
+         "resolution": "1280x720",
+         "bitrate": "2000k"
+       }
+     }
+     ```
+   - Load configuration on app start
+   - Support runtime configuration updates
+
+5. **Error Handling & Resilience**
+   - Retry RTSP connections if they fail (exponential backoff)
+   - Handle camera disconnections gracefully
+   - Restart streams automatically on failure
+   - Log all errors to console and UI
+   - Handle WebSocket client disconnections
+   - Check if ports are available before starting
+
+6. **UI Requirements**
+   - Minimal, clean interface
+   - Show status for each camera:
+     * RTSP connection status (Connected/Disconnected/Error)
+     * WebSocket server status (Running/Stopped)
+     * Active WebSocket client count
+     * Stream quality indicators
+   - Display recent logs/errors
+   - Show app version and FFmpeg version
+   - Button to restart streams manually
+   - Configuration panel (optional)
+
+7. **Additional Features**
+   - Health check: HTTP GET endpoint on port 3001 returns JSON status
+   - Logging: Console logs + optional file logging
+   - Auto-start: Streams start automatically when app launches
+   - Graceful shutdown: Stop all streams and close WebSocket servers on app quit
+   - System tray: Optional system tray icon with status
+
+## File Structure
+
+```
+electron-camera-bridge/
+├── package.json
+├── main.js (Main process - RTSP/WebSocket bridge)
+├── preload.js (Preload script for security)
+├── renderer/
+│   ├── index.html (UI)
+│   ├── renderer.js (Renderer process)
+│   └── styles.css (Optional styling)
+├── config/
+│   └── cameras.json (Camera configuration)
+├── .gitignore
+└── README.md
+```
+
+## Dependencies
+
+```json
+{
+  "name": "camera-bridge",
+  "version": "1.0.0",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "dev": "electron . --dev"
+  },
+  "dependencies": {
+    "electron": "^latest",
+    "node-rtsp-stream": "^0.0.9",
+    "ws": "^8.19.0"
+  }
+}
+```
+
+## Integration with Next.js
+
+- Next.js app connects to: `ws://localhost:9999/camera/1` and `ws://localhost:10000/camera/2`
+- WebSocket sends binary MPEG-TS data
+- Browser uses JSMpeg to decode and display video
+- For production: Use Cloudflare Tunnel to expose WebSocket servers
+
+## Key Implementation Details
+
+1. **RTSP Stream Setup**
+   ```javascript
+   const Stream = require('node-rtsp-stream');
+   const stream = new Stream({
+     name: 'camera-1',
+     streamUrl: 'rtsp://192.168.1.50:8557/h264',
+     wsPort: 0, // We handle WebSocket ourselves
+     ffmpegOptions: {
+       '-stats': '',
+       '-r': 30,
+       '-s': '1280x720',
+       '-b:v': '2000k',
+       '-f': 'mpegts',
+       '-codec:v': 'mpeg1video'
+     }
+   });
+   ```
+
+2. **WebSocket Server Setup**
+   ```javascript
+   const { WebSocketServer } = require('ws');
+   const { createServer } = require('http');
+   const server = createServer();
+   const wss = new WebSocketServer({ server, path: '/camera/1' });
+   server.listen(9999);
+   ```
+
+3. **Bridge RTSP to WebSocket**
+   - Listen to `stream.on('data')` events
+   - Forward data to all connected WebSocket clients
+   - Handle client connections/disconnections
+
+4. **App Lifecycle**
+   - `app.whenReady()` → Start all camera streams
+   - `app.on('before-quit')` → Stop all streams gracefully
+   - Handle `SIGINT` and `SIGTERM` for clean shutdown
+
+## Testing Checklist
+
+- [ ] RTSP connection to camera 1 works
+- [ ] RTSP connection to camera 2 works
+- [ ] WebSocket server accepts connections on port 9999
+- [ ] WebSocket server accepts connections on port 10000
+- [ ] MPEG-TS stream is valid and playable
+- [ ] Multiple WebSocket clients can connect simultaneously
+- [ ] Stream restarts after camera disconnection
+- [ ] App handles graceful shutdown
+- [ ] UI displays correct status
+- [ ] Configuration file is loaded correctly
+
+## Error Scenarios to Handle
+
+- Camera unreachable (network error, wrong IP)
+- FFmpeg not installed or not in PATH
+- Port already in use (9999 or 10000)
+- RTSP authentication failure
+- RTSP stream interruption
+- WebSocket client disconnection
+- Invalid camera configuration
+
+## Production Considerations
+
+- Bundle FFmpeg with the app (or provide installation instructions)
+- Add authentication for WebSocket connections (optional)
+- Add rate limiting for WebSocket connections (optional)
+- Support environment variables for configuration
+- Add auto-update mechanism (optional)
+- Create installer for Windows/macOS/Linux
+
+Create a complete, production-ready Electron application with all the above features. Include proper error handling, logging, and a clean UI.

@@ -79,7 +79,18 @@ export function HttpVideoStream({
           src: imgRef.current?.src,
           proxyUrl,
         })
-        setError("Failed to load camera stream. Check camera configuration.")
+        // Check if it's a 502 error (proxy failed) vs other error
+        fetch(proxyUrl)
+          .then(res => {
+            if (res.status === 502) {
+              setError("Camera only supports RTSP. Requires separate server with FFmpeg.")
+            } else {
+              setError("Failed to load camera stream. Check camera configuration.")
+            }
+          })
+          .catch(() => {
+            setError("Failed to load camera stream. Check camera configuration.")
+          })
         setIsLoading(false)
       }
 
@@ -87,7 +98,12 @@ export function HttpVideoStream({
       loadTimeout = setTimeout(() => {
         if (isMountedRef.current && !hasLoaded) {
           console.warn(`⚠️ [Camera ${cameraId}] Stream loading timeout after 15 seconds`)
-          setError("Stream loading timeout. Camera may be unreachable or not configured.")
+          console.warn(`   This usually means:`)
+          console.warn(`   1. Camera doesn't support MJPEG over HTTPS (port 443)`)
+          console.warn(`   2. Camera only supports RTSP (port 8557) - requires FFmpeg conversion`)
+          console.warn(`   3. Camera IP/credentials are incorrect`)
+          console.warn(`   Solution: Check browser Network tab for proxy response, or use RTSP with separate server`)
+          setError("Stream timeout. Camera may only support RTSP (requires separate server with FFmpeg). Check console for details.")
           setIsLoading(false)
         }
       }, 15000)
@@ -123,9 +139,15 @@ export function HttpVideoStream({
           </div>
         )}
         {error && (
-          <div className="absolute inset-0 flex items-center justify-center">
-            <div className="text-center text-red-400">
-              <p className="text-sm">{error}</p>
+          <div className="absolute inset-0 flex items-center justify-center bg-black z-10">
+            <div className="text-center text-red-400 p-4 max-w-md">
+              <p className="text-sm font-semibold mb-2">{error}</p>
+              <p className="text-xs text-gray-400 mt-2">
+                Camera likely only supports RTSP (port 8557). RTSP requires FFmpeg conversion which isn't available on Vercel.
+              </p>
+              <p className="text-xs text-gray-400 mt-1">
+                Solution: Deploy separate server with FFmpeg or check camera documentation for MJPEG support.
+              </p>
             </div>
           </div>
         )}

@@ -57,33 +57,34 @@ export function RealtimeVideoProxy({
         setIsLoading(true)
         setError(null)
 
-        // Get WebSocket proxy URL
-        // In production, this should be your domain's WebSocket proxy
-        // Format: wss://your-domain.com/ws/camera?camera=1&companyId=xxx
-        // IMPORTANT: Set NEXT_PUBLIC_WS_PROXY_URL in Vercel environment variables
+        // Get WebSocket URL - supports both Electron bridge and proxy server
+        // Priority:
+        // 1. NEXT_PUBLIC_ELECTRON_BRIDGE_URL (Electron app bridge - recommended for RTSP)
+        // 2. NEXT_PUBLIC_WS_PROXY_URL (Separate proxy server)
+        // 3. Default to localhost for Electron bridge (local development)
+        
+        const electronBridgeUrl = process.env.NEXT_PUBLIC_ELECTRON_BRIDGE_URL || 'ws://localhost:9999'
         const wsProxyBaseUrl = process.env.NEXT_PUBLIC_WS_PROXY_URL
         
-        if (!wsProxyBaseUrl) {
-          console.error(`❌ [Camera ${cameraId}] NEXT_PUBLIC_WS_PROXY_URL not set!`)
-          console.error(`   Set this environment variable in Vercel to your WebSocket proxy server URL`)
-          console.error(`   Example: wss://your-proxy-server.com/ws/camera`)
-          console.error(`   💡 Tip: Use Cloudflare Tunnel (free) - see BYPASS-MIXED-CONTENT-FREE.md`)
-          setError("WebSocket proxy URL not configured. Set NEXT_PUBLIC_WS_PROXY_URL in Vercel. See BYPASS-MIXED-CONTENT-FREE.md for free tunnel options.")
-          setIsLoading(false)
-          return
+        // Use Electron bridge if available (better for RTSP)
+        const wsUrl = electronBridgeUrl
+          ? `${electronBridgeUrl}/camera/${cameraId}` // Electron bridge format: ws://localhost:9999/camera/1
+          : wsProxyBaseUrl
+            ? `${wsProxyBaseUrl}?camera=${cameraId}` // Proxy server format: wss://proxy.com/ws/camera?camera=1
+            : `ws://localhost:9999/camera/${cameraId}` // Fallback to localhost Electron bridge
+        
+        if (!electronBridgeUrl && !wsProxyBaseUrl) {
+          console.warn(`⚠️ [Camera ${cameraId}] No WebSocket URL configured!`)
+          console.warn(`   Using default: ${wsUrl}`)
+          console.warn(`   Set NEXT_PUBLIC_ELECTRON_BRIDGE_URL for Electron bridge`)
+          console.warn(`   Or set NEXT_PUBLIC_WS_PROXY_URL for separate proxy server`)
         }
         
-        // Get company ID for multi-tenant support (optional)
-        // You can fetch this from your auth/session if needed
-        const companyId = null // TODO: Get from session/auth if needed
-        
-        const wsProxyUrl = companyId
-          ? `${wsProxyBaseUrl}?camera=${cameraId}&companyId=${companyId}`
-          : `${wsProxyBaseUrl}?camera=${cameraId}`
+        console.log(`🔌 [Camera ${cameraId}] Connecting to: ${wsUrl}`, {
+          source: electronBridgeUrl ? 'Electron Bridge' : wsProxyBaseUrl ? 'Proxy Server' : 'Default (localhost)',
+        })
 
-        console.log(`🔌 [Camera ${cameraId}] Connecting to WebSocket proxy: ${wsProxyUrl}`)
-
-        const ws = new WebSocket(wsProxyUrl)
+        const ws = new WebSocket(wsUrl)
         ws.binaryType = "arraybuffer" // Critical for binary data
 
         let firstMessageReceived = false
