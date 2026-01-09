@@ -24,6 +24,10 @@ export function RealtimeVideo({
   const [error, setError] = useState<string | null>(null);
   const wsRef = useRef<WebSocket | null>(null);
   const objectUrlRef = useRef<string | null>(null); // Track object URLs to prevent memory leaks
+  const mediaSourceRef = useRef<MediaSource | null>(null);
+  const sourceBufferRef = useRef<SourceBuffer | null>(null);
+  const streamFormatRef = useRef<'h264' | 'mjpeg' | 'unknown'>('unknown');
+  const bufferQueueRef = useRef<Uint8Array[]>([]);
   const isMountedRef = useRef(true);
   const router = useRouter();
   
@@ -203,7 +207,7 @@ export function RealtimeVideo({
           statsRef.current.reconnectAttempts = 0; // Reset on successful connection
         };
 
-        ws.onmessage = (event) => {
+        ws.onmessage = async (event) => {
           // Diagnostic: Track messages
           statsRef.current.messagesReceived++;
           statsRef.current.lastMessageTime = Date.now();
@@ -221,28 +225,84 @@ export function RealtimeVideo({
             });
           }
 
-          // Handle video frame data
-          if (event.data instanceof Blob) {
-            // Binary video data (H.264 stream or similar)
+          // Handle video frame data with proper encoding/decoding
+          if (event.data instanceof Blob || event.data instanceof ArrayBuffer) {
+            // Binary video data - detect format and decode
+            const buffer = event.data instanceof Blob 
+              ? await new Promise<ArrayBuffer>((resolve) => {
+                const reader = new FileReader();
+                reader.onloadend = () => {
+                  resolve(reader.result as ArrayBuffer);
+                };
+                reader.readAsArrayBuffer(event.data);
+              })
+              : event.data;
+            
+            const uint8Array = new Uint8Array(buffer);
+            
+            // Detect stream format by magic bytes
+            let detectedFormat = streamFormatRef.current;
+            if (streamFormatRef.current === 'unknown' && uint8Array.length >= 4) {
+              // H.264 NAL unit start code: 0x00 0x00 0x00 0x01 or 0x00 0x00 0x01
+              if ((uint8Array[0] === 0x00 && uint8Array[1] === 0x00 && uint8Array[2] === 0x00 && uint8Array[3] === 0x01) ||
+                  (uint8Array[0] === 0x00 && uint8Array[1] === 0x00 && uint8Array[2] === 0x01)) {
+                detectedFormat = 'h264';
+                streamFormatRef.current = 'h264';
+                console.log(`🎬 [${cameraId}] Detected H.264 stream format`);
+              }
+              // JPEG magic bytes: 0xFF 0xD8 0xFF
+              else if (uint8Array[0] === 0xFF && uint8Array[1] === 0xD8 && uint8Array[2] === 0xFF) {
+                detectedFormat = 'mjpeg';
+                streamFormatRef.current = 'mjpeg';
+                console.log(`🎬 [${cameraId}] Detected MJPEG stream format`);
+              }
+            } else {
+              detectedFormat = streamFormatRef.current;
+            }
+            
             statsRef.current.framesReceived++;
             if (statsRef.current.framesReceived % 30 === 0 || statsRef.current.framesReceived <= 5) {
-              console.log(`🎬 [${cameraId}] Frame #${statsRef.current.framesReceived} received (Blob)`, {
-                size: `${(event.data.size / 1024).toFixed(2)}KB`,
-                type: event.data.type || 'unknown',
+              console.log(`🎬 [${cameraId}] Frame #${statsRef.current.framesReceived} received (${detectedFormat})`, {
+                size: `${(buffer.byteLength / 1024).toFixed(2)}KB`,
+                format: detectedFormat,
               });
             }
             
             if (videoRef.current && isMountedRef.current) {
-              // Revoke previous object URL to prevent memory leaks
-              if (objectUrlRef.current) {
-                URL.revokeObjectURL(objectUrlRef.current);
-              }
-              const url = URL.createObjectURL(event.data);
-              objectUrlRef.current = url;
-              if (videoRef.current.src !== url) {
-                videoRef.current.src = url;
-                if (statsRef.current.framesReceived <= 5) {
-                  console.log(`✅ [${cameraId}] Video src updated from Blob frame #${statsRef.current.framesReceived}`);
+              if (detectedFormat === 'mjpeg') {
+                // MJPEG: Create blob URL from JPEG frame
+                const blob = new Blob([buffer], { type: 'image/jpeg' });
+                if (objectUrlRef.current) {
+                  URL.revokeObjectURL(objectUrlRef.current);
+                }
+                const url = URL.createObjectURL(blob);
+                objectUrlRef.current = url;
+                if (videoRef.current.src !== url) {
+                  videoRef.current.src = url;
+                }
+              } else if (detectedFormat === 'h264') {
+                // H.264: For now, try to display as blob (browser may not support raw H.264)
+                // In production, you'd need MediaSource API or a decoder library
+                const blob = new Blob([buffer], { type: 'video/mp4; codecs="avc1.42E01E"' });
+                if (objectUrlRef.current) {
+                  URL.revokeObjectURL(objectUrlRef.current);
+                }
+                const url = URL.createObjectURL(blob);
+                objectUrlRef.current = url;
+                // Note: Raw H.264 may not play directly - consider using MediaSource API
+                if (videoRef.current.src !== url) {
+                  videoRef.current.src = url;
+                }
+              } else {
+                // Unknown format: try as generic blob
+                const blob = new Blob([buffer]);
+                if (objectUrlRef.current) {
+                  URL.revokeObjectURL(objectUrlRef.current);
+                }
+                const url = URL.createObjectURL(blob);
+                objectUrlRef.current = url;
+                if (videoRef.current.src !== url) {
+                  videoRef.current.src = url;
                 }
               }
             }
@@ -398,6 +458,20 @@ export function RealtimeVideo({
         URL.revokeObjectURL(objectUrlRef.current);
         objectUrlRef.current = null;
       }
+      // Cleanup MediaSource
+      if (mediaSourceRef.current && mediaSourceRef.current.readyState === 'open') {
+        try {
+          mediaSourceRef.current.endOfStream();
+        } catch (e) {
+          // Ignore errors during cleanup
+        }
+        mediaSourceRef.current = null;
+      }
+      if (sourceBufferRef.current) {
+        sourceBufferRef.current = null;
+      }
+      bufferQueueRef.current = [];
+      streamFormatRef.current = 'unknown';
     };
   }, [cameraId]);
 

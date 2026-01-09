@@ -38,7 +38,8 @@ try {
   // .env file doesn't exist, use environment variables
 }
 
-import express, { Request, Response } from "express"
+import express from "express"
+import type { Request, Response } from "express"
 import { createServer } from "http"
 import { WebSocketServer, WebSocket } from "ws"
 
