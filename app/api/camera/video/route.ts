@@ -69,15 +69,15 @@ export async function GET(request: NextRequest) {
       ? `rtsp://${camera2Ip}:${camera2RtspPort}/stream`
       : null;
 
-    // WebSocket URLs for real-time video (wss://ip:8557)
-    // Using secure WebSocket (wss://) on port 8557 for video streaming
-    const wsPath = ""; // Empty for root path
+    // WebSocket URLs for real-time video (wss://ip:8557/h264)
+    // Using secure WebSocket (wss://) on port 8557 for H.264 video streaming
+    const wsPath = "/h264"; // H.264 video stream path
     const camera1WebSocketUrl = camera1Ip
-      ? `wss://${camera1Ip}:${camera1WebSocketPort}${wsPath}` // Real-time video WebSocket
+      ? `wss://${camera1Ip}:${camera1WebSocketPort}${wsPath}` // Real-time video WebSocket (H.264)
       : null;
     
     const camera2WebSocketUrl = camera2Ip
-      ? `wss://${camera2Ip}:${camera2WebSocketPort}${wsPath}` // Real-time video WebSocket
+      ? `wss://${camera2Ip}:${camera2WebSocketPort}${wsPath}` // Real-time video WebSocket (H.264)
       : null;
     
     // WebSocket URLs for other data (ws://ip:9080)
