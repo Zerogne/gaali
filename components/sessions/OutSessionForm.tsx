@@ -24,7 +24,7 @@ import type {
 import { ArrowRight, Camera, Printer, Send, Loader2 } from "lucide-react";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useRouter } from "next/navigation";
-import { RealtimeVideoProxy } from "@/components/camera/RealtimeVideoProxy";
+import { HttpFrameStream } from "@/components/camera/HttpFrameStream";
 import {
   forwardRef,
   useEffect,
@@ -1599,8 +1599,8 @@ export const OutSessionForm = forwardRef<
               {/* Camera Video Display - At the top, 50% width with warning */}
               <div className="mb-1 flex gap-4">
                 <div className="w-1/2 aspect-video bg-black rounded-lg overflow-hidden relative border-2 border-gray-200 shadow-lg">
-                  {/* Electron bridge (RTSP support) or HTTP proxy */}
-                  <RealtimeVideoProxy
+                  {/* HTTP frame polling (no WebSocket, no Cloudflare needed) */}
+                  <HttpFrameStream
                     cameraId="2"
                     direction="OUT"
                     showActionButton={false}

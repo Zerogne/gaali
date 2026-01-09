@@ -23,6 +23,7 @@ export default async function proxy(request: Request) {
     pathname.startsWith('/api/v1/api/service') || // Allow v1/api/service endpoint for other sites (etos.ojus compatibility)
     pathname.startsWith('/api/lpr/latest') || // Allow LPR latest endpoint for frontend polling
     pathname.startsWith('/api/lpr/ingest') || // Allow LPR ingest endpoint for bridge service
+    pathname.startsWith('/api/camera/frame') || // Allow camera frame endpoint for Electron app
     pathname.startsWith('/api/weight/ingest') || // Allow weight ingest endpoint for weight bridge
     pathname.startsWith('/api/weight/status') || // Allow weight status endpoint
     pathname.startsWith('/api/weight/latest') || // Allow weight latest endpoint
