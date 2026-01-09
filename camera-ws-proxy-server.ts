@@ -25,8 +25,8 @@ const wss = new WebSocketServer({
 // Store active camera connections
 const cameraConnections = new Map<string, WebSocket>()
 
-// Camera IP configuration (should come from database in production)
-const CAMERA_CONFIG = {
+// Default camera config (fallback if database lookup fails)
+const DEFAULT_CAMERA_CONFIG = {
   "1": { ip: "192.168.1.50", port: 9080, path: "/h264" },
   "2": { ip: "192.168.1.49", port: 9080, path: "/h264" },
 }
@@ -50,20 +50,39 @@ wss.on("connection", (clientWs: WebSocket, request) => {
   }
 
   // Get camera config (from database or default)
-  let cameraConfig = CAMERA_CONFIG[cameraId as "1" | "2"]
+  let cameraConfig = DEFAULT_CAMERA_CONFIG[cameraId as "1" | "2"]
   
-  // TODO: In production, fetch from database using companyId
-  // if (companyId) {
-  //   const company = await getCompany(companyId)
-  //   const settings = company?.cameraSettings
-  //   if (settings) {
-  //     cameraConfig = {
-  //       ip: cameraId === "1" ? settings.camera1Ip : settings.camera2Ip,
-  //       port: cameraId === "1" ? settings.camera1WebSocketPort : settings.camera2WebSocketPort,
-  //       path: "/h264", // or from settings
-  //     }
-  //   }
-  // }
+  // Fetch from database if companyId provided
+  if (companyId) {
+    try {
+      const company = await getCompany(companyId)
+      const settings = company?.cameraSettings
+      if (settings) {
+        const ip = cameraId === "1" ? settings.camera1Ip : settings.camera2Ip
+        const port = cameraId === "1" 
+          ? (settings.camera1WebSocketPort || 9080)
+          : (settings.camera2WebSocketPort || 9080)
+        
+        if (ip) {
+          cameraConfig = {
+            ip,
+            port,
+            path: "/h264", // Camera WebSocket path for H.264 stream
+          }
+          console.log(`📹 [Camera ${cameraId}] Using config from database:`, cameraConfig)
+        } else {
+          console.warn(`⚠️ [Camera ${cameraId}] Camera IP not found in database, using default`)
+        }
+      } else {
+        console.warn(`⚠️ [Camera ${cameraId}] No camera settings in database, using default`)
+      }
+    } catch (error) {
+      console.error(`❌ [Camera ${cameraId}] Error fetching camera config from database:`, error)
+      console.log(`📹 [Camera ${cameraId}] Using default config:`, cameraConfig)
+    }
+  } else {
+    console.log(`📹 [Camera ${cameraId}] No companyId provided, using default config:`, cameraConfig)
+  }
 
   const cameraUrl = `ws://${cameraConfig.ip}:${cameraConfig.port}${cameraConfig.path}`
   console.log(`🔌 [Camera ${cameraId}] Client connected, proxying to ${cameraUrl}`)

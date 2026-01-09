@@ -59,8 +59,17 @@ export function RealtimeVideoProxy({
 
         // Get WebSocket proxy URL
         // In production, this should be your domain's WebSocket proxy
-        const wsProxyUrl = process.env.NEXT_PUBLIC_WS_PROXY_URL || 
-          `ws://localhost:3001/ws/camera?camera=${cameraId}`
+        // Format: wss://your-domain.com/ws/camera?camera=1&companyId=xxx
+        const wsProxyBaseUrl = process.env.NEXT_PUBLIC_WS_PROXY_URL || 
+          `ws://localhost:3001/ws/camera`
+        
+        // Get company ID for multi-tenant support (optional)
+        // You can fetch this from your auth/session if needed
+        const companyId = null // TODO: Get from session/auth if needed
+        
+        const wsProxyUrl = companyId
+          ? `${wsProxyBaseUrl}?camera=${cameraId}&companyId=${companyId}`
+          : `${wsProxyBaseUrl}?camera=${cameraId}`
 
         console.log(`🔌 [Camera ${cameraId}] Connecting to WebSocket proxy: ${wsProxyUrl}`)
 
@@ -218,22 +227,30 @@ export function RealtimeVideoProxy({
   function initializeJSMpeg() {
     if (!canvasRef.current) return
 
-    // Dynamically import JSMpeg
-    import("jsmpeg").then((JSMpeg) => {
-      if (!canvasRef.current || !isMountedRef.current) return
+    // Dynamically import JSMpeg (optional - only if MPEG-TS format detected)
+    // JSMpeg is not installed by default, so we handle the error gracefully
+    import("jsmpeg")
+      .then((JSMpeg) => {
+        if (!canvasRef.current || !isMountedRef.current) return
 
-      // Create JSMpeg player
-      // Note: JSMpeg expects a WebSocket URL, but we'll feed it data manually
-      // For now, we'll use a custom approach
-      console.log("📺 [Camera ${cameraId}] JSMpeg player initialized")
-      
-      // TODO: Implement JSMpeg with custom data source
-      // JSMpeg requires a WebSocket or fetch source
-      // For proxy setup, we may need to use JSMpeg's custom source API
-    }).catch((err) => {
-      console.error("❌ Failed to load JSMpeg:", err)
-      setError("Video player library not available")
-    })
+        // Create JSMpeg player
+        // Note: JSMpeg expects a WebSocket URL, but we'll feed it data manually
+        // For now, we'll use a custom approach
+        console.log(`📺 [Camera ${cameraId}] JSMpeg player initialized`)
+        
+        // TODO: Implement JSMpeg with custom data source
+        // JSMpeg requires a WebSocket or fetch source
+        // For proxy setup, we may need to use JSMpeg's custom source API
+        // For now, log that JSMpeg is available but not fully implemented
+        console.warn(`⚠️ [Camera ${cameraId}] JSMpeg loaded but player not fully implemented yet`)
+      })
+      .catch((err) => {
+        // JSMpeg not installed - this is okay if stream format is not MPEG-TS
+        console.warn(`⚠️ [Camera ${cameraId}] JSMpeg not available:`, err.message)
+        console.warn(`   Install with: npm install jsmpeg`)
+        console.warn(`   Or use alternative player for MPEG-TS streams`)
+        // Don't set error - component can still work with other formats
+      })
   }
 
   /**

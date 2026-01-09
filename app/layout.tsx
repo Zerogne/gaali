@@ -1,5 +1,6 @@
 import { Toaster } from "@/components/ui/toaster";
-import { Analytics } from "@vercel/analytics/next";
+// Temporarily disable Analytics due to React 19 compatibility issue
+// import { Analytics } from "@vercel/analytics/next";
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import type React from "react";
@@ -49,7 +50,8 @@ export default function RootLayout({
       <body className={`${geist.className} font-sans antialiased`}>
         {children}
         <Toaster />
-        <Analytics />
+        {/* Temporarily disabled Analytics due to React 19 compatibility issue */}
+        {/* <Analytics /> */}
       </body>
     </html>
   );
