@@ -56,13 +56,32 @@ export async function GET(request: NextRequest) {
       );
     }
 
+    // Get RTSP port (8557 for video streaming)
+    const rtspPort = cameraNum === 1
+      ? (cameraSettings.camera1RtspPort || 8557)
+      : (cameraSettings.camera2RtspPort || 8557);
+
     // Build camera video URL using HTTP/HTTPS port (443)
-    // Common paths: /video.mjpeg, /stream, /video
+    // Common paths: /video.mjpeg, /stream, /video, /h264
     // Try multiple common paths if one fails
-    const videoPaths = ["/video.mjpeg", "/stream", "/video", "/mjpeg", "/cgi-bin/video.cgi"];
+    // Note: RTSP (port 8557) requires FFmpeg conversion, which isn't possible on Vercel
+    // So we try HTTP/HTTPS paths first
+    const videoPaths = [
+      "/video.mjpeg", 
+      "/stream", 
+      "/video", 
+      "/mjpeg", 
+      "/cgi-bin/video.cgi",
+      "/h264", // Some cameras serve H.264 over HTTP
+      "/live", // Alternative path
+    ];
     const cameraUrl = `https://${cameraIp}:${httpPort}`;
 
-    console.log(`📹 Proxying video from camera ${cameraNum} (${cameraIp}:${httpPort})`);
+    console.log(`📹 Proxying video from camera ${cameraNum} (${cameraIp})`, {
+      httpPort,
+      rtspPort,
+      note: "RTSP (port 8557) requires FFmpeg conversion - not available on Vercel. Trying HTTP/HTTPS paths.",
+    });
 
     // Fetch video stream from camera
     try {
@@ -114,13 +133,21 @@ export async function GET(request: NextRequest) {
       }
 
       // All paths failed
-      console.error(`❌ All video paths failed for camera ${cameraNum}`);
+      console.error(`❌ All video paths failed for camera ${cameraNum}`, {
+        cameraIp,
+        httpPort,
+        rtspPort,
+        triedPaths: videoPaths,
+        note: "Camera may only support RTSP (port 8557). RTSP requires FFmpeg conversion which isn't available on Vercel serverless. Consider using a separate server with FFmpeg or check if camera supports MJPEG over HTTPS.",
+      });
       return NextResponse.json(
         { 
           error: `Failed to connect to camera: ${lastError?.message || 'All video paths failed'}`,
           triedPaths: videoPaths,
           cameraIp,
-          httpPort
+          httpPort,
+          rtspPort,
+          note: "Camera may only support RTSP. RTSP conversion requires FFmpeg (not available on Vercel).",
         },
         { status: 502 }
       );

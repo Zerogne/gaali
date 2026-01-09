@@ -43,28 +43,67 @@ export function HttpVideoStream({
     if (imgRef.current) {
       // Set image source to proxy endpoint
       // The proxy streams MJPEG which can be displayed as an <img>
-      imgRef.current.src = proxyUrl
+      // Add timestamp to prevent caching
+      const urlWithCacheBust = `${proxyUrl}&_t=${Date.now()}`
+      imgRef.current.src = urlWithCacheBust
+      
+      let loadTimeout: NodeJS.Timeout | null = null
+      let hasLoaded = false
       
       imgRef.current.onload = () => {
         if (!isMountedRef.current) return
-        console.log(`✅ [Camera ${cameraId}] Video stream loaded`)
+        if (loadTimeout) {
+          clearTimeout(loadTimeout)
+          loadTimeout = null
+        }
+        if (!hasLoaded) {
+          console.log(`✅ [Camera ${cameraId}] Video stream loaded successfully`, {
+            naturalWidth: imgRef.current?.naturalWidth,
+            naturalHeight: imgRef.current?.naturalHeight,
+            complete: imgRef.current?.complete,
+          })
+          hasLoaded = true
+        }
         setIsLoading(false)
         setError(null)
       }
 
       imgRef.current.onerror = (err) => {
         if (!isMountedRef.current) return
-        console.error(`❌ [Camera ${cameraId}] Failed to load video stream:`, err)
+        if (loadTimeout) {
+          clearTimeout(loadTimeout)
+          loadTimeout = null
+        }
+        console.error(`❌ [Camera ${cameraId}] Failed to load video stream:`, {
+          error: err,
+          src: imgRef.current?.src,
+          proxyUrl,
+        })
         setError("Failed to load camera stream. Check camera configuration.")
         setIsLoading(false)
       }
+
+      // Set timeout to show error if stream doesn't load within 15 seconds
+      loadTimeout = setTimeout(() => {
+        if (isMountedRef.current && !hasLoaded) {
+          console.warn(`⚠️ [Camera ${cameraId}] Stream loading timeout after 15 seconds`)
+          setError("Stream loading timeout. Camera may be unreachable or not configured.")
+          setIsLoading(false)
+        }
+      }, 15000)
     }
 
     return () => {
       isMountedRef.current = false
+      // Clean up timeout
+      if (loadTimeout) {
+        clearTimeout(loadTimeout)
+      }
       // Clean up image source
       if (imgRef.current) {
         imgRef.current.src = ""
+        imgRef.current.onload = null
+        imgRef.current.onerror = null
       }
     }
   }, [cameraId])
@@ -90,13 +129,13 @@ export function HttpVideoStream({
             </div>
           </div>
         )}
-        {!isLoading && !error && (
-          <img
-            ref={imgRef}
-            alt={`Camera ${cameraId} stream`}
-            className="w-full h-full object-contain"
-          />
-        )}
+        {/* Always render image - MJPEG streams continuously update */}
+        <img
+          ref={imgRef}
+          alt={`Camera ${cameraId} stream`}
+          className={`w-full h-full object-contain ${isLoading ? 'opacity-50' : 'opacity-100'}`}
+          style={{ display: error ? 'none' : 'block' }}
+        />
       </div>
 
       {/* Action Button - Only show if enabled */}

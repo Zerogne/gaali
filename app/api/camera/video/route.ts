@@ -60,13 +60,13 @@ export async function GET(request: NextRequest) {
       ? `https://${camera2Ip}:${camera2HttpPort}${videoPath}`
       : null;
 
-    // RTSP URLs (rtsp://ip:port/stream)
+    // RTSP URLs (rtsp://ip:port/h264) - Vision-Zenith cameras use /h264 path
     const camera1RtspUrl = camera1Ip
-      ? `rtsp://${camera1Ip}:${camera1RtspPort}/stream`
+      ? `rtsp://${camera1Ip}:${camera1RtspPort}/h264`
       : null;
     
     const camera2RtspUrl = camera2Ip
-      ? `rtsp://${camera2Ip}:${camera2RtspPort}/stream`
+      ? `rtsp://${camera2Ip}:${camera2RtspPort}/h264`
       : null;
 
     // WebSocket URLs for real-time video (ws://ip:8557/h264)
