@@ -33,14 +33,20 @@ export async function GET(request: NextRequest) {
     const camera1Ip = cameraSettings.camera1Ip;
     const camera2Ip = cameraSettings.camera2Ip;
     
-    // Ports: HTTP/HTTPS (443), RTSP (8557 for real-time video), WebSocket (9080 for other data)
+    // Ports: 
+    // - HTTP/HTTPS: 443
+    // - RTSP: 8557 (for RTSP streaming)
+    // - WebSocket Video: 8557 (for real-time video WebSocket - wss://ip:8557)
+    // - WebSocket Data: 9080 (for other WebSocket data - ws://ip:9080)
     const camera1HttpPort = cameraSettings.camera1HttpPort || 443;
     const camera1RtspPort = cameraSettings.camera1RtspPort || 8557;
-    const camera1WebSocketPort = cameraSettings.camera1WebSocketPort || 8557; // Real-time video uses port 8557
+    const camera1WebSocketPort = cameraSettings.camera1WebSocketPort || 8557; // Real-time video WebSocket (wss://)
+    const camera1WebSocketDataPort = 9080; // Other WebSocket data (ws://)
     
     const camera2HttpPort = cameraSettings.camera2HttpPort || 443;
     const camera2RtspPort = cameraSettings.camera2RtspPort || 8557;
-    const camera2WebSocketPort = cameraSettings.camera2WebSocketPort || 8557; // Real-time video uses port 8557
+    const camera2WebSocketPort = cameraSettings.camera2WebSocketPort || 9080; // Other WebSocket data (ws://)
+    const camera2WebSocketDataPort = 9080; // Other WebSocket data (ws://)
 
     // Build URLs for different protocols
     const videoPath = "/video.mjpeg"; // MJPEG path for HTTP/HTTPS
@@ -63,28 +69,41 @@ export async function GET(request: NextRequest) {
       ? `rtsp://${camera2Ip}:${camera2RtspPort}/stream`
       : null;
 
-    // WebSocket URLs (ws://ip:port or wss://ip:port)
-    // Common WebSocket paths: /, /stream, /video, /ws
-    // Using root path by default, camera may require specific path
-    const wsPath = ""; // Empty for root, or "/stream", "/video", etc.
+    // WebSocket URLs for real-time video (wss://ip:8557)
+    // Using secure WebSocket (wss://) on port 8557 for video streaming
+    const wsPath = ""; // Empty for root path
     const camera1WebSocketUrl = camera1Ip
-      ? `wss://${camera1Ip}:${camera1WebSocketPort}${wsPath}`
+      ? `wss://${camera1Ip}:${camera1WebSocketPort}${wsPath}` // Real-time video WebSocket
       : null;
     
     const camera2WebSocketUrl = camera2Ip
-      ? `wss://${camera2Ip}:${camera2WebSocketPort}${wsPath}`
+      ? `wss://${camera2Ip}:${camera2WebSocketPort}${wsPath}` // Real-time video WebSocket
+      : null;
+    
+    // WebSocket URLs for other data (ws://ip:9080)
+    // Non-secure WebSocket (ws://) on port 9080 for other WebSocket data
+    const camera1WebSocketDataUrl = camera1Ip
+      ? `ws://${camera1Ip}:${camera1WebSocketDataPort}` // Other WebSocket data
+      : null;
+    
+    const camera2WebSocketDataUrl = camera2Ip
+      ? `ws://${camera2Ip}:${camera2WebSocketDataPort}` // Other WebSocket data
       : null;
 
     console.log(`📹 [Camera Video API] Built WebSocket URLs:`, {
       camera1: {
         ip: camera1Ip || 'not set',
-        port: camera1WebSocketPort,
-        url: camera1WebSocketUrl || 'null (no IP)',
+        videoWebSocketPort: camera1WebSocketPort,
+        videoWebSocketUrl: camera1WebSocketUrl || 'null (no IP)',
+        dataWebSocketPort: camera1WebSocketDataPort,
+        dataWebSocketUrl: camera1WebSocketDataUrl || 'null (no IP)',
       },
       camera2: {
         ip: camera2Ip || 'not set',
-        port: camera2WebSocketPort,
-        url: camera2WebSocketUrl || 'null (no IP)',
+        videoWebSocketPort: camera2WebSocketPort,
+        videoWebSocketUrl: camera2WebSocketUrl || 'null (no IP)',
+        dataWebSocketPort: camera2WebSocketDataPort,
+        dataWebSocketUrl: camera2WebSocketDataUrl || 'null (no IP)',
       },
     });
 
@@ -94,20 +113,24 @@ export async function GET(request: NextRequest) {
         ip: camera1Ip,
         httpPort: camera1HttpPort,
         rtspPort: camera1RtspPort,
-        webSocketPort: camera1WebSocketPort,
+        webSocketPort: camera1WebSocketPort, // Port 8557 for real-time video WebSocket
+        webSocketDataPort: camera1WebSocketDataPort, // Port 9080 for other WebSocket data
         httpUrl: camera1HttpUrl,
         rtspUrl: camera1RtspUrl,
-        webSocketUrl: camera1WebSocketUrl,
+        webSocketUrl: camera1WebSocketUrl, // wss://ip:8557 for real-time video
+        webSocketDataUrl: camera1WebSocketDataUrl, // ws://ip:9080 for other WebSocket data
         configured: !!camera1Ip,
       },
       camera2: {
         ip: camera2Ip,
         httpPort: camera2HttpPort,
         rtspPort: camera2RtspPort,
-        webSocketPort: camera2WebSocketPort,
+        webSocketPort: camera2WebSocketPort, // Port 8557 for real-time video WebSocket
+        webSocketDataPort: camera2WebSocketDataPort, // Port 9080 for other WebSocket data
         httpUrl: camera2HttpUrl,
         rtspUrl: camera2RtspUrl,
-        webSocketUrl: camera2WebSocketUrl,
+        webSocketUrl: camera2WebSocketUrl, // wss://ip:8557 for real-time video
+        webSocketDataUrl: camera2WebSocketDataUrl, // ws://ip:9080 for other WebSocket data
         configured: !!camera2Ip,
       },
     });
