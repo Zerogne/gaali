@@ -60,8 +60,18 @@ export function RealtimeVideoProxy({
         // Get WebSocket proxy URL
         // In production, this should be your domain's WebSocket proxy
         // Format: wss://your-domain.com/ws/camera?camera=1&companyId=xxx
-        const wsProxyBaseUrl = process.env.NEXT_PUBLIC_WS_PROXY_URL || 
-          `ws://localhost:3001/ws/camera`
+        // IMPORTANT: Set NEXT_PUBLIC_WS_PROXY_URL in Vercel environment variables
+        const wsProxyBaseUrl = process.env.NEXT_PUBLIC_WS_PROXY_URL
+        
+        if (!wsProxyBaseUrl) {
+          console.error(`❌ [Camera ${cameraId}] NEXT_PUBLIC_WS_PROXY_URL not set!`)
+          console.error(`   Set this environment variable in Vercel to your WebSocket proxy server URL`)
+          console.error(`   Example: wss://your-proxy-server.com/ws/camera`)
+          console.error(`   💡 Tip: Use Cloudflare Tunnel (free) - see BYPASS-MIXED-CONTENT-FREE.md`)
+          setError("WebSocket proxy URL not configured. Set NEXT_PUBLIC_WS_PROXY_URL in Vercel. See BYPASS-MIXED-CONTENT-FREE.md for free tunnel options.")
+          setIsLoading(false)
+          return
+        }
         
         // Get company ID for multi-tenant support (optional)
         // You can fetch this from your auth/session if needed

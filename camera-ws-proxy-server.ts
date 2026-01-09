@@ -8,14 +8,59 @@
  * 
  * Browser connects to: ws://localhost:3001/ws/camera?camera=1
  * Server connects to: ws://camera-ip:9080/h264
+ * 
+ * Environment Variables:
+ *   - MONGODB_URI (optional) - For fetching camera config from database
+ *   - WS_PROXY_PORT - Port for WebSocket proxy (default: 3001)
  */
 
-import express from "express"
+import { readFileSync } from "fs"
+import { resolve } from "path"
+
+// Load .env file if it exists
+try {
+  const envPath = resolve(process.cwd(), ".env")
+  const envContent = readFileSync(envPath, "utf8")
+  envContent.split("\n").forEach((line) => {
+    const trimmed = line.trim()
+    if (trimmed && !trimmed.startsWith("#")) {
+      const match = trimmed.match(/^([^=]+)=(.*)$/)
+      if (match) {
+        const key = match[1].trim()
+        const value = match[2].trim().replace(/^["']|["']$/g, "")
+        if (!process.env[key]) {
+          process.env[key] = value
+        }
+      }
+    }
+  })
+} catch (error) {
+  // .env file doesn't exist, use environment variables
+}
+
+import express, { Request, Response } from "express"
 import { createServer } from "http"
 import { WebSocketServer, WebSocket } from "ws"
-import { getCompany } from "./lib/companies/metadata"
 
-const app = express()
+// Optional: Lazy load getCompany for database lookup (only if MONGODB_URI is set)
+async function getCompanyIfAvailable(companyId: string): Promise<any> {
+  if (!process.env.MONGODB_URI) {
+    return null
+  }
+  try {
+    // Dynamic import to avoid loading if MONGODB_URI not set
+    const metadataModule = await import("./lib/companies/metadata")
+    return await metadataModule.getCompany(companyId)
+  } catch (error) {
+    console.warn("⚠️ Could not load getCompany, database lookup disabled:", error)
+    return null
+  }
+}
+
+  const app = express()
+app.get("/health", (req: Request, res: Response) => {
+  res.json({ status: "ok" })
+})
 const server = createServer(app)
 const wss = new WebSocketServer({ 
   server,
@@ -38,7 +83,7 @@ const DEFAULT_CAMERA_CONFIG = {
  *   - camera: "1" or "2" (required)
  *   - companyId: Company ID for database lookup (optional, for multi-tenant)
  */
-wss.on("connection", (clientWs: WebSocket, request) => {
+wss.on("connection", async (clientWs: WebSocket, request) => {
   const url = new URL(request.url || "", `http://${request.headers.host}`)
   const cameraId = url.searchParams.get("camera")
   const companyId = url.searchParams.get("companyId")
@@ -55,26 +100,30 @@ wss.on("connection", (clientWs: WebSocket, request) => {
   // Fetch from database if companyId provided
   if (companyId) {
     try {
-      const company = await getCompany(companyId)
-      const settings = company?.cameraSettings
-      if (settings) {
-        const ip = cameraId === "1" ? settings.camera1Ip : settings.camera2Ip
-        const port = cameraId === "1" 
-          ? (settings.camera1WebSocketPort || 9080)
-          : (settings.camera2WebSocketPort || 9080)
-        
-        if (ip) {
-          cameraConfig = {
-            ip,
-            port,
-            path: "/h264", // Camera WebSocket path for H.264 stream
+      const company = await getCompanyIfAvailable(companyId)
+      if (company) {
+        const settings = company?.cameraSettings
+        if (settings) {
+          const ip = cameraId === "1" ? settings.camera1Ip : settings.camera2Ip
+          const port = cameraId === "1" 
+            ? (settings.camera1WebSocketPort || 9080)
+            : (settings.camera2WebSocketPort || 9080)
+          
+          if (ip) {
+            cameraConfig = {
+              ip,
+              port,
+              path: "/h264", // Camera WebSocket path for H.264 stream
+            }
+            console.log(`📹 [Camera ${cameraId}] Using config from database:`, cameraConfig)
+          } else {
+            console.warn(`⚠️ [Camera ${cameraId}] Camera IP not found in database, using default`)
           }
-          console.log(`📹 [Camera ${cameraId}] Using config from database:`, cameraConfig)
         } else {
-          console.warn(`⚠️ [Camera ${cameraId}] Camera IP not found in database, using default`)
+          console.warn(`⚠️ [Camera ${cameraId}] No camera settings in database, using default`)
         }
       } else {
-        console.warn(`⚠️ [Camera ${cameraId}] No camera settings in database, using default`)
+        console.log(`📹 [Camera ${cameraId}] Database not available, using default config:`, cameraConfig)
       }
     } catch (error) {
       console.error(`❌ [Camera ${cameraId}] Error fetching camera config from database:`, error)

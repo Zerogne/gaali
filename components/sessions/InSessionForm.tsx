@@ -23,7 +23,7 @@ import type {
 import { Camera, Send, Loader2 } from "lucide-react";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useRouter } from "next/navigation";
-import { RealtimeVideo } from "@/components/camera/RealtimeVideo";
+import { HttpVideoStream } from "@/components/camera/HttpVideoStream";
 import {
   forwardRef,
   useEffect,
@@ -1471,9 +1471,9 @@ export const InSessionForm = forwardRef<
               {/* Camera Video Display - At the top, 50% width */}
               <div className="mb-1 flex gap-4">
                 <div className="w-1/2 aspect-video bg-black rounded-lg overflow-hidden relative border-2 border-gray-200 shadow-lg">
-                  {/* Use WebSocket 8557 for direct camera connection (real-time video) */}
-                  <RealtimeVideo
-                    cameraId="camera-1"
+                  {/* HTTP video stream (works in production, no extra server needed) */}
+                  <HttpVideoStream
+                    cameraId="1"
                     direction="IN"
                     showActionButton={false}
                   />

@@ -2,7 +2,7 @@
 
 import { Sidebar } from "@/components/sidebar";
 import { TruckTable } from "@/components/trucks/TruckTable";
-import { RealtimeVideo } from "@/components/camera/RealtimeVideo";
+import { HttpVideoStream } from "@/components/camera/HttpVideoStream";
 import { getTruckLogs } from "@/lib/api";
 import type { TruckLog } from "@/lib/types";
 import { useRouter } from "next/navigation";
@@ -180,19 +180,19 @@ export default function DashboardPage() {
             {/* Real-time Video Streams */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-1.5 lg:gap-2 flex-shrink-0 mb-1.5 items-stretch">
               <div className="h-full min-h-[450px]">
-                <RealtimeVideo
-                  cameraId="camera-1"
+                <HttpVideoStream
+                  cameraId="1"
                   direction="IN"
-                  onActionClick={(dir) => {
+                  onActionClick={() => {
                     router.push("/in-session");
                   }}
                 />
               </div>
               <div className="h-full min-h-[450px]">
-                <RealtimeVideo
-                  cameraId="camera-2"
+                <HttpVideoStream
+                  cameraId="2"
                   direction="OUT"
-                  onActionClick={(dir) => {
+                  onActionClick={() => {
                     router.push("/out-session");
                   }}
                 />
