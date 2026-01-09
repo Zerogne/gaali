@@ -38,24 +38,29 @@ export async function GET(
     const format = url.searchParams.get("format")
     
     if (format === "thirdparty") {
-      // Transform to 3rd party app format
+      // Transform to 3rd party app format (supports both old and new API formats)
       const thirdPartyData = {
-        uniqueCode: session.uniqueCode || "",
-        CAR: session.product || "", // Cargo/Product
-        CON: "", // Contract - not in our schema, leave empty
-        DRN: session.driverName || "", // Driver's Name
-        LPC: session.transporterCompany || "", // Carrier Organization Name
-        SLN: "", // Customs Seal Number - not in our schema
-        TRL: "", // Trailer Number - not in our schema
-        UPC: "", // Unloading Point Company - not in our schema
-        AKT: "", // Company Act - not in our schema
-        NET: session.netWeightKg || 0, // Net Weight
-        WGT: session.grossWeightKg || 0, // Gross Weight
-        VNO: session.plateNumber || "", // Vehicle Number
-        CT1: "", // Custom Field 1 - not in our schema
+        // Core fields (original format)
+        AKT: session.uniqueCode || "", // Актын дугаар (unique code)
+        CAR: session.product || session.productName || "", // Cargo/Product
         CMN: session.notes || "", // Comments/Notes
-        PKG: 0, // Package/Packing weight - calculate if needed
-        CHG_VNO: "no", // Change Vehicle Number at Border - default to no
+        CON: session.contractNumber || "", // Contract number
+        CT1: session.container1 || "", // Container 1
+        DRN: session.driverName || "", // Driver's Name
+        LPC: session.transporterCompany || session.origin || session.senderOrganization || "", // Loading Point Company
+        NET: session.netWeightKg || 0, // Net Weight
+        SLN: session.sealNumber || "", // Seal Number
+        TRL: session.trailerNumber || session.trailerPlate || "", // Trailer Number
+        UPC: session.destination || session.receiverOrganization || "", // Unloading Point Company
+        VNO: session.plateNumber || "", // Vehicle Number
+        WGT: session.grossWeightKg || session.weightKg || 0, // Gross Weight
+        
+        // New fields (updated API format)
+        PRM: session.premium || session.prm || "", // Premium/Permit number
+        CT2: session.container2 || "", // Container 2
+        CT3: session.container3 || "", // Container 3
+        CT4: session.container4 || "", // Container 4
+        TID: session.transactionId || session.tid || "", // Transaction ID
       }
       
       return NextResponse.json(thirdPartyData, { status: 200 })

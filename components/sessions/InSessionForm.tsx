@@ -1192,6 +1192,7 @@ export const InSessionForm = forwardRef<
 
             const thirdPartyData = [
               {
+                // Core fields (original format)
                 AKT: savedSession.session.uniqueCode,
                 CAR: productName,
                 CMN: "",
@@ -1210,6 +1211,14 @@ export const InSessionForm = forwardRef<
                 UPC: formState.destination.trim() || receiverOrgName,
                 VNO: formState.plateNumber.trim().toUpperCase(),
                 WGT: formState.grossWeightKg || 0,
+                
+                // New fields (updated API format)
+                PRM: "", // Premium/Permit number
+                CT2: "", // Container 2
+                CT3: "", // Container 3
+                CT4: "", // Container 4
+                TID: "", // Transaction ID
+                
                 // Additional fields for sender/receiver company and driver ID
                 senderCompany: senderOrgName,
                 receiverCompany: receiverOrgName,

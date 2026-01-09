@@ -75,29 +75,60 @@ export function RealtimeVideo({
           if (configResponse.ok) {
             const config = await configResponse.json();
             console.log(`📡 [${cameraId}] Camera config received:`, {
+              fullConfig: config, // Log full config for debugging
               camera1Configured: !!config.camera1?.webSocketUrl,
               camera2Configured: !!config.camera2?.webSocketUrl,
               camera1Url: config.camera1?.webSocketUrl || 'not set',
               camera2Url: config.camera2?.webSocketUrl || 'not set',
+              camera1Ip: config.camera1?.ip || 'not set',
+              camera2Ip: config.camera2?.ip || 'not set',
+              camera1WebSocketPort: config.camera1?.webSocketPort || 'not set',
+              camera2WebSocketPort: config.camera2?.webSocketPort || 'not set',
             });
             
             // Get WebSocket URL for this camera
-            if (cameraId === 'camera-1' && config.camera1?.webSocketUrl) {
-              wsUrl = config.camera1.webSocketUrl;
-              console.log(`✅ [${cameraId}] Using camera 1 WebSocket: ${wsUrl}`, {
-                ip: config.camera1.ip,
-                port: config.camera1.webSocketPort,
-              });
-            } else if (cameraId === 'camera-2' && config.camera2?.webSocketUrl) {
-              wsUrl = config.camera2.webSocketUrl;
-              console.log(`✅ [${cameraId}] Using camera 2 WebSocket: ${wsUrl}`, {
-                ip: config.camera2.ip,
-                port: config.camera2.webSocketPort,
-              });
+            if (cameraId === 'camera-1' && config.camera1) {
+              if (config.camera1.webSocketUrl) {
+                wsUrl = config.camera1.webSocketUrl;
+                console.log(`✅ [${cameraId}] Using camera 1 WebSocket: ${wsUrl}`, {
+                  ip: config.camera1.ip,
+                  port: config.camera1.webSocketPort,
+                });
+              } else {
+                console.warn(`⚠️ [${cameraId}] Camera 1 WebSocket URL is null/undefined`, {
+                  ip: config.camera1.ip || 'missing',
+                  webSocketPort: config.camera1.webSocketPort || 'missing',
+                  webSocketUrl: config.camera1.webSocketUrl,
+                  configured: config.camera1.configured,
+                  reason: !config.camera1.ip ? 'Camera IP not set in database' : 
+                          !config.camera1.webSocketPort ? 'WebSocket port not set' : 
+                          'Unknown reason',
+                });
+              }
+            } else if (cameraId === 'camera-2' && config.camera2) {
+              if (config.camera2.webSocketUrl) {
+                wsUrl = config.camera2.webSocketUrl;
+                console.log(`✅ [${cameraId}] Using camera 2 WebSocket: ${wsUrl}`, {
+                  ip: config.camera2.ip,
+                  port: config.camera2.webSocketPort,
+                });
+              } else {
+                console.warn(`⚠️ [${cameraId}] Camera 2 WebSocket URL is null/undefined`, {
+                  ip: config.camera2.ip || 'missing',
+                  webSocketPort: config.camera2.webSocketPort || 'missing',
+                  webSocketUrl: config.camera2.webSocketUrl,
+                  configured: config.camera2.configured,
+                  reason: !config.camera2.ip ? 'Camera IP not set in database' : 
+                          !config.camera2.webSocketPort ? 'WebSocket port not set' : 
+                          'Unknown reason',
+                });
+              }
             } else {
-              console.warn(`⚠️ [${cameraId}] Camera WebSocket URL not found in config`, {
+              console.warn(`⚠️ [${cameraId}] Camera config not found in response`, {
                 cameraId,
                 configKeys: Object.keys(config),
+                camera1Exists: !!config.camera1,
+                camera2Exists: !!config.camera2,
               });
             }
           } else {
@@ -117,7 +148,7 @@ export function RealtimeVideo({
 
         // Fallback: Use environment variable if camera WebSocket not configured
         if (!wsUrl) {
-          wsUrl = process.env.NEXT_PUBLIC_VIDEO_WS_URL;
+          wsUrl = process.env.NEXT_PUBLIC_VIDEO_WS_URL || null;
           if (wsUrl) {
             console.log(`📹 Using fallback WebSocket from environment: ${wsUrl}`);
           } else {
@@ -133,7 +164,7 @@ export function RealtimeVideo({
         if (!wsUrl) {
           console.error(`❌ [${cameraId}] No WebSocket URL available, cannot connect`);
           statsRef.current.errors++;
-          setError("WebSocket URL не настроен");
+          setError("WebSocket URL not found");
           setIsLoading(false);
           return;
         }

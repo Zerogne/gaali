@@ -26,6 +26,8 @@ export interface CompanyMetadata {
     camera2Username?: string
     camera2Password?: string
   }
+  // Company code for unique code generation (4 digits, e.g., "1001", "1002")
+  companyCode?: string
 }
 
 /**
@@ -56,6 +58,7 @@ export async function getAllCompanies(): Promise<CompanyMetadata[]> {
           logoUrl: companyData.logoUrl,
           logoInitials: companyData.logoInitials,
           cameraSettings: companyData.cameraSettings || undefined, // Include camera settings (without passwords in client)
+          companyCode: companyData.companyCode || undefined, // Company code for unique code generation
           createdAt: companyData.createdAt instanceof Date 
             ? companyData.createdAt.toISOString() 
             : (typeof companyData.createdAt === 'string' 
@@ -101,6 +104,7 @@ export async function getCompany(companyId: string): Promise<CompanyMetadata | n
     logoUrl: companyData.logoUrl,
     logoInitials: companyData.logoInitials,
     cameraSettings: companyData.cameraSettings || undefined, // Include camera settings
+    companyCode: companyData.companyCode || undefined, // Company code for unique code generation
     createdAt: companyData.createdAt instanceof Date 
       ? companyData.createdAt.toISOString() 
       : (typeof companyData.createdAt === 'string' 

@@ -34,10 +34,11 @@ const truckSessionSchema = z.object({
  */
 /**
  * Generate unique AKT code for truck session
- * Format: 312025121700009 (15 digits)
+ * Format: 3110012025122000002 (19 digits)
  * - 31: Company-specific prefix (2 digits)
- * - 20251217: Date YYYYMMDD (8 digits)
- * - 00009: Sequential number for that day (5 digits)
+ * - 1001: Company/branch code (4 digits)
+ * - 20251220: Date YYYYMMDD (8 digits)
+ * - 00002: Sequential number for that day (5 digits)
  * 
  * Sequential numbers are unique per day and queried from database
  * to ensure each IN and OUT session gets a different number
@@ -46,13 +47,33 @@ async function generateUniqueCode(
   companyId: string,
   sessionsCollection: any
 ): Promise<string> {
+  // Get company code from metadata (defaults to "1001" if not set)
+  const { getCompany } = await import("@/lib/companies/metadata")
+  let companyCode = "1001" // Default company code
+  try {
+    const company = await getCompany(companyId)
+    if (company?.companyCode) {
+      companyCode = company.companyCode
+    } else {
+      console.warn(`⚠️ Company code not set for ${companyId}, using default: 1001`)
+    }
+  } catch (error) {
+    console.warn(`⚠️ Could not fetch company code for ${companyId}, using default: 1001`, error)
+  }
+  
+  // Ensure company code is 4 digits
+  if (companyCode.length !== 4 || !/^\d{4}$/.test(companyCode)) {
+    console.warn(`⚠️ Invalid company code format: ${companyCode}, using default: 1001`)
+    companyCode = "1001"
+  }
+  
   const companyPrefix = "31"
   const now = new Date()
-  const dateStr = now.toISOString().slice(0, 10).replace(/-/g, "") // YYYYMMDD
+  const dateStr = now.toISOString().slice(0, 10).replace(/-/g, "") // YYYYMMDD (8 digits)
   
   // Find the highest sequential number for today
-  // Extract date part from uniqueCode: 31 + YYYYMMDD + XXXXX
-  const todayPrefix = `${companyPrefix}${dateStr}`
+  // Extract date part from uniqueCode: 31 + 1001 + YYYYMMDD + XXXXX
+  const todayPrefix = `${companyPrefix}${companyCode}${dateStr}`
   const todaySessions = await sessionsCollection
     .find({
       uniqueCode: { $regex: `^${todayPrefix}` }
@@ -72,9 +93,17 @@ async function generateUniqueCode(
     }
   }
   
-  // Format: 31 + YYYYMMDD + 00009 (5 digits) = 15 digits total
+  // Format: 31 + 1001 + YYYYMMDD + 00002 (5 digits) = 19 digits total
   const seqNumStr = seqNum.toString().padStart(5, '0')
-  const aktNumber = `${companyPrefix}${dateStr}${seqNumStr}`
+  const aktNumber = `${companyPrefix}${companyCode}${dateStr}${seqNumStr}`
+  
+  console.log(`🔑 Generated unique code: ${aktNumber}`, {
+    companyPrefix,
+    companyCode,
+    dateStr,
+    seqNum,
+    format: `${companyPrefix}${companyCode}${dateStr}${seqNumStr}`,
+  })
   
   return aktNumber
 }

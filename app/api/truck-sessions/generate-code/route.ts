@@ -21,12 +21,33 @@ export async function GET(request: Request) {
     )
 
     // Generate unique code using the same logic as saveTruckSession
+    // Get company code from metadata (defaults to "1001" if not set)
+    const { getCompany } = await import("@/lib/companies/metadata")
+    let companyCode = "1001" // Default company code
+    try {
+      const company = await getCompany(companyId)
+      if (company?.companyCode) {
+        companyCode = company.companyCode
+      } else {
+        console.warn(`⚠️ Company code not set for ${companyId}, using default: 1001`)
+      }
+    } catch (error) {
+      console.warn(`⚠️ Could not fetch company code for ${companyId}, using default: 1001`, error)
+    }
+    
+    // Ensure company code is 4 digits
+    if (companyCode.length !== 4 || !/^\d{4}$/.test(companyCode)) {
+      console.warn(`⚠️ Invalid company code format: ${companyCode}, using default: 1001`)
+      companyCode = "1001"
+    }
+    
     const companyPrefix = "31"
     const now = new Date()
-    const dateStr = now.toISOString().slice(0, 10).replace(/-/g, "") // YYYYMMDD
+    const dateStr = now.toISOString().slice(0, 10).replace(/-/g, "") // YYYYMMDD (8 digits)
     
     // Find the highest sequential number for today
-    const todayPrefix = `${companyPrefix}${dateStr}`
+    // Format: 31 + 1001 + YYYYMMDD + XXXXX
+    const todayPrefix = `${companyPrefix}${companyCode}${dateStr}`
     const todaySessions = await sessionsCollection
       .find({
         uniqueCode: { $regex: `^${todayPrefix}` }
@@ -46,9 +67,9 @@ export async function GET(request: Request) {
       }
     }
     
-    // Format: 31 + YYYYMMDD + 00009 (5 digits) = 15 digits total
+    // Format: 31 + 1001 + YYYYMMDD + 00009 (5 digits) = 19 digits total
     const seqNumStr = seqNum.toString().padStart(5, '0')
-    const uniqueCode = `${companyPrefix}${dateStr}${seqNumStr}`
+    const uniqueCode = `${companyPrefix}${companyCode}${dateStr}${seqNumStr}`
     
     console.log("✅ Generated unique code for preview:", uniqueCode)
     

@@ -173,9 +173,10 @@ export async function POST(request: Request) {
       console.log("🔍 Full body.driverId value:", body.driverId)
       console.log("🔍 body.driverId type:", typeof body.driverId)
       
-      // Transform session data to 3rd party format (exact format as specified)
+      // Transform session data to 3rd party format (supports both old and new API formats)
       const thirdPartyData = [
         {
+          // Core fields (original format)
           AKT: session.uniqueCode, // Актын дугаар (уникаль код)
           CAR: session.product || "", // Тээвэрлэгч байгууллагын нэр / Бүтээгдэхүүн
           CMN: "", // Convoy manifest number
@@ -189,6 +190,14 @@ export async function POST(request: Request) {
           UPC: body.destination || receiverOrgName || "", // Хүлээн авах газар код (with receiver company)
           VNO: session.plateNumber || "", // Тээврийн хэрэгслийн дугаар
           WGT: session.grossWeightKg || 0, // Бохир жин
+          
+          // New fields (updated API format)
+          PRM: "", // Premium/Permit number
+          CT2: "", // Container 2
+          CT3: "", // Container 3
+          CT4: "", // Container 4
+          TID: "", // Transaction ID
+          
           // Additional fields for sender/receiver company and driver ID
           senderCompany: senderOrgName || "", // Илгээгч байгууллага
           receiverCompany: receiverOrgName || "", // Хүлээн авагч байгууллага

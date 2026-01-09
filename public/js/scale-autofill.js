@@ -25,6 +25,7 @@ function buildScaleApiUrl(receiptNumber) {
  * Adjust this object to change field mappings
  */
 const FIELD_MAPPING = {
+  // Core fields (original format)
   CAR: 'carInput',
   CON: 'conInput',
   DRN: 'drnInput',
@@ -38,6 +39,12 @@ const FIELD_MAPPING = {
   VNO: 'vnoInput',
   CT1: 'ct1Input',
   CMN: 'cmnInput',
+  // New fields (updated API format)
+  PRM: 'prmInput',      // Premium/Permit number
+  CT2: 'ct2Input',      // Container 2
+  CT3: 'ct3Input',      // Container 3
+  CT4: 'ct4Input',      // Container 4
+  TID: 'tidInput',      // Transaction ID
 };
 
 /**

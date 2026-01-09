@@ -245,9 +245,10 @@ export function useThirdPartyAutofill() {
       setIsSending(true)
       try {
         // Step 1: Transform formData to 3rd party app format
-        // Format: Array with single object - exact format as specified
+        // Format: Array with single object - supports both old and new API formats
         const thirdPartyData = [
           {
+            // Core fields (always present)
             AKT: formData.aktNumber || formData.uniqueCode || "", // Актын дугаар (уникаль код)
             CAR: formData.product || formData.cargoType || formData.productName || "", // Тээвэрлэгч байгууллагын нэр / Бүтээгдэхүүн
             CMN: formData.convoyManifestNumber || formData.cmn || "", // Convoy manifest number
@@ -261,6 +262,14 @@ export function useThirdPartyAutofill() {
             UPC: formData.destination || formData.receiverOrganization || formData.receiverOrganizationName || "", // Хүлээн авах газар код (with receiver company)
             VNO: formData.plateNumber || formData.plate || "", // Тээврийн хэрэгслийн дугаар
             WGT: formData.grossWeightKg || formData.weightKg || formData.weight || 0, // Бохир жин
+            
+            // New fields (added in updated API format)
+            PRM: formData.premium || formData.prm || "", // Premium/Permit number
+            CT2: formData.container2 || "", // Чингэлэг 2
+            CT3: formData.container3 || "", // Чингэлэг 3
+            CT4: formData.container4 || "", // Чингэлэг 4
+            TID: formData.transactionId || formData.tid || "", // Transaction ID
+            
             // Additional fields for sender/receiver company and driver ID
             senderCompany: formData.senderOrganization || formData.senderOrganizationName || "", // Илгээгч байгууллага
             receiverCompany: formData.receiverOrganization || formData.receiverOrganizationName || "", // Хүлээн авагч байгууллага

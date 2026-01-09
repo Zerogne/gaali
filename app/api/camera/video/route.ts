@@ -23,6 +23,12 @@ export async function GET(request: NextRequest) {
     const company = await getCompany(companyId);
     const cameraSettings = company?.cameraSettings || {};
 
+    console.log(`📹 [Camera Video API] Company ID: ${companyId}`, {
+      hasCompany: !!company,
+      hasCameraSettings: !!company?.cameraSettings,
+      cameraSettings: cameraSettings,
+    });
+
     // Get camera IPs and ports
     const camera1Ip = cameraSettings.camera1Ip;
     const camera2Ip = cameraSettings.camera2Ip;
@@ -68,6 +74,19 @@ export async function GET(request: NextRequest) {
     const camera2WebSocketUrl = camera2Ip
       ? `wss://${camera2Ip}:${camera2WebSocketPort}${wsPath}`
       : null;
+
+    console.log(`📹 [Camera Video API] Built WebSocket URLs:`, {
+      camera1: {
+        ip: camera1Ip || 'not set',
+        port: camera1WebSocketPort,
+        url: camera1WebSocketUrl || 'null (no IP)',
+      },
+      camera2: {
+        ip: camera2Ip || 'not set',
+        port: camera2WebSocketPort,
+        url: camera2WebSocketUrl || 'null (no IP)',
+      },
+    });
 
     return NextResponse.json({
       companyId,
