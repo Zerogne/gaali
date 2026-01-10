@@ -1,8 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
-import kv from "@vercel/kv";
+import { Redis } from "@upstash/redis";
 
 const VALID_CAMERA_IDS = ["1", "2"];
 const STALE_THRESHOLD_MS = 2000; // 2 seconds
+
+// Initialize Upstash Redis client
+// Uses UPSTASH_REDIS_REST_URL and UPSTASH_REDIS_REST_TOKEN from environment
+const redis = Redis.fromEnv();
 
 interface CameraFramePointer {
   url: string;
@@ -12,7 +16,7 @@ interface CameraFramePointer {
 /**
  * GET /api/camera/latest?camera=<id>
  * 
- * Returns the latest frame URL for a camera from KV
+ * Returns the latest frame URL for a camera from Redis
  * Browser polls this endpoint to get the current frame pointer
  * 
  * Returns:
@@ -31,17 +35,24 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // 2. Read from KV
-    const kvKey = `camera:${cameraId}`;
+    // 2. Read from Redis
+    const redisKey = `camera:${cameraId}`;
     let framePointer: CameraFramePointer | null = null;
 
     try {
-      const kvValue = await kv.get<string>(kvKey);
-      if (kvValue) {
-        framePointer = JSON.parse(kvValue) as CameraFramePointer;
+      const redisValue = await redis.get<string>(redisKey);
+      if (redisValue) {
+        try {
+          framePointer = typeof redisValue === "string" 
+            ? JSON.parse(redisValue) 
+            : redisValue;
+        } catch (e) {
+          console.error(`[Camera Latest] Failed to parse Redis value for camera ${cameraId}:`, e);
+          framePointer = null;
+        }
       }
     } catch (error) {
-      console.error(`[Camera Latest] KV read error for camera ${cameraId}:`, error);
+      console.error(`[Camera Latest] Redis read error for camera ${cameraId}:`, error);
       // Continue with null framePointer
     }
 

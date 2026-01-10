@@ -1,16 +1,20 @@
 import { NextRequest, NextResponse } from "next/server";
 import { put } from "@vercel/blob";
-import kv from "@vercel/kv";
+import { Redis } from "@upstash/redis";
 
 const MAX_PAYLOAD_SIZE = 250 * 1024; // 250KB
 const MAX_UPLOADS_PER_SEC = 15;
 const VALID_CAMERA_IDS = ["1", "2"];
 
+// Initialize Upstash Redis client
+// Uses UPSTASH_REDIS_REST_URL and UPSTASH_REDIS_REST_TOKEN from environment
+const redis = Redis.fromEnv();
+
 /**
- * Rate limiting: Token bucket using KV
+ * Rate limiting: Token bucket using Redis
  * Key format: rate_limit:camera:{cameraId}
  * Value: JSON object with { count: number, resetAt: number }
- * Simpler approach that works reliably with Vercel KV
+ * Sliding window approach that works reliably with Upstash Redis
  */
 async function checkRateLimit(cameraId: string): Promise<boolean> {
   const key = `rate_limit:camera:${cameraId}`;
@@ -19,12 +23,12 @@ async function checkRateLimit(cameraId: string): Promise<boolean> {
 
   try {
     // Get current rate limit state
-    const stateStr = await kv.get<string>(key);
+    const stateStr = await redis.get<string>(key);
     let state: { count: number; resetAt: number } | null = null;
 
     if (stateStr) {
       try {
-        state = JSON.parse(stateStr);
+        state = typeof stateStr === "string" ? JSON.parse(stateStr) : stateStr;
       } catch (e) {
         // Invalid JSON, reset state
         state = null;
@@ -38,7 +42,8 @@ async function checkRateLimit(cameraId: string): Promise<boolean> {
         count: 1,
         resetAt: now + windowMs,
       };
-      await kv.set(key, JSON.stringify(state), { ex: 2 }); // Expire after 2 seconds
+      // Set with expiration (2 seconds TTL)
+      await redis.set(key, JSON.stringify(state), { ex: 2 });
       return true;
     }
 
@@ -49,7 +54,8 @@ async function checkRateLimit(cameraId: string): Promise<boolean> {
 
     // Increment count
     state.count += 1;
-    await kv.set(key, JSON.stringify(state), { ex: 2 }); // Expire after 2 seconds
+    // Update with expiration (2 seconds TTL)
+    await redis.set(key, JSON.stringify(state), { ex: 2 });
 
     return true;
   } catch (error) {
@@ -63,7 +69,7 @@ async function checkRateLimit(cameraId: string): Promise<boolean> {
  * POST /api/camera/upload?camera=<id>
  * 
  * Receives binary JPEG frame from Electron app
- * Uploads to Vercel Blob and stores pointer in KV
+ * Uploads to Vercel Blob and stores pointer in Redis
  * 
  * Auth: Authorization: Bearer <INGEST_SECRET>
  * Body: Raw binary JPEG (image/jpeg)
@@ -175,18 +181,19 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // 8. Store pointer in KV
-    const kvKey = `camera:${cameraId}`;
-    const kvValue = JSON.stringify({
+    // 8. Store pointer in Redis
+    const redisKey = `camera:${cameraId}`;
+    const pointerValue = JSON.stringify({
       url: blobUrl,
       ts: timestamp,
     });
 
     try {
-      await kv.set(kvKey, kvValue);
+      // Set the pointer (no expiration - persists until overwritten)
+      await redis.set(redisKey, pointerValue);
     } catch (error) {
-      console.error(`[Camera Upload] KV write failed for camera ${cameraId}:`, error);
-      // Blob upload succeeded but KV failed - log but don't fail the request
+      console.error(`[Camera Upload] Redis write failed for camera ${cameraId}:`, error);
+      // Blob upload succeeded but Redis failed - log but don't fail the request
       // The frame is still available via Blob URL
     }
 
