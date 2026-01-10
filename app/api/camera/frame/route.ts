@@ -1,14 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getActiveCompany } from "@/lib/auth/session";
 
 /**
  * POST /api/camera/frame - Receive video frame from Electron app
  * Similar to /api/lpr/ingest but for video frames
  * 
- * Body: {
+ * Body (from Electron app):
+ * {
  *   cameraId: "1" | "2",
- *   frameBase64: string, // Base64 encoded JPEG frame
- *   timestamp: string
+ *   imageData: string, // Base64 encoded JPEG frame (without data:image/jpeg;base64, prefix)
+ *   timestamp: string, // ISO 8601 timestamp like "2024-01-01T12:00:00.000Z"
+ *   format: "jpeg" // Optional
  * }
  */
 
@@ -47,19 +48,37 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { cameraId, frameBase64, timestamp } = body;
+    const { cameraId, imageData, frameBase64, timestamp, format } = body;
 
-    if (!cameraId || !frameBase64) {
+    // Support both formats: imageData (from Electron) or frameBase64 (legacy)
+    const frameData = imageData || frameBase64;
+
+    if (!cameraId || !frameData) {
       return NextResponse.json(
-        { ok: false, error: "Missing cameraId or frameBase64" },
+        { ok: false, error: "Missing cameraId or imageData/frameBase64" },
         { status: 400 }
       );
     }
 
+    // Convert ISO timestamp to number, or use current time
+    let timestampNum = Date.now();
+    if (timestamp) {
+      const parsed = new Date(timestamp).getTime();
+      if (!isNaN(parsed)) {
+        timestampNum = parsed;
+      }
+    }
+
     // Store latest frame
     latestFrames.set(cameraId, {
-      frameBase64,
-      timestamp: timestamp || Date.now(),
+      frameBase64: frameData,
+      timestamp: timestampNum,
+    });
+
+    console.log(`📹 [Camera ${cameraId}] Frame received`, {
+      format: format || 'jpeg',
+      timestamp: new Date(timestampNum).toISOString(),
+      size: Math.round(frameData.length * 0.75 / 1024) + ' KB', // Approximate size
     });
 
     return NextResponse.json({ ok: true });
