@@ -37,7 +37,7 @@ export function HttpFrameStream({
   useEffect(() => {
     isMountedRef.current = true
 
-    // Poll for latest frame every 40ms (~25 fps to match Electron app FPS)
+    // Poll for latest frame every 100ms (10 fps)
     const pollFrame = async () => {
       if (!isMountedRef.current) return
 
@@ -54,9 +54,9 @@ export function HttpFrameStream({
 
         const data = await response.json()
         
-        if (data.ok && data.imageData && imgRef.current) {
-          // Update image with latest frame (matching Electron app format)
-          imgRef.current.src = `data:image/${data.format || 'jpeg'};base64,${data.imageData}`
+        if (data.ok && data.frameBase64 && imgRef.current) {
+          // Update image with latest frame
+          imgRef.current.src = `data:image/jpeg;base64,${data.frameBase64}`
           
           if (isLoading) {
             setIsLoading(false)
@@ -73,7 +73,7 @@ export function HttpFrameStream({
 
     // Start polling
     pollFrame() // Poll immediately
-    pollIntervalRef.current = setInterval(pollFrame, 40) // Then every 40ms (~25 fps)
+    pollIntervalRef.current = setInterval(pollFrame, 100) // Then every 100ms
 
     return () => {
       isMountedRef.current = false

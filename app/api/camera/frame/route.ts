@@ -5,20 +5,17 @@ import { getActiveCompany } from "@/lib/auth/session";
  * POST /api/camera/frame - Receive video frame from Electron app
  * Similar to /api/lpr/ingest but for video frames
  * 
- * Body format from Electron app:
- * {
+ * Body: {
  *   cameraId: "1" | "2",
- *   timestamp: "2024-01-01T12:00:00.000Z", // ISO string
- *   imageData: "base64-encoded-jpeg-frame",
- *   format: "jpeg"
+ *   frameBase64: string, // Base64 encoded JPEG frame
+ *   timestamp: string
  * }
  */
 
 // Store latest frames in memory (or use Redis in production)
 const latestFrames = new Map<string, {
-  imageData: string;
-  timestamp: string;
-  format: string;
+  frameBase64: string;
+  timestamp: number;
 }>();
 
 export async function POST(request: NextRequest) {
@@ -50,26 +47,19 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { cameraId, imageData, timestamp, format } = body;
+    const { cameraId, frameBase64, timestamp } = body;
 
-    if (!cameraId || !imageData) {
+    if (!cameraId || !frameBase64) {
       return NextResponse.json(
-        { ok: false, error: "Missing cameraId or imageData" },
+        { ok: false, error: "Missing cameraId or frameBase64" },
         { status: 400 }
       );
     }
 
-    // Store latest frame (matching Electron app format)
+    // Store latest frame
     latestFrames.set(cameraId, {
-      imageData,
-      timestamp: timestamp || new Date().toISOString(),
-      format: format || "jpeg",
-    });
-
-    console.log(`✅ Received frame for camera ${cameraId}`, {
-      timestamp: timestamp || new Date().toISOString(),
-      format: format || "jpeg",
-      imageDataLength: imageData?.length || 0,
+      frameBase64,
+      timestamp: timestamp || Date.now(),
     });
 
     return NextResponse.json({ ok: true });
@@ -102,9 +92,8 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({
       ok: true,
       cameraId,
-      imageData: frame.imageData, // Match Electron app format
+      frameBase64: frame.frameBase64,
       timestamp: frame.timestamp,
-      format: frame.format,
     });
   } catch (error) {
     console.error("Camera frame get error:", error);
