@@ -6,7 +6,26 @@ const STALE_THRESHOLD_MS = 2000; // 2 seconds
 
 // Initialize Upstash Redis client
 // Uses UPSTASH_REDIS_REST_URL and UPSTASH_REDIS_REST_TOKEN from environment
-const redis = Redis.fromEnv();
+let redis: Redis | null = null;
+
+try {
+  const redisUrl = process.env.UPSTASH_REDIS_REST_URL;
+  const redisToken = process.env.UPSTASH_REDIS_REST_TOKEN;
+
+  if (redisUrl && redisToken) {
+    redis = new Redis({
+      url: redisUrl,
+      token: redisToken,
+    });
+  } else {
+    console.warn("[Redis] Environment variables not set. Using Redis.fromEnv() fallback.");
+    redis = Redis.fromEnv();
+  }
+} catch (error) {
+  console.error("[Redis] Failed to initialize Redis client:", error);
+  console.error("[Redis] UPSTASH_REDIS_REST_URL:", process.env.UPSTASH_REDIS_REST_URL ? "SET" : "NOT SET");
+  console.error("[Redis] UPSTASH_REDIS_REST_TOKEN:", process.env.UPSTASH_REDIS_REST_TOKEN ? "SET" : "NOT SET");
+}
 
 interface CameraFramePointer {
   url: string;
@@ -38,6 +57,25 @@ export async function GET(request: NextRequest) {
     // 2. Read from Redis
     const redisKey = `camera:${cameraId}`;
     let framePointer: CameraFramePointer | null = null;
+
+    if (!redis) {
+      console.warn(`[Camera Latest] Redis not initialized for camera ${cameraId}`);
+      // Return stale response if Redis is not available
+      return NextResponse.json(
+        {
+          ok: true,
+          cameraId,
+          url: null,
+          ts: null,
+          stale: true,
+        },
+        {
+          headers: {
+            "Cache-Control": "no-store, max-age=0",
+          },
+        }
+      );
+    }
 
     try {
       const redisValue = await redis.get<string>(redisKey);

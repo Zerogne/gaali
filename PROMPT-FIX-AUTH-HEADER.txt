@@ -1,0 +1,41 @@
+Fix the Authorization header in my Electron app's camera frame upload function.
+
+Problem:
+- Getting error: "[Camera Upload] Missing or invalid Authorization header"
+- The API endpoint expects: `Authorization: Bearer <INGEST_SECRET>`
+- The header must have "Bearer " prefix (with space) before the secret
+
+Current code location:
+- File: ELECTRON-BINARY-UPLOAD.js (or wherever the upload function is)
+- Function: pushVideoToWebsiteAPI()
+
+Requirements:
+1. Ensure INGEST_SECRET is loaded from environment variables (process.env.INGEST_SECRET or process.env.LPR_INGEST_SECRET)
+2. Verify the Authorization header is sent exactly as: `Authorization: Bearer ${INGEST_SECRET}`
+3. Add error handling for when INGEST_SECRET is undefined/null
+4. Add console logging to debug if header is being sent correctly
+5. Handle 401 Unauthorized responses with helpful error messages
+
+The fetch call should look like:
+```javascript
+const response = await fetch(uploadUrl, {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'image/jpeg',
+    'Authorization': `Bearer ${INGEST_SECRET}`,  // Must include "Bearer " prefix
+    'x-ts': timestamp.toString(),
+  },
+  body: jpegBuffer,
+});
+```
+
+Also check:
+- Is INGEST_SECRET set in the Electron app's environment?
+- Does it match the INGEST_SECRET in Vercel Dashboard?
+- Is the header being sent (check network tab or add logging)?
+
+Fix the code and add debugging logs to help identify if the issue is:
+- Secret not set
+- Header not being sent
+- Header format incorrect
+- Secret mismatch
