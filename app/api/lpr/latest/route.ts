@@ -1,8 +1,9 @@
 import { NextResponse } from "next/server";
 import { getLprCollection } from "@/lib/db/lpr";
 import { getActiveCompany } from "@/lib/auth/session";
+import { getCompaniesCollection } from "@/lib/db/companyDb";
 
-export async function GET() {
+export async function GET(request: Request) {
   try {
     // Get current user's company ID from session
     let companyId: string | null = null;
@@ -21,10 +22,42 @@ export async function GET() {
       });
     }
 
+    // Parse query parameters to check if we need to filter by specific camera
+    const { searchParams } = new URL(request.url);
+    const cameraParam = searchParams.get("camera"); // "1" or "2"
+    
+    let targetCameraIp: string | null = null;
+    if (cameraParam === "1" || cameraParam === "2") {
+      // Fetch company's camera settings to get the camera IP
+      try {
+        const companiesCollection = await getCompaniesCollection();
+        const company = await companiesCollection.findOne(
+          { companyId },
+          { projection: { cameraSettings: 1 } }
+        );
+        
+        if (company && (company as any).cameraSettings) {
+          const cameraSettings = (company as any).cameraSettings;
+          if (cameraParam === "1" && cameraSettings.camera1Ip) {
+            targetCameraIp = cameraSettings.camera1Ip;
+          } else if (cameraParam === "2" && cameraSettings.camera2Ip) {
+            targetCameraIp = cameraSettings.camera2Ip;
+          }
+        }
+      } catch (error) {
+        console.error("[LPR Latest] Error fetching company camera settings:", error);
+        // Continue without camera filter if lookup fails
+      }
+    }
+
     const collection = await getLprCollection();
 
-    // Find latest document by receivedAt, filtered by companyId
-    const query = companyId ? { companyId } : {};
+    // Build query: filter by companyId, and optionally by camera IP
+    const query: any = companyId ? { companyId } : {};
+    if (targetCameraIp) {
+      query.cameraIp = targetCameraIp;
+    }
+    
     const latest = await collection
       .find(query)
       .sort({ receivedAt: -1 })
@@ -43,18 +76,6 @@ export async function GET() {
     }
 
     const doc = latest[0];
-    
-    // #region agent log - Debug API response data
-    const receivedTime = doc.receivedAt ? new Date(doc.receivedAt).getTime() : 0;
-    const now = Date.now();
-    const ageMinutes = receivedTime > 0 ? (now - receivedTime) / 1000 / 60 : -1;
-    console.log(`[DEBUG-LPR-API] Returning latest LPR:`, {
-      plateNumber: doc.plateNumber,
-      receivedAt: doc.receivedAt,
-      ageMinutes: ageMinutes.toFixed(2),
-      companyId,
-    });
-    // #endregion
 
     return NextResponse.json(
       {

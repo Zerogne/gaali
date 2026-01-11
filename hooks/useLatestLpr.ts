@@ -14,8 +14,10 @@ export interface LprLatest {
 /**
  * Hook to poll the latest LPR event from the API
  * Deduplicates events and stores the latest in localStorage
+ * @param pollInterval - Polling interval in milliseconds (default: 1000)
+ * @param camera - Optional camera number (1 or 2) to filter by specific camera IP
  */
-export function useLatestLpr(pollInterval: number = 1000) {
+export function useLatestLpr(pollInterval: number = 1000, camera?: 1 | 2) {
   const [latest, setLatest] = useState<LprLatest | null>(null);
   const [error, setError] = useState<string | null>(null);
   const lastKeyRef = useRef<string | null>(null);
@@ -31,7 +33,9 @@ export function useLatestLpr(pollInterval: number = 1000) {
   // Fetch latest from API
   const fetchLatest = async () => {
     try {
-      const response = await fetch("/api/lpr/latest", {
+      // Add camera parameter if specified
+      const url = camera ? `/api/lpr/latest?camera=${camera}` : "/api/lpr/latest";
+      const response = await fetch(url, {
         cache: "no-store",
       });
 
@@ -41,13 +45,6 @@ export function useLatestLpr(pollInterval: number = 1000) {
 
       const data: LprLatest = await response.json();
       const key = getDedupKey(data);
-      
-      // #region agent log - Debug API response
-      const receivedTime = data.receivedAt ? new Date(data.receivedAt).getTime() : 0;
-      const now = Date.now();
-      const ageMinutes = receivedTime > 0 ? (now - receivedTime) / 1000 / 60 : -1;
-      fetch('http://127.0.0.1:7243/ingest/02008482-c731-4920-9095-c7192b6bb626',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'useLatestLpr.ts:42',message:'API response received',data:{plateNumber:data.plateNumber,receivedAt:data.receivedAt,ageMinutes:ageMinutes.toFixed(2),key,previousKey:lastKeyRef.current,willUpdate:key !== lastKeyRef.current},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'B'})}).catch(()=>{});
-      // #endregion
 
       // Update if key changed (new data received, even if same plate number)
       if (key && key !== lastKeyRef.current) {
@@ -64,7 +61,6 @@ export function useLatestLpr(pollInterval: number = 1000) {
           key,
           previousKey: lastKeyRef.current,
         });
-        fetch('http://127.0.0.1:7243/ingest/02008482-c731-4920-9095-c7192b6bb626',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'useLatestLpr.ts:49',message:'State updated with new data',data:{plateNumber:data.plateNumber,receivedAt:data.receivedAt,ageMinutes:ageMinutes.toFixed(2),key},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'C'})}).catch(()=>{});
         // #endregion
 
         // Store in localStorage
@@ -82,7 +78,6 @@ export function useLatestLpr(pollInterval: number = 1000) {
           receivedAt: data.receivedAt,
           key,
         });
-        fetch('http://127.0.0.1:7243/ingest/02008482-c731-4920-9095-c7192b6bb626',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'useLatestLpr.ts:71',message:'No update - same key',data:{plateNumber:data.plateNumber,receivedAt:data.receivedAt,ageMinutes:ageMinutes.toFixed(2),key},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'D'})}).catch(()=>{});
         // #endregion
       }
     } catch (err) {
@@ -104,13 +99,6 @@ export function useLatestLpr(pollInterval: number = 1000) {
           const key = getDedupKey(parsed);
           lastKeyRef.current = key;
           setLatest(parsed);
-          
-          // #region agent log - Debug localStorage load
-          const storedTime = parsed.receivedAt ? new Date(parsed.receivedAt).getTime() : 0;
-          const now = Date.now();
-          const ageMinutes = storedTime > 0 ? (now - storedTime) / 1000 / 60 : -1;
-          fetch('http://127.0.0.1:7243/ingest/02008482-c731-4920-9095-c7192b6bb626',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'useLatestLpr.ts:96',message:'Loaded from localStorage',data:{plateNumber:parsed.plateNumber,receivedAt:parsed.receivedAt,ageMinutes:ageMinutes.toFixed(2),key},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
-          // #endregion
         }
       } catch (e) {
         // Ignore localStorage errors
@@ -133,7 +121,7 @@ export function useLatestLpr(pollInterval: number = 1000) {
         clearTimeout(pollTimeoutRef.current);
       }
     };
-  }, [pollInterval]);
+  }, [pollInterval, camera]);
 
   return { latest, error };
 }

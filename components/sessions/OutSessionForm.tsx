@@ -9,6 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { useThirdPartyAutofill } from "@/hooks/useThirdPartyAutofill";
 import { useWeightStatus } from "@/hooks/useWeightStatus";
+import { useLatestLpr } from "@/hooks/useLatestLpr";
 import { updateTruckLog, sendTruckLogToCustoms } from "@/lib/api";
 import { exportLogToPDF } from "@/lib/pdf-export";
 import type { Product } from "@/lib/products/products";
@@ -59,7 +60,7 @@ interface OutSessionFormProps {
   onHasUnsavedDataChange?: (hasData: boolean) => void;
   onSaveRequest?: () => Promise<boolean>;
   streamUrl?: string;
-  cameraAutofill?: ReturnType<typeof useLprPlateAutofill>;
+  cameraAutofill?: any; // Not used - kept for prop compatibility (auto-fill disabled in Out Session)
   editLog?: TruckLog | null;
   editLogId?: string | null;
   outTime?: string;
@@ -117,9 +118,9 @@ export const OutSessionForm = forwardRef<
       null
     );
     
-    // NOTE: Plate number auto-fill is DISABLED for Out Session - must be filled manually
-    // (In Session still has auto-fill enabled)
-    // All camera autofill hooks are disabled - plate must be entered manually
+    // Plate number auto-fill for Out Session - filters by camera 2 (exit camera)
+    // In Session uses camera 1 (entry camera), Out Session uses camera 2 (exit camera)
+    const { latest: latestLpr } = useLatestLpr(1000, 2); // Poll every 1 second, filter by camera 2
 
     // Check weight device connection status
     const weightStatus = useWeightStatus({
@@ -634,8 +635,44 @@ export const OutSessionForm = forwardRef<
       }
     };
 
-    // NOTE: Plate number auto-fill is DISABLED for Out Session
-    // Plate number must be entered manually - no binding to autofill hooks
+    // Auto-fill plate number when LPR data updates (camera 2 - exit camera)
+    useEffect(() => {
+      // #region agent log - Debug plate auto-fill
+      console.log(`[DEBUG-PLATE-OUT] useEffect triggered: latestLpr=${latestLpr?.plateNumber}, recognizedAt=${latestLpr?.recognizedAt}, cameraIp=${latestLpr?.cameraIp}`);
+      // #endregion
+      
+      if (latestLpr?.plateNumber) {
+        const plateNumber = latestLpr.plateNumber.trim().toUpperCase();
+        
+        // #region agent log - Debug plate update
+        console.log(`[DEBUG-PLATE-OUT] Updating formState.plateNumber to ${plateNumber}`);
+        // #endregion
+        
+        setFormState((prev) => {
+          // #region agent log - Debug formState before update
+          console.log(`[DEBUG-PLATE-OUT] Before update: prev.plateNumber=${prev.plateNumber}`);
+          // #endregion
+          
+          const updated = {
+            ...prev,
+            plateNumber: plateNumber,
+          };
+          
+          // #region agent log - Debug formState after update
+          console.log(`[DEBUG-PLATE-OUT] After update: updated.plateNumber=${updated.plateNumber}`);
+          // #endregion
+          
+          return updated;
+        });
+        
+        // Notify parent of plate change
+        onPlateChange?.(plateNumber);
+      } else {
+        // #region agent log - Debug why not updating
+        console.log(`[DEBUG-PLATE-OUT] NOT updating: latestLpr=${latestLpr}, plateNumber=${latestLpr?.plateNumber}`);
+        // #endregion
+      }
+    }, [latestLpr?.plateNumber, latestLpr?.receivedAt, onPlateChange]);
     // (Removed all cameraAutofill.bindToInput and trackTyping calls)
 
     // Auto-fill plate from camera
@@ -693,9 +730,6 @@ export const OutSessionForm = forwardRef<
         // #endregion
       }
     }, [weightStatus.status.latestWeight]);
-
-    // Plate number auto-fill is DISABLED for Out Session - must be filled manually
-    // (Auto-fill is only enabled in In Session form)
 
     // Auto-fill all data from IN session when plate number is entered
     useEffect(() => {
