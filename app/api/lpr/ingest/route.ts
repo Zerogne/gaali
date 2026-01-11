@@ -70,26 +70,63 @@ export async function POST(request: NextRequest) {
     const expectedSecret = process.env.LPR_INGEST_SECRET;
 
     if (!expectedSecret) {
+      console.error("[LPR Ingest] LPR_INGEST_SECRET not configured in environment");
       return NextResponse.json(
         { ok: false, error: "LPR_INGEST_SECRET not configured" },
         { status: 500 }
       );
     }
 
-    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+    if (!authHeader) {
+      console.warn("[LPR Ingest] No Authorization header provided");
       return NextResponse.json(
-        { ok: false, error: "Missing or invalid Authorization header" },
+        { ok: false, error: "Missing Authorization header" },
         { status: 401 }
       );
     }
 
-    const token = authHeader.substring(7);
-    if (token !== expectedSecret) {
+    // Case-insensitive Bearer check
+    const authLower = authHeader.toLowerCase().trim();
+    if (!authLower.startsWith("bearer ")) {
+      console.warn(`[LPR Ingest] Invalid Authorization header format. Received: ${authHeader.substring(0, 20)}...`);
       return NextResponse.json(
-        { ok: false, error: "Invalid authentication token" },
+        { ok: false, error: "Authorization header must start with 'Bearer '" },
         { status: 401 }
       );
     }
+
+    // Extract and trim token
+    const token = authHeader.substring(7).trim();
+    const expectedTrimmed = expectedSecret.trim();
+
+    // Debug logging (only show partial secret)
+    const secretPreview = expectedTrimmed.length > 4 
+      ? `${expectedTrimmed.substring(0, 4)}...` 
+      : "***";
+    const tokenPreview = token.length > 4 
+      ? `${token.substring(0, 4)}...` 
+      : "***";
+
+    console.log(`[LPR Ingest] Auth attempt - Expected: ${secretPreview}, Received: ${tokenPreview}, Length match: ${token.length === expectedTrimmed.length}`);
+
+    if (token !== expectedTrimmed) {
+      console.error(`[LPR Ingest] Token mismatch - Expected length: ${expectedTrimmed.length}, Received length: ${token.length}`);
+      return NextResponse.json(
+        { 
+          ok: false, 
+          error: "Invalid authentication token",
+          debug: process.env.NODE_ENV === "development" ? {
+            expectedLength: expectedTrimmed.length,
+            receivedLength: token.length,
+            expectedPreview: secretPreview,
+            receivedPreview: tokenPreview
+          } : undefined
+        },
+        { status: 401 }
+      );
+    }
+
+    console.log("[LPR Ingest] Authentication successful");
 
     // Parse and validate body
     let body: any;
