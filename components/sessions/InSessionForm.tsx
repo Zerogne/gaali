@@ -922,6 +922,40 @@ export const InSessionForm = forwardRef<
       }));
     };
 
+    // Auto-fill weight when weight status updates
+    useEffect(() => {
+      // #region agent log - Debug weight auto-fill
+      console.log(`[DEBUG-WEIGHT-IN] useEffect triggered: latestWeight=${weightStatus.status.latestWeight}, connected=${weightStatus.status.connected}, siteId=${weightStatus.status.siteId}`);
+      // #endregion
+      
+      if (weightStatus.status.latestWeight !== null && weightStatus.status.latestWeight > 0) {
+        // #region agent log - Debug weight update
+        console.log(`[DEBUG-WEIGHT-IN] Updating formState.grossWeightKg to ${weightStatus.status.latestWeight}`);
+        // #endregion
+        
+        setFormState((prev) => {
+          // #region agent log - Debug formState before update
+          console.log(`[DEBUG-WEIGHT-IN] Before update: prev.grossWeightKg=${prev.grossWeightKg}`);
+          // #endregion
+          
+          const updated = {
+            ...prev,
+            grossWeightKg: weightStatus.status.latestWeight,
+          };
+          
+          // #region agent log - Debug formState after update
+          console.log(`[DEBUG-WEIGHT-IN] After update: updated.grossWeightKg=${updated.grossWeightKg}`);
+          // #endregion
+          
+          return updated;
+        });
+      } else {
+        // #region agent log - Debug why not updating
+        console.log(`[DEBUG-WEIGHT-IN] NOT updating: latestWeight=${weightStatus.status.latestWeight}, condition check failed`);
+        // #endregion
+      }
+    }, [weightStatus.status.latestWeight]);
+
     // Check if form has unsaved data
     const hasUnsavedData = (): boolean => {
       return !!(
@@ -1531,6 +1565,9 @@ export const InSessionForm = forwardRef<
                             e.target.value === ""
                               ? null
                               : parseFloat(e.target.value);
+                          // #region agent log - Debug manual weight input
+                          console.log(`[DEBUG-WEIGHT-IN] Manual input: value=${value}, formState.grossWeightKg=${formState.grossWeightKg}`);
+                          // #endregion
                           setFormState((prev) => ({
                             ...prev,
                             grossWeightKg: value,

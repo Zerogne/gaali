@@ -707,11 +707,35 @@ export const OutSessionForm = forwardRef<
 
     // Auto-fill weight when weight status updates
     useEffect(() => {
+      // #region agent log - Debug weight auto-fill
+      console.log(`[DEBUG-WEIGHT] useEffect triggered: latestWeight=${weightStatus.status.latestWeight}, connected=${weightStatus.status.connected}, siteId=${weightStatus.status.siteId}`);
+      // #endregion
+      
       if (weightStatus.status.latestWeight !== null && weightStatus.status.latestWeight > 0) {
-        setFormState((prev) => ({
-          ...prev,
-          outWeightKg: weightStatus.status.latestWeight,
-        }));
+        // #region agent log - Debug weight update
+        console.log(`[DEBUG-WEIGHT] Updating formState.outWeightKg to ${weightStatus.status.latestWeight}`);
+        // #endregion
+        
+        setFormState((prev) => {
+          // #region agent log - Debug formState before update
+          console.log(`[DEBUG-WEIGHT] Before update: prev.outWeightKg=${prev.outWeightKg}`);
+          // #endregion
+          
+          const updated = {
+            ...prev,
+            outWeightKg: weightStatus.status.latestWeight,
+          };
+          
+          // #region agent log - Debug formState after update
+          console.log(`[DEBUG-WEIGHT] After update: updated.outWeightKg=${updated.outWeightKg}`);
+          // #endregion
+          
+          return updated;
+        });
+      } else {
+        // #region agent log - Debug why not updating
+        console.log(`[DEBUG-WEIGHT] NOT updating: latestWeight=${weightStatus.status.latestWeight}, condition check failed`);
+        // #endregion
       }
     }, [weightStatus.status.latestWeight]);
 
@@ -1630,6 +1654,9 @@ export const OutSessionForm = forwardRef<
                             e.target.value === ""
                               ? null
                               : parseFloat(e.target.value);
+                          // #region agent log - Debug manual weight input
+                          console.log(`[DEBUG-WEIGHT] Manual input: value=${value}, formState.outWeightKg=${formState.outWeightKg}`);
+                          // #endregion
                           setFormState((prev) => ({
                             ...prev,
                             outWeightKg: value,

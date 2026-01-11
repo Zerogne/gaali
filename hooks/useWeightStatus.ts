@@ -74,8 +74,17 @@ export function useWeightStatus(
 
       const data = await response.json();
 
+      // #region agent log - Debug weight status API response
+      console.log(`[DEBUG-WEIGHT-STATUS] API response:`, {
+        connected: data.connected,
+        latestWeight: data.latestWeight,
+        latestWeightWeight: data.latestWeight?.weight,
+        totalRecords: data.totalRecords,
+      });
+      // #endregion
+
       if (isMountedRef.current) {
-        setStatus({
+        const newStatus = {
           connected: data.connected || false,
           siteId: data.siteId || siteId || null,
           latestWeight: data.latestWeight?.weight || null,
@@ -83,7 +92,13 @@ export function useWeightStatus(
           lastReceivedAt: data.latestWeight?.receivedAt || null,
           totalRecords: data.totalRecords || 0,
           recentActivity: data.recentActivity?.count || 0,
-        });
+        };
+        
+        // #region agent log - Debug weight status update
+        console.log(`[DEBUG-WEIGHT-STATUS] Setting status:`, newStatus);
+        // #endregion
+        
+        setStatus(newStatus);
         setError(null);
       }
     } catch (err) {
