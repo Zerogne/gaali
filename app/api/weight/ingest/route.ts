@@ -68,6 +68,7 @@ export async function POST(request: NextRequest) {
 
     // Store weight data in MongoDB
     const collection = await getWeightCollection();
+    const receivedAt = new Date().toISOString();
     const weightData = {
       siteId: validated.siteId,
       weight: validated.weight,
@@ -76,11 +77,22 @@ export async function POST(request: NextRequest) {
       ts: validated.ts,
       deviceIp: validated.deviceIp,
       devicePort: validated.devicePort,
-      receivedAt: new Date().toISOString(),
+      receivedAt: receivedAt,
     };
 
-    // Insert new weight record
-    await collection.insertOne(weightData);
+    // Insert new weight record (handle duplicate key errors gracefully)
+    try {
+      await collection.insertOne(weightData);
+    } catch (insertError: any) {
+      // If it's a duplicate key error, that's okay - data already exists
+      // This can happen if the same request is sent twice quickly
+      if (insertError.code === 11000) {
+        console.warn(`[Weight Ingest] Duplicate key error (data already exists), continuing...`);
+      } else {
+        // Re-throw if it's a different error
+        throw insertError;
+      }
+    }
 
     // Also update the latest weight for this siteId (for quick access)
     await collection.updateOne(
@@ -89,7 +101,7 @@ export async function POST(request: NextRequest) {
         $set: { 
           ...weightData,
           isLatest: true,
-          updatedAt: new Date().toISOString(),
+          updatedAt: receivedAt,
         } 
       },
       { upsert: true }
