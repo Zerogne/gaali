@@ -7,11 +7,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
-import { useLprPlateAutofill } from "@/hooks/useLprPlateAutofill";
-import { useConnectorSSE } from "@/hooks/useConnectorSSE";
 import { useThirdPartyAutofill } from "@/hooks/useThirdPartyAutofill";
 import { useWeightStatus } from "@/hooks/useWeightStatus";
-import { useLatestLpr } from "@/hooks/useLatestLpr";
 import { updateTruckLog, sendTruckLogToCustoms } from "@/lib/api";
 import { exportLogToPDF } from "@/lib/pdf-export";
 import type { Product } from "@/lib/products/products";
@@ -87,7 +84,7 @@ export const OutSessionForm = forwardRef<
       onHasUnsavedDataChange,
       onSaveRequest,
       streamUrl,
-      cameraAutofill: externalCameraAutofill,
+      cameraAutofill: externalCameraAutofill, // Not used - kept for prop compatibility
       editLog,
       editLogId,
       outTime: externalOutTime,
@@ -120,44 +117,9 @@ export const OutSessionForm = forwardRef<
       null
     );
     
-    // Get connector URL from localStorage or environment variable
-    const [connectorUrl] = useState(() => {
-      if (typeof window === "undefined") {
-        return process.env.NEXT_PUBLIC_CONNECTOR_SSE_URL || "http://localhost:3000/events";
-      }
-      try {
-        const saved = localStorage.getItem("cameraSettings");
-        if (saved) {
-          const settings = JSON.parse(saved);
-          if (settings.connectorUrl) {
-            return settings.connectorUrl;
-          }
-        }
-      } catch (e) {
-        // Ignore localStorage errors
-      }
-      return process.env.NEXT_PUBLIC_CONNECTOR_SSE_URL || "http://localhost:3000/events";
-    });
-    
-    // Use SSE for real-time camera updates from Windows connector
-    // Falls back to polling if SSE not available
-    // Only enable if connector URL is explicitly set (not default localhost)
-    const shouldEnableConnector = connectorUrl && 
-      !connectorUrl.includes("localhost:3000") && 
-      !connectorUrl.includes("127.0.0.1:3000");
-    
-    const connectorSSE = useConnectorSSE({
-      connectorUrl,
-      enabled: shouldEnableConnector, // Disable if using default localhost
-    });
-    const internalCameraAutofill = useLprPlateAutofill();
-    // Prefer SSE if connected, otherwise use external autofill or polling
-    const cameraAutofill = 
-      connectorSSE.status === "connected" ? connectorSSE
-      : externalCameraAutofill || internalCameraAutofill;
-
-    // Direct plate number auto-fill (similar to weight) - updates whenever new data arrives
-    const { latest: latestLpr } = useLatestLpr(1000); // Poll every 1 second
+    // NOTE: Plate number auto-fill is DISABLED for Out Session - must be filled manually
+    // (In Session still has auto-fill enabled)
+    // All camera autofill hooks are disabled - plate must be entered manually
 
     // Check weight device connection status
     const weightStatus = useWeightStatus({
@@ -672,25 +634,9 @@ export const OutSessionForm = forwardRef<
       }
     };
 
-    // Bind camera autofill to plate input
-    useEffect(() => {
-      if (plateInputRef) {
-        console.log(
-          "🔗 [OUT] Binding autofill to input, plate:",
-          cameraAutofill.plate
-        );
-        cameraAutofill.bindToInput({
-          getValue: () => formState.plateNumber,
-          setValue: (value: string) => {
-            console.log("📝 [OUT] Autofill setValue called with:", value);
-            setFormState((prev) => ({ ...prev, plateNumber: value }));
-          },
-          isFocused: () => document.activeElement === plateInputRef,
-        });
-      } else {
-        console.log("⚠️ [OUT] plateInputRef is null, cannot bind autofill");
-      }
-    }, [plateInputRef, cameraAutofill]);
+    // NOTE: Plate number auto-fill is DISABLED for Out Session
+    // Plate number must be entered manually - no binding to autofill hooks
+    // (Removed all cameraAutofill.bindToInput and trackTyping calls)
 
     // Auto-fill plate from camera
     useEffect(() => {
@@ -748,44 +694,8 @@ export const OutSessionForm = forwardRef<
       }
     }, [weightStatus.status.latestWeight]);
 
-    // Auto-fill plate number when LPR data updates (similar to weight - direct update)
-    useEffect(() => {
-      // #region agent log - Debug plate auto-fill
-      console.log(`[DEBUG-PLATE] useEffect triggered: latestLpr=${latestLpr?.plateNumber}, recognizedAt=${latestLpr?.recognizedAt}, cameraIp=${latestLpr?.cameraIp}`);
-      // #endregion
-      
-      if (latestLpr?.plateNumber) {
-        const plateNumber = latestLpr.plateNumber.trim().toUpperCase();
-        
-        // #region agent log - Debug plate update
-        console.log(`[DEBUG-PLATE] Updating formState.plateNumber to ${plateNumber}`);
-        // #endregion
-        
-        setFormState((prev) => {
-          // #region agent log - Debug formState before update
-          console.log(`[DEBUG-PLATE] Before update: prev.plateNumber=${prev.plateNumber}`);
-          // #endregion
-          
-          const updated = {
-            ...prev,
-            plateNumber: plateNumber,
-          };
-          
-          // #region agent log - Debug formState after update
-          console.log(`[DEBUG-PLATE] After update: updated.plateNumber=${updated.plateNumber}`);
-          // #endregion
-          
-          return updated;
-        });
-        
-        // Notify parent of plate change
-        onPlateChange?.(plateNumber);
-      } else {
-        // #region agent log - Debug why not updating
-        console.log(`[DEBUG-PLATE] NOT updating: latestLpr=${latestLpr}, plateNumber=${latestLpr?.plateNumber}`);
-        // #endregion
-      }
-    }, [latestLpr?.plateNumber, latestLpr?.receivedAt, onPlateChange]);
+    // Plate number auto-fill is DISABLED for Out Session - must be filled manually
+    // (Auto-fill is only enabled in In Session form)
 
     // Auto-fill all data from IN session when plate number is entered
     useEffect(() => {
@@ -1741,17 +1651,12 @@ export const OutSessionForm = forwardRef<
                         id="plateNumber"
                         value={formState.plateNumber}
                         onChange={(e) => {
-                          // Don't track typing if we're autofilling (prevents interference)
-                          if (!isAutofillingRef.current) {
-                            cameraAutofill.trackTyping();
-                          }
                           setFormState((prev) => ({
                             ...prev,
                             plateNumber: e.target.value,
                           }));
                           onPlateChange?.(e.target.value);
                         }}
-                        onFocus={() => cameraAutofill.trackTyping()}
                       className="h-12 text-base font-mono font-semibold w-full bg-[#380ecf] text-white placeholder:text-white"
                         placeholder="1234ААА"
                         required
