@@ -209,6 +209,16 @@ export async function POST(request: NextRequest) {
 
     await collection.insertOne(document);
 
+    // #region agent log - Debug LPR ingest success
+    console.log(`[DEBUG-LPR-INGEST] Successfully stored LPR data:`, {
+      plateNumber: validated.plateNumber,
+      recognizedAt: validated.recognizedAt,
+      cameraIp: validated.cameraIp,
+      companyId: companyId,
+      receivedAt: document.receivedAt,
+    });
+    // #endregion
+
     return NextResponse.json({ ok: true });
   } catch (error) {
     // Validation errors are already handled above

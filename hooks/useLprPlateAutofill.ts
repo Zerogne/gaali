@@ -105,6 +105,17 @@ export function useLprPlateAutofill(
         ? new Date(latest.receivedAt).getTime()
         : Date.now();
 
+      // #region agent log - Debug LPR data received
+      console.log(`[DEBUG-LPR] Received plate data:`, {
+        plateNumber,
+        recognizedAt: latest.recognizedAt,
+        cameraIp: latest.cameraIp,
+        receivedAt: latest.receivedAt,
+        previousPlate: lastPlateRef.current,
+        isNew: plateNumber !== lastPlateRef.current,
+      });
+      // #endregion
+
       // Only update if plate number changed
       if (plateNumber !== lastPlateRef.current) {
         lastPlateRef.current = plateNumber;
@@ -114,6 +125,9 @@ export function useLprPlateAutofill(
           status: "connected",
           error: null,
         });
+        // #region agent log - Debug plate update
+        console.log(`[DEBUG-LPR] Plate updated to: ${plateNumber}`);
+        // #endregion
       } else {
         // Update timestamp but keep same plate
         setData((prev) => ({
@@ -160,8 +174,33 @@ export function useLprPlateAutofill(
       currentValue.trim() === "";
 
     if (shouldAutofill && data.plate !== currentValue) {
+      // #region agent log - Debug autofill action
+      console.log(`[DEBUG-LPR] Auto-filling plate:`, {
+        plate: data.plate,
+        currentValue,
+        lastAutoFilled: lastAutoFilledPlate.current,
+        isFocused,
+        timeSinceLastType,
+      });
+      // #endregion
+      
       binding.setValue(data.plate);
       lastAutoFilledPlate.current = data.plate;
+      
+      // #region agent log - Debug autofill complete
+      console.log(`[DEBUG-LPR] Auto-fill complete: ${data.plate}`);
+      // #endregion
+    } else {
+      // #region agent log - Debug why not autofilling
+      console.log(`[DEBUG-LPR] NOT auto-filling:`, {
+        shouldAutofill,
+        plate: data.plate,
+        currentValue,
+        isFocused,
+        timeSinceLastType,
+        reason: !shouldAutofill ? 'condition failed' : data.plate === currentValue ? 'already same value' : 'unknown',
+      });
+      // #endregion
     }
   }, [data.plate, isEnabled]);
 
