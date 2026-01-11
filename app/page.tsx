@@ -2,8 +2,7 @@
 
 import { Sidebar } from "@/components/sidebar";
 import { TruckTable } from "@/components/trucks/TruckTable";
-// Use HttpFrameStream - polls /api/camera/frame (no WebSocket, no Cloudflare needed)
-import { HttpFrameStream } from "@/components/camera/HttpFrameStream";
+// Camera real-time video feature removed
 import { getTruckLogs } from "@/lib/api";
 import type { TruckLog } from "@/lib/types";
 import { useRouter } from "next/navigation";
@@ -178,27 +177,7 @@ export default function DashboardPage() {
       <div className="flex-1 flex flex-col overflow-y-auto min-w-0">
         <main className="flex-1 flex flex-col">
           <div className="flex flex-col max-w-[1920px] w-full mx-auto p-1.5 lg:p-2">
-            {/* Real-time Video Streams */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-1.5 lg:gap-2 flex-shrink-0 mb-1.5 items-stretch">
-              <div className="h-full min-h-[450px]">
-                <HttpFrameStream
-                  cameraId="1"
-                  direction="IN"
-                  onActionClick={() => {
-                    router.push("/in-session");
-                  }}
-                />
-              </div>
-              <div className="h-full min-h-[450px]">
-                <HttpFrameStream
-                  cameraId="2"
-                  direction="OUT"
-                  onActionClick={() => {
-                    router.push("/out-session");
-                  }}
-                />
-              </div>
-            </div>
+            {/* Camera real-time video feature removed */}
 
             {/* History Table - Increased height */}
             <div className="min-h-[700px] mb-2">

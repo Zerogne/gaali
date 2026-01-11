@@ -1,13 +1,32 @@
 import { NextResponse } from "next/server";
 import { getLprCollection } from "@/lib/db/lpr";
+import { getActiveCompany } from "@/lib/auth/session";
 
 export async function GET() {
   try {
+    // Get current user's company ID from session
+    let companyId: string | null = null;
+    try {
+      companyId = await getActiveCompany();
+    } catch (error) {
+      // User not authenticated or session expired
+      // Return null data (frontend will handle this)
+      return NextResponse.json({
+        plateNumber: null,
+        recognizedAt: null,
+        imageUrl: null,
+        imagePath: null,
+        cameraIp: null,
+        receivedAt: null,
+      });
+    }
+
     const collection = await getLprCollection();
 
-    // Find latest document by receivedAt
+    // Find latest document by receivedAt, filtered by companyId
+    const query = companyId ? { companyId } : {};
     const latest = await collection
-      .find({})
+      .find(query)
       .sort({ receivedAt: -1 })
       .limit(1)
       .toArray();

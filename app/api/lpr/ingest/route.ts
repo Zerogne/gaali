@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { getLprCollection } from "@/lib/db/lpr";
+import { getCompaniesCollection } from "@/lib/db/companyDb";
 
 // Cloudinary upload (optional)
 async function uploadToCloudinary(
@@ -107,12 +108,40 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Find which company owns this camera IP
+    let companyId: string | null = null;
+    if (validated.cameraIp) {
+      try {
+        const companiesCollection = await getCompaniesCollection();
+        const company = await companiesCollection.findOne({
+          $or: [
+            { "cameraSettings.camera1Ip": validated.cameraIp },
+            { "cameraSettings.camera2Ip": validated.cameraIp },
+          ],
+        });
+        if (company) {
+          companyId = (company as any).companyId;
+          console.log(
+            `[LPR Ingest] Mapped camera IP ${validated.cameraIp} to company ${companyId}`
+          );
+        } else {
+          console.warn(
+            `[LPR Ingest] Camera IP ${validated.cameraIp} not found in any company's camera settings`
+          );
+        }
+      } catch (error) {
+        console.error("[LPR Ingest] Error looking up company by camera IP:", error);
+        // Continue without companyId - better than failing the entire request
+      }
+    }
+
     // Store in MongoDB
     const collection = await getLprCollection();
     const document = {
       plateNumber: validated.plateNumber,
       recognizedAt: validated.recognizedAt,
       cameraIp: validated.cameraIp || null,
+      companyId: companyId, // Store company ID for filtering
       imagePath: validated.imagePath || null,
       imageUrl: imageUrl,
       receivedAt: new Date().toISOString(),

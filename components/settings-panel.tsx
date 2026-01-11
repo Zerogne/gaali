@@ -15,21 +15,34 @@ export function SettingsPanel() {
   const [seedStatus, setSeedStatus] = useState<"idle" | "success" | "error">("idle")
   const [seedMessage, setSeedMessage] = useState<string>("")
   const [isSavingCamera, setIsSavingCamera] = useState(false)
-  const [isTestingCamera, setIsTestingCamera] = useState(false)
-  const [cameraStatus, setCameraStatus] = useState<"idle" | "connected" | "error">("idle")
+  const [isLoadingCamera, setIsLoadingCamera] = useState(true)
+  const [cameraSettings, setCameraSettings] = useState({
+    camera1Ip: "",
+    camera2Ip: "",
+  })
 
-  // Load saved camera settings on mount
+  // Load camera settings from API
   useEffect(() => {
-    try {
-      const saved = localStorage.getItem("cameraSettings")
-      if (saved) {
-        const settings = JSON.parse(saved)
-        const connectorUrlInput = document.getElementById("connector-url") as HTMLInputElement
-        if (connectorUrlInput && settings.connectorUrl) connectorUrlInput.value = settings.connectorUrl
+    const loadCameraSettings = async () => {
+      try {
+        setIsLoadingCamera(true)
+        const response = await fetch("/api/company/camera-settings")
+        if (response.ok) {
+          const data = await response.json()
+          if (data.cameraSettings) {
+            setCameraSettings({
+              camera1Ip: data.cameraSettings.camera1Ip || "",
+              camera2Ip: data.cameraSettings.camera2Ip || "",
+            })
+          }
+        }
+      } catch (error) {
+        console.error("Error loading camera settings:", error)
+      } finally {
+        setIsLoadingCamera(false)
       }
-    } catch (error) {
-      // Ignore errors loading settings
     }
+    loadCameraSettings()
   }, [])
 
   const handleSeedDatabase = async () => {
@@ -82,43 +95,34 @@ export function SettingsPanel() {
     setIsSavingCamera(true)
     
     try {
-      const connectorUrlInput = document.getElementById("connector-url") as HTMLInputElement
+      const response = await fetch("/api/company/camera-settings", {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          cameraSettings: {
+            camera1Ip: cameraSettings.camera1Ip.trim() || undefined,
+            camera2Ip: cameraSettings.camera2Ip.trim() || undefined,
+          },
+        }),
+      })
 
-      if (!connectorUrlInput) {
-        throw new Error("Could not find settings inputs")
+      if (!response.ok) {
+        const data = await response.json()
+        throw new Error(data.error || "Алдаа гарлаа")
       }
-
-      const connectorUrl = connectorUrlInput.value.trim()
-
-      // Validate inputs
-      if (!connectorUrl) {
-        throw new Error("Connector URL is required")
-      }
-
-      // Validate URL format
-      try {
-        new URL(connectorUrl)
-      } catch {
-        throw new Error("Invalid URL format")
-      }
-
-      // Save to localStorage
-      const settings = {
-        connectorUrl: connectorUrl || "http://localhost:3000/events",
-      }
-      
-      localStorage.setItem("cameraSettings", JSON.stringify(settings))
       
       toast({
-        title: "Camera settings saved",
-        description: `Connector URL saved. Please refresh the page to apply changes.`,
+        title: "Амжилттай",
+        description: "Камерын тохиргоо хадгалагдлаа",
         variant: "default",
       })
     } catch (error) {
       console.error("Error saving camera settings:", error)
       toast({
-        title: "Failed to save settings",
-        description: error instanceof Error ? error.message : "Unknown error occurred",
+        title: "Алдаа",
+        description: error instanceof Error ? error.message : "Тохиргоо хадгалахад алдаа гарлаа",
         variant: "destructive",
       })
     } finally {
@@ -126,73 +130,13 @@ export function SettingsPanel() {
     }
   }
 
-  const handleTestCameraConnection = async () => {
-    setIsTestingCamera(true)
-    setCameraStatus("idle")
-    
-    try {
-      const bridgeIp = (document.getElementById("bridge-ip") as HTMLInputElement)?.value || "192.168.1.50"
-      const bridgePort = (document.getElementById("bridge-port") as HTMLInputElement)?.value || "3001"
-      
-      // For local testing, use localhost instead of IP
-      const testBridgeIp = bridgeIp === "192.168.1.50" || bridgeIp === "192.168.1.106" 
-        ? "localhost" 
-        : bridgeIp
-      
-      // Use our API endpoint to check bridge status (server-side can reach bridge)
-      // For local testing, try localhost first
-      const response = await fetch(
-        `/api/camera/bridge-status?bridgeIp=${encodeURIComponent(testBridgeIp)}&bridgePort=${encodeURIComponent(bridgePort)}`,
-        {
-          method: "GET",
-          signal: AbortSignal.timeout(5000),
-        }
-      )
-      
-      const data = await response.json()
-      
-      if (data.ok && data.bridge?.accessible) {
-        setCameraStatus("connected")
-        toast({
-          title: "Bridge service is running",
-          description: data.message || "Bridge service is accessible and ready to receive camera data.",
-          variant: "default",
-        })
-      } else if (data.ok && !data.bridge?.accessible) {
-        // API is working but bridge not directly accessible
-        setCameraStatus("idle")
-        toast({
-          title: "Bridge status unknown",
-          description: data.message || "Cannot reach bridge service directly. Make sure it's running on your computer.",
-          variant: "default",
-        })
-      } else {
-        setCameraStatus("error")
-        toast({
-          title: "Connection test failed",
-          description: data.message || "Cannot connect to bridge service. Make sure it's running on your computer.",
-          variant: "destructive",
-        })
-      }
-    } catch (error) {
-      setCameraStatus("error")
-      const errorMessage = error instanceof Error ? error.message : "Unknown error"
-      toast({
-        title: "Connection test failed",
-        description: `Failed to check bridge status: ${errorMessage}. Make sure bridge service is running on your computer.`,
-        variant: "destructive",
-      })
-    } finally {
-      setIsTestingCamera(false)
-    }
-  }
 
   return (
     <Tabs defaultValue="camera" className="space-y-6">
       <TabsList className="grid w-full grid-cols-3 lg:w-[900px]">
         <TabsTrigger value="camera" className="gap-2">
           <Camera className="w-4 h-4" />
-          Camera
+          Камер
         </TabsTrigger>
         <TabsTrigger value="weight" className="gap-2">
           <Scale className="w-4 h-4" />
@@ -206,124 +150,70 @@ export function SettingsPanel() {
 
       <TabsContent value="camera" className="space-y-6">
         <Card className="p-6">
-          <h2 className="text-xl font-semibold text-foreground mb-6">Camera Integration Settings</h2>
+          <h2 className="text-xl font-semibold text-foreground mb-6">Камерын тохиргоо</h2>
 
-          <div className="space-y-6">
-            <div>
-              <Label htmlFor="connector-url" className="text-sm font-medium mb-2 block">
-                Connector SSE URL
-              </Label>
-              <Input
-                id="connector-url"
-                placeholder="http://localhost:3000/events"
-                defaultValue={typeof window !== "undefined" 
-                  ? (process.env.NEXT_PUBLIC_CONNECTOR_SSE_URL || "http://localhost:3000/events")
-                  : "http://localhost:3000/events"
-                }
-              />
-              <p className="text-xs text-muted-foreground mt-1">
-                SSE endpoint URL of the Windows connector app (default: http://localhost:3000/events)
-              </p>
+          {isLoadingCamera ? (
+            <div className="flex items-center justify-center py-8">
+              <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
             </div>
+          ) : (
+            <div className="space-y-6">
+              <div>
+                <Label htmlFor="camera1-ip" className="text-sm font-medium mb-2 block">
+                  Камер 1 IP хаяг
+                </Label>
+                <Input
+                  id="camera1-ip"
+                  placeholder="192.168.1.50"
+                  value={cameraSettings.camera1Ip}
+                  onChange={(e) =>
+                    setCameraSettings({ ...cameraSettings, camera1Ip: e.target.value })
+                  }
+                />
+                <p className="text-xs text-muted-foreground mt-1">
+                  Орох бүртгэлийн камерын IP хаяг
+                </p>
+              </div>
 
-            <div className="border-t border-border pt-6">
-              <h3 className="font-semibold text-foreground mb-4">Connection Instructions</h3>
-              <div className="bg-muted/30 rounded-lg p-4 space-y-2 text-sm">
-                <p className="font-medium">Using Windows Connector App:</p>
-                <ol className="list-decimal list-inside space-y-1 text-muted-foreground">
-                  <li>Make sure your Windows connector app is running on your local machine</li>
-                  <li>The connector receives plate data from the camera via HTTP POST</li>
-                  <li>The connector broadcasts plate data via SSE (Server-Sent Events) to this browser</li>
-                  <li>Plate data will be automatically detected and auto-filled in the forms in real-time</li>
-                  <li>Default SSE endpoint: <code className="bg-background px-1 rounded">http://localhost:3000/events</code></li>
-                  <li>Use the test button below to verify the connection is working</li>
-                </ol>
+              <div>
+                <Label htmlFor="camera2-ip" className="text-sm font-medium mb-2 block">
+                  Камер 2 IP хаяг
+                </Label>
+                <Input
+                  id="camera2-ip"
+                  placeholder="192.168.1.49"
+                  value={cameraSettings.camera2Ip}
+                  onChange={(e) =>
+                    setCameraSettings({ ...cameraSettings, camera2Ip: e.target.value })
+                  }
+                />
+                <p className="text-xs text-muted-foreground mt-1">
+                  Гарах бүртгэлийн камерын IP хаяг
+                </p>
+              </div>
+
+              <div className="flex gap-3 pt-4">
+                <Button 
+                  type="button"
+                  className="gap-2" 
+                  onClick={handleSaveCameraSettings}
+                  disabled={isSavingCamera}
+                >
+                  {isSavingCamera ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      Хадгалж байна...
+                    </>
+                  ) : (
+                    <>
+                      <Save className="w-4 h-4" />
+                      Хадгалах
+                    </>
+                  )}
+                </Button>
               </div>
             </div>
-
-            <div className="border-t border-border pt-6">
-              <h3 className="font-semibold text-foreground mb-4">Connection Status</h3>
-              <div className="bg-muted/30 rounded-lg p-4">
-                <div className="flex items-center justify-between mb-4">
-                  <div>
-                    <p className="text-sm text-muted-foreground mb-1">Windows App Connection</p>
-                    <div className="flex items-center gap-2">
-                      {cameraStatus === "connected" ? (
-                        <>
-                          <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
-                          <span className="font-semibold text-green-500">Connected</span>
-                        </>
-                      ) : cameraStatus === "error" ? (
-                        <>
-                          <div className="w-2 h-2 rounded-full bg-red-500" />
-                          <span className="font-semibold text-red-500">Error</span>
-                        </>
-                      ) : (
-                        <>
-                          <div className="w-2 h-2 rounded-full bg-yellow-500" />
-                          <span className="font-semibold text-yellow-500">Not Checked</span>
-                        </>
-                      )}
-                    </div>
-                  </div>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={handleTestCameraConnection}
-                    disabled={isTestingCamera}
-                  >
-                    {isTestingCamera ? (
-                      <>
-                        <Loader2 className="w-4 h-4 animate-spin mr-2" />
-                        Testing...
-                      </>
-                    ) : (
-                      "Test Connection"
-                    )}
-                  </Button>
-                </div>
-              </div>
-            </div>
-
-            <div className="flex gap-3">
-              <Button 
-                type="button"
-                className="gap-2" 
-                onClick={handleSaveCameraSettings}
-                disabled={isSavingCamera}
-              >
-                {isSavingCamera ? (
-                  <>
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                    Saving...
-                  </>
-                ) : (
-                  <>
-                    <Save className="w-4 h-4" />
-                    Save Camera Settings
-                  </>
-                )}
-              </Button>
-              <Button 
-                variant="outline" 
-                className="gap-2"
-                onClick={handleTestCameraConnection}
-                disabled={isTestingCamera}
-              >
-                {isTestingCamera ? (
-                  <>
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                    Testing...
-                  </>
-                ) : (
-                  <>
-                    <TestTube className="w-4 h-4" />
-                    Test Connection
-                  </>
-                )}
-              </Button>
-            </div>
-          </div>
+          )}
         </Card>
       </TabsContent>
 

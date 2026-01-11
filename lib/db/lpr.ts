@@ -13,9 +13,13 @@ export async function getLprCollection(): Promise<Collection> {
   
   const collection = db.collection(collectionName);
   
-  // Create index for fast latest lookup (idempotent)
+  // Create indexes for fast latest lookup (idempotent)
   // This is a background operation, so we don't await it
   collection.createIndex({ receivedAt: -1 }).catch(() => {
+    // Index might already exist, ignore errors
+  });
+  // Index for company filtering
+  collection.createIndex({ companyId: 1, receivedAt: -1 }).catch(() => {
     // Index might already exist, ignore errors
   });
   

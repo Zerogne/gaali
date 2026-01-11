@@ -24,7 +24,7 @@ import type {
 import { ArrowRight, Camera, Printer, Send, Loader2 } from "lucide-react";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useRouter } from "next/navigation";
-import { HttpFrameStream } from "@/components/camera/HttpFrameStream";
+// Camera real-time video feature removed
 import {
   forwardRef,
   useEffect,
@@ -1596,24 +1596,7 @@ export const OutSessionForm = forwardRef<
           {/* Form Content - Single Section Layout */}
           <div className="flex-1 min-h-0 overflow-auto flex justify-center p-4">
             <Card className="p-4 pb-8 w-full max-w-6xl min-h-[calc(100vh+6rem)] flex flex-col">
-              {/* Camera Video Display - At the top, 50% width with warning */}
-              <div className="mb-1 flex gap-4">
-                <div className="w-1/2 aspect-video bg-black rounded-lg overflow-hidden relative border-2 border-gray-200 shadow-lg">
-                  {/* HTTP frame polling (no WebSocket, no Cloudflare needed) */}
-                  <HttpFrameStream
-                    cameraId="2"
-                    direction="OUT"
-                    showActionButton={false}
-                  />
-                </div>
-                <div className="w-1/2 flex items-center">
-                  <div className="bg-blue-50 border border-blue-200 rounded p-4 h-full flex items-center aspect-video">
-                    <p className="text-gray-700 text-lg leading-relaxed">
-                      Камер ачааллахын тулд дэлгэцэн дээр байрлах <span className="text-[#0073c4]">Gaali Camera Bridge</span> программыг ажиллуулж байж дүрс гарах тул уг программыг эхлээд асаасан байх шаардлагатай.
-                    </p>
-                  </div>
-                </div>
-              </div>
+              {/* Camera real-time video feature removed */}
 
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-4 auto-rows-min">
                 {/* Out Weight Input - Same width as other inputs with warning */}
