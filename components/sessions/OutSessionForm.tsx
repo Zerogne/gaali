@@ -11,6 +11,7 @@ import { useLprPlateAutofill } from "@/hooks/useLprPlateAutofill";
 import { useConnectorSSE } from "@/hooks/useConnectorSSE";
 import { useThirdPartyAutofill } from "@/hooks/useThirdPartyAutofill";
 import { useWeightStatus } from "@/hooks/useWeightStatus";
+import { useLatestLpr } from "@/hooks/useLatestLpr";
 import { updateTruckLog, sendTruckLogToCustoms } from "@/lib/api";
 import { exportLogToPDF } from "@/lib/pdf-export";
 import type { Product } from "@/lib/products/products";
@@ -140,15 +141,23 @@ export const OutSessionForm = forwardRef<
     
     // Use SSE for real-time camera updates from Windows connector
     // Falls back to polling if SSE not available
+    // Only enable if connector URL is explicitly set (not default localhost)
+    const shouldEnableConnector = connectorUrl && 
+      !connectorUrl.includes("localhost:3000") && 
+      !connectorUrl.includes("127.0.0.1:3000");
+    
     const connectorSSE = useConnectorSSE({
       connectorUrl,
-      enabled: true,
+      enabled: shouldEnableConnector, // Disable if using default localhost
     });
     const internalCameraAutofill = useLprPlateAutofill();
     // Prefer SSE if connected, otherwise use external autofill or polling
     const cameraAutofill = 
       connectorSSE.status === "connected" ? connectorSSE
       : externalCameraAutofill || internalCameraAutofill;
+
+    // Direct plate number auto-fill (similar to weight) - updates whenever new data arrives
+    const { latest: latestLpr } = useLatestLpr(1000); // Poll every 1 second
 
     // Check weight device connection status
     const weightStatus = useWeightStatus({
@@ -738,6 +747,45 @@ export const OutSessionForm = forwardRef<
         // #endregion
       }
     }, [weightStatus.status.latestWeight]);
+
+    // Auto-fill plate number when LPR data updates (similar to weight - direct update)
+    useEffect(() => {
+      // #region agent log - Debug plate auto-fill
+      console.log(`[DEBUG-PLATE] useEffect triggered: latestLpr=${latestLpr?.plateNumber}, recognizedAt=${latestLpr?.recognizedAt}, cameraIp=${latestLpr?.cameraIp}`);
+      // #endregion
+      
+      if (latestLpr?.plateNumber) {
+        const plateNumber = latestLpr.plateNumber.trim().toUpperCase();
+        
+        // #region agent log - Debug plate update
+        console.log(`[DEBUG-PLATE] Updating formState.plateNumber to ${plateNumber}`);
+        // #endregion
+        
+        setFormState((prev) => {
+          // #region agent log - Debug formState before update
+          console.log(`[DEBUG-PLATE] Before update: prev.plateNumber=${prev.plateNumber}`);
+          // #endregion
+          
+          const updated = {
+            ...prev,
+            plateNumber: plateNumber,
+          };
+          
+          // #region agent log - Debug formState after update
+          console.log(`[DEBUG-PLATE] After update: updated.plateNumber=${updated.plateNumber}`);
+          // #endregion
+          
+          return updated;
+        });
+        
+        // Notify parent of plate change
+        onPlateChange?.(plateNumber);
+      } else {
+        // #region agent log - Debug why not updating
+        console.log(`[DEBUG-PLATE] NOT updating: latestLpr=${latestLpr}, plateNumber=${latestLpr?.plateNumber}`);
+        // #endregion
+      }
+    }, [latestLpr?.plateNumber, latestLpr?.receivedAt, onPlateChange]);
 
     // Auto-fill all data from IN session when plate number is entered
     useEffect(() => {

@@ -21,11 +21,11 @@ export function useLatestLpr(pollInterval: number = 1000) {
   const lastKeyRef = useRef<string | null>(null);
   const pollTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Generate deduplication key
+  // Generate deduplication key - use receivedAt to detect new data even if plate is same
   const getDedupKey = (data: LprLatest): string => {
-    if (!data.plateNumber || !data.recognizedAt) return "";
-    const image = data.imagePath || "";
-    return `${data.plateNumber}|${data.recognizedAt}|${image}`;
+    if (!data.plateNumber || !data.receivedAt) return "";
+    // Use receivedAt to detect new data even if plate number is the same
+    return `${data.plateNumber}|${data.receivedAt}`;
   };
 
   // Fetch latest from API
@@ -42,11 +42,22 @@ export function useLatestLpr(pollInterval: number = 1000) {
       const data: LprLatest = await response.json();
       const key = getDedupKey(data);
 
-      // Only update if the key changed
+      // Update if key changed (new data received, even if same plate number)
       if (key && key !== lastKeyRef.current) {
         lastKeyRef.current = key;
         setLatest(data);
         setError(null);
+
+        // #region agent log - Debug LPR data update
+        console.log(`[DEBUG-LPR-LATEST] New data received:`, {
+          plateNumber: data.plateNumber,
+          receivedAt: data.receivedAt,
+          recognizedAt: data.recognizedAt,
+          cameraIp: data.cameraIp,
+          key,
+          previousKey: lastKeyRef.current,
+        });
+        // #endregion
 
         // Store in localStorage
         if (typeof window !== "undefined") {
@@ -56,6 +67,14 @@ export function useLatestLpr(pollInterval: number = 1000) {
             // localStorage might be disabled
           }
         }
+      } else if (key) {
+        // #region agent log - Debug no update (same data)
+        console.log(`[DEBUG-LPR-LATEST] No update - same data:`, {
+          plateNumber: data.plateNumber,
+          receivedAt: data.receivedAt,
+          key,
+        });
+        // #endregion
       }
     } catch (err) {
       const errorMessage =

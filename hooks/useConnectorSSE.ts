@@ -163,14 +163,22 @@ export function useConnectorSSE(
       eventSource.onerror = (error) => {
         if (!isMountedRef.current) return;
 
-        console.error("[Connector SSE] Connection error:", error);
+        // Only log errors if connector URL is not localhost (expected to fail if connector not running)
+        // Suppress console errors for localhost connection failures - this is expected behavior
+        const isLocalhost = connectorUrl.includes("localhost") || connectorUrl.includes("127.0.0.1");
+        if (!isLocalhost || reconnectAttemptsRef.current === 0) {
+          // Only log first attempt or if not localhost
+          console.debug("[Connector SSE] Connection attempt:", connectorUrl);
+        }
         
         // EventSource will automatically try to reconnect, but we can handle it explicitly
         if (eventSource.readyState === EventSource.CLOSED) {
           setData((prev) => ({
             ...prev,
             status: "error",
-            error: "Connection closed. Will attempt to reconnect...",
+            error: isLocalhost 
+              ? null // Don't show error for localhost - connector may not be running
+              : "Connection closed. Will attempt to reconnect...",
           }));
 
           // Attempt manual reconnect if auto-reconnect didn't work
@@ -182,10 +190,11 @@ export function useConnectorSSE(
               }
             }, RECONNECT_DELAY);
           } else {
+            // After max attempts, silently fail (connector not available)
             setData((prev) => ({
               ...prev,
               status: "error",
-              error: "Failed to connect after multiple attempts. Please check if connector is running.",
+              error: isLocalhost ? null : "Failed to connect after multiple attempts.",
             }));
           }
         } else {
@@ -197,11 +206,17 @@ export function useConnectorSSE(
         }
       };
     } catch (error) {
-      console.error("[Connector SSE] Failed to create EventSource:", error);
+      // Suppress errors for localhost - connector may not be running (expected)
+      const isLocalhost = connectorUrl.includes("localhost") || connectorUrl.includes("127.0.0.1");
+      if (!isLocalhost) {
+        console.error("[Connector SSE] Failed to create EventSource:", error);
+      }
       setData((prev) => ({
         ...prev,
         status: "error",
-        error: error instanceof Error ? error.message : "Failed to connect to connector",
+        error: isLocalhost 
+          ? null // Don't show error for localhost
+          : (error instanceof Error ? error.message : "Failed to connect to connector"),
       }));
     }
   }, [connectorUrl, isEnabled]);
