@@ -705,6 +705,16 @@ export const OutSessionForm = forwardRef<
       }));
     };
 
+    // Auto-fill weight when weight status updates
+    useEffect(() => {
+      if (weightStatus.status.latestWeight !== null && weightStatus.status.latestWeight > 0) {
+        setFormState((prev) => ({
+          ...prev,
+          outWeightKg: weightStatus.status.latestWeight,
+        }));
+      }
+    }, [weightStatus.status.latestWeight]);
+
     // Auto-fill all data from IN session when plate number is entered
     useEffect(() => {
       // Only fetch if we have a plate number (at least 2 characters to avoid too many requests)

@@ -80,63 +80,33 @@ export async function POST(request: NextRequest) {
       receivedAt: receivedAt,
     };
 
-    // #region agent log - Hypothesis A
-    console.log(`[DEBUG-A] Before insertOne: keys=${Object.keys(weightData).join(',')}, hasId=${'_id' in weightData}`);
-    // #endregion
-
     // Insert new weight record (handle duplicate key errors gracefully)
     try {
       await collection.insertOne(weightData);
-      // #region agent log - Hypothesis B
-      console.log(`[DEBUG-B] After insertOne SUCCESS: keys=${Object.keys(weightData).join(',')}, hasId=${'_id' in weightData}, _id=${(weightData as any)._id}`);
-      // #endregion
     } catch (insertError: any) {
-      // #region agent log - Hypothesis C
-      console.log(`[DEBUG-C] insertOne CAUGHT: code=${insertError.code}, name=${insertError.name}, is11000=${insertError.code === 11000}`);
-      // #endregion
       // If it's a duplicate key error, that's okay - data already exists
-      // This can happen if the same request is sent twice quickly
       if (insertError.code === 11000) {
         console.warn(`[Weight Ingest] Duplicate key error (data already exists), continuing...`);
       } else {
-        // Re-throw if it's a different error
         throw insertError;
       }
     }
 
-    // #region agent log - Hypothesis D
-    console.log(`[DEBUG-D] Before updateOne: keys=${Object.keys(weightData).join(',')}, hasId=${'_id' in weightData}, _id=${(weightData as any)._id}`);
-    // #endregion
-
     // Create a copy without _id for the upsert (MongoDB adds _id to weightData during insertOne)
     const { _id, ...weightDataWithoutId } = weightData as any;
-    
-    // #region agent log - Fix verification
-    console.log(`[DEBUG-FIX] weightDataWithoutId keys=${Object.keys(weightDataWithoutId).join(',')}, hasId=${'_id' in weightDataWithoutId}`);
-    // #endregion
 
-    // Also update the latest weight for this siteId (for quick access)
-    try {
-      await collection.updateOne(
-        { siteId: validated.siteId, isLatest: true },
-        { 
-          $set: { 
-            ...weightDataWithoutId,
-            isLatest: true,
-            updatedAt: receivedAt,
-          } 
-        },
-        { upsert: true }
-      );
-      // #region agent log - Hypothesis E
-      console.log(`[DEBUG-E] updateOne SUCCESS: siteId=${validated.siteId}`);
-      // #endregion
-    } catch (upsertError: any) {
-      // #region agent log - Hypothesis F
-      console.log(`[DEBUG-F] updateOne FAILED: code=${upsertError.code}, name=${upsertError.name}, msg=${upsertError.message}`);
-      // #endregion
-      throw upsertError;
-    }
+    // Update the latest weight for this siteId (for quick access)
+    await collection.updateOne(
+      { siteId: validated.siteId, isLatest: true },
+      { 
+        $set: { 
+          ...weightDataWithoutId,
+          isLatest: true,
+          updatedAt: receivedAt,
+        } 
+      },
+      { upsert: true }
+    );
 
     console.log("Weight ingested:", weightData);
 
