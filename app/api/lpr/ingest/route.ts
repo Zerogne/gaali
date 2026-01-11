@@ -92,8 +92,30 @@ export async function POST(request: NextRequest) {
     }
 
     // Parse and validate body
-    const body = await request.json();
-    const validated = ingestSchema.parse(body);
+    let body: any;
+    try {
+      body = await request.json();
+    } catch (parseError) {
+      console.error("[LPR Ingest] Failed to parse JSON body:", parseError);
+      return NextResponse.json(
+        { ok: false, error: "Invalid JSON in request body" },
+        { status: 400 }
+      );
+    }
+
+    let validated: any;
+    try {
+      validated = ingestSchema.parse(body);
+    } catch (validationError) {
+      if (validationError instanceof z.ZodError) {
+        console.error("[LPR Ingest] Validation error:", validationError.errors);
+        return NextResponse.json(
+          { ok: false, error: "Invalid request body", details: validationError.errors },
+          { status: 400 }
+        );
+      }
+      throw validationError;
+    }
 
     // Upload image to Cloudinary if provided
     let imageUrl: string | null = null;
@@ -152,16 +174,19 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ ok: true });
   } catch (error) {
+    // Validation errors are already handled above
     if (error instanceof z.ZodError) {
+      console.error("[LPR Ingest] Zod validation error:", error.errors);
       return NextResponse.json(
         { ok: false, error: "Invalid request body", details: error.errors },
         { status: 400 }
       );
     }
 
-    console.error("LPR ingest error:", error);
+    console.error("[LPR Ingest] Unexpected error:", error);
+    const errorMessage = error instanceof Error ? error.message : String(error);
     return NextResponse.json(
-      { ok: false, error: "Internal server error" },
+      { ok: false, error: "Internal server error", details: errorMessage },
       { status: 500 }
     );
   }

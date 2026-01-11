@@ -17,7 +17,7 @@ export async function GET() {
     const companiesCollection = await getCompaniesCollection()
     const company = await companiesCollection.findOne(
       { companyId },
-      { cameraSettings: 1 }
+      { projection: { cameraSettings: 1 } }
     )
 
     if (!company) {
@@ -60,55 +60,56 @@ export async function PUT(request: Request) {
 
     const companiesCollection = await getCompaniesCollection()
 
-    // Validate camera settings structure
+    // Validate camera settings structure - Only save IP addresses
     const validSettings: any = {}
+    const unsetFields: any = {}
     
-    // Camera 1 settings
+    // Camera 1 IP only
     if (cameraSettings.camera1Ip !== undefined) {
-      validSettings["cameraSettings.camera1Ip"] = String(cameraSettings.camera1Ip).trim()
-    }
-    if (cameraSettings.camera1HttpPort !== undefined) {
-      validSettings["cameraSettings.camera1HttpPort"] = Number(cameraSettings.camera1HttpPort) || 443
-    }
-    if (cameraSettings.camera1RtspPort !== undefined) {
-      validSettings["cameraSettings.camera1RtspPort"] = Number(cameraSettings.camera1RtspPort) || 8557
-    }
-    if (cameraSettings.camera1WebSocketPort !== undefined) {
-      validSettings["cameraSettings.camera1WebSocketPort"] = Number(cameraSettings.camera1WebSocketPort) || 8557
-    }
-    if (cameraSettings.camera1Username !== undefined) {
-      validSettings["cameraSettings.camera1Username"] = String(cameraSettings.camera1Username).trim()
-    }
-    if (cameraSettings.camera1Password !== undefined) {
-      validSettings["cameraSettings.camera1Password"] = String(cameraSettings.camera1Password).trim()
+      const ip = String(cameraSettings.camera1Ip).trim()
+      if (ip) {
+        validSettings["cameraSettings.camera1Ip"] = ip
+      } else {
+        // If empty string, unset the field
+        unsetFields["cameraSettings.camera1Ip"] = ""
+      }
+      // Always unset old fields (ports, username, password) - we only save IPs now
+      unsetFields["cameraSettings.camera1HttpPort"] = ""
+      unsetFields["cameraSettings.camera1RtspPort"] = ""
+      unsetFields["cameraSettings.camera1WebSocketPort"] = ""
+      unsetFields["cameraSettings.camera1Username"] = ""
+      unsetFields["cameraSettings.camera1Password"] = ""
     }
 
-    // Camera 2 settings
+    // Camera 2 IP only
     if (cameraSettings.camera2Ip !== undefined) {
-      validSettings["cameraSettings.camera2Ip"] = String(cameraSettings.camera2Ip).trim()
-    }
-    if (cameraSettings.camera2HttpPort !== undefined) {
-      validSettings["cameraSettings.camera2HttpPort"] = Number(cameraSettings.camera2HttpPort) || 443
-    }
-    if (cameraSettings.camera2RtspPort !== undefined) {
-      validSettings["cameraSettings.camera2RtspPort"] = Number(cameraSettings.camera2RtspPort) || 8557
-    }
-    if (cameraSettings.camera2WebSocketPort !== undefined) {
-      validSettings["cameraSettings.camera2WebSocketPort"] = Number(cameraSettings.camera2WebSocketPort) || 8557
-    }
-    if (cameraSettings.camera2Username !== undefined) {
-      validSettings["cameraSettings.camera2Username"] = String(cameraSettings.camera2Username).trim()
-    }
-    if (cameraSettings.camera2Password !== undefined) {
-      validSettings["cameraSettings.camera2Password"] = String(cameraSettings.camera2Password).trim()
+      const ip = String(cameraSettings.camera2Ip).trim()
+      if (ip) {
+        validSettings["cameraSettings.camera2Ip"] = ip
+      } else {
+        // If empty string, unset the field
+        unsetFields["cameraSettings.camera2Ip"] = ""
+      }
+      // Always unset old fields (ports, username, password) - we only save IPs now
+      unsetFields["cameraSettings.camera2HttpPort"] = ""
+      unsetFields["cameraSettings.camera2RtspPort"] = ""
+      unsetFields["cameraSettings.camera2WebSocketPort"] = ""
+      unsetFields["cameraSettings.camera2Username"] = ""
+      unsetFields["cameraSettings.camera2Password"] = ""
     }
 
     // Add updatedAt
     validSettings["updatedAt"] = new Date()
 
+    // Build update operation
+    const updateOp: any = { $set: validSettings }
+    if (Object.keys(unsetFields).length > 0) {
+      updateOp.$unset = unsetFields
+    }
+
     const result = await companiesCollection.updateOne(
       { companyId },
-      { $set: validSettings }
+      updateOp
     )
 
     if (result.matchedCount === 0) {
@@ -118,7 +119,7 @@ export async function PUT(request: Request) {
     // Return updated camera settings
     const updatedCompany = await companiesCollection.findOne(
       { companyId },
-      { cameraSettings: 1 }
+      { projection: { cameraSettings: 1 } }
     )
 
     console.log(`✅ Updated camera settings for company: ${companyId}`, {
