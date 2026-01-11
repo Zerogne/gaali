@@ -968,7 +968,11 @@ export const InSessionForm = forwardRef<
     // Auto-fill plate number when LPR data updates (similar to weight - direct update)
     useEffect(() => {
       // #region agent log - Debug plate auto-fill
-      console.log(`[DEBUG-PLATE-IN] useEffect triggered: latestLpr=${latestLpr?.plateNumber}, recognizedAt=${latestLpr?.recognizedAt}, cameraIp=${latestLpr?.cameraIp}`);
+      const receivedTime = latestLpr?.receivedAt ? new Date(latestLpr.receivedAt).getTime() : 0;
+      const now = Date.now();
+      const ageMinutes = receivedTime > 0 ? (now - receivedTime) / 1000 / 60 : -1;
+      console.log(`[DEBUG-PLATE-IN] useEffect triggered: latestLpr=${latestLpr?.plateNumber}, recognizedAt=${latestLpr?.recognizedAt}, cameraIp=${latestLpr?.cameraIp}, ageMinutes=${ageMinutes.toFixed(2)}`);
+      fetch('http://127.0.0.1:7243/ingest/02008482-c731-4920-9095-c7192b6bb626',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'InSessionForm.tsx:969',message:'Auto-fill useEffect triggered',data:{plateNumber:latestLpr?.plateNumber,receivedAt:latestLpr?.receivedAt,ageMinutes:ageMinutes.toFixed(2),currentFormPlate:formState.plateNumber},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'E'})}).catch(()=>{});
       // #endregion
       
       if (latestLpr?.plateNumber) {
@@ -976,6 +980,7 @@ export const InSessionForm = forwardRef<
         
         // #region agent log - Debug plate update
         console.log(`[DEBUG-PLATE-IN] Updating formState.plateNumber to ${plateNumber}`);
+        fetch('http://127.0.0.1:7243/ingest/02008482-c731-4920-9095-c7192b6bb626',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'InSessionForm.tsx:975',message:'Updating formState with plate',data:{newPlate:plateNumber,oldPlate:formState.plateNumber,ageMinutes:ageMinutes.toFixed(2)},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'F'})}).catch(()=>{});
         // #endregion
         
         setFormState((prev) => {
@@ -990,6 +995,7 @@ export const InSessionForm = forwardRef<
           
           // #region agent log - Debug formState after update
           console.log(`[DEBUG-PLATE-IN] After update: updated.plateNumber=${updated.plateNumber}`);
+          fetch('http://127.0.0.1:7243/ingest/02008482-c731-4920-9095-c7192b6bb626',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'InSessionForm.tsx:985',message:'FormState updated',data:{newPlate:updated.plateNumber,ageMinutes:ageMinutes.toFixed(2)},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'G'})}).catch(()=>{});
           // #endregion
           
           return updated;

@@ -43,6 +43,18 @@ export async function GET() {
     }
 
     const doc = latest[0];
+    
+    // #region agent log - Debug API response data
+    const receivedTime = doc.receivedAt ? new Date(doc.receivedAt).getTime() : 0;
+    const now = Date.now();
+    const ageMinutes = receivedTime > 0 ? (now - receivedTime) / 1000 / 60 : -1;
+    console.log(`[DEBUG-LPR-API] Returning latest LPR:`, {
+      plateNumber: doc.plateNumber,
+      receivedAt: doc.receivedAt,
+      ageMinutes: ageMinutes.toFixed(2),
+      companyId,
+    });
+    // #endregion
 
     return NextResponse.json(
       {
