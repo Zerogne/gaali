@@ -1,9 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getWeightCollection } from "@/lib/db/weight";
+import { getActiveCompany } from "@/lib/auth/session";
 
 /**
  * Get the latest weight for a specific siteId
  * Query param: ?siteId=your-site-id
+ * Filters by companyId from session
  */
 export async function GET(request: NextRequest) {
   try {
@@ -17,11 +19,24 @@ export async function GET(request: NextRequest) {
       );
     }
 
+    // Get current user's company ID from session (filter by company)
+    let companyId: string | null = null;
+    try {
+      companyId = await getActiveCompany();
+    } catch (error) {
+      // User not authenticated or session expired
+      return NextResponse.json({
+        siteId,
+        weight: null,
+        message: "Authentication required",
+      });
+    }
+
     const collection = await getWeightCollection();
     
-    // Get the latest weight for this siteId
+    // Get the latest weight for this siteId, filtered by companyId
     const latest = await collection.findOne(
-      { siteId, isLatest: true },
+      { siteId, companyId, isLatest: true },
       { sort: { receivedAt: -1 } }
     );
 

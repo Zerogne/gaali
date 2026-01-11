@@ -1,19 +1,39 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getWeightCollection } from "@/lib/db/weight";
+import { getActiveCompany } from "@/lib/auth/session";
 
 /**
  * Check connection status and recent activity
  * Query param: ?siteId=your-site-id (optional - if not provided, shows all sites)
+ * Filters by companyId from session
  */
 export async function GET(request: NextRequest) {
   try {
     const searchParams = request.nextUrl.searchParams;
     const siteId = searchParams.get("siteId");
 
+    // Get current user's company ID from session (filter by company)
+    let companyId: string | null = null;
+    try {
+      companyId = await getActiveCompany();
+    } catch (error) {
+      // User not authenticated or session expired
+      // Return empty data (frontend will handle this)
+      return NextResponse.json({
+        connected: false,
+        siteId: siteId || "all",
+        allSites: [],
+        totalRecords: 0,
+        recentActivity: { count: 0, timeWindow: "last 5 minutes" },
+        latestWeight: null,
+        message: "❌ No data: Authentication required",
+      });
+    }
+
     const collection = await getWeightCollection();
     
-    // Build query
-    const query: any = {};
+    // Build query - filter by companyId and optionally siteId
+    const query: any = { companyId }; // Always filter by company
     if (siteId) {
       query.siteId = siteId;
     }

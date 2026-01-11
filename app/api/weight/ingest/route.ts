@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import crypto from "crypto";
 import { getWeightCollection } from "@/lib/db/weight";
+import { getCompaniesCollection } from "@/lib/db/companyDb";
 
 const ingestSchema = z.object({
   siteId: z.string(),
@@ -11,6 +12,7 @@ const ingestSchema = z.object({
   ts: z.string().optional(),
   deviceIp: z.string().optional(),
   devicePort: z.number().optional(),
+  cameraIp: z.string().optional(), // Add cameraIp for company mapping (sent together with plate)
 });
 
 export async function POST(request: NextRequest) {
@@ -64,7 +66,35 @@ export async function POST(request: NextRequest) {
       ts: body.ts || new Date().toISOString(),
       deviceIp: body.deviceIp || "",
       devicePort: body.devicePort || 0,
+      cameraIp: body.cameraIp || null,
     });
+
+    // Find which company owns this camera IP (same logic as LPR)
+    let companyId: string | null = null;
+    if (validated.cameraIp) {
+      try {
+        const companiesCollection = await getCompaniesCollection();
+        const company = await companiesCollection.findOne({
+          $or: [
+            { "cameraSettings.camera1Ip": validated.cameraIp },
+            { "cameraSettings.camera2Ip": validated.cameraIp },
+          ],
+        });
+        if (company) {
+          companyId = (company as any).companyId;
+          console.log(
+            `[Weight Ingest] Mapped camera IP ${validated.cameraIp} to company ${companyId}`
+          );
+        } else {
+          console.warn(
+            `[Weight Ingest] Camera IP ${validated.cameraIp} not found in any company's camera settings`
+          );
+        }
+      } catch (error) {
+        console.error("[Weight Ingest] Error looking up company by camera IP:", error);
+        // Continue without companyId - better than failing the entire request
+      }
+    }
 
     // Store weight data in MongoDB
     const collection = await getWeightCollection();
@@ -77,6 +107,8 @@ export async function POST(request: NextRequest) {
       ts: validated.ts,
       deviceIp: validated.deviceIp,
       devicePort: validated.devicePort,
+      cameraIp: validated.cameraIp || null,
+      companyId: companyId, // Store company ID for filtering
       receivedAt: receivedAt,
     };
 
@@ -95,9 +127,9 @@ export async function POST(request: NextRequest) {
     // Create a copy without _id for the upsert (MongoDB adds _id to weightData during insertOne)
     const { _id, ...weightDataWithoutId } = weightData as any;
 
-    // Update the latest weight for this siteId (for quick access)
+    // Update the latest weight for this siteId and companyId (for quick access)
     await collection.updateOne(
-      { siteId: validated.siteId, isLatest: true },
+      { siteId: validated.siteId, companyId: companyId || null, isLatest: true },
       { 
         $set: { 
           ...weightDataWithoutId,

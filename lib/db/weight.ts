@@ -21,6 +21,13 @@ export async function getWeightCollection(): Promise<Collection> {
   collection.createIndex({ siteId: 1, isLatest: 1 }).catch(() => {
     // Index might already exist, ignore errors
   });
+  // Index for company filtering
+  collection.createIndex({ companyId: 1, receivedAt: -1 }).catch(() => {
+    // Index might already exist, ignore errors
+  });
+  collection.createIndex({ companyId: 1, siteId: 1, isLatest: 1 }).catch(() => {
+    // Index might already exist, ignore errors
+  });
   
   return collection;
 }
