@@ -108,13 +108,20 @@ export async function POST(request: NextRequest) {
     console.log(`[DEBUG-D] Before updateOne: keys=${Object.keys(weightData).join(',')}, hasId=${'_id' in weightData}, _id=${(weightData as any)._id}`);
     // #endregion
 
+    // Create a copy without _id for the upsert (MongoDB adds _id to weightData during insertOne)
+    const { _id, ...weightDataWithoutId } = weightData as any;
+    
+    // #region agent log - Fix verification
+    console.log(`[DEBUG-FIX] weightDataWithoutId keys=${Object.keys(weightDataWithoutId).join(',')}, hasId=${'_id' in weightDataWithoutId}`);
+    // #endregion
+
     // Also update the latest weight for this siteId (for quick access)
     try {
       await collection.updateOne(
         { siteId: validated.siteId, isLatest: true },
         { 
           $set: { 
-            ...weightData,
+            ...weightDataWithoutId,
             isLatest: true,
             updatedAt: receivedAt,
           } 
