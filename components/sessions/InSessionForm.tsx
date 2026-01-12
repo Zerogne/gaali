@@ -103,7 +103,7 @@ export const InSessionForm = forwardRef<
     const [isSaving, setIsSaving] = useState(false);
     const [isSending, setIsSending] = useState(false);
     const [createDialogOpen, setCreateDialogOpen] = useState(false);
-    const [createDialogType, setCreateDialogType] = useState<"transportCompany" | "product" | "organization" | "driver" | null>(null);
+    const [createDialogType, setCreateDialogType] = useState<"transportCompany" | "product" | "organization" | "driver" | "trailer" | "location" | null>(null);
     const [createDialogInitialValue, setCreateDialogInitialValue] = useState("");
     const [createDialogName, setCreateDialogName] = useState("");
     const [createDialogCompanyId, setCreateDialogCompanyId] = useState("");
@@ -111,6 +111,10 @@ export const InSessionForm = forwardRef<
     const [createDialogPhone, setCreateDialogPhone] = useState("");
     const [createDialogRegistrationNumber, setCreateDialogRegistrationNumber] = useState("");
     const [createDialogAdditionalInfo, setCreateDialogAdditionalInfo] = useState("");
+    const [createDialogOwnerName, setCreateDialogOwnerName] = useState("");
+    const [createDialogOwnerId, setCreateDialogOwnerId] = useState("");
+    const [createDialogLocationName, setCreateDialogLocationName] = useState("");
+    const [createDialogLocationType, setCreateDialogLocationType] = useState<"seller" | "buyer" | "">("");
     const [isCreatingInDialog, setIsCreatingInDialog] = useState(false);
     const [plateInputRef, setPlateInputRef] = useState<HTMLInputElement | null>(
       null
@@ -359,8 +363,13 @@ export const InSessionForm = forwardRef<
         if (response.ok) {
           const data = await response.json();
           setTrailers(data);
+        } else {
+          // Silently fail when loading - don't show error toast
+          // The dropdown will just be empty, which is acceptable
+          console.error("Error loading trailers:", response.status, response.statusText);
         }
       } catch (error) {
+        // Silently fail when loading - don't show error toast
         console.error("Error loading trailers:", error);
       } finally {
         setIsLoadingTrailers(false);
@@ -378,13 +387,18 @@ export const InSessionForm = forwardRef<
         if (sellersResponse.ok) {
           const sellersData = await sellersResponse.json();
           allLocations.push(...sellersData);
+        } else {
+          console.error("Error loading seller locations:", sellersResponse.status, sellersResponse.statusText);
         }
         if (buyersResponse.ok) {
           const buyersData = await buyersResponse.json();
           allLocations.push(...buyersData);
+        } else {
+          console.error("Error loading buyer locations:", buyersResponse.status, buyersResponse.statusText);
         }
         setLocations(allLocations);
       } catch (error) {
+        // Silently fail when loading - don't show error toast
         console.error("Error loading locations:", error);
       } finally {
         setIsLoadingLocations(false);
@@ -628,17 +642,144 @@ export const InSessionForm = forwardRef<
       return null;
     };
 
+    // Handler for creating trailers
+    const handleCreateTrailer = async (plateNumber: string, ownerName: string, ownerId: string, ownerPhone: string) => {
+      try {
+        const response = await fetch("/api/trailers", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          credentials: "same-origin",
+          body: JSON.stringify({ plateNumber, ownerName, ownerId, ownerPhone }),
+        });
+        if (response.ok) {
+          const newTrailer = await response.json();
+          setTrailers((prev) => [...prev, newTrailer]);
+          toast({
+            title: "Амжилттай",
+            description: "Чиргүүл амжилттай нэмэгдлээ",
+          });
+          // Return plateNumber because trailerOptions uses plateNumber as value
+          return newTrailer.plateNumber;
+        } else {
+          const errorData = await response.json().catch(() => ({}));
+          // Check if it's a MongoDB connection error
+          const errorMessage = errorData.error || "";
+          const isMongoError = errorMessage.includes("MongoNetworkError") || 
+                              errorMessage.includes("SSL") || 
+                              errorMessage.includes("tlsv1") ||
+                              response.status === 500;
+          
+          const userFriendlyMessage = isMongoError 
+            ? "Мэдээллийн сантай холбогдох үед алдаа гарлаа. Дахин оролдоно уу."
+            : (errorData.error || "Чиргүүл нэмэхэд алдаа гарлаа");
+          
+          toast({
+            title: "Алдаа",
+            description: userFriendlyMessage,
+            variant: "destructive",
+          });
+        }
+      } catch (error) {
+        console.error("Error creating trailer:", error);
+        const errorMessage = error instanceof Error ? error.message : String(error);
+        const isNetworkError = errorMessage.includes("NetworkError") || 
+                              errorMessage.includes("fetch") ||
+                              errorMessage.includes("Failed to fetch");
+        
+        const userFriendlyMessage = isNetworkError
+          ? "Сүлжээний алдаа гарлаа. Интернэт холболтоо шалгаад дахин оролдоно уу."
+          : "Чиргүүл нэмэхэд алдаа гарлаа";
+        
+        toast({
+          title: "Алдаа",
+          description: userFriendlyMessage,
+          variant: "destructive",
+        });
+      }
+      return null;
+    };
+
+    // Handler for creating locations
+    const handleCreateLocation = async (locationName: string, companyName: string, type: "seller" | "buyer") => {
+      try {
+        const response = await fetch("/api/locations", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          credentials: "same-origin",
+          body: JSON.stringify({ locationName, companyName, type }),
+        });
+        if (response.ok) {
+          const newLocation = await response.json();
+          setLocations((prev) => [...prev, newLocation]);
+          toast({
+            title: "Амжилттай",
+            description: "Байршил амжилттай нэмэгдлээ",
+          });
+          // Return locationName because locationOptions uses locationName as value
+          return newLocation.locationName;
+        } else {
+          const errorData = await response.json().catch(() => ({}));
+          // Check if it's a MongoDB connection error
+          const errorMessage = errorData.error || "";
+          const isMongoError = errorMessage.includes("MongoNetworkError") || 
+                              errorMessage.includes("SSL") || 
+                              errorMessage.includes("tlsv1") ||
+                              response.status === 500;
+          
+          const userFriendlyMessage = isMongoError 
+            ? "Мэдээллийн сантай холбогдох үед алдаа гарлаа. Дахин оролдоно уу."
+            : (errorData.error || "Байршил нэмэхэд алдаа гарлаа");
+          
+          toast({
+            title: "Алдаа",
+            description: userFriendlyMessage,
+            variant: "destructive",
+          });
+        }
+      } catch (error) {
+        console.error("Error creating location:", error);
+        const errorMessage = error instanceof Error ? error.message : String(error);
+        const isNetworkError = errorMessage.includes("NetworkError") || 
+                              errorMessage.includes("fetch") ||
+                              errorMessage.includes("Failed to fetch");
+        
+        const userFriendlyMessage = isNetworkError
+          ? "Сүлжээний алдаа гарлаа. Интернэт холболтоо шалгаад дахин оролдоно уу."
+          : "Байршил нэмэхэд алдаа гарлаа";
+        
+        toast({
+          title: "Алдаа",
+          description: userFriendlyMessage,
+          variant: "destructive",
+        });
+      }
+      return null;
+    };
+
     // Dialog handlers for creating new entities
-    const handleOpenCreateDialog = async (type: "transportCompany" | "product" | "organization" | "driver", initialValue: string): Promise<string | null> => {
+    const handleOpenCreateDialog = async (type: "transportCompany" | "product" | "organization" | "driver" | "trailer" | "location", initialValue: string): Promise<string | null> => {
       return new Promise((resolve) => {
         setCreateDialogType(type);
         setCreateDialogInitialValue(initialValue);
-        setCreateDialogName(initialValue);
+        if (type === "location") {
+          setCreateDialogLocationName(initialValue);
+          setCreateDialogName("");
+        } else {
+          setCreateDialogName(initialValue);
+          setCreateDialogLocationName("");
+        }
         setCreateDialogCompanyId("");
         setCreateDialogContract("");
         setCreateDialogPhone("");
         setCreateDialogRegistrationNumber("");
         setCreateDialogAdditionalInfo("");
+        setCreateDialogOwnerName("");
+        setCreateDialogOwnerId("");
+        setCreateDialogLocationType("");
         setCreateDialogOpen(true);
         
         // Store resolve function to call when dialog closes
@@ -647,7 +788,26 @@ export const InSessionForm = forwardRef<
     };
 
     const handleCreateDialogSubmit = async () => {
-      if (!createDialogName.trim() || !createDialogType) {
+      if (!createDialogType) {
+        toast({
+          title: "Алдаа",
+          description: "Төрөл сонгох шаардлагатай",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // For location, check locationName; for others, check name
+      if (createDialogType === "location") {
+        if (!createDialogLocationName.trim()) {
+          toast({
+            title: "Алдаа",
+            description: "Байршлын нэр оруулах шаардлагатай",
+            variant: "destructive",
+          });
+          return;
+        }
+      } else if (!createDialogName.trim()) {
         toast({
           title: "Алдаа",
           description: "Нэр оруулах шаардлагатай",
@@ -684,6 +844,62 @@ export const InSessionForm = forwardRef<
         }
       }
 
+      // Validate required fields for trailer
+      if (createDialogType === "trailer") {
+        if (!createDialogOwnerName.trim()) {
+          toast({
+            title: "Алдаа",
+            description: "Эзэмшигчийн нэр шаардлагатай",
+            variant: "destructive",
+          });
+          return;
+        }
+        if (!createDialogOwnerId.trim()) {
+          toast({
+            title: "Алдаа",
+            description: "Эзэмшигчийн регистер шаардлагатай",
+            variant: "destructive",
+          });
+          return;
+        }
+        if (!createDialogPhone.trim()) {
+          toast({
+            title: "Алдаа",
+            description: "Эзэмшигчийн утасны дугаар шаардлагатай",
+            variant: "destructive",
+          });
+          return;
+        }
+      }
+
+      // Validate required fields for location
+      if (createDialogType === "location") {
+        if (!createDialogLocationName.trim()) {
+          toast({
+            title: "Алдаа",
+            description: "Байршлын нэр шаардлагатай",
+            variant: "destructive",
+          });
+          return;
+        }
+        if (!createDialogCompanyId.trim()) {
+          toast({
+            title: "Алдаа",
+            description: "Компанийн нэр шаардлагатай",
+            variant: "destructive",
+          });
+          return;
+        }
+        if (!createDialogLocationType || (createDialogLocationType !== "seller" && createDialogLocationType !== "buyer")) {
+          toast({
+            title: "Алдаа",
+            description: "Төрөл сонгох шаардлагатай",
+            variant: "destructive",
+          });
+          return;
+        }
+      }
+
       setIsCreatingInDialog(true);
       try {
         let newId: string | null = null;
@@ -711,6 +927,20 @@ export const InSessionForm = forwardRef<
             createDialogRegistrationNumber.trim() || undefined,
             createDialogAdditionalInfo.trim() || undefined
           );
+        } else if (createDialogType === "trailer") {
+          newId = await handleCreateTrailer(
+            createDialogName.trim(),
+            createDialogOwnerName.trim(),
+            createDialogOwnerId.trim(),
+            createDialogPhone.trim()
+          );
+        } else if (createDialogType === "location") {
+          newId = await handleCreateLocation(
+            createDialogLocationName.trim(),
+            createDialogCompanyId.trim(),
+            createDialogLocationType as "seller" | "buyer"
+          );
+          // For locations, newId is actually the locationName (used as value in locationOptions)
         }
 
         if (newId) {
@@ -722,6 +952,10 @@ export const InSessionForm = forwardRef<
           setCreateDialogPhone("");
           setCreateDialogRegistrationNumber("");
           setCreateDialogAdditionalInfo("");
+          setCreateDialogOwnerName("");
+          setCreateDialogOwnerId("");
+          setCreateDialogLocationName("");
+          setCreateDialogLocationType("");
           setCreateDialogInitialValue("");
           // Resolve the promise with the new ID
           if ((window as any).__createDialogResolve) {
@@ -745,6 +979,10 @@ export const InSessionForm = forwardRef<
       setCreateDialogPhone("");
       setCreateDialogRegistrationNumber("");
       setCreateDialogAdditionalInfo("");
+      setCreateDialogOwnerName("");
+      setCreateDialogOwnerId("");
+      setCreateDialogLocationName("");
+      setCreateDialogLocationType("");
       setCreateDialogInitialValue("");
       // Resolve with null to indicate cancellation
       if ((window as any).__createDialogResolve) {
@@ -943,20 +1181,8 @@ export const InSessionForm = forwardRef<
 
     // Auto-fill weight when weight status updates
     useEffect(() => {
-      // #region agent log - Debug weight auto-fill
-      console.log(`[DEBUG-WEIGHT-IN] useEffect triggered: latestWeight=${weightStatus.status.latestWeight}, connected=${weightStatus.status.connected}, siteId=${weightStatus.status.siteId}, carWeightLocked=${carWeightLocked}`);
-      // #endregion
-      
       if (weightStatus.status.latestWeight !== null && weightStatus.status.latestWeight > 0) {
-        // #region agent log - Debug weight update
-        console.log(`[DEBUG-WEIGHT-IN] Updating weight: latestWeight=${weightStatus.status.latestWeight}, carWeightLocked=${carWeightLocked}`);
-        // #endregion
-        
         setFormState((prev) => {
-          // #region agent log - Debug formState before update
-          console.log(`[DEBUG-WEIGHT-IN] Before update: prev.totalWeight=${prev.totalWeight}, prev.carWeight=${prev.carWeight}, prev.trailerWeight=${prev.trailerWeight}`);
-          // #endregion
-          
           let updated;
           
           if (carWeightLocked && prev.carWeight !== null && prev.carWeight !== undefined && weightStatus.status.latestWeight !== null) {
@@ -968,69 +1194,31 @@ export const InSessionForm = forwardRef<
               trailerWeight: newTrailerWeight,
               totalWeight: newTotalWeight,
             };
-            // #region agent log - Debug trailer weight auto-fill
-            console.log(`[DEBUG-WEIGHT-IN] Car weight locked: auto-filled trailerWeight=${newTrailerWeight}, calculated totalWeight=${newTotalWeight}`);
-            // #endregion
           } else {
             // Car weight not locked: set total weight directly (original behavior)
             updated = {
               ...prev,
               totalWeight: weightStatus.status.latestWeight,
             };
-            // #region agent log - Debug total weight update
-            console.log(`[DEBUG-WEIGHT-IN] Car weight not locked: updated totalWeight=${updated.totalWeight}`);
-            // #endregion
           }
-          
-          // #region agent log - Debug formState after update
-          console.log(`[DEBUG-WEIGHT-IN] After update: updated.totalWeight=${updated.totalWeight}, updated.trailerWeight=${updated.trailerWeight}`);
-          // #endregion
           
           return updated;
         });
-      } else {
-        // #region agent log - Debug why not updating
-        console.log(`[DEBUG-WEIGHT-IN] NOT updating: latestWeight=${weightStatus.status.latestWeight}, condition check failed`);
-        // #endregion
       }
     }, [weightStatus.status.latestWeight, carWeightLocked]);
 
     // Auto-fill plate number when LPR data updates (similar to weight - direct update)
     useEffect(() => {
-      // #region agent log - Debug plate auto-fill
-      console.log(`[DEBUG-PLATE-IN] useEffect triggered: latestLpr=${latestLpr?.plateNumber}, recognizedAt=${latestLpr?.recognizedAt}, cameraIp=${latestLpr?.cameraIp}`);
-      // #endregion
-      
       if (latestLpr?.plateNumber) {
         const plateNumber = latestLpr.plateNumber.trim().toUpperCase();
         
-        // #region agent log - Debug plate update
-        console.log(`[DEBUG-PLATE-IN] Updating formState.plateNumber to ${plateNumber}`);
-        // #endregion
-        
-        setFormState((prev) => {
-          // #region agent log - Debug formState before update
-          console.log(`[DEBUG-PLATE-IN] Before update: prev.plateNumber=${prev.plateNumber}`);
-          // #endregion
-          
-          const updated = {
-            ...prev,
-            plateNumber: plateNumber,
-          };
-          
-          // #region agent log - Debug formState after update
-          console.log(`[DEBUG-PLATE-IN] After update: updated.plateNumber=${updated.plateNumber}`);
-          // #endregion
-          
-          return updated;
-        });
+        setFormState((prev) => ({
+          ...prev,
+          plateNumber: plateNumber,
+        }));
         
         // Notify parent of plate change
         onPlateChange?.(plateNumber);
-      } else {
-        // #region agent log - Debug why not updating
-        console.log(`[DEBUG-PLATE-IN] NOT updating: latestLpr=${latestLpr}, plateNumber=${latestLpr?.plateNumber}`);
-        // #endregion
       }
     }, [latestLpr?.plateNumber, latestLpr?.receivedAt, onPlateChange]);
 
@@ -1596,7 +1784,7 @@ export const InSessionForm = forwardRef<
           <div className="flex-1 min-h-0 overflow-auto flex justify-center p-4">
             <Card className="p-4 pb-8 w-full max-w-6xl min-h-[calc(100vh-4rem)]">
               {/* License Plate Input with Warning */}
-              <div className="mb-6">
+              <div>
                 <div className="flex gap-2">
                   <div className="w-full md:w-1/2 lg:w-1/3">
                     <div className="bg-white rounded-lg flex items-center justify-center border border-black px-3 py-1 relative h-14" style={{ borderWidth: '3px' }}>
@@ -1658,8 +1846,8 @@ export const InSessionForm = forwardRef<
                 </div>
               </div>
 
-              {/* Weight Inputs - Directly under license plate, full width */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-x-6 gap-y-4 mb-4">
+              {/* Weight Inputs - Full width, directly under license plate and warning */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-x-6 gap-y-4 -mt-2">
                 {/* Car Weight */}
                 <div className="flex flex-col">
                   <div className="mb-1 min-h-[1.25rem] flex items-center">
@@ -1693,7 +1881,7 @@ export const InSessionForm = forwardRef<
                           };
                         });
                       }}
-                      className="h-14 !text-5xl !md:text-5xl font-mono font-bold !text-green-600 flex-1 !border-0 !shadow-none focus-visible:!border-0 focus-visible:!ring-0 bg-white [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none [-moz-appearance:textfield]"
+                      className="h-14 !text-5xl !md:text-5xl font-mono font-bold !text-green-600 flex-1 bg-white [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none [-moz-appearance:textfield]"
                       required
                       disabled={carWeightLocked}
                       readOnly={carWeightLocked}
@@ -1745,7 +1933,7 @@ export const InSessionForm = forwardRef<
                           };
                         });
                       }}
-                      className="h-14 !text-5xl !md:text-5xl font-mono font-bold !text-green-600 w-full !border-0 !shadow-none focus-visible:!border-0 focus-visible:!ring-0 bg-white [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none [-moz-appearance:textfield]"
+                      className="h-14 !text-5xl !md:text-5xl font-mono font-bold !text-green-600 w-full bg-white [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none [-moz-appearance:textfield]"
                     />
                   </div>
                 </div>
@@ -1757,7 +1945,7 @@ export const InSessionForm = forwardRef<
                       htmlFor="totalWeight"
                       className="text-base font-medium text-gray-700"
                     >
-                      Нийт жин (кг) <span className="text-red-500">*</span>
+                      Орох үеийн нийт жин (кг) <span className="text-red-500">*</span>
                     </Label>
                   </div>
                   <div className="h-14">
@@ -1775,7 +1963,7 @@ export const InSessionForm = forwardRef<
                           totalWeight: value,
                         }));
                       }}
-                      className="h-14 !text-5xl !md:text-5xl font-mono font-bold !text-green-600 w-full !border-0 !shadow-none focus-visible:!border-0 focus-visible:!ring-0 bg-white [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none [-moz-appearance:textfield]"
+                      className="h-14 !text-5xl !md:text-5xl font-mono font-bold !text-green-600 w-full bg-white [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none [-moz-appearance:textfield]"
                       required
                     />
                   </div>
@@ -1813,6 +2001,8 @@ export const InSessionForm = forwardRef<
                         isLoadingTrailers ? "Уншиж байна..." : "Чиргүүл сонгох"
                       }
                       searchPlaceholder="Чиргүүлийн улсын дугаар хайх..."
+                      onCreateNewDialog={(initialValue) => handleOpenCreateDialog("trailer", initialValue)}
+                      createNewLabel="+ Нэмэх ..."
                       className="h-12 !bg-blue-400 !text-white !border-blue-400 hover:!bg-blue-500 hover:!border-blue-500 [&>span]:!text-white [&>span.text-muted-foreground]:!text-white/90"
                     />
                   </div>
@@ -1948,6 +2138,8 @@ export const InSessionForm = forwardRef<
                       disabled={isLoadingLocations}
                       placeholder={isLoadingLocations ? "Уншиж байна..." : "Байршил сонгох"}
                       searchPlaceholder="Байршил хайх..."
+                      onCreateNewDialog={(initialValue) => handleOpenCreateDialog("location", initialValue)}
+                      createNewLabel="+ Нэмэх ..."
                       className="h-12 text-base w-full"
                     />
                   </div>
@@ -1976,6 +2168,8 @@ export const InSessionForm = forwardRef<
                       disabled={isLoadingLocations}
                       placeholder={isLoadingLocations ? "Уншиж байна..." : "Байршил сонгох"}
                       searchPlaceholder="Байршил хайх..."
+                      onCreateNewDialog={(initialValue) => handleOpenCreateDialog("location", initialValue)}
+                      createNewLabel="+ Нэмэх ..."
                       className="h-12 text-base w-full"
                     />
                   </div>
@@ -2080,7 +2274,7 @@ export const InSessionForm = forwardRef<
                 <div className="md:col-span-2 lg:col-span-3 flex flex-col gap-2">
                   <div className="bg-red-50 border border-red-300 rounded p-2 w-full">
                     <p className="text-red-600 text-sm leading-tight">
-                      <span className="text-lg font-bold">"*"</span> Улаан одоор тэмдэглэгдсэн нүдний мэдээлэл Гаалын мэдээллийн санд өгөгдөл болон дамжуулагдах тул анхааралтай бөглөнө үү.
+                      <span className="text-lg font-bold">*</span> Улаан одоор тэмдэглэгдсэн нүдний мэдээлэл Гаалын мэдээллийн санд өгөгдөл болон дамжуулагдах тул анхааралтай бөглөнө үү.
                     </p>
                   </div>
                 </div>
@@ -2162,12 +2356,16 @@ export const InSessionForm = forwardRef<
                 {createDialogType === "product" && "Шинэ бүтээгдэхүүн нэмэх"}
                 {createDialogType === "organization" && "Шинэ тээврийн байгууллага нэмэх"}
                 {createDialogType === "driver" && "Шинэ жолооч нэмэх"}
+                {createDialogType === "trailer" && "Шинэ чиргүүл нэмэх"}
+                {createDialogType === "location" && "Шинэ байршил нэмэх"}
               </DialogTitle>
               <DialogDescription>
                 {createDialogType === "transportCompany" && "Тээврийн компанийн мэдээлэл оруулна уу"}
                 {createDialogType === "product" && "Бүтээгдэхүүний нэрийг оруулна уу"}
                 {createDialogType === "organization" && "Тээврийн байгууллагын мэдээлэл оруулна уу"}
                 {createDialogType === "driver" && "Жолоочийн мэдээлэл оруулна уу"}
+                {createDialogType === "trailer" && "Чиргүүлийн мэдээлэл оруулна уу"}
+                {createDialogType === "location" && "Байршлын мэдээлэл оруулна уу"}
               </DialogDescription>
             </DialogHeader>
             <div className="space-y-4 py-4">
@@ -2178,21 +2376,31 @@ export const InSessionForm = forwardRef<
                   {createDialogType === "product" && "Бүтээгдэхүүний нэр"}
                   {createDialogType === "organization" && "Тээврийн байгууллагын нэр"}
                   {createDialogType === "driver" && "Жолоочийн нэр"}
+                  {createDialogType === "trailer" && "Чиргүүлийн улсын дугаар"}
+                  {createDialogType === "location" && "Байршлын нэр"}
                   <span className="text-red-500">*</span>
                 </Label>
                 <Input
                   id="create-dialog-name"
-                  value={createDialogName}
-                  onChange={(e) => setCreateDialogName(e.target.value)}
+                  value={createDialogType === "location" ? createDialogLocationName : createDialogName}
+                  onChange={(e) => {
+                    if (createDialogType === "location") {
+                      setCreateDialogLocationName(e.target.value);
+                    } else {
+                      setCreateDialogName(e.target.value);
+                    }
+                  }}
                   placeholder={
                     createDialogType === "transportCompany" ? "Тээврийн компанийн нэр оруулах"
                     : createDialogType === "product" ? "Бүтээгдэхүүний нэр оруулах"
                     : createDialogType === "organization" ? "Тээврийн байгууллагын нэр оруулах"
-                    : "Жолоочийн нэр оруулах"
+                    : createDialogType === "driver" ? "Жолоочийн нэр оруулах"
+                    : createDialogType === "trailer" ? "Чиргүүлийн улсын дугаар оруулах"
+                    : "Байршлын нэр оруулах"
                   }
                   onKeyDown={(e) => {
-                    if (e.key === "Enter" && createDialogName.trim() && 
-                        (createDialogType === "product" || 
+                    if (e.key === "Enter" && 
+                        ((createDialogType === "product" && createDialogName.trim()) || 
                          (createDialogType === "driver" && createDialogName.trim()))) {
                       handleCreateDialogSubmit();
                     }
@@ -2280,6 +2488,78 @@ export const InSessionForm = forwardRef<
                   </div>
                 </>
               )}
+
+              {/* Trailer specific fields */}
+              {createDialogType === "trailer" && (
+                <>
+                  <div>
+                    <Label htmlFor="create-dialog-owner-name">
+                      Эзэмшигчийн нэр <span className="text-red-500">*</span>
+                    </Label>
+                    <Input
+                      id="create-dialog-owner-name"
+                      value={createDialogOwnerName}
+                      onChange={(e) => setCreateDialogOwnerName(e.target.value)}
+                      placeholder="Эзэмшигчийн нэр оруулах"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="create-dialog-owner-id">
+                      Эзэмшигчийн регистер <span className="text-red-500">*</span>
+                    </Label>
+                    <Input
+                      id="create-dialog-owner-id"
+                      value={createDialogOwnerId}
+                      onChange={(e) => setCreateDialogOwnerId(e.target.value)}
+                      placeholder="Эзэмшигчийн регистрийн дугаар оруулах"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="create-dialog-owner-phone">
+                      Эзэмшигчийн утасны дугаар <span className="text-red-500">*</span>
+                    </Label>
+                    <Input
+                      id="create-dialog-owner-phone"
+                      type="tel"
+                      value={createDialogPhone}
+                      onChange={(e) => setCreateDialogPhone(e.target.value)}
+                      placeholder="Эзэмшигчийн утасны дугаар оруулах"
+                    />
+                  </div>
+                </>
+              )}
+
+              {/* Location specific fields */}
+              {createDialogType === "location" && (
+                <>
+                  <div>
+                    <Label htmlFor="create-dialog-location-company">
+                      Компанийн нэр <span className="text-red-500">*</span>
+                    </Label>
+                    <Input
+                      id="create-dialog-location-company"
+                      value={createDialogCompanyId}
+                      onChange={(e) => setCreateDialogCompanyId(e.target.value)}
+                      placeholder="Компанийн нэр оруулах"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="create-dialog-location-type">
+                      Төрөл <span className="text-red-500">*</span>
+                    </Label>
+                    <select
+                      id="create-dialog-location-type"
+                      value={createDialogLocationType}
+                      onChange={(e) => setCreateDialogLocationType(e.target.value as "seller" | "buyer" | "")}
+                      className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                    >
+                      <option value="">Сонгох...</option>
+                      <option value="seller">худалдагч</option>
+                      <option value="buyer">худалдан авагч</option>
+                    </select>
+                  </div>
+                </>
+              )}
             </div>
             <DialogFooter>
               <Button
@@ -2293,11 +2573,21 @@ export const InSessionForm = forwardRef<
                 onClick={handleCreateDialogSubmit}
                 disabled={
                   isCreatingInDialog || 
-                  !createDialogName.trim() ||
+                  (createDialogType !== "location" && !createDialogName.trim()) ||
+                  (createDialogType === "location" && !createDialogLocationName.trim()) ||
                   ((createDialogType === "transportCompany" || createDialogType === "organization") && (
                     !createDialogCompanyId.trim() ||
                     !createDialogContract.trim() ||
                     !createDialogPhone.trim()
+                  )) ||
+                  (createDialogType === "trailer" && (
+                    !createDialogOwnerName.trim() ||
+                    !createDialogOwnerId.trim() ||
+                    !createDialogPhone.trim()
+                  )) ||
+                  (createDialogType === "location" && (
+                    !createDialogCompanyId.trim() ||
+                    !createDialogLocationType
                   ))
                 }
                 className="gap-2"

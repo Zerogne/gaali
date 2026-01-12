@@ -22,10 +22,13 @@ export default function LoginPage() {
 
   const selectedCompany = companies.find((c) => c.companyId === selectedCompanyId)
 
+  const [companiesError, setCompaniesError] = useState<string | null>(null)
+
   // Load companies on mount
   useEffect(() => {
     async function loadCompanies() {
       setIsLoadingCompanies(true)
+      setCompaniesError(null)
       try {
         // Use API route instead of direct server action for better production compatibility
         const response = await fetch("/api/companies")
@@ -33,10 +36,23 @@ export default function LoginPage() {
           const data = await response.json()
           setCompanies(data)
         } else {
-          console.error("Failed to load companies:", response.statusText)
+          const errorData = await response.json().catch(() => ({}))
+          const errorMessage = errorData.error || ""
+          const isMongoError = errorMessage.includes("MongoNetworkError") || 
+                              errorMessage.includes("SSL") || 
+                              errorMessage.includes("tlsv1") ||
+                              response.status === 500
+          
+          if (isMongoError) {
+            setCompaniesError("Мэдээллийн сантай холбогдох үед алдаа гарлаа. Системийн администратортой холбогдоно уу.")
+          } else {
+            setCompaniesError("Компанийн жагсаалтыг ачаалахад алдаа гарлаа. Дахин оролдоно уу.")
+          }
+          console.error("Failed to load companies:", response.status, errorData)
         }
       } catch (error) {
         console.error("Error loading companies:", error)
+        setCompaniesError("Сүлжээний алдаа гарлаа. Интернэт холболтоо шалгаад дахин оролдоно уу.")
       } finally {
         setIsLoadingCompanies(false)
       }
@@ -148,6 +164,38 @@ export default function LoginPage() {
             {isLoadingCompanies ? (
               <div className="text-center py-8">
                 <p className="text-gray-500">жагсаалтын татаж байна...</p>
+              </div>
+            ) : companiesError ? (
+              <div className="text-center py-8">
+                <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-4">
+                  <p className="text-red-600 font-medium mb-2">Алдаа</p>
+                  <p className="text-red-500 text-sm">{companiesError}</p>
+                </div>
+                <button
+                  onClick={() => {
+                    setCompaniesError(null)
+                    setIsLoadingCompanies(true)
+                    fetch("/api/companies")
+                      .then((res) => {
+                        if (res.ok) {
+                          return res.json()
+                        }
+                        throw new Error("Failed to load")
+                      })
+                      .then((data) => {
+                        setCompanies(data)
+                        setCompaniesError(null)
+                      })
+                      .catch((err) => {
+                        console.error("Retry error:", err)
+                        setCompaniesError("Дахин оролдлого амжилтгүй боллоо.")
+                      })
+                      .finally(() => setIsLoadingCompanies(false))
+                  }}
+                  className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+                >
+                  Дахин оролдох
+                </button>
               </div>
             ) : (
               <CompanyLoginForm
