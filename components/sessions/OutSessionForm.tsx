@@ -1622,7 +1622,27 @@ export const OutSessionForm = forwardRef<
           {/* Form Content - Single Section Layout */}
           <div className="flex-1 min-h-0 overflow-auto flex justify-center p-4">
             <Card className="p-4 pb-8 w-full max-w-6xl min-h-[calc(100vh+6rem)] flex flex-col">
-              {/* Camera real-time video feature removed */}
+              {/* Camera Block - Static placeholder (no real-time video) */}
+              <div className="mb-6">
+                <div className="flex gap-2">
+                  <div className="w-1/3">
+                    <div className="bg-gray-900 rounded-lg aspect-video flex items-center justify-center border-2 border-gray-700">
+                      <div className="text-center">
+                        <Camera className="w-12 h-12 text-gray-500 mx-auto mb-2" />
+                        <p className="text-gray-400 text-sm">Камер 2</p>
+                        <p className="text-gray-500 text-xs mt-1">Гарах камер</p>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="w-2/3 flex items-center">
+                    <div className="bg-blue-50 border border-blue-200 rounded p-4 h-full flex items-center w-full">
+                      <p className="text-gray-700 text-lg leading-relaxed">
+                        Камер ачааллахын тулд дэлгэцэн дээр байрлах <span className="text-[#0073c4]">Gaali Camera Bridge</span> программыг ажиллуулж байж дүрс гарах тул уг программыг эхлээд асаасан байх шаардлагатай.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-4 auto-rows-min">
                 {/* Out Weight Input - Same width as other inputs with warning */}
