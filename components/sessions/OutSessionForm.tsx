@@ -766,8 +766,8 @@ export const OutSessionForm = forwardRef<
               const inSession = data.session;
               const inLog = data.log; // Log has all the fields
 
-              // Store IN weight for display
-              setInWeightKg(inSession.grossWeightKg || null);
+              // Store IN weight for display (use totalWeight from log, fallback to grossWeightKg from session)
+              setInWeightKg(inLog?.weightKg || inSession.grossWeightKg || null);
 
               // Auto-fill all available data (only if fields are empty or not set)
               setFormState((prev) => {
@@ -1004,6 +1004,7 @@ export const OutSessionForm = forwardRef<
             const data = await response.json();
             if (data.success && data.session && isMounted) {
               const inSession = data.session;
+              const inLog = data.log; // Log has all the fields including weightKg (totalWeight)
 
               // Verify plate number and weight haven't changed
               if (!isMounted || formState.plateNumber.trim() !== plateNumber || formState.outWeightKg !== outWeight) {
@@ -1012,7 +1013,8 @@ export const OutSessionForm = forwardRef<
 
               // Calculate net weight: IN weight - OUT weight
               // Positive = cargo unloaded, Negative = cargo loaded
-              const inWeight = inSession.grossWeightKg || 0;
+              // Use totalWeight from log (weightKg), fallback to grossWeightKg from session
+              const inWeight = inLog?.weightKg || inSession.grossWeightKg || 0;
               const outWeightValue = outWeight || 0;
               const netWeight = inWeight - outWeightValue;
 
@@ -1029,9 +1031,9 @@ export const OutSessionForm = forwardRef<
                 };
               });
 
-              // Store IN weight for display
+              // Store IN weight for display (use totalWeight from log, fallback to grossWeightKg from session)
               if (isMounted) {
-                setInWeightKg(inSession.grossWeightKg || null);
+                setInWeightKg(inLog?.weightKg || inSession.grossWeightKg || null);
               }
             }
           }
@@ -1625,8 +1627,8 @@ export const OutSessionForm = forwardRef<
               {/* License Plate Input with Warning */}
               <div className="mb-6">
                 <div className="flex gap-2">
-                  <div className="w-1/3">
-                    <div className="bg-white rounded-lg flex items-center justify-center border-2 border-black p-3 relative" style={{ minHeight: '200px', aspectRatio: '3/2' }}>
+                  <div className="w-full md:w-1/2 lg:w-1/3">
+                    <div className="bg-white rounded-lg flex items-center justify-center border border-black px-3 py-1 relative h-14" style={{ borderWidth: '0.5px' }}>
                       <Input
                         ref={setPlateInputRef}
                         id="plateNumber"
@@ -1642,37 +1644,33 @@ export const OutSessionForm = forwardRef<
                         placeholder=""
                         required
                       />
-                      <div className="flex flex-col items-center justify-center w-full pointer-events-none">
-                        <div className="text-8xl font-mono font-bold text-black leading-none">
-                          {formState.plateNumber.replace(/[^0-9]/g, '') || '1234'}
-                        </div>
-                        <div className="relative flex items-center justify-center mt-1 w-full">
-                          {/* Soyombo Symbol - Mongolian National Emblem */}
-                          <img 
-                            src="/soyombo.svg" 
-                            alt="Soyombo" 
-                            className="absolute h-20 w-auto flex-shrink-0"
-                            style={{ minWidth: '40px', maxHeight: '60px', left: 'calc(50% - 120px)' }}
-                            onError={(e) => {
-                              console.error('[Soyombo] Image failed to load:', '/soyombo.svg');
-                            }}
-                          />
-                          <div className="text-7xl font-mono font-bold text-black leading-none">
+                      <div className="flex items-center justify-center w-full h-full pointer-events-none gap-1.5">
+                        {/* Soyombo Symbol - Mongolian National Emblem */}
+                        <img 
+                          src="/soyombo.svg" 
+                          alt="Soyombo" 
+                          className="h-10 w-auto flex-shrink-0"
+                          style={{ minWidth: '15px', maxWidth: '20px', maxHeight: '40px' }}
+                          onError={(e) => {
+                            console.error('[Soyombo] Image failed to load:', '/soyombo.svg');
+                          }}
+                        />
+                        {/* Numbers and Letters in one row */}
+                        <div className="flex items-center gap-1.5">
+                          <div className="text-3xl font-mono font-bold text-black leading-none">
+                            {formState.plateNumber.replace(/[^0-9]/g, '') || '1234'}
+                          </div>
+                          <div className="text-3xl font-mono font-bold text-black leading-none">
                             {formState.plateNumber.replace(/[0-9]/g, '').toUpperCase() || 'ААА'}
                           </div>
                         </div>
                       </div>
                     </div>
                   </div>
-                  <div className="w-2/3 flex flex-col gap-2">
-                    <div className="bg-blue-50 border border-blue-200 rounded p-4 flex items-center w-full">
-                      <p className="text-gray-700 text-sm leading-relaxed">
+                  <div className="w-2/3 flex flex-col gap-1.5">
+                    <div className="bg-blue-50 border border-blue-200 rounded p-2 flex items-center w-full">
+                      <p className="text-gray-700 text-xs leading-relaxed">
                         Камер ачааллахын тулд дэлгэцэн дээр байрлах <span className="text-[#0073c4]">Gaali Camera Bridge</span> программыг ажиллуулж байж дүрс гарах тул уг программыг эхлээд асаасан байх шаардлагатай.
-                      </p>
-                    </div>
-                    <div className="bg-red-50 border border-red-300 rounded p-4 flex items-center w-full">
-                      <p className="text-red-600 text-sm leading-tight">
-                        Гараас өгөгдөл оруулах дохиололд Гаалийн газраас зөвшөөрөгдөөгүй тул анхаарна уу!
                       </p>
                     </div>
                   </div>
@@ -2097,10 +2095,15 @@ export const OutSessionForm = forwardRef<
                 </div>
 
                 {/* Warning message under receiver organization - full width row */}
-                <div className="md:col-span-2 lg:col-span-3">
+                <div className="md:col-span-2 lg:col-span-3 flex flex-col gap-2">
                   <div className="bg-red-50 border border-red-300 rounded p-2 w-full">
                     <p className="text-red-600 text-sm leading-tight">
                       <span className="text-lg font-bold">"*"</span> Улаан одоор тэмдэглэгдсэн нүдний мэдээлэл Гаалын мэдээллийн санд өгөгдөл болон дамжуулагдах тул анхааралтай бөглөнө үү.
+                    </p>
+                  </div>
+                  <div className="bg-red-50 border border-red-300 rounded p-2 w-full">
+                    <p className="text-red-600 text-sm leading-tight">
+                      Гараас өгөгдөл оруулах дохиололд Гаалийн газраас зөвшөөрөгдөөгүй тул анхаарна уу!
                     </p>
                   </div>
                 </div>

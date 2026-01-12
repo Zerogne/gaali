@@ -46,6 +46,9 @@ interface InSessionFormState {
   receiverOrganizationId: string;
   inTime: string;
   grossWeightKg: number | null;
+  carWeight: number | null;
+  trailerWeight: number | null;
+  totalWeight: number | null;
   hasTrailer: boolean;
   trailerNumber: string;
   notes: string;
@@ -198,6 +201,7 @@ export const InSessionForm = forwardRef<
     const [isLoadingLocations, setIsLoadingLocations] = useState(true);
     const [isDriverDialogOpen, setIsDriverDialogOpen] = useState(false);
     const [savedUniqueCode, setSavedUniqueCode] = useState<string | null>(null);
+    const [carWeightLocked, setCarWeightLocked] = useState(false);
 
     const [formState, setFormState] = useState<InSessionFormState>({
       plateNumber: "",
@@ -211,6 +215,9 @@ export const InSessionForm = forwardRef<
       receiverOrganizationId: "",
       inTime: externalInTime || new Date().toISOString().slice(0, 16),
       grossWeightKg: null,
+      carWeight: null,
+      trailerWeight: null,
+      totalWeight: null,
       hasTrailer: false,
       trailerNumber: "",
       notes: "",
@@ -277,6 +284,9 @@ export const InSessionForm = forwardRef<
           receiverOrganizationId: receiverOrg?.id || "",
           inTime: inTime,
           grossWeightKg: editLog.weightKg || null,
+          carWeight: null,
+          trailerWeight: null,
+          totalWeight: null,
           hasTrailer: editLog.hasTrailer || false,
           trailerNumber: editLog.trailerPlate || "",
           notes: editLog.comments || "",
@@ -927,33 +937,53 @@ export const InSessionForm = forwardRef<
     const handleWeightDetected = (weightKg: number) => {
       setFormState((prev) => ({
         ...prev,
-        grossWeightKg: weightKg,
+        totalWeight: weightKg,
       }));
     };
 
     // Auto-fill weight when weight status updates
     useEffect(() => {
       // #region agent log - Debug weight auto-fill
-      console.log(`[DEBUG-WEIGHT-IN] useEffect triggered: latestWeight=${weightStatus.status.latestWeight}, connected=${weightStatus.status.connected}, siteId=${weightStatus.status.siteId}`);
+      console.log(`[DEBUG-WEIGHT-IN] useEffect triggered: latestWeight=${weightStatus.status.latestWeight}, connected=${weightStatus.status.connected}, siteId=${weightStatus.status.siteId}, carWeightLocked=${carWeightLocked}`);
       // #endregion
       
       if (weightStatus.status.latestWeight !== null && weightStatus.status.latestWeight > 0) {
         // #region agent log - Debug weight update
-        console.log(`[DEBUG-WEIGHT-IN] Updating formState.grossWeightKg to ${weightStatus.status.latestWeight}`);
+        console.log(`[DEBUG-WEIGHT-IN] Updating weight: latestWeight=${weightStatus.status.latestWeight}, carWeightLocked=${carWeightLocked}`);
         // #endregion
         
         setFormState((prev) => {
           // #region agent log - Debug formState before update
-          console.log(`[DEBUG-WEIGHT-IN] Before update: prev.grossWeightKg=${prev.grossWeightKg}`);
+          console.log(`[DEBUG-WEIGHT-IN] Before update: prev.totalWeight=${prev.totalWeight}, prev.carWeight=${prev.carWeight}, prev.trailerWeight=${prev.trailerWeight}`);
           // #endregion
           
-          const updated = {
-            ...prev,
-            grossWeightKg: weightStatus.status.latestWeight,
-          };
+          let updated;
+          
+          if (carWeightLocked && prev.carWeight !== null && prev.carWeight !== undefined && weightStatus.status.latestWeight !== null) {
+            // Car weight is locked: auto-fill trailer weight and calculate total
+            const newTrailerWeight = weightStatus.status.latestWeight;
+            const newTotalWeight = prev.carWeight + newTrailerWeight;
+            updated = {
+              ...prev,
+              trailerWeight: newTrailerWeight,
+              totalWeight: newTotalWeight,
+            };
+            // #region agent log - Debug trailer weight auto-fill
+            console.log(`[DEBUG-WEIGHT-IN] Car weight locked: auto-filled trailerWeight=${newTrailerWeight}, calculated totalWeight=${newTotalWeight}`);
+            // #endregion
+          } else {
+            // Car weight not locked: set total weight directly (original behavior)
+            updated = {
+              ...prev,
+              totalWeight: weightStatus.status.latestWeight,
+            };
+            // #region agent log - Debug total weight update
+            console.log(`[DEBUG-WEIGHT-IN] Car weight not locked: updated totalWeight=${updated.totalWeight}`);
+            // #endregion
+          }
           
           // #region agent log - Debug formState after update
-          console.log(`[DEBUG-WEIGHT-IN] After update: updated.grossWeightKg=${updated.grossWeightKg}`);
+          console.log(`[DEBUG-WEIGHT-IN] After update: updated.totalWeight=${updated.totalWeight}, updated.trailerWeight=${updated.trailerWeight}`);
           // #endregion
           
           return updated;
@@ -963,7 +993,7 @@ export const InSessionForm = forwardRef<
         console.log(`[DEBUG-WEIGHT-IN] NOT updating: latestWeight=${weightStatus.status.latestWeight}, condition check failed`);
         // #endregion
       }
-    }, [weightStatus.status.latestWeight]);
+    }, [weightStatus.status.latestWeight, carWeightLocked]);
 
     // Auto-fill plate number when LPR data updates (similar to weight - direct update)
     useEffect(() => {
@@ -1117,7 +1147,7 @@ export const InSessionForm = forwardRef<
             receiverOrganizationId:
               formState.receiverOrganizationId || undefined,
             receiverOrganization: receiverOrgName || undefined,
-            weightKg: formState.grossWeightKg || undefined,
+            weightKg: formState.totalWeight || undefined,
             hasTrailer: hasTrailer || undefined,
             trailerPlate: hasTrailer
               ? formState.trailerNumber.trim().toUpperCase()
@@ -1150,6 +1180,9 @@ export const InSessionForm = forwardRef<
             receiverOrganizationId: "",
             inTime: new Date().toISOString().slice(0, 16),
             grossWeightKg: null,
+          carWeight: null,
+          trailerWeight: null,
+          totalWeight: null,
             hasTrailer: false,
             trailerNumber: "",
             notes: "",
@@ -1176,7 +1209,7 @@ export const InSessionForm = forwardRef<
           destination: formState.destination.trim() || undefined,
           senderOrganizationId: formState.senderOrganizationId || undefined,
           receiverOrganizationId: formState.receiverOrganizationId || undefined,
-          grossWeightKg: formState.grossWeightKg,
+          grossWeightKg: formState.totalWeight,
           inTime: saveTime,
           hasTrailer: formState.hasTrailer || undefined,
           trailerNumber:
@@ -1219,8 +1252,8 @@ export const InSessionForm = forwardRef<
           description: "ОРОХ бүртгэл амжилттай хадгалагдлаа",
         });
 
-        // Send to 3rd party app via WebSocket (matching test-websocket.html logic)
-        if (savedSession.session && savedSession.session.uniqueCode) {
+        // 3rd party sending removed for In Session
+        if (false && savedSession.session && savedSession.session.uniqueCode) {
           try {
             console.log("🚀 Starting send process for IN session...");
 
@@ -1351,15 +1384,15 @@ export const InSessionForm = forwardRef<
 
             // Step 3: Check WebSocket connection (matching test-websocket.html logic)
             console.log("🔌 Step 2: Checking WebSocket connection...");
+            const getWsState = (socket: WebSocket | null): string => 
+              socket !== null ? `readyState: ${socket.readyState} (OPEN=${WebSocket.OPEN})` : "null";
+            const isWsConnected = (socket: WebSocket | null): socket is WebSocket => 
+              socket !== null && socket.readyState === WebSocket.OPEN;
+            
             let ws = getWebSocket();
-            console.log(
-              "🔌 Current WebSocket state:",
-              ws
-                ? `readyState: ${ws.readyState} (OPEN=${WebSocket.OPEN})`
-                : "null"
-            );
+            console.log("🔌 Current WebSocket state:", getWsState(ws));
 
-            if (!ws || ws.readyState !== WebSocket.OPEN) {
+            if (!isWsConnected(ws)) {
               console.log(
                 "🔌 WebSocket not connected, attempting to connect..."
               );
@@ -1369,17 +1402,14 @@ export const InSessionForm = forwardRef<
                 ws = getWebSocket();
                 await new Promise((resolve) => setTimeout(resolve, 50));
                 ws = getWebSocket();
-                if (!ws || ws.readyState !== WebSocket.OPEN) {
+                if (!isWsConnected(ws)) {
                   console.error(
                     "❌ ERROR: WebSocket connection failed or closed immediately"
                   );
                   console.error(
                     "❌ WebSocket states: CONNECTING=0, OPEN=1, CLOSING=2, CLOSED=3"
                   );
-                  console.error(
-                    "❌ Current state:",
-                    ws ? ws.readyState : "null"
-                  );
+                  console.error("❌ Current state:", getWsState(ws));
                   console.error(
                     "❌ This usually means the 3rd party app server is not running"
                   );
@@ -1412,7 +1442,7 @@ export const InSessionForm = forwardRef<
 
             // Step 4: Verify connection one more time (matching test-websocket.html)
             ws = getWebSocket();
-            if (!ws || ws.readyState !== WebSocket.OPEN) {
+            if (!isWsConnected(ws)) {
               console.error(
                 "❌ ERROR: WebSocket connection is not open before sending"
               );
@@ -1430,7 +1460,9 @@ export const InSessionForm = forwardRef<
             console.log("📤 URL to send:", dataUrl);
             console.log("📤 Unique Code (AKT):", uniqueCode);
 
-            if (ws.readyState !== WebSocket.OPEN) {
+            // TypeScript guard: ws is guaranteed to be non-null after the check above
+            const wsForSend = ws!;
+            if (wsForSend.readyState !== WebSocket.OPEN) {
               console.error("❌ ERROR: WebSocket closed right before send!");
               toast({
                 title: "Алдаа",
@@ -1441,14 +1473,17 @@ export const InSessionForm = forwardRef<
               return false;
             }
 
-            ws.send(dataUrl);
+            // wsForSend is guaranteed to be non-null and open after the checks above
+            wsForSend.send(dataUrl);
             console.log("✅ ws.send() completed without throwing error");
 
             // Step 6: Check connection after a short delay (matching test-websocket.html)
             await new Promise((resolve) => setTimeout(resolve, 100));
-            ws = getWebSocket();
+            const wsAfterSend = getWebSocket();
+            const isWsOpen = (socket: WebSocket | null): socket is WebSocket => 
+              socket !== null && socket.readyState === WebSocket.OPEN;
 
-            if (!ws || ws.readyState !== WebSocket.OPEN) {
+            if (!isWsOpen(wsAfterSend)) {
               console.error("❌ ERROR: WebSocket closed after sending!");
               console.error(
                 "❌ This usually means the 3rd party app server is not running"
@@ -1472,14 +1507,21 @@ export const InSessionForm = forwardRef<
               title: "Амжилттай",
               description: "3-р талын програм руу илгээгдлээ",
             });
-          } catch (sendError) {
+          } catch (sendError: unknown) {
             console.error("=".repeat(50));
             console.error("❌ ERROR: Exception thrown while sending data");
             console.error("❌ Error:", sendError);
-            console.error(
-              "❌ Error message:",
-              sendError instanceof Error ? sendError.message : String(sendError)
-            );
+            const getErrorMessage = (err: unknown): string => {
+              if (err instanceof Error) {
+                return err.message;
+              }
+              if (typeof err === 'string') {
+                return err;
+              }
+              return String(err ?? 'Unknown error');
+            };
+            const errorMessage = getErrorMessage(sendError);
+            console.error("❌ Error message:", errorMessage);
             console.error("=".repeat(50));
             // Don't show error toast - session is already saved
             return false;
@@ -1500,6 +1542,9 @@ export const InSessionForm = forwardRef<
           receiverOrganizationId: "",
           inTime: new Date().toISOString().slice(0, 16),
           grossWeightKg: null,
+          carWeight: null,
+          trailerWeight: null,
+          totalWeight: null,
           hasTrailer: false,
           trailerNumber: "",
           notes: "",
@@ -1553,8 +1598,8 @@ export const InSessionForm = forwardRef<
               {/* License Plate Input with Warning */}
               <div className="mb-6">
                 <div className="flex gap-2">
-                  <div className="w-1/3">
-                    <div className="bg-white rounded-lg flex items-center justify-center border-2 border-black p-3 relative" style={{ minHeight: '200px', aspectRatio: '3/2' }}>
+                  <div className="w-full md:w-1/2 lg:w-1/3">
+                    <div className="bg-white rounded-lg flex items-center justify-center border border-black px-3 py-1 relative h-14" style={{ borderWidth: '0.5px' }}>
                       <Input
                         ref={setPlateInputRef}
                         id="plateNumber"
@@ -1575,37 +1620,33 @@ export const InSessionForm = forwardRef<
                         placeholder=""
                         required
                       />
-                      <div className="flex flex-col items-center justify-center w-full pointer-events-none">
-                        <div className="text-8xl font-mono font-bold text-black leading-none">
-                          {formState.plateNumber.replace(/[^0-9]/g, '') || '1234'}
-                        </div>
-                        <div className="relative flex items-center justify-center mt-1 w-full">
-                          {/* Soyombo Symbol - Mongolian National Emblem */}
-                          <img 
-                            src="/soyombo.svg" 
-                            alt="Soyombo" 
-                            className="absolute h-20 w-auto flex-shrink-0"
-                            style={{ minWidth: '40px', maxHeight: '60px', left: 'calc(50% - 120px)' }}
-                            onError={(e) => {
-                              console.error('[Soyombo] Image failed to load:', '/soyombo.svg');
-                            }}
-                          />
-                          <div className="text-7xl font-mono font-bold text-black leading-none">
+                      <div className="flex items-center justify-center w-full h-full pointer-events-none gap-1.5">
+                        {/* Soyombo Symbol - Mongolian National Emblem */}
+                        <img 
+                          src="/soyombo.svg" 
+                          alt="Soyombo" 
+                          className="h-10 w-auto flex-shrink-0"
+                          style={{ minWidth: '15px', maxWidth: '20px', maxHeight: '40px' }}
+                          onError={(e) => {
+                            console.error('[Soyombo] Image failed to load:', '/soyombo.svg');
+                          }}
+                        />
+                        {/* Numbers and Letters in one row */}
+                        <div className="flex items-center gap-1.5">
+                          <div className="text-3xl font-mono font-bold text-black leading-none">
+                            {formState.plateNumber.replace(/[^0-9]/g, '') || '1234'}
+                          </div>
+                          <div className="text-3xl font-mono font-bold text-black leading-none">
                             {formState.plateNumber.replace(/[0-9]/g, '').toUpperCase() || 'ААА'}
                           </div>
                         </div>
                       </div>
                     </div>
                   </div>
-                  <div className="w-2/3 flex flex-col gap-2">
-                    <div className="bg-blue-50 border border-blue-200 rounded p-4 flex items-center w-full">
-                      <p className="text-gray-700 text-sm leading-relaxed">
+                  <div className="w-2/3 flex flex-col gap-1.5">
+                    <div className="bg-blue-50 border border-blue-200 rounded p-2 flex items-center w-full">
+                      <p className="text-gray-700 text-xs leading-relaxed">
                         Камер ачааллахын тулд дэлгэцэн дээр байрлах <span className="text-[#0073c4]">Gaali Camera Bridge</span> программыг ажиллуулж байж дүрс гарах тул уг программыг эхлээд асаасан байх шаардлагатай.
-                      </p>
-                    </div>
-                    <div className="bg-red-50 border border-red-300 rounded p-4 flex items-center w-full">
-                      <p className="text-red-600 text-sm leading-tight">
-                        Гараас өгөгдөл оруулах дохиололд Гаалийн газраас зөвшөөрөгдөөгүй тул анхаарна уу!
                       </p>
                     </div>
                   </div>
@@ -1613,48 +1654,135 @@ export const InSessionForm = forwardRef<
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-4">
+                {/* Car Weight */}
+                <div className="flex flex-col">
+                  <div className="mb-1 min-h-[1.25rem] flex items-center">
+                    <Label
+                      htmlFor="carWeight"
+                      className="text-base font-medium text-gray-700"
+                    >
+                      Машины жин (кг) <span className="text-red-500">*</span>
+                    </Label>
+                  </div>
+                  <div className="h-11 flex gap-2">
+                    <Input
+                      id="carWeight"
+                      type="number"
+                      value={formState.carWeight ?? ""}
+                      onChange={(e) => {
+                        if (carWeightLocked) return; // Prevent changes when locked
+                        const value =
+                          e.target.value === ""
+                            ? null
+                            : parseFloat(e.target.value);
+                        setFormState((prev) => {
+                          const newCarWeight = value;
+                          const newTotalWeight = newCarWeight && prev.trailerWeight
+                            ? newCarWeight + prev.trailerWeight
+                            : newCarWeight || prev.trailerWeight || null;
+                          return {
+                            ...prev,
+                            carWeight: newCarWeight,
+                            totalWeight: newTotalWeight,
+                          };
+                        });
+                      }}
+                      className="h-11 text-base flex-1"
+                      placeholder="Машины жин"
+                      required
+                      disabled={carWeightLocked}
+                      readOnly={carWeightLocked}
+                    />
+                    <Button
+                      type="button"
+                      onClick={() => {
+                        if (formState.carWeight !== null && formState.carWeight !== undefined) {
+                          setCarWeightLocked(true);
+                        }
+                      }}
+                      className="h-11 px-4 whitespace-nowrap"
+                      disabled={carWeightLocked || formState.carWeight === null || formState.carWeight === undefined}
+                    >
+                      {carWeightLocked ? "🔒" : "хадгалах"}
+                    </Button>
+                  </div>
+                </div>
+
+                {/* Trailer Weight */}
+                <div className="flex flex-col">
+                  <div className="mb-1 min-h-[1.25rem] flex items-center">
+                    <Label
+                      htmlFor="trailerWeight"
+                      className="text-base font-medium text-gray-700"
+                    >
+                      Чиргүүлийн жин (кг)
+                    </Label>
+                  </div>
+                  <div className="h-11">
+                    <Input
+                      id="trailerWeight"
+                      type="number"
+                      value={formState.trailerWeight ?? ""}
+                      onChange={(e) => {
+                        const value =
+                          e.target.value === ""
+                            ? null
+                            : parseFloat(e.target.value);
+                        setFormState((prev) => {
+                          const newTrailerWeight = value;
+                          const newTotalWeight = prev.carWeight && newTrailerWeight
+                            ? prev.carWeight + newTrailerWeight
+                            : prev.carWeight || newTrailerWeight || null;
+                          return {
+                            ...prev,
+                            trailerWeight: newTrailerWeight,
+                            totalWeight: newTotalWeight,
+                          };
+                        });
+                      }}
+                      className="h-11 text-base w-full"
+                      placeholder="Чиргүүлийн жин"
+                    />
+                  </div>
+                </div>
+
+                {/* Total Weight */}
+                <div className="flex flex-col">
+                  <div className="mb-1 min-h-[1.25rem] flex items-center">
+                    <Label
+                      htmlFor="totalWeight"
+                      className="text-base font-medium text-gray-700"
+                    >
+                      Нийт жин (кг) <span className="text-red-500">*</span>
+                    </Label>
+                  </div>
+                  <div className="h-11">
+                    <Input
+                      id="totalWeight"
+                      type="number"
+                      value={formState.totalWeight ?? ""}
+                      onChange={(e) => {
+                        const value =
+                          e.target.value === ""
+                            ? null
+                            : parseFloat(e.target.value);
+                        setFormState((prev) => ({
+                          ...prev,
+                          totalWeight: value,
+                        }));
+                      }}
+                      className="h-11 text-base w-full [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none [-moz-appearance:textfield]"
+                      placeholder="Нийт жин"
+                      required
+                    />
+                  </div>
+                </div>
                 {/* Standardized FormField Wrapper Pattern:
                     - Label area: fixed height (h-5) with mb-1
                     - Control area: fixed height (h-11 = 44px)
                     - Helper text: optional, fixed height area
                 */}
 
-
-                {/* Weight Input - Same width as other inputs */}
-                <div className="flex flex-col">
-                  <div className="mb-1 min-h-[1.25rem] flex items-center">
-                    <Label
-                      htmlFor="grossWeightKg"
-                      className="text-base font-medium text-gray-700"
-                    >
-                      Орох жин (кг) <span className="text-red-500">*</span>
-                    </Label>
-                  </div>
-                  <div className="h-12">
-                    <Input
-                      id="grossWeightKg"
-                      type="number"
-                      value={formState.grossWeightKg ?? ""}
-                      onChange={(e) => {
-                        const value =
-                          e.target.value === ""
-                            ? null
-                            : parseFloat(e.target.value);
-                        // #region agent log - Debug manual weight input
-                        console.log(`[DEBUG-WEIGHT-IN] Manual input: value=${value}, formState.grossWeightKg=${formState.grossWeightKg}`);
-                        // #endregion
-                        setFormState((prev) => ({
-                          ...prev,
-                          grossWeightKg: value,
-                        }));
-                      }}
-                      className="h-12 text-base w-full bg-green-600 text-white placeholder:text-white [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none [-moz-appearance:textfield]"
-                      placeholder="Жин оруулах (кг)"
-                      required
-                    />
-                  </div>
-                </div>
-                
 
                 {/* Trailer - Now on next row */}
                 <div className="flex flex-col">
@@ -1943,10 +2071,15 @@ export const InSessionForm = forwardRef<
                 </div>
 
                 {/* Warning message under receiver organization - full width row */}
-                <div className="md:col-span-2 lg:col-span-3">
+                <div className="md:col-span-2 lg:col-span-3 flex flex-col gap-2">
                   <div className="bg-red-50 border border-red-300 rounded p-2 w-full">
                     <p className="text-red-600 text-sm leading-tight">
                       <span className="text-lg font-bold">"*"</span> Улаан одоор тэмдэглэгдсэн нүдний мэдээлэл Гаалын мэдээллийн санд өгөгдөл болон дамжуулагдах тул анхааралтай бөглөнө үү.
+                    </p>
+                  </div>
+                  <div className="bg-red-50 border border-red-300 rounded p-2 w-full">
+                    <p className="text-red-600 text-sm leading-tight">
+                      Гараас өгөгдөл оруулах дохиололд Гаалийн газраас зөвшөөрөгдөөгүй тул анхаарна уу!
                     </p>
                   </div>
                 </div>
