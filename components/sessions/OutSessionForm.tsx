@@ -114,6 +114,7 @@ export const OutSessionForm = forwardRef<
     const [createDialogRegistrationNumber, setCreateDialogRegistrationNumber] = useState("");
     const [createDialogAdditionalInfo, setCreateDialogAdditionalInfo] = useState("");
     const [isCreatingInDialog, setIsCreatingInDialog] = useState(false);
+    const manuallyClearedRef = useRef(false); // Tracks if user manually edited plate (disables auto-fill for session)
     const [plateInputRef, setPlateInputRef] = useState<HTMLInputElement | null>(
       null
     );
@@ -636,41 +637,42 @@ export const OutSessionForm = forwardRef<
     };
 
     // Auto-fill plate number when LPR data updates (camera 2 - exit camera)
+    // Only auto-fills if user hasn't manually edited
     useEffect(() => {
-      // #region agent log - Debug plate auto-fill
-      console.log(`[DEBUG-PLATE-OUT] useEffect triggered: latestLpr=${latestLpr?.plateNumber}, recognizedAt=${latestLpr?.recognizedAt}, cameraIp=${latestLpr?.cameraIp}`);
-      // #endregion
+      // Don't auto-fill if user has manually edited the plate in this session
+      if (manuallyClearedRef.current) {
+        return;
+      }
       
       if (latestLpr?.plateNumber) {
         const plateNumber = latestLpr.plateNumber.trim().toUpperCase();
         
-        // #region agent log - Debug plate update
-        console.log(`[DEBUG-PLATE-OUT] Updating formState.plateNumber to ${plateNumber}`);
-        // #endregion
+        // Don't auto-fill if currently autofilling (prevent loops)
+        if (isAutofillingRef.current) {
+          return;
+        }
         
         setFormState((prev) => {
-          // #region agent log - Debug formState before update
-          console.log(`[DEBUG-PLATE-OUT] Before update: prev.plateNumber=${prev.plateNumber}`);
-          // #endregion
+          // Only auto-fill if:
+          // 1. Field is empty, OR
+          // 2. Field matches the new plate (allows updates from camera)
+          const isEmpty = !prev.plateNumber.trim();
+          const shouldAutofill = isEmpty || prev.plateNumber.trim() === plateNumber;
           
-          const updated = {
-            ...prev,
-            plateNumber: plateNumber,
-          };
+          if (shouldAutofill && prev.plateNumber !== plateNumber) {
+            isAutofillingRef.current = true;
+            setTimeout(() => {
+              isAutofillingRef.current = false;
+            }, 100);
+            
+            return {
+              ...prev,
+              plateNumber: plateNumber,
+            };
+          }
           
-          // #region agent log - Debug formState after update
-          console.log(`[DEBUG-PLATE-OUT] After update: updated.plateNumber=${updated.plateNumber}`);
-          // #endregion
-          
-          return updated;
+          return prev;
         });
-        
-        // Notify parent of plate change
-        onPlateChange?.(plateNumber);
-      } else {
-        // #region agent log - Debug why not updating
-        console.log(`[DEBUG-PLATE-OUT] NOT updating: latestLpr=${latestLpr}, plateNumber=${latestLpr?.plateNumber}`);
-        // #endregion
       }
     }, [latestLpr?.plateNumber, latestLpr?.receivedAt, onPlateChange]);
     // (Removed all cameraAutofill.bindToInput and trackTyping calls)
@@ -1634,11 +1636,18 @@ export const OutSessionForm = forwardRef<
                         id="plateNumber"
                         value={formState.plateNumber}
                         onChange={(e) => {
+                          const newValue = e.target.value;
+                          
+                          // Any manual edit disables auto-fill for the rest of this session
+                          if (!isAutofillingRef.current) {
+                            manuallyClearedRef.current = true;
+                          }
+                          
                           setFormState((prev) => ({
                             ...prev,
-                            plateNumber: e.target.value,
+                            plateNumber: newValue,
                           }));
-                          onPlateChange?.(e.target.value);
+                          onPlateChange?.(newValue);
                         }}
                         className="absolute inset-0 w-full h-full font-mono font-bold bg-transparent text-transparent border-0 focus:ring-0 focus-visible:ring-0 text-center caret-black z-10"
                         placeholder=""
@@ -1658,10 +1667,10 @@ export const OutSessionForm = forwardRef<
                         {/* Numbers and Letters in one row */}
                         <div className="flex items-center gap-1.5">
                           <div className="text-4xl font-mono font-bold text-black leading-none">
-                            {formState.plateNumber.replace(/[^0-9]/g, '') || '1234'}
+                            {formState.plateNumber.replace(/[^0-9]/g, '')}
                           </div>
                           <div className="text-4xl font-mono font-bold text-black leading-none">
-                            {formState.plateNumber.replace(/[0-9]/g, '').toUpperCase() || 'ААА'}
+                            {formState.plateNumber.replace(/[0-9]/g, '').toUpperCase()}
                           </div>
                         </div>
                       </div>

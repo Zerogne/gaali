@@ -23,7 +23,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useLprPlateAutofill } from "@/hooks/useLprPlateAutofill";
 import { getTruckLog } from "@/lib/api";
 import type { TruckLog } from "@/lib/types";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Download } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useRef, useState } from "react";
 
@@ -218,12 +218,31 @@ function InSessionContent() {
                   />
                 </div>
               </div>
-              <Badge
-                variant="outline"
-                className="ml-auto bg-blue-50 text-blue-700 border-blue-200 text-xs"
-              >
-                IN
-              </Badge>
+              <div className="ml-auto flex items-center gap-3">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    const link = document.createElement('a');
+                    link.href = '/gaali-bridge.exe';
+                    link.download = 'gaali-bridge.exe';
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                  }}
+                  className="flex items-center gap-2"
+                >
+                  <Download className="w-4 h-4" />
+                  Gaali Bridge татах
+                </Button>
+                <Badge
+                  variant="outline"
+                  className="bg-blue-50 text-blue-700 border-blue-200 text-xs"
+                >
+                  IN
+                </Badge>
+              </div>
             </div>
           </div>
         </nav>

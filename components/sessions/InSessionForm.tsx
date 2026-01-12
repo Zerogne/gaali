@@ -120,6 +120,7 @@ export const InSessionForm = forwardRef<
       null
     );
     const isAutofillingRef = useRef(false);
+    const manuallyClearedRef = useRef(false); // Tracks if user manually edited plate (disables auto-fill for session)
     
     // Get connector URL from localStorage or environment variable
     const [connectorUrl] = useState(() => {
@@ -219,9 +220,9 @@ export const InSessionForm = forwardRef<
       receiverOrganizationId: "",
       inTime: externalInTime || new Date().toISOString().slice(0, 16),
       grossWeightKg: null,
-      carWeight: null,
-      trailerWeight: null,
-      totalWeight: null,
+      carWeight: 0,
+      trailerWeight: 0,
+      totalWeight: 0,
       hasTrailer: false,
       trailerNumber: "",
       notes: "",
@@ -288,9 +289,9 @@ export const InSessionForm = forwardRef<
           receiverOrganizationId: receiverOrg?.id || "",
           inTime: inTime,
           grossWeightKg: editLog.weightKg || null,
-          carWeight: null,
-          trailerWeight: null,
-          totalWeight: null,
+          carWeight: 0,
+          trailerWeight: 0,
+          totalWeight: 0,
           hasTrailer: editLog.hasTrailer || false,
           trailerNumber: editLog.trailerPlate || "",
           notes: editLog.comments || "",
@@ -1027,6 +1028,12 @@ export const InSessionForm = forwardRef<
               return;
             }
 
+            // Don't auto-fill if user has manually edited in this session
+            if (manuallyClearedRef.current) {
+              console.log("📝 Auto-fill blocked - user manually edited plate");
+              return;
+            }
+
             // CRITICAL: This is a CONTROLLED component - React controls the value via the `value` prop
             // We MUST update React state, and React will update the DOM on re-render
             console.log("📝 Step 1: Setting autofill flag");
@@ -1185,20 +1192,27 @@ export const InSessionForm = forwardRef<
         setFormState((prev) => {
           let updated;
           
-          if (carWeightLocked && prev.carWeight !== null && prev.carWeight !== undefined && weightStatus.status.latestWeight !== null) {
+          if (carWeightLocked && (prev.carWeight !== null && prev.carWeight !== undefined && prev.carWeight > 0) && weightStatus.status.latestWeight !== null) {
             // Car weight is locked: auto-fill trailer weight and calculate total
             const newTrailerWeight = weightStatus.status.latestWeight;
-            const newTotalWeight = prev.carWeight + newTrailerWeight;
+            const newTotalWeight = (prev.carWeight || 0) + newTrailerWeight;
             updated = {
               ...prev,
               trailerWeight: newTrailerWeight,
               totalWeight: newTotalWeight,
             };
           } else {
-            // Car weight not locked: set total weight directly (original behavior)
+            // Car weight not locked: fill car weight first
+            // If trailer weight exists, calculate total; otherwise total = car weight
+            const newCarWeight = weightStatus.status.latestWeight;
+            const newTotalWeight = (prev.trailerWeight !== null && prev.trailerWeight !== undefined && prev.trailerWeight > 0)
+              ? (newCarWeight || 0) + (prev.trailerWeight || 0)
+              : newCarWeight;
+            
             updated = {
               ...prev,
-              totalWeight: weightStatus.status.latestWeight,
+              carWeight: newCarWeight,
+              totalWeight: newTotalWeight,
             };
           }
           
@@ -1207,18 +1221,47 @@ export const InSessionForm = forwardRef<
       }
     }, [weightStatus.status.latestWeight, carWeightLocked]);
 
-    // Auto-fill plate number when LPR data updates (similar to weight - direct update)
+    // Auto-fill plate number when LPR data updates (only if user hasn't manually edited)
     useEffect(() => {
+      // Don't auto-fill if user has manually edited the plate in this session
+      if (manuallyClearedRef.current) {
+        return;
+      }
+      
       if (latestLpr?.plateNumber) {
         const plateNumber = latestLpr.plateNumber.trim().toUpperCase();
         
-        setFormState((prev) => ({
-          ...prev,
-          plateNumber: plateNumber,
-        }));
+        // Don't auto-fill if currently autofilling (prevent loops)
+        if (isAutofillingRef.current) {
+          return;
+        }
         
-        // Notify parent of plate change
-        onPlateChange?.(plateNumber);
+        setFormState((prev) => {
+          // Only auto-fill if:
+          // 1. Field is empty, OR
+          // 2. Field matches the new plate (allows updates from camera)
+          const isEmpty = !prev.plateNumber.trim();
+          const shouldAutofill = isEmpty || prev.plateNumber.trim() === plateNumber;
+          
+          if (shouldAutofill && prev.plateNumber !== plateNumber) {
+            isAutofillingRef.current = true;
+            setTimeout(() => {
+              isAutofillingRef.current = false;
+            }, 100);
+            
+            const updated = {
+              ...prev,
+              plateNumber: plateNumber,
+            };
+            
+            // Notify parent of plate change
+            onPlateChange?.(plateNumber);
+            
+            return updated;
+          }
+          
+          return prev;
+        });
       }
     }, [latestLpr?.plateNumber, latestLpr?.receivedAt, onPlateChange]);
 
@@ -1368,9 +1411,9 @@ export const InSessionForm = forwardRef<
             receiverOrganizationId: "",
             inTime: new Date().toISOString().slice(0, 16),
             grossWeightKg: null,
-          carWeight: null,
-          trailerWeight: null,
-          totalWeight: null,
+          carWeight: 0,
+          trailerWeight: 0,
+          totalWeight: 0,
             hasTrailer: false,
             trailerNumber: "",
             notes: "",
@@ -1793,17 +1836,20 @@ export const InSessionForm = forwardRef<
                         id="plateNumber"
                         value={formState.plateNumber}
                         onChange={(e) => {
-                          // Don't track typing if we're autofilling (prevents interference)
+                          const newValue = e.target.value;
+                          
+                          // Any manual edit disables auto-fill for the rest of this session
                           if (!isAutofillingRef.current) {
+                            manuallyClearedRef.current = true;
                             cameraAutofill.trackTyping();
                           }
+                          
                           setFormState((prev) => ({
                             ...prev,
-                            plateNumber: e.target.value,
+                            plateNumber: newValue,
                           }));
-                          onPlateChange?.(e.target.value);
+                          onPlateChange?.(newValue);
                         }}
-                        onFocus={() => cameraAutofill.trackTyping()}
                         className="absolute inset-0 w-full h-full font-mono font-bold bg-transparent text-transparent border-0 focus:ring-0 focus-visible:ring-0 text-center caret-black z-10"
                         placeholder=""
                         required
@@ -1822,10 +1868,10 @@ export const InSessionForm = forwardRef<
                         {/* Numbers and Letters in one row */}
                         <div className="flex items-center gap-1.5">
                           <div className="text-5xl font-mono font-bold text-black leading-none">
-                            {formState.plateNumber.replace(/[^0-9]/g, '') || '1234'}
+                            {formState.plateNumber.replace(/[^0-9]/g, '')}
                           </div>
                           <div className="text-5xl font-mono font-bold text-black leading-none">
-                            {formState.plateNumber.replace(/[0-9]/g, '').toUpperCase() || 'ААА'}
+                            {formState.plateNumber.replace(/[0-9]/g, '').toUpperCase()}
                           </div>
                         </div>
                       </div>
@@ -1862,18 +1908,21 @@ export const InSessionForm = forwardRef<
                     <Input
                       id="carWeight"
                       type="number"
-                      value={formState.carWeight ?? ""}
+                      value={formState.carWeight ?? 0}
+                      onFocus={(e) => {
+                        if (!carWeightLocked) {
+                          e.target.select();
+                        }
+                      }}
                       onChange={(e) => {
                         if (carWeightLocked) return; // Prevent changes when locked
                         const value =
                           e.target.value === ""
-                            ? null
-                            : parseFloat(e.target.value);
+                            ? 0
+                            : parseFloat(e.target.value) || 0;
                         setFormState((prev) => {
                           const newCarWeight = value;
-                          const newTotalWeight = newCarWeight && prev.trailerWeight
-                            ? newCarWeight + prev.trailerWeight
-                            : newCarWeight || prev.trailerWeight || null;
+                          const newTotalWeight = (newCarWeight || 0) + (prev.trailerWeight || 0);
                           return {
                             ...prev,
                             carWeight: newCarWeight,
@@ -1889,14 +1938,12 @@ export const InSessionForm = forwardRef<
                     <Button
                       type="button"
                       onClick={() => {
-                        if (formState.carWeight !== null && formState.carWeight !== undefined) {
-                          setCarWeightLocked(true);
-                        }
+                        setCarWeightLocked((prev) => !prev);
                       }}
                       className="h-14 px-4 whitespace-nowrap"
-                      disabled={carWeightLocked || formState.carWeight === null || formState.carWeight === undefined}
+                      disabled={false}
                     >
-                      {carWeightLocked ? "🔒" : "хадгалах"}
+                      {carWeightLocked ? "🔓" : "OK"}
                     </Button>
                   </div>
                 </div>
@@ -1915,17 +1962,18 @@ export const InSessionForm = forwardRef<
                     <Input
                       id="trailerWeight"
                       type="number"
-                      value={formState.trailerWeight ?? ""}
+                      value={formState.trailerWeight ?? 0}
+                      onFocus={(e) => {
+                        e.target.select();
+                      }}
                       onChange={(e) => {
                         const value =
                           e.target.value === ""
-                            ? null
-                            : parseFloat(e.target.value);
+                            ? 0
+                            : parseFloat(e.target.value) || 0;
                         setFormState((prev) => {
                           const newTrailerWeight = value;
-                          const newTotalWeight = prev.carWeight && newTrailerWeight
-                            ? prev.carWeight + newTrailerWeight
-                            : prev.carWeight || newTrailerWeight || null;
+                          const newTotalWeight = (prev.carWeight || 0) + (newTrailerWeight || 0);
                           return {
                             ...prev,
                             trailerWeight: newTrailerWeight,
@@ -1952,12 +2000,15 @@ export const InSessionForm = forwardRef<
                     <Input
                       id="totalWeight"
                       type="number"
-                      value={formState.totalWeight ?? ""}
+                      value={formState.totalWeight ?? 0}
+                      onFocus={(e) => {
+                        e.target.select();
+                      }}
                       onChange={(e) => {
                         const value =
                           e.target.value === ""
-                            ? null
-                            : parseFloat(e.target.value);
+                            ? 0
+                            : parseFloat(e.target.value) || 0;
                         setFormState((prev) => ({
                           ...prev,
                           totalWeight: value,
