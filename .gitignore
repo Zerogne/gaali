@@ -43,4 +43,5 @@ lerna-debug.log*
 *.tsbuildinfo
 next-env.d.ts
 
+# Large binaries (host externally)
 /public/Gaali Bridge.exe

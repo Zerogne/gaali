@@ -45,20 +45,22 @@ function InSessionContent() {
   const [editLogId, setEditLogId] = useState<string | null>(null);
   const [editLog, setEditLog] = useState<TruckLog | null>(null);
   const [isLoadingLog, setIsLoadingLog] = useState(false);
-  const [inTime, setInTime] = useState<string>(
-    new Date().toISOString().slice(0, 16)
-  );
-
-  // Helper function to get current datetime in datetime-local format
   const getCurrentDateTime = (): string => {
-    const now = new Date();
-    const year = now.getFullYear();
-    const month = String(now.getMonth() + 1).padStart(2, "0");
-    const day = String(now.getDate()).padStart(2, "0");
-    const hours = String(now.getHours()).padStart(2, "0");
-    const minutes = String(now.getMinutes()).padStart(2, "0");
-    return `${year}-${month}-${day}T${hours}:${minutes}`;
+    // Always use Mongolia time (Asia/Ulaanbaatar) for datetime-local inputs
+    // sv-SE locale gives "YYYY-MM-DD HH:mm" which we convert to "YYYY-MM-DDTHH:mm"
+    const formatted = new Intl.DateTimeFormat("sv-SE", {
+      timeZone: "Asia/Ulaanbaatar",
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: false,
+    }).format(new Date());
+    return formatted.replace(" ", "T");
   };
+
+  const [inTime, setInTime] = useState<string>(() => getCurrentDateTime());
 
   // Check for edit parameter
   useEffect(() => {
