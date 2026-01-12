@@ -35,6 +35,8 @@ function OutSessionContent() {
   const [currentPlate, setCurrentPlate] = useState<string>("");
   const [streamUrl, setStreamUrl] = useState<string | undefined>(undefined);
   const [autoFillOrigin, setAutoFillOrigin] = useState<string | null>(null);
+  const gaaliBridgeDownloadUrl =
+    process.env.NEXT_PUBLIC_GAALI_BRIDGE_URL ?? "/Gaali%20Bridge.exe";
   const formRef = useRef<OutSessionFormHandle>(null);
   const [showSaveDialog, setShowSaveDialog] = useState(false);
   const [pendingNavigation, setPendingNavigation] = useState<string | null>(
@@ -219,7 +221,7 @@ function OutSessionContent() {
                   size="sm"
                   onClick={() => {
                     const link = document.createElement('a');
-                    link.href = '/gaali-bridge.exe';
+                    link.href = gaaliBridgeDownloadUrl;
                     link.download = 'gaali-bridge.exe';
                     document.body.appendChild(link);
                     link.click();
