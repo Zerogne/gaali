@@ -1657,10 +1657,10 @@ export const OutSessionForm = forwardRef<
                         />
                         {/* Numbers and Letters in one row */}
                         <div className="flex items-center gap-1.5">
-                          <div className="text-3xl font-mono font-bold text-black leading-none">
+                          <div className="text-4xl font-mono font-bold text-black leading-none">
                             {formState.plateNumber.replace(/[^0-9]/g, '') || '1234'}
                           </div>
-                          <div className="text-3xl font-mono font-bold text-black leading-none">
+                          <div className="text-4xl font-mono font-bold text-black leading-none">
                             {formState.plateNumber.replace(/[0-9]/g, '').toUpperCase() || 'ААА'}
                           </div>
                         </div>

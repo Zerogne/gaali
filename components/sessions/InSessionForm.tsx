@@ -1599,7 +1599,7 @@ export const InSessionForm = forwardRef<
               <div className="mb-6">
                 <div className="flex gap-2">
                   <div className="w-full md:w-1/2 lg:w-1/3">
-                    <div className="bg-white rounded-lg flex items-center justify-center border border-black px-3 py-1 relative h-14" style={{ borderWidth: '0.5px' }}>
+                    <div className="bg-white rounded-lg flex items-center justify-center border border-black px-3 py-1 relative h-14" style={{ borderWidth: '3px' }}>
                       <Input
                         ref={setPlateInputRef}
                         id="plateNumber"
@@ -1633,10 +1633,10 @@ export const InSessionForm = forwardRef<
                         />
                         {/* Numbers and Letters in one row */}
                         <div className="flex items-center gap-1.5">
-                          <div className="text-3xl font-mono font-bold text-black leading-none">
+                          <div className="text-5xl font-mono font-bold text-black leading-none">
                             {formState.plateNumber.replace(/[^0-9]/g, '') || '1234'}
                           </div>
-                          <div className="text-3xl font-mono font-bold text-black leading-none">
+                          <div className="text-5xl font-mono font-bold text-black leading-none">
                             {formState.plateNumber.replace(/[0-9]/g, '').toUpperCase() || 'ААА'}
                           </div>
                         </div>
@@ -1646,14 +1646,20 @@ export const InSessionForm = forwardRef<
                   <div className="w-2/3 flex flex-col gap-1.5">
                     <div className="bg-blue-50 border border-blue-200 rounded p-2 flex items-center w-full">
                       <p className="text-gray-700 text-xs leading-relaxed">
-                        Камер ачааллахын тулд дэлгэцэн дээр байрлах <span className="text-[#0073c4]">Gaali Camera Bridge</span> программыг ажиллуулж байж дүрс гарах тул уг программыг эхлээд асаасан байх шаардлагатай.
+                        Машины дугаар, жинг оруулахын тулд <span className="text-[#0073c4]">Gaali Bridge</span> программыг ажиллуулсан байх шаардлагатай.
+                      </p>
+                    </div>
+                    <div className="bg-red-50 border border-red-300 rounded p-2 w-full">
+                      <p className="text-red-600 text-sm leading-tight">
+                        Гараас өгөгдөл оруулах дохиололд Гаалийн газраас зөвшөөрөгдөөгүй тул анхаарна уу!
                       </p>
                     </div>
                   </div>
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-4">
+              {/* Weight Inputs - Directly under license plate, full width */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-x-6 gap-y-4 mb-4">
                 {/* Car Weight */}
                 <div className="flex flex-col">
                   <div className="mb-1 min-h-[1.25rem] flex items-center">
@@ -1664,7 +1670,7 @@ export const InSessionForm = forwardRef<
                       Машины жин (кг) <span className="text-red-500">*</span>
                     </Label>
                   </div>
-                  <div className="h-11 flex gap-2">
+                  <div className="h-14 flex gap-2">
                     <Input
                       id="carWeight"
                       type="number"
@@ -1687,8 +1693,7 @@ export const InSessionForm = forwardRef<
                           };
                         });
                       }}
-                      className="h-11 text-base flex-1"
-                      placeholder="Машины жин"
+                      className="h-14 !text-5xl !md:text-5xl font-mono font-bold !text-green-600 flex-1 !border-0 !shadow-none focus-visible:!border-0 focus-visible:!ring-0 bg-white [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none [-moz-appearance:textfield]"
                       required
                       disabled={carWeightLocked}
                       readOnly={carWeightLocked}
@@ -1700,7 +1705,7 @@ export const InSessionForm = forwardRef<
                           setCarWeightLocked(true);
                         }
                       }}
-                      className="h-11 px-4 whitespace-nowrap"
+                      className="h-14 px-4 whitespace-nowrap"
                       disabled={carWeightLocked || formState.carWeight === null || formState.carWeight === undefined}
                     >
                       {carWeightLocked ? "🔒" : "хадгалах"}
@@ -1718,7 +1723,7 @@ export const InSessionForm = forwardRef<
                       Чиргүүлийн жин (кг)
                     </Label>
                   </div>
-                  <div className="h-11">
+                  <div className="h-14">
                     <Input
                       id="trailerWeight"
                       type="number"
@@ -1740,8 +1745,7 @@ export const InSessionForm = forwardRef<
                           };
                         });
                       }}
-                      className="h-11 text-base w-full"
-                      placeholder="Чиргүүлийн жин"
+                      className="h-14 !text-5xl !md:text-5xl font-mono font-bold !text-green-600 w-full !border-0 !shadow-none focus-visible:!border-0 focus-visible:!ring-0 bg-white [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none [-moz-appearance:textfield]"
                     />
                   </div>
                 </div>
@@ -1756,7 +1760,7 @@ export const InSessionForm = forwardRef<
                       Нийт жин (кг) <span className="text-red-500">*</span>
                     </Label>
                   </div>
-                  <div className="h-11">
+                  <div className="h-14">
                     <Input
                       id="totalWeight"
                       type="number"
@@ -1771,12 +1775,14 @@ export const InSessionForm = forwardRef<
                           totalWeight: value,
                         }));
                       }}
-                      className="h-11 text-base w-full [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none [-moz-appearance:textfield]"
-                      placeholder="Нийт жин"
+                      className="h-14 !text-5xl !md:text-5xl font-mono font-bold !text-green-600 w-full !border-0 !shadow-none focus-visible:!border-0 focus-visible:!ring-0 bg-white [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none [-moz-appearance:textfield]"
                       required
                     />
                   </div>
                 </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-4">
                 {/* Standardized FormField Wrapper Pattern:
                     - Label area: fixed height (h-5) with mb-1
                     - Control area: fixed height (h-11 = 44px)
@@ -2075,11 +2081,6 @@ export const InSessionForm = forwardRef<
                   <div className="bg-red-50 border border-red-300 rounded p-2 w-full">
                     <p className="text-red-600 text-sm leading-tight">
                       <span className="text-lg font-bold">"*"</span> Улаан одоор тэмдэглэгдсэн нүдний мэдээлэл Гаалын мэдээллийн санд өгөгдөл болон дамжуулагдах тул анхааралтай бөглөнө үү.
-                    </p>
-                  </div>
-                  <div className="bg-red-50 border border-red-300 rounded p-2 w-full">
-                    <p className="text-red-600 text-sm leading-tight">
-                      Гараас өгөгдөл оруулах дохиололд Гаалийн газраас зөвшөөрөгдөөгүй тул анхаарна уу!
                     </p>
                   </div>
                 </div>
