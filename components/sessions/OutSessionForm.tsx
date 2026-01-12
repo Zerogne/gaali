@@ -1622,84 +1622,11 @@ export const OutSessionForm = forwardRef<
           {/* Form Content - Single Section Layout */}
           <div className="flex-1 min-h-0 overflow-auto flex justify-center p-4">
             <Card className="p-4 pb-8 w-full max-w-6xl min-h-[calc(100vh+6rem)] flex flex-col">
-              {/* Camera Block - Static placeholder (no real-time video) */}
+              {/* License Plate Input with Warning */}
               <div className="mb-6">
                 <div className="flex gap-2">
                   <div className="w-1/3">
-                    <div className="bg-gray-900 rounded-lg aspect-video flex items-center justify-center border-2 border-gray-700">
-                      <div className="text-center">
-                        <Camera className="w-12 h-12 text-gray-500 mx-auto mb-2" />
-                        <p className="text-gray-400 text-sm">Камер 2</p>
-                        <p className="text-gray-500 text-xs mt-1">Гарах камер</p>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="w-2/3 flex items-center">
-                    <div className="bg-blue-50 border border-blue-200 rounded p-4 h-full flex items-center w-full">
-                      <p className="text-gray-700 text-lg leading-relaxed">
-                        Камер ачааллахын тулд дэлгэцэн дээр байрлах <span className="text-[#0073c4]">Gaali Camera Bridge</span> программыг ажиллуулж байж дүрс гарах тул уг программыг эхлээд асаасан байх шаардлагатай.
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-4 auto-rows-min">
-                {/* Out Weight Input - Same width as other inputs with warning */}
-                <div className="flex flex-col md:col-span-3">
-                  <div className="mb-1 min-h-[1.25rem] flex items-center">
-                    <Label
-                      htmlFor="outWeightKg"
-                      className="text-base font-medium text-gray-700"
-                    >
-                      Гарах жин (кг) <span className="text-red-500">*</span>
-                    </Label>
-                  </div>
-                  <div className="flex gap-2">
-                    <div className="w-1/3">
-                      <Input
-                        id="outWeightKg"
-                        type="number"
-                        value={formState.outWeightKg ?? ""}
-                        onChange={(e) => {
-                          const value =
-                            e.target.value === ""
-                              ? null
-                              : parseFloat(e.target.value);
-                          // #region agent log - Debug manual weight input
-                          console.log(`[DEBUG-WEIGHT] Manual input: value=${value}, formState.outWeightKg=${formState.outWeightKg}`);
-                          // #endregion
-                          setFormState((prev) => ({
-                            ...prev,
-                            outWeightKg: value,
-                          }));
-                        }}
-                        className="h-12 text-base w-full bg-green-600 text-white placeholder:text-white [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none [-moz-appearance:textfield]"
-                        placeholder="Жин оруулах (кг)"
-                        required
-                      />
-                    </div>
-                    <div className="w-2/3 flex items-center">
-                      <div className="bg-red-50 border border-red-300 rounded p-2 h-12 flex items-center w-full">
-                        <p className="text-red-600 text-xs leading-tight">
-                          Гараас өгөгдөл оруулах дохиололд Гаалийн газраас зөвшөөрөгдөөгүй тул анхаарна уу!
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Plate Number */}
-                <div className="flex flex-col">
-                  <div className="mb-1 min-h-[1.25rem] flex items-center">
-                      <Label
-                        htmlFor="plateNumber"
-                      className="text-base font-medium text-gray-700"
-                      >
-                        Улсын дугаар <span className="text-red-500">*</span>
-                      </Label>
-                  </div>
-                  <div className="h-12">
+                    <div className="bg-white rounded-lg flex items-center justify-center border-2 border-black p-3 relative" style={{ minHeight: '200px', aspectRatio: '3/2' }}>
                       <Input
                         ref={setPlateInputRef}
                         id="plateNumber"
@@ -1711,12 +1638,84 @@ export const OutSessionForm = forwardRef<
                           }));
                           onPlateChange?.(e.target.value);
                         }}
-                      className="h-12 text-base font-mono font-semibold w-full bg-[#380ecf] text-white placeholder:text-white"
-                        placeholder="1234ААА"
+                        className="absolute inset-0 w-full h-full font-mono font-bold bg-transparent text-transparent border-0 focus:ring-0 focus-visible:ring-0 text-center caret-black z-10"
+                        placeholder=""
                         required
                       />
+                      <div className="flex flex-col items-center justify-center w-full pointer-events-none">
+                        <div className="text-8xl font-mono font-bold text-black leading-none">
+                          {formState.plateNumber.replace(/[^0-9]/g, '') || '1234'}
+                        </div>
+                        <div className="relative flex items-center justify-center mt-1 w-full">
+                          {/* Soyombo Symbol - Mongolian National Emblem */}
+                          <img 
+                            src="/soyombo.svg" 
+                            alt="Soyombo" 
+                            className="absolute h-20 w-auto flex-shrink-0"
+                            style={{ minWidth: '40px', maxHeight: '60px', left: 'calc(50% - 120px)' }}
+                            onError={(e) => {
+                              console.error('[Soyombo] Image failed to load:', '/soyombo.svg');
+                            }}
+                          />
+                          <div className="text-7xl font-mono font-bold text-black leading-none">
+                            {formState.plateNumber.replace(/[0-9]/g, '').toUpperCase() || 'ААА'}
+                          </div>
+                        </div>
+                      </div>
                     </div>
+                  </div>
+                  <div className="w-2/3 flex flex-col gap-2">
+                    <div className="bg-blue-50 border border-blue-200 rounded p-4 flex items-center w-full">
+                      <p className="text-gray-700 text-sm leading-relaxed">
+                        Камер ачааллахын тулд дэлгэцэн дээр байрлах <span className="text-[#0073c4]">Gaali Camera Bridge</span> программыг ажиллуулж байж дүрс гарах тул уг программыг эхлээд асаасан байх шаардлагатай.
+                      </p>
+                    </div>
+                    <div className="bg-red-50 border border-red-300 rounded p-4 flex items-center w-full">
+                      <p className="text-red-600 text-sm leading-tight">
+                        Гараас өгөгдөл оруулах дохиололд Гаалийн газраас зөвшөөрөгдөөгүй тул анхаарна уу!
+                      </p>
+                    </div>
+                  </div>
                 </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-4 auto-rows-min">
+                {/* Out Weight Input - Same width as other inputs */}
+                <div className="flex flex-col">
+                  <div className="mb-1 min-h-[1.25rem] flex items-center">
+                    <Label
+                      htmlFor="outWeightKg"
+                      className="text-base font-medium text-gray-700"
+                    >
+                      Гарах жин (кг) <span className="text-red-500">*</span>
+                    </Label>
+                  </div>
+                  <div className="h-12">
+                    <Input
+                      id="outWeightKg"
+                      type="number"
+                      value={formState.outWeightKg ?? ""}
+                      onChange={(e) => {
+                        const value =
+                          e.target.value === ""
+                            ? null
+                            : parseFloat(e.target.value);
+                        // #region agent log - Debug manual weight input
+                        console.log(`[DEBUG-WEIGHT] Manual input: value=${value}, formState.outWeightKg=${formState.outWeightKg}`);
+                        // #endregion
+                        setFormState((prev) => ({
+                          ...prev,
+                          outWeightKg: value,
+                        }));
+                      }}
+                      className="h-12 text-base w-full bg-green-600 text-white placeholder:text-white [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none [-moz-appearance:textfield]"
+                      placeholder="Жин оруулах (кг)"
+                      required
+                    />
+                  </div>
+                </div>
+                
+
 
                 {/* In Weight Input */}
                 <div className="flex flex-col min-w-0">
