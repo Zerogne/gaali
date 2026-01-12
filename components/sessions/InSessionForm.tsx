@@ -291,7 +291,7 @@ export const InSessionForm = forwardRef<
           grossWeightKg: editLog.weightKg || null,
           carWeight: 0,
           trailerWeight: 0,
-          totalWeight: 0,
+          totalWeight: editLog.weightKg || null,
           hasTrailer: editLog.hasTrailer || false,
           trailerNumber: editLog.trailerPlate || "",
           notes: editLog.comments || "",
@@ -1183,6 +1183,7 @@ export const InSessionForm = forwardRef<
       setFormState((prev) => ({
         ...prev,
         totalWeight: weightKg,
+        grossWeightKg: weightKg,
       }));
     };
 
@@ -1200,6 +1201,7 @@ export const InSessionForm = forwardRef<
               ...prev,
               trailerWeight: newTrailerWeight,
               totalWeight: newTotalWeight,
+              grossWeightKg: newTotalWeight,
             };
           } else {
             // Car weight not locked: fill car weight first
@@ -1213,6 +1215,7 @@ export const InSessionForm = forwardRef<
               ...prev,
               carWeight: newCarWeight,
               totalWeight: newTotalWeight,
+              grossWeightKg: newTotalWeight,
             };
           }
           
@@ -1927,6 +1930,7 @@ export const InSessionForm = forwardRef<
                             ...prev,
                             carWeight: newCarWeight,
                             totalWeight: newTotalWeight,
+                            grossWeightKg: newTotalWeight,
                           };
                         });
                       }}
@@ -1978,6 +1982,7 @@ export const InSessionForm = forwardRef<
                             ...prev,
                             trailerWeight: newTrailerWeight,
                             totalWeight: newTotalWeight,
+                            grossWeightKg: newTotalWeight,
                           };
                         });
                       }}
@@ -2012,6 +2017,7 @@ export const InSessionForm = forwardRef<
                         setFormState((prev) => ({
                           ...prev,
                           totalWeight: value,
+                          grossWeightKg: value,
                         }));
                       }}
                       className="h-14 !text-5xl !md:text-5xl font-mono font-bold !text-green-600 w-full bg-white [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none [-moz-appearance:textfield]"
