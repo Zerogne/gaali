@@ -109,7 +109,7 @@ export function WorkerSelector({
 
       toast({
         title: "Амжилттай",
-        description: "Ажилтан амжилттай нэмэгдлээ",
+        description: "Оператор амжилттай нэмэгдлээ",
       })
 
       setWorkerData({ name: "", role: "" })
@@ -122,7 +122,7 @@ export function WorkerSelector({
     } catch (error) {
       toast({
         title: "Алдаа",
-        description: error instanceof Error ? error.message : "Ажилтан нэмэхэд алдаа гарлаа",
+        description: error instanceof Error ? error.message : "Оператор нэмэхэд алдаа гарлаа",
         variant: "destructive",
       })
     } finally {
@@ -154,7 +154,7 @@ export function WorkerSelector({
 
       <div className="text-center space-y-2">
         <h2 className="text-2xl font-bold text-gray-900">
-          Ажилтан сонгох
+          Оператор сонгох
         </h2>
         
       </div>
@@ -164,7 +164,7 @@ export function WorkerSelector({
         <div>
           <div className="flex items-center justify-between mb-3">
             <Label className="text-sm font-medium text-gray-700">
-              Бүртгэлтэй ажилтан 
+              Бүртгэлтэй оператор 
             </Label>
             <Button
               type="button"
@@ -174,17 +174,17 @@ export function WorkerSelector({
               className="gap-1.5"
             >
               <Plus className="w-4 h-4" />
-              Ажилтан нэмэх
+              Оператор нэмэх
             </Button>
           </div>
           {isLoadingWorkers ? (
             <div className="text-center py-8 text-gray-500">
               <Loader2 className="w-6 h-6 animate-spin mx-auto mb-2" />
-              Ажилтаны жагсаалтын татаж байна...
+              Операторын жагсаалтын татаж байна...
             </div>
           ) : workers.length === 0 ? (
             <div className="text-center py-8 text-gray-500">
-              Бүртгэлтэй ажилтан олдсонгүй
+              Бүртгэлтэй оператор олдсонгүй
             </div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
@@ -261,9 +261,9 @@ export function WorkerSelector({
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
         <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle>Ажилтан нэмэх</DialogTitle>
+            <DialogTitle>Оператор нэмэх</DialogTitle>
             <DialogDescription>
-              Шинэ ажилтан нэмэх
+              Шинэ оператор нэмэх
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-4">
@@ -278,7 +278,7 @@ export function WorkerSelector({
                 onChange={(e) => setWorkerData({ ...workerData, name: e.target.value })}
                 disabled={isAdding}
                 className="mt-1"
-                placeholder="Ажилтны нэр"
+                placeholder="Операторын нэр"
                 autoFocus
               />
             </div>
