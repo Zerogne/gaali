@@ -457,8 +457,8 @@ function generateLogHTML(
           box-sizing: border-box;
         }
         body {
-          font-family: Arial, sans-serif;
-          font-size: 11px;
+          font-family: "Times New Roman", Times, serif;
+          font-size: 14px;
           line-height: 1.2;
           color: rgb(0, 0, 0);
           background: rgb(255, 250, 240);
@@ -470,7 +470,7 @@ function generateLogHTML(
           margin-bottom: 6px;
         }
         .company-top-middle {
-          font-size: 20px;
+          font-size: 26px;
           font-weight: bold;
           color: rgb(0, 0, 0);
           text-align: center;
@@ -478,19 +478,20 @@ function generateLogHTML(
         }
         .document-title {
           text-align: center;
-          font-size: 14px;
+          font-size: 18px;
           font-weight: bold;
           margin: 4px 0 3px 0;
           color: rgb(0, 0, 0);
+          margin-top: 20px;
         }
         .receipt-number {
           text-align: center;
-          font-size: 11px;
+          font-size: 16px;
           margin-bottom: 6px;
           color: rgb(0, 0, 0);
         }
         .divider-line {
-          border-top: 1px solid rgb(0, 0, 139);
+          border-top: 1px solid rgb(0, 0, 0);
           margin: 10px 0;
         }
         .info-section {
@@ -510,19 +511,19 @@ function generateLogHTML(
           margin-bottom: 4px;
         }
         .info-label {
-          font-size: 10px;
+          font-size: 13px;
           color: rgb(0, 0, 0);
           margin-bottom: 1px;
         }
         .info-value {
-          font-size: 11px;
+          font-size: 14px;
           color: rgb(0, 0, 0);
         }
         .weight-table {
           width: 100%;
           border-collapse: collapse;
           margin: 6px 0;
-          font-size: 10px;
+          font-size: 13px;
           border: 1px solid rgb(0, 0, 0);
         }
         .weight-table th {
@@ -532,19 +533,19 @@ function generateLogHTML(
           font-weight: bold;
           background-color: rgb(255, 250, 240);
           color: rgb(0, 0, 0);
-          font-size: 9px;
+          font-size: 12px;
         }
         .weight-table td {
           border: 1px solid rgb(0, 0, 0);
           padding: 4px 3px;
           text-align: center;
           color: rgb(0, 0, 0);
-          font-size: 10px;
+          font-size: 13px;
         }
         .weight-table .info-row td {
           text-align: left;
           padding: 4px 6px;
-          font-size: 9px;
+          font-size: 12px;
         }
         .weight-table .info-row td strong {
           font-weight: bold;
@@ -558,10 +559,12 @@ function generateLogHTML(
         }
         .bottom-left {
           flex: 1;
+          margin-top: 20px;
         }
         .bottom-right {
           flex: 1;
           text-align: right;
+          margin-top: 20px;
         }
         .operator-field {
           text-align: right;
@@ -574,12 +577,12 @@ function generateLogHTML(
           margin-left: 4px;
         }
         .field-label {
-          font-size: 10px;
+          font-size: 13px;
           color: rgb(0, 0, 0);
           display: inline-block;
         }
         .date-field {
-          font-size: 10px;
+          font-size: 13px;
           color: rgb(0, 0, 0);
         }
       </style>
@@ -607,22 +610,22 @@ function generateLogHTML(
       <div class="info-section">
         <div class="left-section">
           <div class="info-item">
+            <span class="field-with-dash"><div class="info-value">${escapeHtml(senderOrg)}</div></span>
             <div class="info-label">Илгээгч байгууллага/Sender organization</div>
-            <div class="info-value">${escapeHtml(senderOrg)}</div>
           </div>
           <div class="info-item">
+            <span class="field-with-dash"><div class="info-value">${escapeHtml(transportCompany)}</div></span>
             <div class="info-label">Тээвэрлэгч байгууллага/Transporter organization</div>
-            <div class="info-value">${escapeHtml(transportCompany)}</div>
           </div>
         </div>
         <div class="right-section">
           <div class="info-item">
+            <span class="field-with-dash"><div class="info-value">${escapeHtml(receiverOrg)}</div></span>
             <div class="info-label">Хүлээн авагч/Trainee</div>
-            <div class="info-value">${escapeHtml(receiverOrg)}</div>
           </div>
           <div class="info-item">
-            <div class="info-label">Чиглэл/Trend</div>
-            <div class="info-value">${escapeHtml(log.direction === "IN" ? "Орсон" : "Гарсан")}</div>
+            <span class="field-with-dash"><div class="info-value">${escapeHtml(log.origin || "")}, ${escapeHtml(log.destination || "")}</div></span>
+            <div class="info-label">Гарсан хаана/Out Location</div>
           </div>
         </div>
       </div>
@@ -666,16 +669,13 @@ function generateLogHTML(
       <div class="bottom-section">
         <div class="bottom-left">
           <div style="margin-bottom: 6px;">
-            <span class="field-label">Жолооч/Driver:</span>
-            <span class="field-with-dash">${escapeHtml(driverFullInfo !== "—" ? driverFullInfo : "")}</span>
+            <span class="field-label">Жолооч/Driver:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;${escapeHtml(driverFullInfo !== "—" ? driverFullInfo : "")}</span></span>
           </div>
         </div>
         <div class="bottom-right">
           <div class="operator-field" style="margin-bottom: 6px;">
-            <span class="field-label">Пүүний оператор/Operator:</span>
-            <span class="field-with-dash">${escapeHtml(loaderName || "")}</span>
+            <span class="field-label">Пүүний оператор/Operator:${escapeHtml(loaderName || "")}</span>
           </div>
-          
         </div>
       </div>
     </body>
