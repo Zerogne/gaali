@@ -67,9 +67,23 @@ export default function SessionsPage() {
 
   const handleUpdate = async () => {
     // Reload current page after update
-    const result = await getTruckLogs(currentPage, 30);
-    setLogs(result.logs);
-    setTotalPages(result.totalPages);
+    // Add a small delay to ensure server has processed the deletion
+    await new Promise(resolve => setTimeout(resolve, 300));
+    try {
+      const result = await getTruckLogs(currentPage, 30);
+      setLogs(result.logs);
+      setTotalPages(result.totalPages);
+    } catch (error) {
+      console.error("Error reloading logs after delete:", error);
+      // Even if there's an error, try to reload once more
+      try {
+        const result = await getTruckLogs(currentPage, 30);
+        setLogs(result.logs);
+        setTotalPages(result.totalPages);
+      } catch (retryError) {
+        console.error("Retry also failed:", retryError);
+      }
+    }
   };
 
   const handlePageChange = (page: number) => {

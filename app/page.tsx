@@ -174,6 +174,7 @@ export default function DashboardPage() {
     }
   };
 
+
   // Show loading state while checking authentication
   if (isCheckingAuth) {
     return (
@@ -268,15 +269,26 @@ export default function DashboardPage() {
             <TruckTable
               logs={logs}
               onSend={handleSend}
-              onUpdate={() => {
+              onUpdate={async () => {
                   // Reload logs after update (only 50 most recent)
-                  getTruckLogs(1, 50)
-                  .then(({ logs }) => {
+                  // Add a small delay to ensure server has processed the deletion
+                  await new Promise(resolve => setTimeout(resolve, 300));
+                  try {
+                    const result = await getTruckLogs(1, 50);
                     // Merge IN and OUT logs for the same plate
-                    const mergedLogs = mergeLogsByPlate(logs);
+                    const mergedLogs = mergeLogsByPlate(result.logs);
                     setLogs(mergedLogs);
-                  })
-                  .catch(console.error);
+                  } catch (error) {
+                    console.error("Error reloading logs after delete:", error);
+                    // Even if there's an error, try to reload once more
+                    try {
+                      const result = await getTruckLogs(1, 50);
+                      const mergedLogs = mergeLogsByPlate(result.logs);
+                      setLogs(mergedLogs);
+                    } catch (retryError) {
+                      console.error("Retry also failed:", retryError);
+                    }
+                  }
               }}
             />
             </div>

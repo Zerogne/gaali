@@ -16,11 +16,13 @@ import { useToast } from "@/hooks/use-toast";
 import { sendTruckLogToCustoms } from "@/lib/api";
 import { printLog } from "@/lib/pdf-export";
 import type { Direction, TruckLog, TransportCompany } from "@/lib/types";
-import { Edit, FileDown, Search, ArrowRight, X, Send, Trash2 } from "lucide-react";
+import { Edit, FileDown, Search, ArrowRight, X, Send, Trash2, Download } from "lucide-react";
+import * as XLSX from "xlsx";
 import { useState, useEffect, useMemo } from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
+import { FilterableSelect } from "@/components/ui/filterable-select";
 import {
   Select,
   SelectContent,
@@ -44,6 +46,10 @@ export function TruckTable({ logs, onSend, onUpdate }: TruckTableProps) {
   const [directionFilter, setDirectionFilter] = useState<Direction | "ALL">("ALL");
   const [plateSearch, setPlateSearch] = useState("");
   const [driverSearch, setDriverSearch] = useState("");
+  const [productSearch, setProductSearch] = useState("");
+  const [trailerSearch, setTrailerSearch] = useState("");
+  const [contractSearch, setContractSearch] = useState("");
+  const [vehicleSearch, setVehicleSearch] = useState("");
   const [dateFrom, setDateFrom] = useState("");
   const [dateTo, setDateTo] = useState("");
   const [companyFilter, setCompanyFilter] = useState<string>("ALL");
@@ -101,6 +107,40 @@ export function TruckTable({ logs, onSend, onUpdate }: TruckTableProps) {
       );
     }
     
+    // Product search
+    if (productSearch.trim()) {
+      const query = productSearch.toLowerCase().trim();
+      result = result.filter((log) => 
+        log.cargoType?.toLowerCase().includes(query)
+      );
+    }
+    
+    // Trailer search
+    if (trailerSearch.trim()) {
+      const query = trailerSearch.toLowerCase().trim();
+      result = result.filter((log) => 
+        log.trailerPlate?.toLowerCase().includes(query)
+      );
+    }
+    
+    // Contract search (search in transport company contract)
+    if (contractSearch.trim()) {
+      const query = contractSearch.toLowerCase().trim();
+      result = result.filter((log) => {
+        if (!log.transportCompanyId) return false;
+        const company = transportCompanies.find((c) => c.id === log.transportCompanyId);
+        return company?.contract?.toLowerCase().includes(query);
+      });
+    }
+    
+    // Vehicle registration number search
+    if (vehicleSearch.trim()) {
+      const query = vehicleSearch.toLowerCase().trim();
+      result = result.filter((log) => 
+        log.vehicleRegistrationNumber?.toLowerCase().includes(query)
+      );
+    }
+    
     // Company filter
     if (companyFilter !== "ALL") {
       result = result.filter((log) => log.transportCompanyId === companyFilter);
@@ -127,12 +167,86 @@ export function TruckTable({ logs, onSend, onUpdate }: TruckTableProps) {
     return result
       .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
       .slice(0, 50);
-  }, [logs, directionFilter, plateSearch, driverSearch, companyFilter, dateFrom, dateTo]);
+  }, [logs, directionFilter, plateSearch, driverSearch, productSearch, trailerSearch, contractSearch, vehicleSearch, companyFilter, dateFrom, dateTo, transportCompanies]);
+  
+  // Get unique driver names for FilterableSelect
+  const uniqueDrivers = useMemo(() => {
+    const driverSet = new Set<string>();
+    logs.forEach((log) => {
+      if (log.driverName && log.driverName.trim()) {
+        driverSet.add(log.driverName.trim());
+      }
+    });
+    return Array.from(driverSet).sort().map((name) => ({
+      value: name,
+      label: name,
+    }));
+  }, [logs]);
+
+  // Get unique products for FilterableSelect
+  const uniqueProducts = useMemo(() => {
+    const productSet = new Set<string>();
+    logs.forEach((log) => {
+      if (log.cargoType && log.cargoType.trim()) {
+        productSet.add(log.cargoType.trim());
+      }
+    });
+    return Array.from(productSet).sort().map((name) => ({
+      value: name,
+      label: name,
+    }));
+  }, [logs]);
+
+  // Get unique trailer plates for FilterableSelect
+  const uniqueTrailers = useMemo(() => {
+    const trailerSet = new Set<string>();
+    logs.forEach((log) => {
+      if (log.trailerPlate && log.trailerPlate.trim()) {
+        trailerSet.add(log.trailerPlate.trim());
+      }
+    });
+    return Array.from(trailerSet).sort().map((name) => ({
+      value: name,
+      label: name,
+    }));
+  }, [logs]);
+
+  // Get unique contracts for FilterableSelect
+  const uniqueContracts = useMemo(() => {
+    const contractSet = new Set<string>();
+    transportCompanies.forEach((company) => {
+      if (company.contract && company.contract.trim()) {
+        contractSet.add(company.contract.trim());
+      }
+    });
+    return Array.from(contractSet).sort().map((name) => ({
+      value: name,
+      label: name,
+    }));
+  }, [transportCompanies]);
+
+  // Get unique vehicle registration numbers for FilterableSelect
+  const uniqueVehicles = useMemo(() => {
+    const vehicleSet = new Set<string>();
+    logs.forEach((log) => {
+      if (log.vehicleRegistrationNumber && log.vehicleRegistrationNumber.trim()) {
+        vehicleSet.add(log.vehicleRegistrationNumber.trim());
+      }
+    });
+    return Array.from(vehicleSet).sort().map((name) => ({
+      value: name,
+      label: name,
+    }));
+  }, [logs]);
   
   const clearFilters = () => {
     setDirectionFilter("ALL");
     setPlateSearch("");
     setDriverSearch("");
+    setProductSearch("");
+    setTrailerSearch("");
+    setContractSearch("");
+    setVehicleSearch("");
     setDateFrom("");
     setDateTo("");
     setCompanyFilter("ALL");
@@ -243,26 +357,58 @@ export function TruckTable({ logs, onSend, onUpdate }: TruckTableProps) {
     setIsDeleting(true);
     try {
       const deletePromises = Array.from(selectedLogIds).map(async (logId) => {
-        const response = await fetch(`/api/logs/${logId}`, {
-          method: "DELETE",
-        });
-        if (!response.ok) {
-          const errorData = await response.json().catch(() => ({}));
-          throw new Error(errorData.error || "Failed to delete log");
+        try {
+          const response = await fetch(`/api/logs/${logId}`, {
+            method: "DELETE",
+          });
+          if (!response.ok) {
+            const errorData = await response.json().catch(() => ({}));
+            throw new Error(errorData.error || `Failed to delete log ${logId}`);
+          }
+          const result = await response.json();
+          if (!result.success) {
+            throw new Error(result.error || `Failed to delete log ${logId}`);
+          }
+          return logId;
+        } catch (error) {
+          console.error(`Error deleting log ${logId}:`, error);
+          throw error;
         }
-        return logId;
       });
 
-      await Promise.all(deletePromises);
+      const results = await Promise.allSettled(deletePromises);
+      
+      // Check for any failures
+      const failures = results.filter((result) => result.status === "rejected");
+      const successes = results.filter((result) => result.status === "fulfilled");
 
-      toast({
-        title: "Амжилттай",
-        description: `${selectedLogIds.size} бүртгэл амжилттай устгагдлаа`,
-      });
+      if (failures.length > 0) {
+        const errorMessages = failures
+          .map((f) => (f.status === "rejected" ? f.reason?.message || "Unknown error" : ""))
+          .filter(Boolean);
+        
+        console.error("Some deletions failed:", errorMessages);
+        toast({
+          title: "Алдаа",
+          description: `${successes.length} бүртгэл устгагдлаа, ${failures.length} бүртгэл устгахад алдаа гарлаа: ${errorMessages.join(", ")}`,
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Амжилттай",
+          description: `${selectedLogIds.size} бүртгэл амжилттай устгагдлаа`,
+        });
+      }
 
-      setSelectedLogIds(new Set());
-      if (onUpdate) {
-        onUpdate();
+      // Clear selection and refresh if any succeeded
+      if (successes.length > 0) {
+        setSelectedLogIds(new Set());
+        
+        // Call onUpdate to refresh from server
+        // The parent component will reload the logs
+        if (onUpdate) {
+          onUpdate();
+        }
       }
     } catch (error) {
       console.error("Error deleting logs:", error);
@@ -387,6 +533,62 @@ export function TruckTable({ logs, onSend, onUpdate }: TruckTableProps) {
     });
   };
 
+  // Export to Excel - exports only filtered/search results
+  const handleExportToExcel = () => {
+    try {
+      console.log("📊 Exporting to Excel - filtered logs count:", filteredLogs.length, "total logs:", logs.length);
+      
+      // Prepare data for Excel using filtered logs (respects all search filters)
+      const excelData = filteredLogs.map((log) => ({
+        "Дугаар": uniqueCodes.get(log.id) || "—",
+        "Улсын дугаар": log.plate,
+        "Чиргүүл": log.trailerPlate || "—",
+        "Жолооч": log.driverName || "—",
+        "Бүтээгдэхүүн": log.cargoType || "—",
+        "Тээврийн компани": getTransportCompanyName(log.transportCompanyId),
+        "Чиглэл": (log.direction === "OUT") || (log.direction === "IN" && log.netWeightKg !== undefined && log.netWeightKg !== null) ? "орсон гарсан" : "орсон гараагүй",
+        "Төлөв": log.sentToCustoms ? "илгээгдсэн" : "илгээгдээгүй",
+        "Жин (кг)": log.weightKg || "—",
+        "Цэвэр жин (кг)": log.netWeightKg || "—",
+        "Гарал": log.origin || "—",
+        "Хаялга": log.destination || "—",
+        "Илгээч": log.senderOrganization || "—",
+        "Хүлээн авагч": log.receiverOrganization || "—",
+        "Огноо": new Date(log.createdAt).toLocaleString("mn-MN", {
+          year: "numeric",
+          month: "2-digit",
+          day: "2-digit",
+          hour: "2-digit",
+          minute: "2-digit",
+        }),
+      }));
+
+      // Create workbook and worksheet
+      const ws = XLSX.utils.json_to_sheet(excelData);
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, "Тайлан");
+
+      // Generate filename with current date
+      const dateStr = new Date().toISOString().split("T")[0];
+      const filename = `Тайлан_${dateStr}.xlsx`;
+
+      // Download
+      XLSX.writeFile(wb, filename);
+
+      toast({
+        title: "Амжилттай",
+        description: `${filteredLogs.length} бүртгэл Excel файлд экспорт хийгдлээ`,
+      });
+    } catch (error) {
+      console.error("Error exporting to Excel:", error);
+      toast({
+        title: "Алдаа",
+        description: "Excel файл үүсгэхэд алдаа гарлаа",
+        variant: "destructive",
+      });
+    }
+  };
+
   return (
     <Card className="border-gray-200 bg-white shadow-sm min-h-[700px] flex flex-col">
       <CardHeader className="pb-1 flex-shrink-0 px-4 pt-3">
@@ -394,7 +596,14 @@ export function TruckTable({ logs, onSend, onUpdate }: TruckTableProps) {
           <CardTitle className="text-lg font-bold text-gray-900">
             Тээврийн хэрэгслийн түүх, хайлт
           </CardTitle>
-          
+          <Button
+            onClick={handleExportToExcel}
+            className="bg-green-600 hover:bg-green-700 text-white"
+            size="default"
+          >
+            <Download className="w-4 h-4 mr-2" />
+            Excel татах ({filteredLogs.length})
+          </Button>
         </div>
       </CardHeader>
       <Separator className="flex-shrink-0" />
@@ -443,11 +652,12 @@ export function TruckTable({ logs, onSend, onUpdate }: TruckTableProps) {
               <Label htmlFor="driver" className="text-xs font-medium text-gray-700 mb-0.5">
                 Жолооч
               </Label>
-              <Input
-                id="driver"
-                placeholder="Хайх..."
+              <FilterableSelect
+                options={uniqueDrivers}
                 value={driverSearch}
-                onChange={(e) => setDriverSearch(e.target.value)}
+                onValueChange={(value) => setDriverSearch(value)}
+                placeholder="Жолооч сонгох..."
+                searchPlaceholder="Жолооч хайх..."
                 className="bg-white"
               />
             </div>
@@ -473,6 +683,66 @@ export function TruckTable({ logs, onSend, onUpdate }: TruckTableProps) {
                   ))}
                 </SelectContent>
               </Select>
+            </div>
+
+            {/* Product Search */}
+            <div>
+              <Label htmlFor="product" className="text-xs font-medium text-gray-700 mb-0.5">
+                Бүтээгдэхүүн
+              </Label>
+              <FilterableSelect
+                options={uniqueProducts}
+                value={productSearch}
+                onValueChange={(value) => setProductSearch(value)}
+                placeholder="Бүтээгдэхүүн сонгох..."
+                searchPlaceholder="Бүтээгдэхүүн хайх..."
+                className="bg-white"
+              />
+            </div>
+
+            {/* Trailer Search */}
+            <div>
+              <Label htmlFor="trailer" className="text-xs font-medium text-gray-700 mb-0.5">
+                Чиргүүл
+              </Label>
+              <FilterableSelect
+                options={uniqueTrailers}
+                value={trailerSearch}
+                onValueChange={(value) => setTrailerSearch(value)}
+                placeholder="Чиргүүл сонгох..."
+                searchPlaceholder="Чиргүүл хайх..."
+                className="bg-white"
+              />
+            </div>
+
+            {/* Contract Search */}
+            <div>
+              <Label htmlFor="contract" className="text-xs font-medium text-gray-700 mb-0.5">
+                Гэрээ
+              </Label>
+              <FilterableSelect
+                options={uniqueContracts}
+                value={contractSearch}
+                onValueChange={(value) => setContractSearch(value)}
+                placeholder="Гэрээ сонгох..."
+                searchPlaceholder="Гэрээ хайх..."
+                className="bg-white"
+              />
+            </div>
+
+            {/* Vehicle Registration Search */}
+            <div>
+              <Label htmlFor="vehicle" className="text-xs font-medium text-gray-700 mb-0.5">
+                Тээврийн хэрэгсэл
+              </Label>
+              <FilterableSelect
+                options={uniqueVehicles}
+                value={vehicleSearch}
+                onValueChange={(value) => setVehicleSearch(value)}
+                placeholder="Тээврийн хэрэгсэл сонгох..."
+                searchPlaceholder="Тээврийн хэрэгсэл хайх..."
+                className="bg-white"
+              />
             </div>
 
             {/* Date From */}
@@ -592,12 +862,8 @@ export function TruckTable({ logs, onSend, onUpdate }: TruckTableProps) {
                       Төлөв
                       <div className="absolute right-0 top-1/2 -translate-y-1/2 w-px h-3 bg-gray-300"></div>
                     </TableHead>
-                    <TableHead className="text-gray-700 font-semibold text-xs relative pr-3">
-                      Засах
-                      <div className="absolute right-0 top-1/2 -translate-y-1/2 w-px h-3 bg-gray-300"></div>
-                    </TableHead>
                     <TableHead className="text-gray-700 font-semibold text-xs">
-                      Хэвлэх
+                      Үйлдэл
                     </TableHead>
                   </TableRow>
                 </TableHeader>
@@ -670,8 +936,8 @@ export function TruckTable({ logs, onSend, onUpdate }: TruckTableProps) {
                         </span>
                         <div className="absolute right-0 top-1/2 -translate-y-1/2 w-px h-3 bg-gray-300"></div>
                       </TableCell>
-                      <TableCell className="relative pr-3">
-                        <div className="flex items-center gap-2">
+                      <TableCell>
+                        <div className="flex items-center gap-1">
                           <Button
                             size="default"
                             variant="outline"
@@ -703,31 +969,28 @@ export function TruckTable({ logs, onSend, onUpdate }: TruckTableProps) {
                               </>
                             )}
                           </Button>
+                          <Button
+                            size="default"
+                            variant="outline"
+                            onClick={async () => {
+                              try {
+                                await printLog(log);
+                              } catch (error) {
+                                console.error("Error printing:", error);
+                                toast({
+                                  title: "Алдаа",
+                                  description: error instanceof Error ? error.message : "Хэвлэхэд алдаа гарлаа",
+                                  variant: "destructive",
+                                });
+                              }
+                            }}
+                            title="Хэвлэх"
+                            className="border-gray-300 hover:bg-gray-50 h-8 px-3 text-xs"
+                          >
+                            <FileDown className="w-3 h-3 mr-1.5" />
+                            Хэвлэх
+                          </Button>
                         </div>
-                        <div className="absolute right-0 top-1/2 -translate-y-1/2 w-px h-3 bg-gray-300"></div>
-                      </TableCell>
-                      <TableCell>
-                        <Button
-                          size="default"
-                          variant="outline"
-                          onClick={async () => {
-                            try {
-                              await printLog(log);
-                            } catch (error) {
-                              console.error("Error printing:", error);
-                              toast({
-                                title: "Алдаа",
-                                description: error instanceof Error ? error.message : "Хэвлэхэд алдаа гарлаа",
-                                variant: "destructive",
-                              });
-                            }
-                          }}
-                          title="Хэвлэх"
-                          className="border-gray-300 hover:bg-gray-50 h-8 px-3 text-xs"
-                        >
-                          <FileDown className="w-3 h-3 mr-1.5" />
-                          Хэвлэх
-                        </Button>
                       </TableCell>
                     </TableRow>
                   ))}

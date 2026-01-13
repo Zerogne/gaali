@@ -402,22 +402,62 @@ export async function deleteTruckLog(
   logId: string
 ): Promise<{ success: boolean; error?: string }> {
   try {
+    console.log("🗑️ deleteTruckLog called with logId:", logId)
+    
     const companyId = await getActiveCompany()
+    console.log("🗑️ Company ID:", companyId)
+    
     const logsCollection = await getCompanyCollection<TruckLog>(companyId, "logs")
+    const fullCollectionName = `company_${companyId}_logs`
+    console.log("🗑️ Using collection:", fullCollectionName)
 
-    const result = await logsCollection.deleteOne({ id: logId })
-
-    if (result.deletedCount === 0) {
+    // First, check if the log exists
+    const existingLog = await logsCollection.findOne({ id: logId })
+    if (!existingLog) {
+      console.warn("⚠️ Log not found in database:", logId)
       return {
         success: false,
         error: "Log not found",
       }
     }
+    console.log("🗑️ Found log to delete:", {
+      id: existingLog.id,
+      plate: existingLog.plate,
+      direction: existingLog.direction,
+      createdAt: existingLog.createdAt
+    })
 
+    // Delete the log
+    const result = await logsCollection.deleteOne({ id: logId })
+    console.log("🗑️ Delete result:", {
+      deletedCount: result.deletedCount,
+      acknowledged: result.acknowledged
+    })
+
+    if (result.deletedCount === 0) {
+      console.error("❌ Delete operation returned deletedCount: 0")
+      return {
+        success: false,
+        error: "Log not found or could not be deleted",
+      }
+    }
+
+    // Verify deletion by checking if log still exists
+    const verifyLog = await logsCollection.findOne({ id: logId })
+    if (verifyLog) {
+      console.error("❌ Log still exists after deletion attempt!")
+      return {
+        success: false,
+        error: "Log deletion failed - log still exists",
+      }
+    }
+
+    console.log("✅ Log successfully deleted from database")
     return {
       success: true,
     }
   } catch (error) {
+    console.error("❌ Error in deleteTruckLog:", error)
     const handled = handleError(error)
     return {
       success: false,

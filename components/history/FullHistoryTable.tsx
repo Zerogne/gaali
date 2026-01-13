@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
+import { FilterableSelect } from "@/components/ui/filterable-select";
 import {
   Select,
   SelectContent,
@@ -65,6 +66,9 @@ export function FullHistoryTable({
   const [plateSearch, setPlateSearch] = useState("");
   const [driverSearch, setDriverSearch] = useState("");
   const [cargoSearch, setCargoSearch] = useState("");
+  const [trailerSearch, setTrailerSearch] = useState("");
+  const [contractSearch, setContractSearch] = useState("");
+  const [vehicleSearch, setVehicleSearch] = useState("");
   const [originSearch, setOriginSearch] = useState("");
   const [destinationSearch, setDestinationSearch] = useState("");
   const [weightMin, setWeightMin] = useState("");
@@ -103,6 +107,25 @@ export function FullHistoryTable({
 
       // Cargo type search
       if (cargoSearch && !log.cargoType?.toLowerCase().includes(cargoSearch.toLowerCase())) {
+        return false;
+      }
+
+      // Trailer search
+      if (trailerSearch && !log.trailerPlate?.toLowerCase().includes(trailerSearch.toLowerCase())) {
+        return false;
+      }
+
+      // Contract search (search in transport company contract)
+      if (contractSearch) {
+        const query = contractSearch.toLowerCase();
+        const company = transportCompanies.find((c) => c.id === log.transportCompanyId);
+        if (!company?.contract?.toLowerCase().includes(query)) {
+          return false;
+        }
+      }
+
+      // Vehicle registration number search
+      if (vehicleSearch && !log.vehicleRegistrationNumber?.toLowerCase().includes(vehicleSearch.toLowerCase())) {
         return false;
       }
 
@@ -157,6 +180,9 @@ export function FullHistoryTable({
     plateSearch,
     driverSearch,
     cargoSearch,
+    trailerSearch,
+    contractSearch,
+    vehicleSearch,
     originSearch,
     destinationSearch,
     weightMin,
@@ -164,11 +190,82 @@ export function FullHistoryTable({
     dateFrom,
     dateTo,
     sentToCustomsFilter,
+    transportCompanies,
   ]);
 
   // Use filtered logs directly if external pagination is provided, otherwise paginate client-side
   const paginatedLogs = externalCurrentPage !== undefined ? filteredLogs : filteredLogs;
   const totalPages = externalTotalPages ?? Math.ceil(filteredLogs.length / 30);
+
+  // Get unique driver names for FilterableSelect
+  const uniqueDrivers = useMemo(() => {
+    const driverSet = new Set<string>();
+    logs.forEach((log) => {
+      if (log.driverName && log.driverName.trim()) {
+        driverSet.add(log.driverName.trim());
+      }
+    });
+    return Array.from(driverSet).sort().map((name) => ({
+      value: name,
+      label: name,
+    }));
+  }, [logs]);
+
+  // Get unique products for FilterableSelect
+  const uniqueProducts = useMemo(() => {
+    const productSet = new Set<string>();
+    logs.forEach((log) => {
+      if (log.cargoType && log.cargoType.trim()) {
+        productSet.add(log.cargoType.trim());
+      }
+    });
+    return Array.from(productSet).sort().map((name) => ({
+      value: name,
+      label: name,
+    }));
+  }, [logs]);
+
+  // Get unique trailer plates for FilterableSelect
+  const uniqueTrailers = useMemo(() => {
+    const trailerSet = new Set<string>();
+    logs.forEach((log) => {
+      if (log.trailerPlate && log.trailerPlate.trim()) {
+        trailerSet.add(log.trailerPlate.trim());
+      }
+    });
+    return Array.from(trailerSet).sort().map((name) => ({
+      value: name,
+      label: name,
+    }));
+  }, [logs]);
+
+  // Get unique contracts for FilterableSelect
+  const uniqueContracts = useMemo(() => {
+    const contractSet = new Set<string>();
+    transportCompanies.forEach((company) => {
+      if (company.contract && company.contract.trim()) {
+        contractSet.add(company.contract.trim());
+      }
+    });
+    return Array.from(contractSet).sort().map((name) => ({
+      value: name,
+      label: name,
+    }));
+  }, [transportCompanies]);
+
+  // Get unique vehicle registration numbers for FilterableSelect
+  const uniqueVehicles = useMemo(() => {
+    const vehicleSet = new Set<string>();
+    logs.forEach((log) => {
+      if (log.vehicleRegistrationNumber && log.vehicleRegistrationNumber.trim()) {
+        vehicleSet.add(log.vehicleRegistrationNumber.trim());
+      }
+    });
+    return Array.from(vehicleSet).sort().map((name) => ({
+      value: name,
+      label: name,
+    }));
+  }, [logs]);
 
   useEffect(() => {
     // Reset to first page when filters change (only if using internal pagination)
@@ -180,6 +277,9 @@ export function FullHistoryTable({
     plateSearch,
     driverSearch,
     cargoSearch,
+    trailerSearch,
+    contractSearch,
+    vehicleSearch,
     originSearch,
     destinationSearch,
     weightMin,
@@ -292,26 +392,58 @@ export function FullHistoryTable({
     setIsDeleting(true);
     try {
       const deletePromises = Array.from(selectedLogIds).map(async (logId) => {
-        const response = await fetch(`/api/logs/${logId}`, {
-          method: "DELETE",
-        });
-        if (!response.ok) {
-          const errorData = await response.json().catch(() => ({}));
-          throw new Error(errorData.error || "Failed to delete log");
+        try {
+          const response = await fetch(`/api/logs/${logId}`, {
+            method: "DELETE",
+          });
+          if (!response.ok) {
+            const errorData = await response.json().catch(() => ({}));
+            throw new Error(errorData.error || `Failed to delete log ${logId}`);
+          }
+          const result = await response.json();
+          if (!result.success) {
+            throw new Error(result.error || `Failed to delete log ${logId}`);
+          }
+          return logId;
+        } catch (error) {
+          console.error(`Error deleting log ${logId}:`, error);
+          throw error;
         }
-        return logId;
       });
 
-      await Promise.all(deletePromises);
+      const results = await Promise.allSettled(deletePromises);
+      
+      // Check for any failures
+      const failures = results.filter((result) => result.status === "rejected");
+      const successes = results.filter((result) => result.status === "fulfilled");
 
-      toast({
-        title: "Амжилттай",
-        description: `${selectedLogIds.size} бүртгэл амжилттай устгагдлаа`,
-      });
+      if (failures.length > 0) {
+        const errorMessages = failures
+          .map((f) => (f.status === "rejected" ? f.reason?.message || "Unknown error" : ""))
+          .filter(Boolean);
+        
+        console.error("Some deletions failed:", errorMessages);
+        toast({
+          title: "Алдаа",
+          description: `${successes.length} бүртгэл устгагдлаа, ${failures.length} бүртгэл устгахад алдаа гарлаа: ${errorMessages.join(", ")}`,
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Амжилттай",
+          description: `${selectedLogIds.size} бүртгэл амжилттай устгагдлаа`,
+        });
+      }
 
-      setSelectedLogIds(new Set());
-      if (onUpdate) {
-        onUpdate();
+      // Clear selection and refresh if any succeeded
+      if (successes.length > 0) {
+        setSelectedLogIds(new Set());
+        
+        // Call onUpdate to refresh from server
+        // The parent component will reload the logs
+        if (onUpdate) {
+          onUpdate();
+        }
       }
     } catch (error) {
       console.error("Error deleting logs:", error);
@@ -449,6 +581,9 @@ export function FullHistoryTable({
     setPlateSearch("");
     setDriverSearch("");
     setCargoSearch("");
+    setTrailerSearch("");
+    setContractSearch("");
+    setVehicleSearch("");
     setOriginSearch("");
     setDestinationSearch("");
     setWeightMin("");
@@ -538,11 +673,12 @@ export function FullHistoryTable({
               <Label htmlFor="driver" className="text-xs font-medium text-gray-700 mb-1">
                 Жолооч
               </Label>
-              <Input
-                id="driver"
-                placeholder="Хайх..."
+              <FilterableSelect
+                options={uniqueDrivers}
                 value={driverSearch}
-                onChange={(e) => setDriverSearch(e.target.value)}
+                onValueChange={(value) => setDriverSearch(value)}
+                placeholder="Жолооч сонгох..."
+                searchPlaceholder="Жолооч хайх..."
                 className="bg-white"
               />
             </div>
@@ -552,11 +688,57 @@ export function FullHistoryTable({
               <Label htmlFor="cargo" className="text-xs font-medium text-gray-700 mb-1">
                 Бүтээгдэхүүн
               </Label>
-              <Input
-                id="cargo"
-                placeholder="Хайх..."
+              <FilterableSelect
+                options={uniqueProducts}
                 value={cargoSearch}
-                onChange={(e) => setCargoSearch(e.target.value)}
+                onValueChange={(value) => setCargoSearch(value)}
+                placeholder="Бүтээгдэхүүн сонгох..."
+                searchPlaceholder="Бүтээгдэхүүн хайх..."
+                className="bg-white"
+              />
+            </div>
+
+            {/* Trailer Search */}
+            <div>
+              <Label htmlFor="trailer" className="text-xs font-medium text-gray-700 mb-1">
+                Чиргүүл
+              </Label>
+              <FilterableSelect
+                options={uniqueTrailers}
+                value={trailerSearch}
+                onValueChange={(value) => setTrailerSearch(value)}
+                placeholder="Чиргүүл сонгох..."
+                searchPlaceholder="Чиргүүл хайх..."
+                className="bg-white"
+              />
+            </div>
+
+            {/* Contract Search */}
+            <div>
+              <Label htmlFor="contract" className="text-xs font-medium text-gray-700 mb-1">
+                Гэрээ
+              </Label>
+              <FilterableSelect
+                options={uniqueContracts}
+                value={contractSearch}
+                onValueChange={(value) => setContractSearch(value)}
+                placeholder="Гэрээ сонгох..."
+                searchPlaceholder="Гэрээ хайх..."
+                className="bg-white"
+              />
+            </div>
+
+            {/* Vehicle Registration Search */}
+            <div>
+              <Label htmlFor="vehicle" className="text-xs font-medium text-gray-700 mb-1">
+                Тээврийн хэрэгсэл
+              </Label>
+              <FilterableSelect
+                options={uniqueVehicles}
+                value={vehicleSearch}
+                onValueChange={(value) => setVehicleSearch(value)}
+                placeholder="Тээврийн хэрэгсэл сонгох..."
+                searchPlaceholder="Тээврийн хэрэгсэл хайх..."
                 className="bg-white"
               />
             </div>
@@ -814,7 +996,7 @@ export function FullHistoryTable({
                         <div className="absolute right-0 top-1/2 -translate-y-1/2 w-px h-3 bg-gray-300"></div>
                       </TableCell>
                       <TableCell>
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-1">
                           <Button
                             size="default"
                             variant="outline"
