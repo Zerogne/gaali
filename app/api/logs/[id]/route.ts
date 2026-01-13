@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server"
-import { updateTruckLog } from "@/lib/api"
+import { updateTruckLog, deleteTruckLog } from "@/lib/api"
 import { errorToResponse } from "@/lib/errors"
 
 /**
@@ -45,7 +45,45 @@ export async function PUT(
       ? (error as { statusCode: number }).statusCode
       : 500
     
-    return NextResponse.json(errorResponse, { status: statusCode })
+    return NextResponse.json(errorResponse, { statusCode })
   }
 }
 
+/**
+ * DELETE /api/logs/[id] - Delete a truck log
+ */
+export async function DELETE(
+  request: Request,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const { id } = await params
+
+    if (!id) {
+      return NextResponse.json(
+        { error: "Log ID is required" },
+        { status: 400 }
+      )
+    }
+
+    const result = await deleteTruckLog(id)
+
+    if (!result.success) {
+      return NextResponse.json(
+        { error: result.error || "Failed to delete log" },
+        { status: 400 }
+      )
+    }
+
+    return NextResponse.json({ 
+      success: true 
+    }, { status: 200 })
+  } catch (error) {
+    const errorResponse = errorToResponse(error)
+    const statusCode = error instanceof Error && 'statusCode' in error
+      ? (error as { statusCode: number }).statusCode
+      : 500
+    
+    return NextResponse.json(errorResponse, { statusCode })
+  }
+}

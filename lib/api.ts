@@ -393,3 +393,35 @@ export async function updateTruckLog(
     }
   }
 }
+
+/**
+ * Delete a truck log
+ * Uses the active company from session
+ */
+export async function deleteTruckLog(
+  logId: string
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    const companyId = await getActiveCompany()
+    const logsCollection = await getCompanyCollection<TruckLog>(companyId, "logs")
+
+    const result = await logsCollection.deleteOne({ id: logId })
+
+    if (result.deletedCount === 0) {
+      return {
+        success: false,
+        error: "Log not found",
+      }
+    }
+
+    return {
+      success: true,
+    }
+  } catch (error) {
+    const handled = handleError(error)
+    return {
+      success: false,
+      error: handled.message,
+    }
+  }
+}

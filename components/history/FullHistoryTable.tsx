@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Select,
   SelectContent,
@@ -25,7 +26,7 @@ import { useToast } from "@/hooks/use-toast";
 import { sendTruckLogToCustoms } from "@/lib/api";
 import { printLog } from "@/lib/pdf-export";
 import type { Direction, TruckLog, TransportCompany } from "@/lib/types";
-import { Edit, FileDown, Search, Send, X, ChevronLeft, ChevronRight } from "lucide-react";
+import { Edit, FileDown, Search, Send, X, ChevronLeft, ChevronRight, Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState, useEffect, useMemo } from "react";
 
@@ -52,6 +53,8 @@ export function FullHistoryTable({
   const [uniqueCodes, setUniqueCodes] = useState<Map<string, string>>(new Map());
   const [transportCompanies, setTransportCompanies] = useState<TransportCompany[]>([]);
   const [internalCurrentPage, setInternalCurrentPage] = useState(1);
+  const [selectedLogIds, setSelectedLogIds] = useState<Set<string>>(new Set());
+  const [isDeleting, setIsDeleting] = useState(false);
   
   // Use external pagination if provided, otherwise use internal
   const currentPage = externalCurrentPage ?? internalCurrentPage;
@@ -187,6 +190,42 @@ export function FullHistoryTable({
     externalCurrentPage,
   ]);
 
+  const handleSend = async (log: TruckLog) => {
+    setSendingIds((prev) => new Set(prev).add(log.id));
+    try {
+      const result = await sendTruckLogToCustoms(log.id);
+
+      if (result.success) {
+        onSend(log.id);
+        toast({
+          title: "Амжилттай",
+          description: "Мэдээлэл Монголын гаальд амжилттай илгээгдлээ",
+        });
+        if (onUpdate) {
+          onUpdate();
+        }
+      } else {
+        toast({
+          title: "Алдаа",
+          description: result.error || "Гаальд илгээхэд алдаа гарлаа",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      toast({
+        title: "Алдаа",
+        description: "Гаальд илгээхэд алдаа гарлаа",
+        variant: "destructive",
+      });
+    } finally {
+      setSendingIds((prev) => {
+        const next = new Set(prev);
+        next.delete(log.id);
+        return next;
+      });
+    }
+  };
+
   const handleResend = async (log: TruckLog) => {
     setSendingIds((prev) => new Set(prev).add(log.id));
     try {
@@ -217,6 +256,72 @@ export function FullHistoryTable({
         next.delete(log.id);
         return next;
       });
+    }
+  };
+
+  const handleToggleSelect = (logId: string) => {
+    setSelectedLogIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(logId)) {
+        next.delete(logId);
+      } else {
+        next.add(logId);
+      }
+      return next;
+    });
+  };
+
+  const handleSelectAll = () => {
+    if (selectedLogIds.size === filteredLogs.length) {
+      setSelectedLogIds(new Set());
+    } else {
+      setSelectedLogIds(new Set(filteredLogs.map(log => log.id)));
+    }
+  };
+
+  const handleDeleteSelected = async () => {
+    if (selectedLogIds.size === 0) {
+      toast({
+        title: "Алдаа",
+        description: "Устгах бүртгэл сонгоно уу",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsDeleting(true);
+    try {
+      const deletePromises = Array.from(selectedLogIds).map(async (logId) => {
+        const response = await fetch(`/api/logs/${logId}`, {
+          method: "DELETE",
+        });
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({}));
+          throw new Error(errorData.error || "Failed to delete log");
+        }
+        return logId;
+      });
+
+      await Promise.all(deletePromises);
+
+      toast({
+        title: "Амжилттай",
+        description: `${selectedLogIds.size} бүртгэл амжилттай устгагдлаа`,
+      });
+
+      setSelectedLogIds(new Set());
+      if (onUpdate) {
+        onUpdate();
+      }
+    } catch (error) {
+      console.error("Error deleting logs:", error);
+      toast({
+        title: "Алдаа",
+        description: error instanceof Error ? error.message : "Бүртгэл устгахад алдаа гарлаа",
+        variant: "destructive",
+      });
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -582,7 +687,32 @@ export function FullHistoryTable({
             >
               ГАРАХ: {outCount}
             </Badge>
+            {selectedLogIds.size > 0 && (
+              <Badge
+                variant="outline"
+                className="bg-red-50 text-red-700 border-red-200"
+              >
+                Сонгогдсон: {selectedLogIds.size}
+              </Badge>
+            )}
           </div>
+          {selectedLogIds.size > 0 && (
+            <Button
+              variant="destructive"
+              onClick={handleDeleteSelected}
+              disabled={isDeleting}
+              className="h-9 px-4 text-sm"
+            >
+              {isDeleting ? (
+                "Устгаж байна..."
+              ) : (
+                <>
+                  <Trash2 className="w-4 h-4 mr-2" />
+                  Устгах ({selectedLogIds.size})
+                </>
+              )}
+            </Button>
+          )}
         </div>
 
         {/* Table */}
@@ -601,6 +731,12 @@ export function FullHistoryTable({
               <Table>
                 <TableHeader>
                   <TableRow className="bg-gray-50">
+                    <TableHead className="w-12">
+                      <Checkbox
+                        checked={selectedLogIds.size === filteredLogs.length && filteredLogs.length > 0}
+                        onCheckedChange={handleSelectAll}
+                      />
+                    </TableHead>
                   <TableHead className="text-gray-700 font-semibold relative pr-3">
                       Дугаар
                       <div className="absolute right-0 top-1/2 -translate-y-1/2 w-px h-3 bg-gray-300"></div>
@@ -637,6 +773,13 @@ export function FullHistoryTable({
                         handleEdit(log);
                       }}
                     >
+                      <TableCell>
+                        <Checkbox
+                          checked={selectedLogIds.has(log.id)}
+                          onCheckedChange={() => handleToggleSelect(log.id)}
+                          onClick={(e) => e.stopPropagation()}
+                        />
+                      </TableCell>
                       <TableCell className="font-mono font-semibold text-gray-900 relative pr-3">
                         {log.plate}
                         <div className="absolute right-0 top-1/2 -translate-y-1/2 w-px h-3 bg-gray-300"></div>
@@ -689,6 +832,23 @@ export function FullHistoryTable({
                           <Button
                             size="default"
                             variant="outline"
+                            onClick={() => handleSend(log)}
+                            disabled={sendingIds.has(log.id)}
+                            className="bg-green-500 text-white border-green-600 hover:bg-green-600 disabled:bg-green-300 disabled:text-white h-9 px-4 text-sm"
+                            title="Гаальд илгээх"
+                          >
+                            {sendingIds.has(log.id) ? (
+                              "Илгээж байна..."
+                            ) : (
+                              <>
+                                <Send className="w-4 h-4 mr-2" />
+                                Илгээх
+                              </>
+                            )}
+                          </Button>
+                          <Button
+                            size="default"
+                            variant="outline"
                             onClick={async () => {
                               try {
                                 await printLog(log);
@@ -714,14 +874,14 @@ export function FullHistoryTable({
                               onClick={() => handleResend(log)}
                               disabled={sendingIds.has(log.id)}
                               className="bg-green-400 text-white border-green-500 hover:bg-green-500 disabled:bg-green-200 disabled:text-white h-9 px-4 text-sm"
-                              title="Гаальд дахин илгээх"
+                              title="Гаальд илгээх"
                             >
                               {sendingIds.has(log.id) ? (
                                 "Илгээж байна..."
                               ) : (
                                 <>
                                   <Send className="w-4 h-4 mr-2" />
-                                  Дахин илгээх
+                                  Илгээх
                                 </>
                               )}
                             </Button>

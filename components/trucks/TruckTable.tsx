@@ -16,10 +16,11 @@ import { useToast } from "@/hooks/use-toast";
 import { sendTruckLogToCustoms } from "@/lib/api";
 import { printLog } from "@/lib/pdf-export";
 import type { Direction, TruckLog, TransportCompany } from "@/lib/types";
-import { Edit, FileDown, Search, ArrowRight, X } from "lucide-react";
+import { Edit, FileDown, Search, ArrowRight, X, Send, Trash2 } from "lucide-react";
 import { useState, useEffect, useMemo } from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Select,
   SelectContent,
@@ -48,6 +49,8 @@ export function TruckTable({ logs, onSend, onUpdate }: TruckTableProps) {
   const [companyFilter, setCompanyFilter] = useState<string>("ALL");
   const [editingLog, setEditingLog] = useState<TruckLog | null>(null);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [selectedLogIds, setSelectedLogIds] = useState<Set<string>>(new Set());
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const handleEdit = (log: TruckLog) => {
     setEditingLog(log);
@@ -138,6 +141,42 @@ export function TruckTable({ logs, onSend, onUpdate }: TruckTableProps) {
   const inCount = filteredLogs.filter((log) => log.direction === "IN").length;
   const outCount = filteredLogs.filter((log) => log.direction === "OUT").length;
 
+  const handleSend = async (log: TruckLog) => {
+    setSendingIds((prev) => new Set(prev).add(log.id));
+    try {
+      const result = await sendTruckLogToCustoms(log.id);
+
+      if (result.success) {
+        onSend(log.id);
+        toast({
+          title: "Амжилттай",
+          description: "Мэдээлэл Монголын гаальд амжилттай илгээгдлээ",
+        });
+        if (onUpdate) {
+          onUpdate();
+        }
+      } else {
+        toast({
+          title: "Алдаа",
+          description: result.error || "Гаальд илгээхэд алдаа гарлаа",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      toast({
+        title: "Алдаа",
+        description: "Гаальд илгээхэд алдаа гарлаа",
+        variant: "destructive",
+      });
+    } finally {
+      setSendingIds((prev) => {
+        const next = new Set(prev);
+        next.delete(log.id);
+        return next;
+      });
+    }
+  };
+
   const handleResend = async (log: TruckLog) => {
     setSendingIds((prev) => new Set(prev).add(log.id));
     try {
@@ -168,6 +207,72 @@ export function TruckTable({ logs, onSend, onUpdate }: TruckTableProps) {
         next.delete(log.id);
         return next;
       });
+    }
+  };
+
+  const handleToggleSelect = (logId: string) => {
+    setSelectedLogIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(logId)) {
+        next.delete(logId);
+      } else {
+        next.add(logId);
+      }
+      return next;
+    });
+  };
+
+  const handleSelectAll = () => {
+    if (selectedLogIds.size === filteredLogs.length) {
+      setSelectedLogIds(new Set());
+    } else {
+      setSelectedLogIds(new Set(filteredLogs.map(log => log.id)));
+    }
+  };
+
+  const handleDeleteSelected = async () => {
+    if (selectedLogIds.size === 0) {
+      toast({
+        title: "Алдаа",
+        description: "Устгах бүртгэл сонгоно уу",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsDeleting(true);
+    try {
+      const deletePromises = Array.from(selectedLogIds).map(async (logId) => {
+        const response = await fetch(`/api/logs/${logId}`, {
+          method: "DELETE",
+        });
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({}));
+          throw new Error(errorData.error || "Failed to delete log");
+        }
+        return logId;
+      });
+
+      await Promise.all(deletePromises);
+
+      toast({
+        title: "Амжилттай",
+        description: `${selectedLogIds.size} бүртгэл амжилттай устгагдлаа`,
+      });
+
+      setSelectedLogIds(new Set());
+      if (onUpdate) {
+        onUpdate();
+      }
+    } catch (error) {
+      console.error("Error deleting logs:", error);
+      toast({
+        title: "Алдаа",
+        description: error instanceof Error ? error.message : "Бүртгэл устгахад алдаа гарлаа",
+        variant: "destructive",
+      });
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -413,12 +518,48 @@ export function TruckTable({ logs, onSend, onUpdate }: TruckTableProps) {
         ) : (
           <div className="flex flex-col h-full min-h-0">
             <div className="flex items-center justify-between flex-shrink-0 mb-1.5">
-              
+              <div className="flex items-center gap-4">
+                <span className="text-xs font-medium text-gray-700">
+                  Нийт: {filteredLogs.length}
+                </span>
+                {selectedLogIds.size > 0 && (
+                  <Badge
+                    variant="outline"
+                    className="bg-red-50 text-red-700 border-red-200 text-xs"
+                  >
+                    Сонгогдсон: {selectedLogIds.size}
+                  </Badge>
+                )}
+              </div>
+              {selectedLogIds.size > 0 && (
+                <Button
+                  variant="destructive"
+                  size="sm"
+                  onClick={handleDeleteSelected}
+                  disabled={isDeleting}
+                  className="h-8 px-3 text-xs"
+                >
+                  {isDeleting ? (
+                    "Устгаж байна..."
+                  ) : (
+                    <>
+                      <Trash2 className="w-3 h-3 mr-1.5" />
+                      Устгах ({selectedLogIds.size})
+                    </>
+                  )}
+                </Button>
+              )}
             </div>
             <div className="flex-1 min-h-0 overflow-auto rounded-lg border border-gray-200">
               <Table>
                 <TableHeader>
                   <TableRow className="bg-gray-50">
+                    <TableHead className="w-10">
+                      <Checkbox
+                        checked={selectedLogIds.size === filteredLogs.length && filteredLogs.length > 0}
+                        onCheckedChange={handleSelectAll}
+                      />
+                    </TableHead>
                     <TableHead className="text-gray-700 font-semibold text-xs relative pr-3">
                       Дугаар
                       <div className="absolute right-0 top-1/2 -translate-y-1/2 w-px h-3 bg-gray-300"></div>
@@ -472,6 +613,13 @@ export function TruckTable({ logs, onSend, onUpdate }: TruckTableProps) {
                         handleEdit(log)
                       }}
                     >
+                      <TableCell>
+                        <Checkbox
+                          checked={selectedLogIds.has(log.id)}
+                          onCheckedChange={() => handleToggleSelect(log.id)}
+                          onClick={(e) => e.stopPropagation()}
+                        />
+                      </TableCell>
                       <TableCell className="text-gray-700 font-mono text-xs relative pr-3">
                         {uniqueCodes.get(log.id) || "—"}
                         <div className="absolute right-0 top-1/2 -translate-y-1/2 w-px h-3 bg-gray-300"></div>
@@ -523,20 +671,39 @@ export function TruckTable({ logs, onSend, onUpdate }: TruckTableProps) {
                         <div className="absolute right-0 top-1/2 -translate-y-1/2 w-px h-3 bg-gray-300"></div>
                       </TableCell>
                       <TableCell className="relative pr-3">
-                        <Button
-                          size="default"
-                          variant="outline"
-                          onClick={() => handleEdit(log)}
-                          title={
-                            log.sentToCustoms
-                              ? "Бүртгэлийг засах"
-                              : "Бүртгэл засах"
-                          }
-                          className="border-gray-300 hover:bg-gray-50 h-8 px-3 text-xs"
-                        >
-                          <Edit className="w-3 h-3 mr-1.5" />
-                          Засах
-                        </Button>
+                        <div className="flex items-center gap-2">
+                          <Button
+                            size="default"
+                            variant="outline"
+                            onClick={() => handleEdit(log)}
+                            title={
+                              log.sentToCustoms
+                                ? "Бүртгэлийг засах"
+                                : "Бүртгэл засах"
+                            }
+                            className="border-gray-300 hover:bg-gray-50 h-8 px-3 text-xs"
+                          >
+                            <Edit className="w-3 h-3 mr-1.5" />
+                            Засах
+                          </Button>
+                          <Button
+                            size="default"
+                            variant="outline"
+                            onClick={() => handleSend(log)}
+                            disabled={sendingIds.has(log.id)}
+                            className="bg-green-500 text-white border-green-600 hover:bg-green-600 disabled:bg-green-300 disabled:text-white h-8 px-3 text-xs"
+                            title="Гаальд илгээх"
+                          >
+                            {sendingIds.has(log.id) ? (
+                              "Илгээж байна..."
+                            ) : (
+                              <>
+                                <Send className="w-3 h-3 mr-1.5" />
+                                Илгээх
+                              </>
+                            )}
+                          </Button>
+                        </div>
                         <div className="absolute right-0 top-1/2 -translate-y-1/2 w-px h-3 bg-gray-300"></div>
                       </TableCell>
                       <TableCell>

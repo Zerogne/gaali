@@ -2300,7 +2300,7 @@ export const OutSessionForm = forwardRef<
                             sealNumber: e.target.value,
                           }))
                         }
-                        className="h-14 !text-5xl !md:text-5xl font-mono font-bold !text-blue-600 w-full bg-white [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none [-moz-appearance:textfield]"
+                        className="h-14 text-base font-mono font-bold !text-blue-600 w-full bg-white"
                       />
                     </div>
                   </div>
@@ -2331,7 +2331,7 @@ export const OutSessionForm = forwardRef<
                         isLoadingTrailers ? "Уншиж байна..." : "Чиргүүл сонгох"
                       }
                       searchPlaceholder="Чиргүүлийн улсын дугаар хайх..."
-                      className="h-12 !bg-blue-400 !text-white !border-blue-400 hover:!bg-blue-500 hover:!border-blue-500 [&>span]:!text-white [&>span.text-muted-foreground]:!text-white/90"
+                      className="h-12 !bg-blue-400 !text-black !border-blue-400 hover:!bg-blue-500 hover:!border-blue-500 [&>span]:!text-black [&>span.text-muted-foreground]:!text-gray-700"
                     />
                   </div>
                 </div>
@@ -2367,7 +2367,7 @@ export const OutSessionForm = forwardRef<
                       searchPlaceholder="Жолооч хайх..."
                       onCreateNewDialog={(initialValue) => handleOpenCreateDialog("driver", initialValue)}
                       createNewLabel="+ Нэмэх ..."
-                      className="h-12 !bg-blue-400 !text-white !border-blue-400 hover:!bg-blue-500 hover:!border-blue-500 [&>span]:!text-white [&>span.text-muted-foreground]:!text-white/90"
+                      className="h-12 !bg-blue-400 !text-black !border-blue-400 hover:!bg-blue-500 hover:!border-blue-500 [&>span]:!text-black [&>span.text-muted-foreground]:!text-gray-700"
                       required
                     />
                   </div>
@@ -2402,7 +2402,7 @@ export const OutSessionForm = forwardRef<
                         searchPlaceholder="Тээврийн компани хайх..."
                         onCreateNewDialog={(initialValue) => handleOpenCreateDialog("transportCompany", initialValue)}
                         createNewLabel="+ Нэмэх ..."
-                      className="h-12 !bg-blue-400 !text-white !border-blue-400 hover:!bg-blue-500 hover:!border-blue-500 [&>span]:!text-white [&>span.text-muted-foreground]:!text-white/90"
+                      className="h-12 !bg-blue-400 !text-black !border-blue-400 hover:!bg-blue-500 hover:!border-blue-500 [&>span]:!text-black [&>span.text-muted-foreground]:!text-gray-700"
                         required
                       />
                     </div>
@@ -2437,7 +2437,7 @@ export const OutSessionForm = forwardRef<
                       searchPlaceholder="Бүтээгдэхүүн хайх..."
                       onCreateNewDialog={(initialValue) => handleOpenCreateDialog("product", initialValue)}
                       createNewLabel="+ Нэмэх ..."
-                      className="h-12 !bg-blue-400 !text-white !border-blue-400 hover:!bg-blue-500 hover:!border-blue-500 [&>span]:!text-white [&>span.text-muted-foreground]:!text-white/90"
+                      className="h-12 !bg-blue-400 !text-black !border-blue-400 hover:!bg-blue-500 hover:!border-blue-500 [&>span]:!text-black [&>span.text-muted-foreground]:!text-gray-700"
                       required
                     />
                   </div>
@@ -2468,7 +2468,7 @@ export const OutSessionForm = forwardRef<
                         searchPlaceholder="Байршил хайх..."
                         onCreateNewDialog={(initialValue) => handleOpenCreateDialog("location", initialValue)}
                         createNewLabel="+ Нэмэх ..."
-                        className="h-12 text-base w-full !bg-blue-400 !text-white !border-blue-400 hover:!bg-blue-500 hover:!border-blue-500 [&>span]:!text-white [&>span.text-muted-foreground]:!text-white/90"
+                        className="h-12 text-base w-full !bg-blue-400 !text-black !border-blue-400 hover:!bg-blue-500 hover:!border-blue-500 [&>span]:!text-black [&>span.text-muted-foreground]:!text-gray-700"
                       />
                     </div>
                 </div>
@@ -2498,7 +2498,7 @@ export const OutSessionForm = forwardRef<
                         searchPlaceholder="Байршил хайх..."
                         onCreateNewDialog={(initialValue) => handleOpenCreateDialog("location", initialValue)}
                         createNewLabel="+ Нэмэх ..."
-                        className="h-12 text-base w-full !bg-blue-400 !text-white !border-blue-400 hover:!bg-blue-500 hover:!border-blue-500 [&>span]:!text-white [&>span.text-muted-foreground]:!text-white/90"
+                        className="h-12 text-base w-full !bg-blue-400 !text-black !border-blue-400 hover:!bg-blue-500 hover:!border-blue-500 [&>span]:!text-black [&>span.text-muted-foreground]:!text-gray-700"
                       />
                     </div>
                     </div>
@@ -2532,7 +2532,7 @@ export const OutSessionForm = forwardRef<
                         searchPlaceholder="Илгээч байгууллага хайх..."
                         onCreateNewDialog={(initialValue) => handleOpenCreateDialog("organization", initialValue)}
                         createNewLabel="+ Нэмэх ..."
-                      className="h-12 !bg-blue-400 !text-white !border-blue-400 hover:!bg-blue-500 hover:!border-blue-500 [&>span]:!text-white [&>span.text-muted-foreground]:!text-white/90"
+                      className="h-12 !bg-blue-400 !text-black !border-blue-400 hover:!bg-blue-500 hover:!border-blue-500 [&>span]:!text-black [&>span.text-muted-foreground]:!text-gray-700"
                       />
                     </div>
                 </div>
@@ -2566,7 +2566,7 @@ export const OutSessionForm = forwardRef<
                         searchPlaceholder="Хүлээн авагч байгууллага хайх..."
                         onCreateNewDialog={(initialValue) => handleOpenCreateDialog("organization", initialValue)}
                         createNewLabel="+ Нэмэх ..."
-                      className="h-12 !bg-blue-400 !text-white !border-blue-400 hover:!bg-blue-500 hover:!border-blue-500 [&>span]:!text-white [&>span.text-muted-foreground]:!text-white/90"
+                      className="h-12 !bg-blue-400 !text-black !border-blue-400 hover:!bg-blue-500 hover:!border-blue-500 [&>span]:!text-black [&>span.text-muted-foreground]:!text-gray-700"
                       />
                     </div>
               </div>
@@ -2593,7 +2593,7 @@ export const OutSessionForm = forwardRef<
                       }
                       disabled={hasInSessionData}
                       // Textarea has a default `min-h-16` in the shared component, so we must override it here.
-                      className="text-base resize-none h-12 min-h-0 w-full !bg-blue-400 !text-white !border-blue-400 placeholder:!text-white/90"
+                      className="text-base resize-none h-12 min-h-0 w-full !bg-blue-400 !text-black !border-blue-400 placeholder:!text-gray-600"
                       placeholder="Нэмэлт мэдээлэл..."
                     />
                   </div>
