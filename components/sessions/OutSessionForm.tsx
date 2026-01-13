@@ -44,8 +44,13 @@ interface OutSessionFormState {
   senderOrganizationId: string;
   receiverOrganizationId: string;
   outTime: string;
+  inTime: string; // Added from IN form
   outWeightKg: number | null;
   netWeightKg: number | null;
+  grossWeightKg: number | null; // Added from IN form (totalWeight)
+  carWeight: number | null; // Added from IN form
+  trailerWeight: number | null; // Added from IN form
+  totalWeight: number | null; // Added from IN form
   sealNumber: string;
   hasTrailer: boolean;
   trailerNumber: string;
@@ -105,7 +110,7 @@ export const OutSessionForm = forwardRef<
     const [isSaving, setIsSaving] = useState(false);
     const [isSending, setIsSending] = useState(false);
     const [createDialogOpen, setCreateDialogOpen] = useState(false);
-    const [createDialogType, setCreateDialogType] = useState<"transportCompany" | "product" | "organization" | "driver" | null>(null);
+    const [createDialogType, setCreateDialogType] = useState<"transportCompany" | "product" | "organization" | "driver" | "trailer" | "location" | null>(null);
     const [createDialogInitialValue, setCreateDialogInitialValue] = useState("");
     const [createDialogName, setCreateDialogName] = useState("");
     const [createDialogCompanyId, setCreateDialogCompanyId] = useState("");
@@ -113,6 +118,10 @@ export const OutSessionForm = forwardRef<
     const [createDialogPhone, setCreateDialogPhone] = useState("");
     const [createDialogRegistrationNumber, setCreateDialogRegistrationNumber] = useState("");
     const [createDialogAdditionalInfo, setCreateDialogAdditionalInfo] = useState("");
+    const [createDialogOwnerName, setCreateDialogOwnerName] = useState("");
+    const [createDialogOwnerId, setCreateDialogOwnerId] = useState("");
+    const [createDialogLocationName, setCreateDialogLocationName] = useState("");
+    const [createDialogLocationType, setCreateDialogLocationType] = useState<"seller" | "buyer" | "">("");
     const [isCreatingInDialog, setIsCreatingInDialog] = useState(false);
     const manuallyClearedRef = useRef(false); // Tracks if user manually edited plate (disables auto-fill for session)
     const [plateInputRef, setPlateInputRef] = useState<HTMLInputElement | null>(
@@ -167,6 +176,7 @@ export const OutSessionForm = forwardRef<
     const [isLoadingLocations, setIsLoadingLocations] = useState(true);
     const [inWeightKg, setInWeightKg] = useState<number | null>(null);
     const [savedUniqueCode, setSavedUniqueCode] = useState<string | null>(null);
+    const [carWeightLocked, setCarWeightLocked] = useState(false); // Added from IN form
 
     const [formState, setFormState] = useState<OutSessionFormState>({
       plateNumber: "",
@@ -179,8 +189,13 @@ export const OutSessionForm = forwardRef<
       senderOrganizationId: "",
       receiverOrganizationId: "",
       outTime: externalOutTime || new Date().toISOString().slice(0, 16),
+      inTime: new Date().toISOString().slice(0, 16), // Added from IN form
       outWeightKg: null,
       netWeightKg: null,
+      grossWeightKg: null, // Added from IN form
+      carWeight: 0, // Added from IN form
+      trailerWeight: 0, // Added from IN form
+      totalWeight: 0, // Added from IN form
       sealNumber: "",
       hasTrailer: false,
       trailerNumber: "",
@@ -194,6 +209,16 @@ export const OutSessionForm = forwardRef<
         setFormState((prev) => ({ ...prev, outTime: externalOutTime }));
       }
     }, [externalOutTime]);
+
+    // Sync inTime (similar to IN form, but for OUT form we also track inTime)
+    // InTime can be set from the IN session if linked
+    useEffect(() => {
+      // If we have an inSessionId, we might want to fetch the inTime from that session
+      // For now, just ensure inTime is set to current time if empty
+      if (!formState.inTime) {
+        setFormState((prev) => ({ ...prev, inTime: new Date().toISOString().slice(0, 16) }));
+      }
+    }, [formState.inTime]);
 
     // Populate form when editing
     useEffect(() => {
@@ -237,6 +262,9 @@ export const OutSessionForm = forwardRef<
           onOutTimeChange(outTime);
         }
 
+        // Format inTime from editLog (if available from related IN session)
+        const inTime = editLog.createdAt ? new Date(editLog.createdAt).toISOString().slice(0, 16) : new Date().toISOString().slice(0, 16);
+
         setFormState({
           plateNumber: editLog.plate || "",
           driverId: driver?.id || "",
@@ -248,8 +276,13 @@ export const OutSessionForm = forwardRef<
           senderOrganizationId: senderOrg?.id || "",
           receiverOrganizationId: receiverOrg?.id || "",
           outTime: outTime,
+          inTime: inTime, // Added from IN form
           outWeightKg: editLog.weightKg || null,
           netWeightKg: editLog.netWeightKg || null,
+          grossWeightKg: editLog.weightKg || null, // Added from IN form
+          carWeight: (editLog as any).carWeight || 0, // Added from IN form
+          trailerWeight: (editLog as any).trailerWeight || 0, // Added from IN form
+          totalWeight: editLog.weightKg || 0, // Added from IN form
           sealNumber: editLog.sealNumber || "",
           hasTrailer: editLog.hasTrailer || false,
           trailerNumber: editLog.trailerPlate || "",
@@ -511,17 +544,66 @@ export const OutSessionForm = forwardRef<
       return null;
     };
 
+    // Handler for creating locations (added from IN form)
+    const handleCreateLocation = async (locationName: string, companyName: string, type: "seller" | "buyer") => {
+      try {
+        const response = await fetch("/api/locations", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          credentials: "same-origin",
+          body: JSON.stringify({ locationName, companyName, type }),
+        });
+        if (response.ok) {
+          const newLocation = await response.json();
+          setLocations((prev) => [...prev, newLocation]);
+          toast({
+            title: "Амжилттай",
+            description: "Байршил амжилттай нэмэгдлээ",
+          });
+          // Return locationName because locationOptions uses locationName as value
+          return newLocation.locationName;
+        } else {
+          const errorData = await response.json().catch(() => ({}));
+          const errorMessage = errorData.error || "Байршил нэмэхэд алдаа гарлаа";
+          toast({
+            title: "Алдаа",
+            description: errorMessage,
+            variant: "destructive",
+          });
+        }
+      } catch (error) {
+        console.error("Error creating location:", error);
+        toast({
+          title: "Алдаа",
+          description: "Байршил нэмэхэд алдаа гарлаа",
+          variant: "destructive",
+        });
+      }
+      return null;
+    };
+
     // Dialog handlers for creating new entities
-    const handleOpenCreateDialog = async (type: "transportCompany" | "product" | "organization" | "driver", initialValue: string): Promise<string | null> => {
+    const handleOpenCreateDialog = async (type: "transportCompany" | "product" | "organization" | "driver" | "trailer" | "location", initialValue: string): Promise<string | null> => {
       return new Promise((resolve) => {
         setCreateDialogType(type);
         setCreateDialogInitialValue(initialValue);
-        setCreateDialogName(initialValue);
+        if (type === "location") {
+          setCreateDialogLocationName(initialValue);
+          setCreateDialogName("");
+        } else {
+          setCreateDialogName(initialValue);
+          setCreateDialogLocationName("");
+        }
         setCreateDialogCompanyId("");
         setCreateDialogContract("");
         setCreateDialogPhone("");
         setCreateDialogRegistrationNumber("");
         setCreateDialogAdditionalInfo("");
+        setCreateDialogOwnerName("");
+        setCreateDialogOwnerId("");
+        setCreateDialogLocationType("");
         setCreateDialogOpen(true);
         
         // Store resolve function to call when dialog closes
@@ -530,7 +612,42 @@ export const OutSessionForm = forwardRef<
     };
 
     const handleCreateDialogSubmit = async () => {
-      if (!createDialogName.trim() || !createDialogType) {
+      if (!createDialogType) {
+        toast({
+          title: "Алдаа",
+          description: "Төрөл сонгох шаардлагатай",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // For location, check locationName; for others, check name
+      if (createDialogType === "location") {
+        if (!createDialogLocationName.trim()) {
+          toast({
+            title: "Алдаа",
+            description: "Байршлын нэр оруулах шаардлагатай",
+            variant: "destructive",
+          });
+          return;
+        }
+        if (!createDialogCompanyId.trim()) {
+          toast({
+            title: "Алдаа",
+            description: "Компанийн нэр оруулах шаардлагатай",
+            variant: "destructive",
+          });
+          return;
+        }
+        if (!createDialogLocationType) {
+          toast({
+            title: "Алдаа",
+            description: "Төрөл сонгох шаардлагатай",
+            variant: "destructive",
+          });
+          return;
+        }
+      } else if (!createDialogName.trim()) {
         toast({
           title: "Алдаа",
           description: "Нэр оруулах шаардлагатай",
@@ -594,6 +711,13 @@ export const OutSessionForm = forwardRef<
             createDialogRegistrationNumber.trim() || undefined,
             createDialogAdditionalInfo.trim() || undefined
           );
+        } else if (createDialogType === "location") {
+          newId = await handleCreateLocation(
+            createDialogLocationName.trim(),
+            createDialogCompanyId.trim(),
+            createDialogLocationType as "seller" | "buyer"
+          );
+          // For locations, newId is actually the locationName (used as value in locationOptions)
         }
 
         if (newId) {
@@ -605,6 +729,10 @@ export const OutSessionForm = forwardRef<
           setCreateDialogPhone("");
           setCreateDialogRegistrationNumber("");
           setCreateDialogAdditionalInfo("");
+          setCreateDialogOwnerName("");
+          setCreateDialogOwnerId("");
+          setCreateDialogLocationName("");
+          setCreateDialogLocationType("");
           setCreateDialogInitialValue("");
           // Resolve the promise with the new ID
           if ((window as any).__createDialogResolve) {
@@ -628,6 +756,10 @@ export const OutSessionForm = forwardRef<
       setCreateDialogPhone("");
       setCreateDialogRegistrationNumber("");
       setCreateDialogAdditionalInfo("");
+      setCreateDialogOwnerName("");
+      setCreateDialogOwnerId("");
+      setCreateDialogLocationName("");
+      setCreateDialogLocationType("");
       setCreateDialogInitialValue("");
       // Resolve with null to indicate cancellation
       if ((window as any).__createDialogResolve) {
@@ -699,30 +831,48 @@ export const OutSessionForm = forwardRef<
       }));
     };
 
-    // Auto-fill weight when weight status updates
+    // Auto-fill weight when weight status updates (similar to IN form logic)
     useEffect(() => {
       // #region agent log - Debug weight auto-fill
       console.log(`[DEBUG-WEIGHT] useEffect triggered: latestWeight=${weightStatus.status.latestWeight}, connected=${weightStatus.status.connected}, siteId=${weightStatus.status.siteId}`);
       // #endregion
       
       if (weightStatus.status.latestWeight !== null && weightStatus.status.latestWeight > 0) {
-        // #region agent log - Debug weight update
-        console.log(`[DEBUG-WEIGHT] Updating formState.outWeightKg to ${weightStatus.status.latestWeight}`);
-        // #endregion
-        
         setFormState((prev) => {
-          // #region agent log - Debug formState before update
-          console.log(`[DEBUG-WEIGHT] Before update: prev.outWeightKg=${prev.outWeightKg}`);
-          // #endregion
+          let updated;
           
-          const updated = {
-            ...prev,
-            outWeightKg: weightStatus.status.latestWeight,
-          };
+          // For OUT form, we can auto-fill carWeight, trailerWeight, or outWeightKg
+          // Use same logic as IN form: if carWeight is locked, fill trailerWeight; otherwise fill carWeight
+          if (carWeightLocked && (prev.carWeight !== null && prev.carWeight !== undefined && prev.carWeight > 0) && weightStatus.status.latestWeight !== null) {
+            // Car weight is locked: auto-fill trailer weight and calculate total
+            const newTrailerWeight = weightStatus.status.latestWeight;
+            const newTotalWeight = (prev.carWeight || 0) + newTrailerWeight;
+            updated = {
+              ...prev,
+              trailerWeight: newTrailerWeight,
+              totalWeight: newTotalWeight,
+              grossWeightKg: newTotalWeight,
+            };
+          } else {
+            // Car weight not locked: fill car weight first
+            // If trailer weight exists, calculate total; otherwise total = car weight
+            const newCarWeight = weightStatus.status.latestWeight;
+            const newTotalWeight = (prev.trailerWeight !== null && prev.trailerWeight !== undefined && prev.trailerWeight > 0)
+              ? (newCarWeight || 0) + (prev.trailerWeight || 0)
+              : newCarWeight;
+            
+            updated = {
+              ...prev,
+              carWeight: newCarWeight,
+              totalWeight: newTotalWeight,
+              grossWeightKg: newTotalWeight,
+            };
+          }
           
-          // #region agent log - Debug formState after update
-          console.log(`[DEBUG-WEIGHT] After update: updated.outWeightKg=${updated.outWeightKg}`);
-          // #endregion
+          // Also update outWeightKg if it's empty (for OUT form)
+          if (!prev.outWeightKg) {
+            updated.outWeightKg = weightStatus.status.latestWeight;
+          }
           
           return updated;
         });
@@ -731,7 +881,7 @@ export const OutSessionForm = forwardRef<
         console.log(`[DEBUG-WEIGHT] NOT updating: latestWeight=${weightStatus.status.latestWeight}, condition check failed`);
         // #endregion
       }
-    }, [weightStatus.status.latestWeight]);
+    }, [weightStatus.status.latestWeight, carWeightLocked]);
 
     // Auto-fill all data from IN session when plate number is entered
     useEffect(() => {
@@ -1210,8 +1360,13 @@ export const OutSessionForm = forwardRef<
             senderOrganizationId: "",
             receiverOrganizationId: "",
             outTime: new Date().toISOString().slice(0, 16),
+            inTime: new Date().toISOString().slice(0, 16), // Added from IN form
             outWeightKg: null,
             netWeightKg: null,
+            grossWeightKg: null, // Added from IN form
+            carWeight: 0, // Added from IN form
+            trailerWeight: 0, // Added from IN form
+            totalWeight: 0, // Added from IN form
             sealNumber: "",
             hasTrailer: false,
             trailerNumber: "",
@@ -1247,10 +1402,13 @@ export const OutSessionForm = forwardRef<
             formState.netWeightKg !== undefined
               ? formState.netWeightKg
               : undefined,
+          carWeight: formState.carWeight || undefined, // Added from IN form
+          trailerWeight: formState.trailerWeight || undefined, // Added from IN form
           inSessionId: formState.inSessionId
             ? formState.inSessionId
             : undefined,
           outTime: saveTime,
+          inTime: formState.inTime || undefined, // Added from IN form
           sealNumber: formState.sealNumber.trim() || undefined,
           hasTrailer: hasTrailer || undefined,
           trailerNumber: hasTrailer ? formState.trailerNumber.trim() : undefined,
@@ -1559,25 +1717,30 @@ export const OutSessionForm = forwardRef<
 
         // Reset form
         setSavedUniqueCode(null);
-        setFormState({
-          plateNumber: "",
-          driverId: "",
-          driverName: "",
-          productId: "",
-          transporterCompanyId: "",
-          origin: "",
-          destination: "",
-          senderOrganizationId: "",
-          receiverOrganizationId: "",
-          outTime: new Date().toISOString().slice(0, 16),
-          outWeightKg: null,
-          netWeightKg: null,
-          sealNumber: "",
-          hasTrailer: false,
-          trailerNumber: "",
-          notes: "",
-          inSessionId: undefined,
-        });
+          setFormState({
+            plateNumber: "",
+            driverId: "",
+            driverName: "",
+            productId: "",
+            transporterCompanyId: "",
+            origin: "",
+            destination: "",
+            senderOrganizationId: "",
+            receiverOrganizationId: "",
+            outTime: new Date().toISOString().slice(0, 16),
+            inTime: new Date().toISOString().slice(0, 16), // Added from IN form
+            outWeightKg: null,
+            netWeightKg: null,
+            grossWeightKg: null, // Added from IN form
+            carWeight: 0, // Added from IN form
+            trailerWeight: 0, // Added from IN form
+            totalWeight: 0, // Added from IN form
+            sealNumber: "",
+            hasTrailer: false,
+            trailerNumber: "",
+            notes: "",
+            inSessionId: undefined,
+          });
 
         return true;
       } catch (error) {
@@ -1682,6 +1845,138 @@ export const OutSessionForm = forwardRef<
                         Камер ачааллахын тулд дэлгэцэн дээр байрлах <span className="text-[#0073c4]">Gaali Camera Bridge</span> программыг ажиллуулж байж дүрс гарах тул уг программыг эхлээд асаасан байх шаардлагатай.
                       </p>
                     </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Weight Inputs - Full width section like IN form */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-x-6 gap-y-4 -mt-2 mb-4">
+                {/* Car Weight */}
+                <div className="flex flex-col">
+                  <div className="mb-1 min-h-[1.25rem] flex items-center">
+                    <Label
+                      htmlFor="carWeight"
+                      className="text-base font-medium text-gray-700"
+                    >
+                      Машины жин (кг) <span className="text-red-500">*</span>
+                    </Label>
+                  </div>
+                  <div className="h-14 flex gap-2">
+                    <Input
+                      id="carWeight"
+                      type="number"
+                      value={formState.carWeight ?? 0}
+                      onFocus={(e) => {
+                        if (!carWeightLocked) {
+                          e.target.select();
+                        }
+                      }}
+                      onChange={(e) => {
+                        if (carWeightLocked) return; // Prevent changes when locked
+                        const value =
+                          e.target.value === ""
+                            ? 0
+                            : parseFloat(e.target.value) || 0;
+                        setFormState((prev) => {
+                          const newCarWeight = value;
+                          const newTotalWeight = (newCarWeight || 0) + (prev.trailerWeight || 0);
+                          return {
+                            ...prev,
+                            carWeight: newCarWeight,
+                            totalWeight: newTotalWeight,
+                            grossWeightKg: newTotalWeight,
+                          };
+                        });
+                      }}
+                      className="h-14 !text-5xl !md:text-5xl font-mono font-bold !text-green-600 flex-1 bg-white [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none [-moz-appearance:textfield]"
+                      required
+                      disabled={carWeightLocked}
+                      readOnly={carWeightLocked}
+                    />
+                    <Button
+                      type="button"
+                      onClick={() => {
+                        setCarWeightLocked((prev) => !prev);
+                      }}
+                      className="h-14 px-4 whitespace-nowrap"
+                      disabled={false}
+                    >
+                      {carWeightLocked ? "🔓" : "OK"}
+                    </Button>
+                  </div>
+                </div>
+
+                {/* Trailer Weight */}
+                <div className="flex flex-col">
+                  <div className="mb-1 min-h-[1.25rem] flex items-center">
+                    <Label
+                      htmlFor="trailerWeight"
+                      className="text-base font-medium text-gray-700"
+                    >
+                      Чиргүүлийн жин (кг)
+                    </Label>
+                  </div>
+                  <div className="h-14">
+                    <Input
+                      id="trailerWeight"
+                      type="number"
+                      value={formState.trailerWeight ?? 0}
+                      onFocus={(e) => {
+                        e.target.select();
+                      }}
+                      onChange={(e) => {
+                        const value =
+                          e.target.value === ""
+                            ? 0
+                            : parseFloat(e.target.value) || 0;
+                        setFormState((prev) => {
+                          const newTrailerWeight = value;
+                          const newTotalWeight = (prev.carWeight || 0) + (newTrailerWeight || 0);
+                          return {
+                            ...prev,
+                            trailerWeight: newTrailerWeight,
+                            totalWeight: newTotalWeight,
+                            grossWeightKg: newTotalWeight,
+                          };
+                        });
+                      }}
+                      className="h-14 !text-5xl !md:text-5xl font-mono font-bold !text-green-600 w-full bg-white [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none [-moz-appearance:textfield]"
+                    />
+                  </div>
+                </div>
+
+                {/* Total Weight */}
+                <div className="flex flex-col">
+                  <div className="mb-1 min-h-[1.25rem] flex items-center">
+                    <Label
+                      htmlFor="totalWeight"
+                      className="text-base font-medium text-gray-700"
+                    >
+                      Орох үеийн нийт жин (кг) <span className="text-red-500">*</span>
+                    </Label>
+                  </div>
+                  <div className="h-14">
+                    <Input
+                      id="totalWeight"
+                      type="number"
+                      value={formState.totalWeight ?? 0}
+                      onFocus={(e) => {
+                        e.target.select();
+                      }}
+                      onChange={(e) => {
+                        const value =
+                          e.target.value === ""
+                            ? 0
+                            : parseFloat(e.target.value) || 0;
+                        setFormState((prev) => ({
+                          ...prev,
+                          totalWeight: value,
+                          grossWeightKg: value,
+                        }));
+                      }}
+                      className="h-14 !text-5xl !md:text-5xl font-mono font-bold !text-green-600 w-full bg-white [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none [-moz-appearance:textfield]"
+                      required
+                    />
                   </div>
                 </div>
               </div>
@@ -1975,6 +2270,8 @@ export const OutSessionForm = forwardRef<
                         disabled={isLoadingLocations}
                         placeholder={isLoadingLocations ? "Уншиж байна..." : "Байршил сонгох"}
                         searchPlaceholder="Байршил хайх..."
+                        onCreateNewDialog={(initialValue) => handleOpenCreateDialog("location", initialValue)}
+                        createNewLabel="+ Нэмэх ..."
                         className="h-12 text-base w-full"
                       />
                     </div>
@@ -2003,6 +2300,8 @@ export const OutSessionForm = forwardRef<
                         disabled={isLoadingLocations}
                         placeholder={isLoadingLocations ? "Уншиж байна..." : "Байршил сонгох"}
                         searchPlaceholder="Байршил хайх..."
+                        onCreateNewDialog={(initialValue) => handleOpenCreateDialog("location", initialValue)}
+                        createNewLabel="+ Нэмэх ..."
                         className="h-12 text-base w-full"
                       />
                     </div>
@@ -2103,11 +2402,63 @@ export const OutSessionForm = forwardRef<
                   </div>
                 </div>
 
+                {/* In Time - Added from IN form */}
+                <div className="flex flex-col">
+                  <div className="mb-1 min-h-[1.25rem] flex items-center">
+                    <Label
+                      htmlFor="inTime"
+                      className="text-base font-medium text-gray-700"
+                    >
+                      Орох цаг
+                    </Label>
+                  </div>
+                  <div className="h-12">
+                    <Input
+                      id="inTime"
+                      type="datetime-local"
+                      value={formState.inTime}
+                      onChange={(e) =>
+                        setFormState((prev) => ({
+                          ...prev,
+                          inTime: e.target.value,
+                        }))
+                      }
+                      className="h-12 text-base w-full"
+                    />
+                  </div>
+                </div>
+
+                {/* Out Time */}
+                <div className="flex flex-col">
+                  <div className="mb-1 min-h-[1.25rem] flex items-center">
+                    <Label
+                      htmlFor="outTime"
+                      className="text-base font-medium text-gray-700"
+                    >
+                      Гарах цаг
+                    </Label>
+                  </div>
+                  <div className="h-12">
+                    <Input
+                      id="outTime"
+                      type="datetime-local"
+                      value={formState.outTime}
+                      onChange={(e) =>
+                        setFormState((prev) => ({
+                          ...prev,
+                          outTime: e.target.value,
+                        }))
+                      }
+                      className="h-12 text-base w-full"
+                    />
+                  </div>
+                </div>
+
                 {/* Warning message under receiver organization - full width row */}
                 <div className="md:col-span-2 lg:col-span-3 flex flex-col gap-2">
                   <div className="bg-red-50 border border-red-300 rounded p-2 w-full">
                     <p className="text-red-600 text-sm leading-tight">
-                      <span className="text-lg font-bold">"*"</span> Улаан одоор тэмдэглэгдсэн нүдний мэдээлэл Гаалын мэдээллийн санд өгөгдөл болон дамжуулагдах тул анхааралтай бөглөнө үү.
+                      <span className="text-lg font-bold">*</span> Улаан одоор тэмдэглэгдсэн нүдний мэдээлэл Гаалын мэдээллийн санд өгөгдөл болон дамжуулагдах тул анхааралтай бөглөнө үү.
                     </p>
                   </div>
                   <div className="bg-red-50 border border-red-300 rounded p-2 w-full">
@@ -2292,12 +2643,14 @@ export const OutSessionForm = forwardRef<
                 {createDialogType === "product" && "Шинэ бүтээгдэхүүн нэмэх"}
                 {createDialogType === "organization" && "Шинэ тээврийн байгууллага нэмэх"}
                 {createDialogType === "driver" && "Шинэ жолооч нэмэх"}
+                {createDialogType === "location" && "Шинэ байршил нэмэх"}
               </DialogTitle>
               <DialogDescription>
                 {createDialogType === "transportCompany" && "Тээврийн компанийн мэдээлэл оруулна уу"}
                 {createDialogType === "product" && "Бүтээгдэхүүний нэрийг оруулна уу"}
                 {createDialogType === "organization" && "Тээврийн байгууллагын мэдээлэл оруулна уу"}
                 {createDialogType === "driver" && "Жолоочийн мэдээлэл оруулна уу"}
+                {createDialogType === "location" && "Байршлын мэдээлэл оруулна уу"}
               </DialogDescription>
             </DialogHeader>
             <div className="space-y-4 py-4">
@@ -2308,21 +2661,29 @@ export const OutSessionForm = forwardRef<
                   {createDialogType === "product" && "Бүтээгдэхүүний нэр"}
                   {createDialogType === "organization" && "Тээврийн байгууллагын нэр"}
                   {createDialogType === "driver" && "Жолоочийн нэр"}
+                  {createDialogType === "location" && "Байршлын нэр"}
                   <span className="text-red-500">*</span>
                 </Label>
                 <Input
                   id="create-dialog-name"
-                  value={createDialogName}
-                  onChange={(e) => setCreateDialogName(e.target.value)}
+                  value={createDialogType === "location" ? createDialogLocationName : createDialogName}
+                  onChange={(e) => {
+                    if (createDialogType === "location") {
+                      setCreateDialogLocationName(e.target.value);
+                    } else {
+                      setCreateDialogName(e.target.value);
+                    }
+                  }}
                   placeholder={
                     createDialogType === "transportCompany" ? "Тээврийн компанийн нэр оруулах"
                     : createDialogType === "product" ? "Бүтээгдэхүүний нэр оруулах"
                     : createDialogType === "organization" ? "Тээврийн байгууллагын нэр оруулах"
-                    : "Жолоочийн нэр оруулах"
+                    : createDialogType === "driver" ? "Жолоочийн нэр оруулах"
+                    : "Байршлын нэр оруулах"
                   }
                   onKeyDown={(e) => {
-                    if (e.key === "Enter" && createDialogName.trim() && 
-                        (createDialogType === "product" || 
+                    if (e.key === "Enter" && 
+                        ((createDialogType === "product" && createDialogName.trim()) || 
                          (createDialogType === "driver" && createDialogName.trim()))) {
                       handleCreateDialogSubmit();
                     }
@@ -2410,6 +2771,38 @@ export const OutSessionForm = forwardRef<
                   </div>
                 </>
               )}
+
+              {/* Location specific fields */}
+              {createDialogType === "location" && (
+                <>
+                  <div>
+                    <Label htmlFor="create-dialog-location-company">
+                      Компанийн нэр <span className="text-red-500">*</span>
+                    </Label>
+                    <Input
+                      id="create-dialog-location-company"
+                      value={createDialogCompanyId}
+                      onChange={(e) => setCreateDialogCompanyId(e.target.value)}
+                      placeholder="Компанийн нэр оруулах"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="create-dialog-location-type">
+                      Төрөл <span className="text-red-500">*</span>
+                    </Label>
+                    <select
+                      id="create-dialog-location-type"
+                      value={createDialogLocationType}
+                      onChange={(e) => setCreateDialogLocationType(e.target.value as "seller" | "buyer" | "")}
+                      className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                    >
+                      <option value="">Сонгох...</option>
+                      <option value="seller">худалдагч</option>
+                      <option value="buyer">худалдан авагч</option>
+                    </select>
+                  </div>
+                </>
+              )}
             </div>
             <DialogFooter>
               <Button
@@ -2423,11 +2816,16 @@ export const OutSessionForm = forwardRef<
                 onClick={handleCreateDialogSubmit}
                 disabled={
                   isCreatingInDialog || 
-                  !createDialogName.trim() ||
+                  (createDialogType !== "location" && !createDialogName.trim()) ||
+                  (createDialogType === "location" && !createDialogLocationName.trim()) ||
                   ((createDialogType === "transportCompany" || createDialogType === "organization") && (
                     !createDialogCompanyId.trim() ||
                     !createDialogContract.trim() ||
                     !createDialogPhone.trim()
+                  )) ||
+                  (createDialogType === "location" && (
+                    !createDialogCompanyId.trim() ||
+                    !createDialogLocationType
                   ))
                 }
                 className="gap-2"
