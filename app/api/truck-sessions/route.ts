@@ -237,6 +237,8 @@ export async function POST(request: Request) {
     }
 
     // Also create or update a log entry for history
+    // IMPORTANT: This must succeed for data to appear in history
+    let logCreated = false
     try {
       // Ensure cargoType is not empty (required by schema)
       const cargoType = productName || session.product || "Бусад"
@@ -266,7 +268,7 @@ export async function POST(request: Request) {
             console.log("📝 Found existing IN log, updating with OUT data:", existingInLog.id)
             
             // Update the existing IN log with OUT data
-            const updateData = {
+            const updateData: any = {
               // Keep IN data, add/update OUT data
               netWeightKg: session.netWeightKg || undefined,
               // Update weight if OUT weight is provided (this might be the final weight)
@@ -287,6 +289,14 @@ export async function POST(request: Request) {
               trailerPlate: body.trailerNumber || body.trailerPlate || existingInLog.trailerPlate,
               comments: session.notes || existingInLog.comments,
             }
+            
+            // Preserve carWeight and trailerWeight if they exist in existing log
+            if (existingInLog.carWeight !== undefined) {
+              updateData.carWeight = existingInLog.carWeight
+            }
+            if (existingInLog.trailerWeight !== undefined) {
+              updateData.trailerWeight = existingInLog.trailerWeight
+            }
 
             await logsCollection.updateOne(
               { id: existingInLog.id },
@@ -294,10 +304,11 @@ export async function POST(request: Request) {
             )
 
             console.log("✅ Log entry updated successfully:", existingInLog.id)
+            logCreated = true
           } else {
             // No IN log found, create a new OUT log
             console.log("📝 No existing IN log found, creating new OUT log")
-            const logData = {
+            const logData: any = {
               direction: session.direction,
               plate: session.plateNumber,
               driverId: body.driverId || undefined,
@@ -320,11 +331,12 @@ export async function POST(request: Request) {
 
             const log = await saveTruckLog(logData)
             console.log("✅ Log entry created successfully:", log.id)
+            logCreated = true
           }
         } catch (updateError) {
           console.error("⚠️ Error updating/finding log entry:", updateError)
           // Fallback: create a new log
-          const logData = {
+          const logData: any = {
             direction: session.direction,
             plate: session.plateNumber,
             driverId: body.driverId || undefined,
@@ -346,10 +358,11 @@ export async function POST(request: Request) {
           }
           const log = await saveTruckLog(logData)
           console.log("✅ Fallback: Log entry created successfully:", log.id)
+          logCreated = true
         }
       } else {
         // For IN sessions, create a new log as usual
-        const logData = {
+        const logData: any = {
           direction: session.direction,
           plate: session.plateNumber,
           driverId: body.driverId || undefined,
@@ -369,18 +382,34 @@ export async function POST(request: Request) {
           hasTrailer: body.hasTrailer || undefined,
           trailerPlate: body.trailerNumber || body.trailerPlate || undefined,
         }
+        
+        // Add carWeight and trailerWeight for IN sessions if provided
+        if (body.carWeight !== undefined && body.carWeight !== null) {
+          logData.carWeight = typeof body.carWeight === 'number' ? body.carWeight : parseFloat(body.carWeight)
+        }
+        if (body.trailerWeight !== undefined && body.trailerWeight !== null) {
+          logData.trailerWeight = typeof body.trailerWeight === 'number' ? body.trailerWeight : parseFloat(body.trailerWeight)
+        }
 
         console.log("📝 Creating IN log entry with data:", logData)
         const log = await saveTruckLog(logData)
         console.log("✅ Log entry created successfully:", log.id)
+        logCreated = true
       }
     } catch (logError) {
-      // Log the error but don't fail the request - session is already saved
-      console.error("⚠️ Error creating/updating log entry (session still saved):", logError)
+      // Log creation is critical - if it fails, the data won't appear in history
+      console.error("❌ CRITICAL: Error creating/updating log entry:", logError)
       if (logError instanceof Error) {
-        console.error("⚠️ Error message:", logError.message)
-        console.error("⚠️ Error stack:", logError.stack)
+        console.error("❌ Error message:", logError.message)
+        console.error("❌ Error stack:", logError.stack)
       }
+      // Still return success for session, but log the issue
+      // The session is saved, but history won't show it
+      console.error("⚠️ WARNING: Session saved but log entry failed - data may not appear in history!")
+    }
+    
+    if (!logCreated) {
+      console.error("❌ CRITICAL: No log entry was created - data will not appear in history!")
     }
 
     return NextResponse.json({ success: true, session }, { status: 201 })

@@ -1444,6 +1444,8 @@ export const InSessionForm = forwardRef<
           senderOrganizationId: formState.senderOrganizationId || undefined,
           receiverOrganizationId: formState.receiverOrganizationId || undefined,
           grossWeightKg: formState.totalWeight,
+          carWeight: formState.carWeight || undefined,
+          trailerWeight: formState.trailerWeight || undefined,
           inTime: saveTime,
           hasTrailer: formState.hasTrailer || undefined,
           trailerNumber:
