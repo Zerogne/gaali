@@ -2074,29 +2074,8 @@ export const OutSessionForm = forwardRef<
 
               {/* Weight Inputs - Full width, directly under license plate and warning */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-x-6 gap-y-4 -mt-2 mb-0">
-                {/* Car Weight Column - with In Weight (disabled) at top */}
+                {/* Car Weight Column - with In Weight (disabled) at bottom */}
                 <div className="flex flex-col gap-2">
-                  {/* In Weight Input - disabled, pushed to top */}
-                  <div className="flex flex-col">
-                    <div className="mb-1 min-h-[1.25rem] flex items-center">
-                      <Label
-                        htmlFor="inWeightKg"
-                        className="text-base font-medium text-gray-700"
-                      >
-                        Орох жин (кг)
-                      </Label>
-                    </div>
-                    <div className="h-14">
-                      <Input
-                        id="inWeightKg"
-                        type="number"
-                        value={inWeightKg ?? ""}
-                        readOnly
-                        className="h-14 !text-5xl !md:text-5xl font-mono font-bold !text-green-600 w-full bg-white [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none [-moz-appearance:textfield]"
-                      />
-                    </div>
-                  </div>
-
                   {/* Car Weight */}
                   <div className="flex flex-col">
                     <div className="mb-1 min-h-[1.25rem] flex items-center">
@@ -2150,6 +2129,27 @@ export const OutSessionForm = forwardRef<
                       >
                         {carWeightLocked ? "🔓" : "OK"}
                       </Button>
+                    </div>
+                  </div>
+
+                  {/* In Weight Input - disabled, at bottom */}
+                  <div className="flex flex-col">
+                    <div className="mb-1 min-h-[1.25rem] flex items-center">
+                      <Label
+                        htmlFor="inWeightKg"
+                        className="text-base font-medium text-gray-700"
+                      >
+                        Орох жин (кг)
+                      </Label>
+                    </div>
+                    <div className="h-14">
+                      <Input
+                        id="inWeightKg"
+                        type="number"
+                        value={inWeightKg ?? ""}
+                        readOnly
+                        className="h-14 !text-5xl !md:text-5xl font-mono font-bold !text-green-600 w-full bg-white [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none [-moz-appearance:textfield]"
+                      />
                     </div>
                   </div>
                 </div>
