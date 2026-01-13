@@ -218,7 +218,15 @@ export const InSessionForm = forwardRef<
       destination: "",
       senderOrganizationId: "",
       receiverOrganizationId: "",
-      inTime: externalInTime || new Date().toISOString().slice(0, 16),
+      inTime: externalInTime || (() => {
+        const now = new Date();
+        const year = now.getFullYear();
+        const month = String(now.getMonth() + 1).padStart(2, "0");
+        const day = String(now.getDate()).padStart(2, "0");
+        const hours = String(now.getHours()).padStart(2, "0");
+        const minutes = String(now.getMinutes()).padStart(2, "0");
+        return `${year}-${month}-${day}T${hours}:${minutes}`;
+      })(),
       grossWeightKg: null,
       carWeight: 0,
       trailerWeight: 0,
@@ -227,6 +235,30 @@ export const InSessionForm = forwardRef<
       trailerNumber: "",
       notes: "",
     });
+
+    // Helper function to get current datetime in datetime-local format (local time)
+    const getCurrentDateTime = (): string => {
+      const now = new Date();
+      const year = now.getFullYear();
+      const month = String(now.getMonth() + 1).padStart(2, "0");
+      const day = String(now.getDate()).padStart(2, "0");
+      const hours = String(now.getHours()).padStart(2, "0");
+      const minutes = String(now.getMinutes()).padStart(2, "0");
+      return `${year}-${month}-${day}T${hours}:${minutes}`;
+    };
+
+    // Helper function to convert Date/ISO string to local datetime-local format (without timezone conversion)
+    const toLocalDateTime = (date: Date | string | null | undefined): string => {
+      if (!date) return getCurrentDateTime();
+      const d = typeof date === 'string' ? new Date(date) : date;
+      // Use local time components, not UTC
+      const year = d.getFullYear();
+      const month = String(d.getMonth() + 1).padStart(2, "0");
+      const day = String(d.getDate()).padStart(2, "0");
+      const hours = String(d.getHours()).padStart(2, "0");
+      const minutes = String(d.getMinutes()).padStart(2, "0");
+      return `${year}-${month}-${day}T${hours}:${minutes}`;
+    };
 
     // Sync external inTime with form state
     useEffect(() => {
@@ -267,16 +299,50 @@ export const InSessionForm = forwardRef<
             o.id === editLog.receiverOrganizationId
         );
 
-        // Format date for datetime-local input
-        const inTime = editLog.createdAt
-          ? new Date(editLog.createdAt).toISOString().slice(0, 16)
-          : new Date().toISOString().slice(0, 16);
-
-        // Update external inTime if handler is provided
-        if (onInTimeChange) {
-          onInTimeChange(inTime);
-        }
-
+        // Fetch session data to get stored inTime, or convert createdAt to local time
+        let inTime = getCurrentDateTime();
+        const fetchSessionTime = async () => {
+          try {
+            const response = await fetch(
+              `/api/truck-sessions?direction=IN&plateNumber=${encodeURIComponent(editLog.plate)}&limit=1`
+            );
+            if (response.ok) {
+              const data = await response.json();
+              if (data.sessions && data.sessions.length > 0) {
+                const session = data.sessions[0];
+                // Use stored inTime if available, otherwise convert createdAt to local time
+                if (session.inTime) {
+                  inTime = session.inTime; // Already in datetime-local format
+                } else if (session.createdAt) {
+                  inTime = toLocalDateTime(session.createdAt);
+                } else if (editLog.createdAt) {
+                  inTime = toLocalDateTime(editLog.createdAt);
+                }
+              } else if (editLog.createdAt) {
+                inTime = toLocalDateTime(editLog.createdAt);
+              }
+            } else if (editLog.createdAt) {
+              inTime = toLocalDateTime(editLog.createdAt);
+            }
+          } catch (error) {
+            console.error("Error fetching session time:", error);
+            if (editLog.createdAt) {
+              inTime = toLocalDateTime(editLog.createdAt);
+            }
+          }
+          
+          // Update external inTime if handler is provided
+          if (onInTimeChange) {
+            onInTimeChange(inTime);
+          }
+          
+          setFormState((prev) => ({
+            ...prev,
+            inTime: inTime,
+          }));
+        };
+        
+        // Set form state immediately with available data, inTime will be updated async
         setFormState({
           plateNumber: editLog.plate || "",
           driverId: driver?.id || "",
@@ -287,7 +353,7 @@ export const InSessionForm = forwardRef<
           destination: editLog.destination || "",
           senderOrganizationId: senderOrg?.id || "",
           receiverOrganizationId: receiverOrg?.id || "",
-          inTime: inTime,
+          inTime: editLog.createdAt ? toLocalDateTime(editLog.createdAt) : getCurrentDateTime(),
           grossWeightKg: editLog.weightKg || null,
           carWeight: 0,
           trailerWeight: 0,
@@ -296,6 +362,9 @@ export const InSessionForm = forwardRef<
           trailerNumber: editLog.trailerPlate || "",
           notes: editLog.comments || "",
         });
+        
+        // Fetch session time asynchronously and update
+        fetchSessionTime();
       }
     }, [editLog, products, transportCompanies, drivers, organizations]);
 
@@ -1321,17 +1390,6 @@ export const InSessionForm = forwardRef<
       }),
       [formState, toast]
     );
-
-    // Helper function to get current datetime in datetime-local format
-    const getCurrentDateTime = (): string => {
-      const now = new Date();
-      const year = now.getFullYear();
-      const month = String(now.getMonth() + 1).padStart(2, "0");
-      const day = String(now.getDate()).padStart(2, "0");
-      const hours = String(now.getHours()).padStart(2, "0");
-      const minutes = String(now.getMinutes()).padStart(2, "0");
-      return `${year}-${month}-${day}T${hours}:${minutes}`;
-    };
 
     const performSave = async (): Promise<boolean> => {
       setIsSaving(true);

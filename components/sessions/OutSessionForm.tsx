@@ -176,7 +176,9 @@ export const OutSessionForm = forwardRef<
     const [isLoadingLocations, setIsLoadingLocations] = useState(true);
     const [inWeightKg, setInWeightKg] = useState<number | null>(null);
     const [savedUniqueCode, setSavedUniqueCode] = useState<string | null>(null);
+    const [savedSessionId, setSavedSessionId] = useState<string | null>(null);
     const [carWeightLocked, setCarWeightLocked] = useState(false); // Added from IN form
+    const [hasInSessionData, setHasInSessionData] = useState(false); // Track if data came from IN session
 
     const [formState, setFormState] = useState<OutSessionFormState>({
       plateNumber: "",
@@ -188,8 +190,24 @@ export const OutSessionForm = forwardRef<
       destination: "",
       senderOrganizationId: "",
       receiverOrganizationId: "",
-      outTime: externalOutTime || new Date().toISOString().slice(0, 16),
-      inTime: new Date().toISOString().slice(0, 16), // Added from IN form
+      outTime: externalOutTime || (() => {
+        const now = new Date();
+        const year = now.getFullYear();
+        const month = String(now.getMonth() + 1).padStart(2, "0");
+        const day = String(now.getDate()).padStart(2, "0");
+        const hours = String(now.getHours()).padStart(2, "0");
+        const minutes = String(now.getMinutes()).padStart(2, "0");
+        return `${year}-${month}-${day}T${hours}:${minutes}`;
+      })(),
+      inTime: (() => {
+        const now = new Date();
+        const year = now.getFullYear();
+        const month = String(now.getMonth() + 1).padStart(2, "0");
+        const day = String(now.getDate()).padStart(2, "0");
+        const hours = String(now.getHours()).padStart(2, "0");
+        const minutes = String(now.getMinutes()).padStart(2, "0");
+        return `${year}-${month}-${day}T${hours}:${minutes}`;
+      })(), // Added from IN form
       outWeightKg: null,
       netWeightKg: null,
       grossWeightKg: null, // Added from IN form
@@ -202,6 +220,30 @@ export const OutSessionForm = forwardRef<
       notes: "",
       inSessionId: undefined,
     });
+
+    // Helper function to get current datetime in datetime-local format (local time)
+    const getCurrentDateTime = (): string => {
+      const now = new Date();
+      const year = now.getFullYear();
+      const month = String(now.getMonth() + 1).padStart(2, "0");
+      const day = String(now.getDate()).padStart(2, "0");
+      const hours = String(now.getHours()).padStart(2, "0");
+      const minutes = String(now.getMinutes()).padStart(2, "0");
+      return `${year}-${month}-${day}T${hours}:${minutes}`;
+    };
+
+    // Helper function to convert Date/ISO string to local datetime-local format (without timezone conversion)
+    const toLocalDateTime = (date: Date | string | null | undefined): string => {
+      if (!date) return getCurrentDateTime();
+      const d = typeof date === 'string' ? new Date(date) : date;
+      // Use local time components, not UTC
+      const year = d.getFullYear();
+      const month = String(d.getMonth() + 1).padStart(2, "0");
+      const day = String(d.getDate()).padStart(2, "0");
+      const hours = String(d.getHours()).padStart(2, "0");
+      const minutes = String(d.getMinutes()).padStart(2, "0");
+      return `${year}-${month}-${day}T${hours}:${minutes}`;
+    };
 
     // Sync external outTime with form state
     useEffect(() => {
@@ -216,7 +258,7 @@ export const OutSessionForm = forwardRef<
       // If we have an inSessionId, we might want to fetch the inTime from that session
       // For now, just ensure inTime is set to current time if empty
       if (!formState.inTime) {
-        setFormState((prev) => ({ ...prev, inTime: new Date().toISOString().slice(0, 16) }));
+        setFormState((prev) => ({ ...prev, inTime: getCurrentDateTime() }));
       }
     }, [formState.inTime]);
 
@@ -252,19 +294,78 @@ export const OutSessionForm = forwardRef<
             o.id === editLog.receiverOrganizationId
         );
 
-        // Format date for datetime-local input
-        const outTime = editLog.createdAt 
-          ? new Date(editLog.createdAt).toISOString().slice(0, 16)
-          : new Date().toISOString().slice(0, 16);
-
-        // Update external outTime if handler is provided
-        if (onOutTimeChange) {
-          onOutTimeChange(outTime);
-        }
-
-        // Format inTime from editLog (if available from related IN session)
-        const inTime = editLog.createdAt ? new Date(editLog.createdAt).toISOString().slice(0, 16) : new Date().toISOString().slice(0, 16);
-
+        // Fetch session data to get stored outTime and inTime, or convert createdAt to local time
+        let outTime = getCurrentDateTime();
+        let inTime = getCurrentDateTime();
+        
+        const fetchSessionTimes = async () => {
+          try {
+            // Fetch OUT session for outTime
+            const outResponse = await fetch(
+              `/api/truck-sessions?direction=OUT&plateNumber=${encodeURIComponent(editLog.plate)}&limit=1`
+            );
+            if (outResponse.ok) {
+              const outData = await outResponse.json();
+              if (outData.sessions && outData.sessions.length > 0) {
+                const session = outData.sessions[0];
+                // Use stored outTime if available, otherwise convert createdAt to local time
+                if (session.outTime) {
+                  outTime = session.outTime; // Already in datetime-local format
+                } else if (session.createdAt) {
+                  outTime = toLocalDateTime(session.createdAt);
+                } else if (editLog.createdAt) {
+                  outTime = toLocalDateTime(editLog.createdAt);
+                }
+                
+                // Get inTime from linked IN session if available
+                if (session.inSessionId) {
+                  try {
+                    const inResponse = await fetch(`/api/truck-sessions?direction=IN&plateNumber=${encodeURIComponent(editLog.plate)}&limit=1`);
+                    if (inResponse.ok) {
+                      const inData = await inResponse.json();
+                      if (inData.sessions && inData.sessions.length > 0) {
+                        const inSession = inData.sessions.find((s: any) => s.id === session.inSessionId) || inData.sessions[0];
+                        if (inSession.inTime) {
+                          inTime = inSession.inTime;
+                        } else if (inSession.createdAt) {
+                          inTime = toLocalDateTime(inSession.createdAt);
+                        }
+                      }
+                    }
+                  } catch (error) {
+                    console.error("Error fetching IN session time:", error);
+                  }
+                }
+              } else if (editLog.createdAt) {
+                outTime = toLocalDateTime(editLog.createdAt);
+                inTime = toLocalDateTime(editLog.createdAt);
+              }
+            } else if (editLog.createdAt) {
+              outTime = toLocalDateTime(editLog.createdAt);
+              inTime = toLocalDateTime(editLog.createdAt);
+            }
+          } catch (error) {
+            console.error("Error fetching session times:", error);
+            if (editLog.createdAt) {
+              outTime = toLocalDateTime(editLog.createdAt);
+              inTime = toLocalDateTime(editLog.createdAt);
+            }
+          }
+          
+          // Update external outTime if handler is provided
+          if (onOutTimeChange) {
+            onOutTimeChange(outTime);
+          }
+          
+          // Update form state with correct times
+          setFormState((prev) => ({
+            ...prev,
+            outTime: outTime,
+            inTime: inTime,
+          }));
+        };
+        
+        // Set form state immediately with available data, times will be updated async
         setFormState({
           plateNumber: editLog.plate || "",
           driverId: driver?.id || "",
@@ -275,8 +376,8 @@ export const OutSessionForm = forwardRef<
           destination: editLog.destination || "",
           senderOrganizationId: senderOrg?.id || "",
           receiverOrganizationId: receiverOrg?.id || "",
-          outTime: outTime,
-          inTime: inTime, // Added from IN form
+          outTime: editLog.createdAt ? toLocalDateTime(editLog.createdAt) : getCurrentDateTime(),
+          inTime: editLog.createdAt ? toLocalDateTime(editLog.createdAt) : getCurrentDateTime(),
           outWeightKg: editLog.weightKg || null,
           netWeightKg: editLog.netWeightKg || null,
           grossWeightKg: editLog.weightKg || null, // Added from IN form
@@ -289,6 +390,9 @@ export const OutSessionForm = forwardRef<
           notes: editLog.comments || "",
           inSessionId: undefined,
         });
+        
+        // Fetch session times asynchronously and update
+        fetchSessionTimes();
       }
     }, [editLog, products, transportCompanies, drivers, organizations]);
 
@@ -886,6 +990,7 @@ export const OutSessionForm = forwardRef<
       // Only fetch if we have a plate number (at least 2 characters to avoid too many requests)
       const plateNumber = formState.plateNumber.trim();
       if (!plateNumber || plateNumber.length < 2) {
+        setHasInSessionData(false);
         return;
       }
 
@@ -916,8 +1021,16 @@ export const OutSessionForm = forwardRef<
               const inSession = data.session;
               const inLog = data.log; // Log has all the fields
 
-              // Store IN weight for display (use totalWeight from log, fallback to grossWeightKg from session)
-              setInWeightKg(inLog?.weightKg || inSession.grossWeightKg || null);
+              // Calculate IN totalWeight: carWeight + trailerWeight, or fallback to weightKg
+              const inTotalWeight = (inLog as any)?.carWeight && (inLog as any)?.trailerWeight
+                ? ((inLog as any).carWeight || 0) + ((inLog as any).trailerWeight || 0)
+                : (inLog?.weightKg || inSession.grossWeightKg || null);
+
+              // Store IN weight for display
+              setInWeightKg(inTotalWeight);
+
+              // Mark that we have IN session data
+              setHasInSessionData(true);
 
               // Auto-fill all available data (only if fields are empty or not set)
               setFormState((prev) => {
@@ -968,31 +1081,103 @@ export const OutSessionForm = forwardRef<
                   }
                 }
 
-                // Auto-fill product - try log first, then session
+                // Auto-fill product - try productId first (most reliable), then cargoType label match, then session product
                 if (isEmpty(prev.productId)) {
-                  if (inLog?.cargoType) {
+                  console.log("🔍 Auto-fill: Attempting to match product...");
+                  console.log("🔍 Auto-fill: inLog.productId:", (inLog as any)?.productId);
+                  console.log("🔍 Auto-fill: inLog.cargoType:", inLog?.cargoType);
+                  console.log("🔍 Auto-fill: inSession.product:", inSession.product);
+                  console.log("🔍 Auto-fill: Available products:", products.map(p => ({ id: p.id, label: p.label, value: p.value })));
+                  
+                  // First, try to match by productId if available in log
+                  if ((inLog as any)?.productId) {
                     const matchingProduct = products.find(
-                      (p) => p.label === inLog.cargoType
+                      (p) => p.id === (inLog as any).productId
                     );
                     if (matchingProduct) {
                       updates.productId = matchingProduct.id;
                       console.log(
-                        "✅ Auto-fill: Filled product (from log):",
+                        "✅ Auto-fill: Filled product by productId (from log):",
                         matchingProduct.label
                       );
+                    } else {
+                      console.log("⚠️ Auto-fill: ProductId not found in products list:", (inLog as any).productId);
                     }
                   }
+                  
+                  // If productId didn't match, try matching by cargoType label (case-insensitive, trimmed)
+                  if (!updates.productId && inLog?.cargoType) {
+                    const cargoTypeTrimmed = inLog.cargoType.trim();
+                    // First try exact match (case-insensitive)
+                    let matchingProduct = products.find(
+                      (p) => {
+                        const labelMatch = p.label?.trim().toLowerCase() === cargoTypeTrimmed.toLowerCase();
+                        const valueMatch = p.value?.trim().toLowerCase() === cargoTypeTrimmed.toLowerCase();
+                        return labelMatch || valueMatch;
+                      }
+                    );
+                    
+                    // If no exact match, try partial match (contains)
+                    if (!matchingProduct) {
+                      matchingProduct = products.find(
+                        (p) => {
+                          const labelLower = p.label?.trim().toLowerCase() || "";
+                          const valueLower = p.value?.trim().toLowerCase() || "";
+                          const cargoTypeLower = cargoTypeTrimmed.toLowerCase();
+                          return labelLower.includes(cargoTypeLower) || 
+                                 cargoTypeLower.includes(labelLower) ||
+                                 valueLower.includes(cargoTypeLower) ||
+                                 cargoTypeLower.includes(valueLower);
+                        }
+                      );
+                    }
+                    
+                    if (matchingProduct) {
+                      updates.productId = matchingProduct.id;
+                      console.log(
+                        "✅ Auto-fill: Filled product by cargoType label (from log):",
+                        matchingProduct.label,
+                        "matched with:",
+                        inLog.cargoType
+                      );
+                    } else {
+                      console.log("⚠️ Auto-fill: cargoType not found in products:", inLog.cargoType);
+                      console.log("⚠️ Auto-fill: Tried matching:", cargoTypeTrimmed);
+                      console.log("⚠️ Auto-fill: Available product labels:", products.map(p => p.label));
+                    }
+                  }
+                  
+                  // Last resort: try matching by session product name (case-insensitive, trimmed)
                   if (!updates.productId && inSession.product) {
+                    const sessionProductTrimmed = inSession.product.trim();
                     const matchingProduct = products.find(
-                      (p) => p.label === inSession.product
+                      (p) => {
+                        const labelMatch = p.label?.trim().toLowerCase() === sessionProductTrimmed.toLowerCase();
+                        const valueMatch = p.value?.trim().toLowerCase() === sessionProductTrimmed.toLowerCase();
+                        return labelMatch || valueMatch;
+                      }
                     );
                     if (matchingProduct) {
                       updates.productId = matchingProduct.id;
                       console.log(
-                        "✅ Auto-fill: Filled product (from session):",
-                        matchingProduct.label
+                        "✅ Auto-fill: Filled product by session product name:",
+                        matchingProduct.label,
+                        "matched with:",
+                        inSession.product
                       );
+                    } else {
+                      console.log("⚠️ Auto-fill: Session product not found in products:", inSession.product);
+                      console.log("⚠️ Auto-fill: Tried matching:", sessionProductTrimmed);
                     }
+                  }
+                  
+                  if (!updates.productId) {
+                    console.error("❌ Auto-fill: Failed to match product! inLog:", {
+                      productId: (inLog as any)?.productId,
+                      cargoType: inLog?.cargoType
+                    }, "inSession:", {
+                      product: inSession.product
+                    });
                   }
                 }
 
@@ -1093,8 +1278,10 @@ export const OutSessionForm = forwardRef<
               });
             } else {
               console.log("⚠️ Auto-fill: Response OK but no session in data");
+              setHasInSessionData(false);
             }
           } else {
+            setHasInSessionData(false);
             // Handle error responses
             let errorData;
             try {
@@ -1162,14 +1349,15 @@ export const OutSessionForm = forwardRef<
                 return;
               }
 
-              // Calculate net weight: IN weight - OUT weight
-              // Positive = cargo unloaded, Negative = cargo loaded
-              // Use totalWeight from log (weightKg), fallback to grossWeightKg from session
-              const inWeight = inLog?.weightKg || inSession.grossWeightKg || 0;
+              // Calculate net weight: totalWeight(IN) - totalWeight(OUT)
+              // Use carWeight + trailerWeight from IN log if available, otherwise use weightKg
+              const inTotalWeight = (inLog as any)?.carWeight !== undefined && (inLog as any)?.trailerWeight !== undefined
+                ? ((inLog as any).carWeight || 0) + ((inLog as any).trailerWeight || 0)
+                : (inLog?.weightKg || inSession.grossWeightKg || 0);
               const outWeightValue = outWeight || 0;
-              const netWeight = inWeight - outWeightValue;
+              const netWeight = inTotalWeight - outWeightValue;
 
-              // Update form state with calculated net weight
+              // Update form state with calculated net weight (can be negative, but display will hide minus)
               setFormState((prev) => {
                 // Double-check values haven't changed
                 const prevOutWeight = prev.totalWeight || prev.grossWeightKg;
@@ -1179,13 +1367,14 @@ export const OutSessionForm = forwardRef<
                 return {
                   ...prev,
                   inSessionId: inSession.id,
+                  // Store the actual calculated value (can be negative)
                   netWeightKg: netWeight,
                 };
               });
 
-              // Store IN weight for display (use totalWeight from log, fallback to grossWeightKg from session)
+              // Store IN weight for display
               if (isMounted) {
-                setInWeightKg(inLog?.weightKg || inSession.grossWeightKg || null);
+                setInWeightKg(inTotalWeight);
               }
             }
           }
@@ -1262,17 +1451,6 @@ export const OutSessionForm = forwardRef<
       [formState, toast]
     );
 
-    // Helper function to get current datetime in datetime-local format
-    const getCurrentDateTime = (): string => {
-      const now = new Date();
-      const year = now.getFullYear();
-      const month = String(now.getMonth() + 1).padStart(2, "0");
-      const day = String(now.getDate()).padStart(2, "0");
-      const hours = String(now.getHours()).padStart(2, "0");
-      const minutes = String(now.getMinutes()).padStart(2, "0");
-      return `${year}-${month}-${day}T${hours}:${minutes}`;
-    };
-
     const performSave = async (): Promise<boolean> => {
       setIsSaving(true);
       try {
@@ -1347,8 +1525,7 @@ export const OutSessionForm = forwardRef<
           });
 
           // Reset form
-          setInWeightKg(null);
-          setSavedUniqueCode(null);
+          resetForm();
           setFormState({
             plateNumber: "",
             driverId: "",
@@ -1439,309 +1616,18 @@ export const OutSessionForm = forwardRef<
 
         const savedSession = await response.json();
 
-        // Store the unique code from the saved session
+        // Store the unique code and session ID from the saved session
         if (savedSession.session?.uniqueCode) {
           setSavedUniqueCode(savedSession.session.uniqueCode);
+        }
+        if (savedSession.session?.id) {
+          setSavedSessionId(savedSession.session.id);
         }
 
         toast({
           title: "Амжилттай",
           description: "ГАРАХ бүртгэл амжилттай хадгалагдлаа",
         });
-
-        // Send to 3rd party app via WebSocket (matching test-websocket.html logic)
-        if (savedSession.session && savedSession.session.uniqueCode) {
-          try {
-            console.log("🚀 Starting send process for OUT session...");
-
-            // Step 1: Transform data to 3rd party format (matching test-websocket.html)
-            const productName = formState.productId
-              ? products.find((p) => p.id === formState.productId)?.label || ""
-              : "";
-            const transportCompanyName = formState.transporterCompanyId
-              ? transportCompanies.find(
-                  (t) => t.id === formState.transporterCompanyId
-                )?.name || ""
-              : "";
-
-            // Get sender and receiver organization names
-            let senderOrgName = "";
-            let receiverOrgName = "";
-
-            if (formState.senderOrganizationId) {
-              try {
-                const orgsResponse = await fetch(
-                  "/api/organizations?type=sender"
-                );
-                if (orgsResponse.ok) {
-                  const orgs = await orgsResponse.json();
-                  const org = orgs.find(
-                    (o: any) => o.id === formState.senderOrganizationId
-                  );
-                  if (org) senderOrgName = org.name;
-                }
-              } catch (e) {
-                // Ignore error
-              }
-            }
-
-            if (formState.receiverOrganizationId) {
-              try {
-                const orgsResponse = await fetch(
-                  "/api/organizations?type=receiver"
-                );
-                if (orgsResponse.ok) {
-                  const orgs = await orgsResponse.json();
-                  const org = orgs.find(
-                    (o: any) => o.id === formState.receiverOrganizationId
-                  );
-                  if (org) receiverOrgName = org.name;
-                }
-              } catch (e) {
-                // Ignore error
-              }
-            }
-
-            const thirdPartyData = [
-              {
-                // Core fields (original format)
-                AKT: savedSession.session.uniqueCode,
-                CAR: productName,
-                CMN: "",
-                CON: "",
-                CT1: "",
-                DRN: formState.driverName.trim(),
-                LPC:
-                  transportCompanyName ||
-                  formState.origin.trim() ||
-                  senderOrgName,
-                NET: formState.netWeightKg || 0,
-                SLN: formState.sealNumber.trim(),
-                TRL: formState.hasTrailer
-                  ? formState.trailerNumber.trim().toUpperCase()
-                  : "",
-                UPC: formState.destination.trim() || receiverOrgName,
-                VNO: formState.plateNumber.trim().toUpperCase(),
-                WGT: formState.totalWeight || formState.grossWeightKg || 0,
-                
-                // New fields (updated API format)
-                PRM: "", // Premium/Permit number
-                CT2: "", // Container 2
-                CT3: "", // Container 3
-                CT4: "", // Container 4
-                TID: "", // Transaction ID
-                
-                // Additional fields for sender/receiver company and driver ID
-                senderCompany: senderOrgName,
-                receiverCompany: receiverOrgName,
-                driverId: formState.driverId || "",
-              },
-            ];
-
-            // Step 2: Save data to file-like storage (matching test-websocket.html)
-            console.log("💾 Step 1: Saving data to storage...");
-            const appBaseUrl =
-              typeof window !== "undefined"
-                ? window.location.origin
-                : "https://gaali.vercel.app";
-
-            const saveResponse = await fetch(
-              `${appBaseUrl}/api/third-party/save`,
-              {
-                method: "POST",
-                headers: {
-                  "Content-Type": "application/json",
-                },
-                body: JSON.stringify({
-                  uniqueCode: savedSession.session.uniqueCode, // Use AKT as unique code
-                  data: thirdPartyData,
-                }),
-              }
-            );
-
-            if (!saveResponse.ok) {
-              const errorData = await saveResponse.json().catch(() => ({}));
-              console.error("❌ ERROR: Failed to save data");
-              console.error("❌ Response status:", saveResponse.status);
-              console.error("❌ Error data:", errorData);
-              throw new Error(
-                errorData.error ||
-                  `Failed to save data: ${saveResponse.statusText}`
-              );
-            }
-
-            const saveResult = await saveResponse.json();
-            const uniqueCode = saveResult.code;
-            const dataBaseUrl = `${appBaseUrl}/api/third-party/data`;
-            const dataUrl = `${dataBaseUrl}/${uniqueCode}`;
-
-            console.log("✅ Step 1: Data saved successfully");
-            console.log("🔑 Unique Code (AKT):", uniqueCode);
-            console.log("📁 Data URL:", dataUrl);
-
-            // Step 3: Check WebSocket connection (matching test-websocket.html logic)
-            console.log("🔌 Step 2: Checking WebSocket connection...");
-            let ws = getWebSocket();
-            console.log(
-              "🔌 Current WebSocket state:",
-              ws
-                ? `readyState: ${ws.readyState} (OPEN=${WebSocket.OPEN})`
-                : "null"
-            );
-
-            if (!ws || ws.readyState !== WebSocket.OPEN) {
-              console.log(
-                "🔌 WebSocket not connected, attempting to connect..."
-              );
-              try {
-                ws = await connectWebSocket();
-                console.log("✅ WebSocket connection attempt completed");
-                ws = getWebSocket();
-                await new Promise((resolve) => setTimeout(resolve, 50));
-                ws = getWebSocket();
-                if (!ws || ws.readyState !== WebSocket.OPEN) {
-                  console.error(
-                    "❌ ERROR: WebSocket connection failed or closed immediately"
-                  );
-                  console.error(
-                    "❌ WebSocket states: CONNECTING=0, OPEN=1, CLOSING=2, CLOSED=3"
-                  );
-                  console.error(
-                    "❌ Current state:",
-                    ws ? ws.readyState : "null"
-                  );
-                  console.error(
-                    "❌ This usually means the 3rd party app server is not running"
-                  );
-                  toast({
-                    title: "Алдаа",
-                    description:
-                      "3-р талын програмтай холбогдох боломжгүй байна. Програм ажиллаж байгаа эсэхийг шалгана уу.",
-                    variant: "destructive",
-                  });
-                  return false;
-                }
-                console.log("✅ WebSocket connection verified and open");
-              } catch (error) {
-                console.error("❌ ERROR: Failed to connect WebSocket");
-                console.error("❌ Error details:", error);
-                console.error(
-                  "❌ This usually means the 3rd party app server is not running at ws://127.0.0.1:9000/service"
-                );
-                toast({
-                  title: "Алдаа",
-                  description:
-                    "3-р талын програмтай холбогдох боломжгүй байна. Програм ажиллаж байгаа эсэхийг шалгана уу.",
-                  variant: "destructive",
-                });
-                return false;
-              }
-            } else {
-              console.log("✅ WebSocket already connected");
-            }
-
-            // Step 4: Verify connection one more time (matching test-websocket.html)
-            ws = getWebSocket();
-            if (!ws || ws.readyState !== WebSocket.OPEN) {
-              console.error(
-                "❌ ERROR: WebSocket connection is not open before sending"
-              );
-              toast({
-                title: "Алдаа",
-                description:
-                  "WebSocket холболт тасарсан байна. Дахин оролдоно уу.",
-                variant: "destructive",
-              });
-              return false;
-            }
-
-            // Step 5: Send the full URL via WebSocket (matching test-websocket.html)
-            console.log("📤 Step 3: Sending data to 3rd party app...");
-            console.log("📤 URL to send:", dataUrl);
-            console.log("📤 Unique Code (AKT):", uniqueCode);
-
-            if (ws.readyState !== WebSocket.OPEN) {
-              console.error("❌ ERROR: WebSocket closed right before send!");
-              toast({
-                title: "Алдаа",
-                description:
-                  "WebSocket холболт тасарсан байна. Дахин оролдоно уу.",
-                variant: "destructive",
-              });
-              return false;
-            }
-
-            ws.send(dataUrl);
-            console.log("✅ ws.send() completed without throwing error");
-
-            // Step 6: Check connection after a short delay (matching test-websocket.html)
-            await new Promise((resolve) => setTimeout(resolve, 100));
-            ws = getWebSocket();
-
-            if (!ws || ws.readyState !== WebSocket.OPEN) {
-              console.error("❌ ERROR: WebSocket closed after sending!");
-              console.error(
-                "❌ This usually means the 3rd party app server is not running"
-              );
-              toast({
-                title: "Алдаа",
-                description:
-                  "3-р талын програмтай холболт тасарсан. Програм ажиллаж байгаа эсэхийг шалгана уу.",
-                variant: "destructive",
-              });
-              return false;
-            }
-
-            console.log("=".repeat(50));
-            console.log("✅ SUCCESS: Data sent to 3rd party app");
-            console.log("✅ URL sent:", dataUrl);
-            console.log("✅ Unique Code (AKT):", uniqueCode);
-            console.log("=".repeat(50));
-
-            toast({
-              title: "Амжилттай",
-              description: "3-р талын програм руу илгээгдлээ",
-            });
-          } catch (sendError) {
-            console.error("=".repeat(50));
-            console.error("❌ ERROR: Exception thrown while sending data");
-            console.error("❌ Error:", sendError);
-            console.error(
-              "❌ Error message:",
-              sendError instanceof Error ? sendError.message : String(sendError)
-            );
-            console.error("=".repeat(50));
-            // Don't show error toast - session is already saved
-            return false;
-          }
-        }
-
-        // Reset form
-        setSavedUniqueCode(null);
-          setFormState({
-            plateNumber: "",
-            driverId: "",
-            driverName: "",
-            productId: "",
-            transporterCompanyId: "",
-            origin: "",
-            destination: "",
-            senderOrganizationId: "",
-            receiverOrganizationId: "",
-            outTime: new Date().toISOString().slice(0, 16),
-            inTime: new Date().toISOString().slice(0, 16), // Added from IN form
-            outWeightKg: null,
-            netWeightKg: null,
-            grossWeightKg: null, // Added from IN form
-            carWeight: 0, // Added from IN form
-            trailerWeight: 0, // Added from IN form
-            totalWeight: 0, // Added from IN form
-            sealNumber: "",
-            hasTrailer: false,
-            trailerNumber: "",
-            notes: "",
-            inSessionId: undefined,
-          });
 
         return true;
       } catch (error) {
@@ -1758,6 +1644,337 @@ export const OutSessionForm = forwardRef<
       } finally {
         setIsSaving(false);
       }
+    };
+
+    const performSendToThirdParty = async (): Promise<boolean> => {
+      setIsSending(true);
+      try {
+        // Get unique code - use saved one or fetch from latest session
+        let uniqueCode = savedUniqueCode;
+        
+        if (!uniqueCode) {
+          // Try to fetch from the saved session
+          if (savedSessionId) {
+            try {
+              const sessionResponse = await fetch(`/api/truck-sessions/${savedSessionId}`);
+              if (sessionResponse.ok) {
+                const sessionData = await sessionResponse.json();
+                uniqueCode = sessionData.session?.uniqueCode;
+              }
+            } catch (e) {
+              console.warn("Could not fetch session:", e);
+            }
+          }
+          
+          // If still no unique code, try to fetch from latest session with this plate
+          if (!uniqueCode) {
+            try {
+              const sessionsResponse = await fetch(
+                `/api/truck-sessions?direction=OUT&plateNumber=${encodeURIComponent(
+                  formState.plateNumber.trim()
+                )}&limit=1&sort=createdAt`
+              );
+              if (sessionsResponse.ok) {
+                const sessionsData = await sessionsResponse.json();
+                const outSession = sessionsData.sessions?.[0];
+                if (outSession?.uniqueCode) {
+                  uniqueCode = outSession.uniqueCode;
+                  setSavedUniqueCode(uniqueCode);
+                }
+              }
+            } catch (e) {
+              console.warn("Could not fetch latest session:", e);
+            }
+          }
+        }
+
+        if (!uniqueCode) {
+          toast({
+            title: "Алдаа",
+            description: "Бүртгэл олдсонгүй. Эхлээд бүртгэлийг хадгална уу.",
+            variant: "destructive",
+          });
+          return false;
+        }
+
+        console.log("🚀 Starting send process for OUT session...");
+
+        // Step 1: Transform data to 3rd party format (matching test-websocket.html)
+        const productName = formState.productId
+          ? products.find((p) => p.id === formState.productId)?.label || ""
+          : "";
+        const transportCompanyName = formState.transporterCompanyId
+          ? transportCompanies.find(
+              (t) => t.id === formState.transporterCompanyId
+            )?.name || ""
+          : "";
+
+        // Get sender and receiver organization names
+        let senderOrgName = "";
+        let receiverOrgName = "";
+
+        if (formState.senderOrganizationId) {
+          try {
+            const orgsResponse = await fetch(
+              "/api/organizations?type=sender"
+            );
+            if (orgsResponse.ok) {
+              const orgs = await orgsResponse.json();
+              const org = orgs.find(
+                (o: any) => o.id === formState.senderOrganizationId
+              );
+              if (org) senderOrgName = org.name;
+            }
+          } catch (e) {
+            // Ignore error
+          }
+        }
+
+        if (formState.receiverOrganizationId) {
+          try {
+            const orgsResponse = await fetch(
+              "/api/organizations?type=receiver"
+            );
+            if (orgsResponse.ok) {
+              const orgs = await orgsResponse.json();
+              const org = orgs.find(
+                (o: any) => o.id === formState.receiverOrganizationId
+              );
+              if (org) receiverOrgName = org.name;
+            }
+          } catch (e) {
+            // Ignore error
+          }
+        }
+
+        const thirdPartyData = [
+          {
+            // Core fields (original format)
+            AKT: uniqueCode,
+            CAR: productName,
+            CMN: "",
+            CON: "",
+            CT1: "",
+            DRN: formState.driverName.trim(),
+            LPC:
+              transportCompanyName ||
+              formState.origin.trim() ||
+              senderOrgName,
+            NET: formState.netWeightKg || 0,
+            SLN: formState.sealNumber.trim(),
+            TRL: formState.hasTrailer
+              ? formState.trailerNumber.trim().toUpperCase()
+              : "",
+            UPC: formState.destination.trim() || receiverOrgName,
+            VNO: formState.plateNumber.trim().toUpperCase(),
+            WGT: formState.totalWeight || formState.grossWeightKg || 0,
+            
+            // New fields (updated API format)
+            PRM: "", // Premium/Permit number
+            CT2: "", // Container 2
+            CT3: "", // Container 3
+            CT4: "", // Container 4
+            TID: "", // Transaction ID
+            
+            // Additional fields for sender/receiver company and driver ID
+            senderCompany: senderOrgName,
+            receiverCompany: receiverOrgName,
+            driverId: formState.driverId || "",
+          },
+        ];
+
+        // Step 2: Save data to file-like storage (matching test-websocket.html)
+        console.log("💾 Step 1: Saving data to storage...");
+        const appBaseUrl =
+          typeof window !== "undefined"
+            ? window.location.origin
+            : "https://gaali.vercel.app";
+
+        const saveResponse = await fetch(
+          `${appBaseUrl}/api/third-party/save`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              uniqueCode: uniqueCode, // Use AKT as unique code
+              data: thirdPartyData,
+            }),
+          }
+        );
+
+        if (!saveResponse.ok) {
+          const errorData = await saveResponse.json().catch(() => ({}));
+          console.error("❌ ERROR: Failed to save data");
+          console.error("❌ Response status:", saveResponse.status);
+          console.error("❌ Error data:", errorData);
+          throw new Error(
+            errorData.error ||
+              `Failed to save data: ${saveResponse.statusText}`
+          );
+        }
+
+        const saveResult = await saveResponse.json();
+        const dataBaseUrl = `${appBaseUrl}/api/third-party/data`;
+        const dataUrl = `${dataBaseUrl}/${saveResult.code}`;
+
+        console.log("✅ Step 1: Data saved successfully");
+        console.log("🔑 Unique Code (AKT):", uniqueCode);
+        console.log("📁 Data URL:", dataUrl);
+
+        // Step 3: Check WebSocket connection (matching test-websocket.html logic)
+        console.log("🔌 Step 2: Checking WebSocket connection...");
+        let ws = getWebSocket();
+        console.log(
+          "🔌 Current WebSocket state:",
+          ws
+            ? `readyState: ${ws.readyState} (OPEN=${WebSocket.OPEN})`
+            : "null"
+        );
+
+        if (!ws || ws.readyState !== WebSocket.OPEN) {
+          console.log(
+            "🔌 WebSocket not connected, attempting to connect..."
+          );
+          try {
+            ws = await connectWebSocket();
+            console.log("✅ WebSocket connection attempt completed");
+            ws = getWebSocket();
+            await new Promise((resolve) => setTimeout(resolve, 50));
+            ws = getWebSocket();
+            if (!ws || ws.readyState !== WebSocket.OPEN) {
+              console.error(
+                "❌ ERROR: WebSocket connection failed or closed immediately"
+              );
+              console.error(
+                "❌ WebSocket states: CONNECTING=0, OPEN=1, CLOSING=2, CLOSED=3"
+              );
+              console.error(
+                "❌ Current state:",
+                ws ? ws.readyState : "null"
+              );
+              console.error(
+                "❌ This usually means the 3rd party app server is not running"
+              );
+              toast({
+                title: "Алдаа",
+                description:
+                  "3-р талын програмтай холбогдох боломжгүй байна. Програм ажиллаж байгаа эсэхийг шалгана уу.",
+                variant: "destructive",
+              });
+              return false;
+            }
+            console.log("✅ WebSocket connection verified and open");
+          } catch (error) {
+            console.error("❌ ERROR: Failed to connect WebSocket");
+            console.error("❌ Error details:", error);
+            console.error(
+              "❌ This usually means the 3rd party app server is not running at ws://127.0.0.1:9000/service"
+            );
+            toast({
+              title: "Алдаа",
+              description:
+                "3-р талын програмтай холбогдох боломжгүй байна. Програм ажиллаж байгаа эсэхийг шалгана уу.",
+              variant: "destructive",
+            });
+            return false;
+          }
+        } else {
+          console.log("✅ WebSocket already connected");
+        }
+
+        // Step 4: Verify connection one more time (matching test-websocket.html)
+        ws = getWebSocket();
+        if (!ws || ws.readyState !== WebSocket.OPEN) {
+          console.error(
+            "❌ ERROR: WebSocket connection is not open before sending"
+          );
+          toast({
+            title: "Алдаа",
+            description:
+              "WebSocket холболт тасарсан байна. Дахин оролдоно уу.",
+            variant: "destructive",
+          });
+          return false;
+        }
+
+        // Step 5: Send the full URL via WebSocket (matching test-websocket.html)
+        console.log("📤 Step 3: Sending data to 3rd party app...");
+        console.log("📤 URL to send:", dataUrl);
+        console.log("📤 Unique Code (AKT):", uniqueCode);
+
+        if (ws.readyState !== WebSocket.OPEN) {
+          console.error("❌ ERROR: WebSocket closed right before send!");
+          toast({
+            title: "Алдаа",
+            description:
+              "WebSocket холболт тасарсан байна. Дахин оролдоно уу.",
+            variant: "destructive",
+          });
+          return false;
+        }
+
+        ws.send(dataUrl);
+        console.log("✅ ws.send() completed without throwing error");
+
+        // Step 6: Check connection after a short delay (matching test-websocket.html)
+        await new Promise((resolve) => setTimeout(resolve, 100));
+        ws = getWebSocket();
+
+        if (!ws || ws.readyState !== WebSocket.OPEN) {
+          console.error("❌ ERROR: WebSocket closed after sending!");
+          console.error(
+            "❌ This usually means the 3rd party app server is not running"
+          );
+          toast({
+            title: "Алдаа",
+            description:
+              "3-р талын програмтай холболт тасарсан. Програм ажиллаж байгаа эсэхийг шалгана уу.",
+            variant: "destructive",
+          });
+          return false;
+        }
+
+        console.log("=".repeat(50));
+        console.log("✅ SUCCESS: Data sent to 3rd party app");
+        console.log("✅ URL sent:", dataUrl);
+        console.log("✅ Unique Code (AKT):", uniqueCode);
+        console.log("=".repeat(50));
+
+        toast({
+          title: "Амжилттай",
+          description: "3-р талын програм руу илгээгдлээ",
+        });
+        return true;
+      } catch (sendError) {
+        console.error("=".repeat(50));
+        console.error("❌ ERROR: Exception thrown while sending data");
+        console.error("❌ Error:", sendError);
+        console.error(
+          "❌ Error message:",
+          sendError instanceof Error ? sendError.message : String(sendError)
+        );
+        console.error("=".repeat(50));
+        toast({
+          title: "Алдаа",
+          description:
+            sendError instanceof Error
+              ? sendError.message
+              : "3-р талын програм руу илгээхэд алдаа гарлаа",
+          variant: "destructive",
+        });
+        return false;
+      } finally {
+        setIsSending(false);
+      }
+    };
+
+    // Reset form (only clear savedUniqueCode and savedSessionId when starting a new form)
+    const resetForm = () => {
+      setInWeightKg(null);
+      setSavedUniqueCode(null);
+      setSavedSessionId(null);
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -1856,163 +2073,241 @@ export const OutSessionForm = forwardRef<
               </div>
 
               {/* Weight Inputs - Full width, directly under license plate and warning */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-x-6 gap-y-4 -mt-2">
-                {/* Car Weight */}
-                <div className="flex flex-col">
-                  <div className="mb-1 min-h-[1.25rem] flex items-center">
-                    <Label
-                      htmlFor="carWeight"
-                      className="text-base font-medium text-gray-700"
-                    >
-                      Машины жин (кг) <span className="text-red-500">*</span>
-                    </Label>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-x-6 gap-y-4 -mt-2 mb-0">
+                {/* Car Weight Column - with In Weight (disabled) at top */}
+                <div className="flex flex-col gap-2">
+                  {/* In Weight Input - disabled, pushed to top */}
+                  <div className="flex flex-col">
+                    <div className="mb-1 min-h-[1.25rem] flex items-center">
+                      <Label
+                        htmlFor="inWeightKg"
+                        className="text-base font-medium text-gray-700"
+                      >
+                        Орох жин (кг)
+                      </Label>
+                    </div>
+                    <div className="h-14">
+                      <Input
+                        id="inWeightKg"
+                        type="number"
+                        value={inWeightKg ?? ""}
+                        readOnly
+                        className="h-14 !text-5xl !md:text-5xl font-mono font-bold !text-green-600 w-full bg-white [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none [-moz-appearance:textfield]"
+                      />
+                    </div>
                   </div>
-                  <div className="h-14 flex gap-2">
-                    <Input
-                      id="carWeight"
-                      type="number"
-                      value={formState.carWeight ?? 0}
-                      onFocus={(e) => {
-                        if (!carWeightLocked) {
+
+                  {/* Car Weight */}
+                  <div className="flex flex-col">
+                    <div className="mb-1 min-h-[1.25rem] flex items-center">
+                      <Label
+                        htmlFor="carWeight"
+                        className="text-base font-medium text-gray-700"
+                      >
+                        Машины жин (кг) <span className="text-red-500">*</span>
+                      </Label>
+                    </div>
+                    <div className="h-14 flex gap-2">
+                      <Input
+                        id="carWeight"
+                        type="number"
+                        value={formState.carWeight ?? 0}
+                        onFocus={(e) => {
+                          if (!carWeightLocked) {
+                            e.target.select();
+                          }
+                        }}
+                        onChange={(e) => {
+                          if (carWeightLocked) return; // Prevent changes when locked
+                          const value =
+                            e.target.value === ""
+                              ? 0
+                              : parseFloat(e.target.value) || 0;
+                          setFormState((prev) => {
+                            const newCarWeight = value;
+                            const newTotalWeight = (newCarWeight || 0) + (prev.trailerWeight || 0);
+                            return {
+                              ...prev,
+                              carWeight: newCarWeight,
+                              totalWeight: newTotalWeight,
+                              grossWeightKg: newTotalWeight,
+                              outWeightKg: newTotalWeight, // Also update outWeightKg for API compatibility
+                            };
+                          });
+                        }}
+                        className="h-14 !text-5xl !md:text-5xl font-mono font-bold !text-green-600 flex-1 bg-white [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none [-moz-appearance:textfield]"
+                        required
+                        disabled={carWeightLocked}
+                        readOnly={carWeightLocked}
+                      />
+                      <Button
+                        type="button"
+                        onClick={() => {
+                          setCarWeightLocked((prev) => !prev);
+                        }}
+                        className="h-14 px-4 whitespace-nowrap"
+                        disabled={false}
+                      >
+                        {carWeightLocked ? "🔓" : "OK"}
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Trailer Weight Column - with Net Weight below */}
+                <div className="flex flex-col gap-2">
+                  {/* Trailer Weight */}
+                  <div className="flex flex-col">
+                    <div className="mb-1 min-h-[1.25rem] flex items-center">
+                      <Label
+                        htmlFor="trailerWeight"
+                        className="text-base font-medium text-gray-700"
+                      >
+                        Чиргүүлийн жин (кг)
+                      </Label>
+                    </div>
+                    <div className="h-14">
+                      <Input
+                        id="trailerWeight"
+                        type="number"
+                        value={formState.trailerWeight ?? 0}
+                        onFocus={(e) => {
                           e.target.select();
+                        }}
+                        onChange={(e) => {
+                          const value =
+                            e.target.value === ""
+                              ? 0
+                              : parseFloat(e.target.value) || 0;
+                          setFormState((prev) => {
+                            const newTrailerWeight = value;
+                            const newTotalWeight = (prev.carWeight || 0) + (newTrailerWeight || 0);
+                            return {
+                              ...prev,
+                              trailerWeight: newTrailerWeight,
+                              totalWeight: newTotalWeight,
+                              grossWeightKg: newTotalWeight,
+                              outWeightKg: newTotalWeight, // Also update outWeightKg for API compatibility
+                            };
+                          });
+                        }}
+                        className="h-14 !text-5xl !md:text-5xl font-mono font-bold !text-green-600 w-full bg-white [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none [-moz-appearance:textfield]"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Net Weight Input - directly under Trailer Weight */}
+                  <div className="flex flex-col">
+                    <div className="mb-1 min-h-[1.25rem] flex items-center">
+                        <Label
+                          htmlFor="netWeightKg"
+                        className="text-base font-medium text-gray-700"
+                        >
+                          Цэвэр жин (кг) <span className="text-red-500">*</span>
+                        </Label>
+                    </div>
+                    <div className="h-14">
+                        <Input
+                          id="netWeightKg"
+                          type="number"
+                          value={
+                            formState.netWeightKg !== null
+                              ? Math.abs(formState.netWeightKg) // Display absolute value (hide minus sign)
+                              : ""
+                          }
+                          onChange={(e) => {
+                            if (e.target.value === "") {
+                              setFormState((prev) => ({
+                                ...prev,
+                                netWeightKg: null,
+                              }));
+                              return;
+                            }
+                            const value = parseFloat(e.target.value) || 0;
+                            // Preserve the sign of the original value if it was negative
+                            const currentValue = formState.netWeightKg;
+                            const newValue =
+                              currentValue !== null && currentValue < 0
+                                ? -Math.abs(value) // Keep negative if it was negative
+                                : Math.abs(value); // Otherwise use positive
+                            setFormState((prev) => ({
+                              ...prev,
+                              netWeightKg: newValue,
+                            }));
+                          }}
+                      className="h-14 !text-5xl !md:text-5xl font-mono font-bold !text-blue-600 w-full bg-white [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none [-moz-appearance:textfield]"
+                          required
+                        />
+                      </div>
+                  </div>
+                </div>
+
+                {/* Total Weight Column - with Seal Number below */}
+                <div className="flex flex-col gap-2">
+                  {/* Total Weight */}
+                  <div className="flex flex-col">
+                    <div className="mb-1 min-h-[1.25rem] flex items-center">
+                      <Label
+                        htmlFor="totalWeight"
+                        className="text-base font-medium text-gray-700"
+                      >
+                        Гарах үеийн нийт жин (кг) <span className="text-red-500">*</span>
+                      </Label>
+                    </div>
+                    <div className="h-14">
+                      <Input
+                        id="totalWeight"
+                        type="number"
+                        value={formState.totalWeight ?? 0}
+                        onFocus={(e) => {
+                          e.target.select();
+                        }}
+                        onChange={(e) => {
+                          const value =
+                            e.target.value === ""
+                              ? 0
+                              : parseFloat(e.target.value) || 0;
+                          setFormState((prev) => ({
+                            ...prev,
+                            totalWeight: value,
+                            grossWeightKg: value,
+                            outWeightKg: value, // Also update outWeightKg for API compatibility
+                          }));
+                        }}
+                        className="h-14 !text-5xl !md:text-5xl font-mono font-bold !text-green-600 w-full bg-white [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none [-moz-appearance:textfield]"
+                        required
+                      />
+                    </div>
+                  </div>
+
+                  {/* Seal Number - directly under Total Weight */}
+                  <div className="flex flex-col">
+                    <div className="mb-1 min-h-[1.25rem] flex items-center">
+                      <Label
+                        htmlFor="sealNumber"
+                        className="text-base font-medium text-gray-700"
+                      >
+                        Лацны дугаар
+                      </Label>
+                    </div>
+                    <div className="h-14">
+                      <Input
+                        id="sealNumber"
+                        value={formState.sealNumber}
+                        onChange={(e) =>
+                          setFormState((prev) => ({
+                            ...prev,
+                            sealNumber: e.target.value,
+                          }))
                         }
-                      }}
-                      onChange={(e) => {
-                        if (carWeightLocked) return; // Prevent changes when locked
-                        const value =
-                          e.target.value === ""
-                            ? 0
-                            : parseFloat(e.target.value) || 0;
-                        setFormState((prev) => {
-                          const newCarWeight = value;
-                          const newTotalWeight = (newCarWeight || 0) + (prev.trailerWeight || 0);
-                          return {
-                            ...prev,
-                            carWeight: newCarWeight,
-                            totalWeight: newTotalWeight,
-                            grossWeightKg: newTotalWeight,
-                            outWeightKg: newTotalWeight, // Also update outWeightKg for API compatibility
-                          };
-                        });
-                      }}
-                      className="h-14 !text-5xl !md:text-5xl font-mono font-bold !text-green-600 flex-1 bg-white [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none [-moz-appearance:textfield]"
-                      required
-                      disabled={carWeightLocked}
-                      readOnly={carWeightLocked}
-                    />
-                    <Button
-                      type="button"
-                      onClick={() => {
-                        setCarWeightLocked((prev) => !prev);
-                      }}
-                      className="h-14 px-4 whitespace-nowrap"
-                      disabled={false}
-                    >
-                      {carWeightLocked ? "🔓" : "OK"}
-                    </Button>
-                  </div>
-                </div>
-
-                {/* Trailer Weight */}
-                <div className="flex flex-col">
-                  <div className="mb-1 min-h-[1.25rem] flex items-center">
-                    <Label
-                      htmlFor="trailerWeight"
-                      className="text-base font-medium text-gray-700"
-                    >
-                      Чиргүүлийн жин (кг)
-                    </Label>
-                  </div>
-                  <div className="h-14">
-                    <Input
-                      id="trailerWeight"
-                      type="number"
-                      value={formState.trailerWeight ?? 0}
-                      onFocus={(e) => {
-                        e.target.select();
-                      }}
-                      onChange={(e) => {
-                        const value =
-                          e.target.value === ""
-                            ? 0
-                            : parseFloat(e.target.value) || 0;
-                        setFormState((prev) => {
-                          const newTrailerWeight = value;
-                          const newTotalWeight = (prev.carWeight || 0) + (newTrailerWeight || 0);
-                          return {
-                            ...prev,
-                            trailerWeight: newTrailerWeight,
-                            totalWeight: newTotalWeight,
-                            grossWeightKg: newTotalWeight,
-                            outWeightKg: newTotalWeight, // Also update outWeightKg for API compatibility
-                          };
-                        });
-                      }}
-                      className="h-14 !text-5xl !md:text-5xl font-mono font-bold !text-green-600 w-full bg-white [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none [-moz-appearance:textfield]"
-                    />
-                  </div>
-                </div>
-
-                {/* Total Weight */}
-                <div className="flex flex-col">
-                  <div className="mb-1 min-h-[1.25rem] flex items-center">
-                    <Label
-                      htmlFor="totalWeight"
-                      className="text-base font-medium text-gray-700"
-                    >
-                      Гарах үеийн нийт жин (кг) <span className="text-red-500">*</span>
-                    </Label>
-                  </div>
-                  <div className="h-14">
-                    <Input
-                      id="totalWeight"
-                      type="number"
-                      value={formState.totalWeight ?? 0}
-                      onFocus={(e) => {
-                        e.target.select();
-                      }}
-                      onChange={(e) => {
-                        const value =
-                          e.target.value === ""
-                            ? 0
-                            : parseFloat(e.target.value) || 0;
-                        setFormState((prev) => ({
-                          ...prev,
-                          totalWeight: value,
-                          grossWeightKg: value,
-                          outWeightKg: value, // Also update outWeightKg for API compatibility
-                        }));
-                      }}
-                      className="h-14 !text-5xl !md:text-5xl font-mono font-bold !text-green-600 w-full bg-white [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none [-moz-appearance:textfield]"
-                      required
-                    />
+                        className="h-14 !text-5xl !md:text-5xl font-mono font-bold !text-blue-600 w-full bg-white [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none [-moz-appearance:textfield]"
+                      />
+                    </div>
                   </div>
                 </div>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-4">
-                {/* In Weight Input - Read-only display from IN session */}
-                <div className="flex flex-col min-w-0">
-                  <div className="mb-1 min-h-[1.25rem] flex items-center">
-                    <Label
-                      htmlFor="inWeightKg"
-                      className="text-base font-medium text-gray-700"
-                    >
-                      Орох жин (кг)
-                    </Label>
-                  </div>
-                  <div className="h-12 min-w-0 max-w-full overflow-hidden">
-                    <Input
-                      id="inWeightKg"
-                      type="number"
-                      value={inWeightKg ?? ""}
-                      readOnly
-                      className="h-12 text-base w-full max-w-full bg-white border border-gray-300 [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none [-moz-appearance:textfield] box-border"
-                      placeholder="Орох жин (кг)"
-                    />
-                  </div>
-                </div>
-
                 {/* Trailer */}
                 <div className="flex flex-col">
                   <div className="mb-1 min-h-[1.25rem] flex items-center">
@@ -2031,83 +2326,12 @@ export const OutSessionForm = forwardRef<
                           hasTrailer: !!value.trim(),
                         }))
                       }
-                      disabled={isLoadingTrailers}
+                      disabled={isLoadingTrailers || hasInSessionData}
                       placeholder={
                         isLoadingTrailers ? "Уншиж байна..." : "Чиргүүл сонгох"
                       }
                       searchPlaceholder="Чиргүүлийн улсын дугаар хайх..."
                       className="h-12 !bg-blue-400 !text-white !border-blue-400 hover:!bg-blue-500 hover:!border-blue-500 [&>span]:!text-white [&>span.text-muted-foreground]:!text-white/90"
-                    />
-                  </div>
-                </div>
-
-                {/* Net Weight Input */}
-                <div className="flex flex-col">
-                  <div className="mb-1 min-h-[1.25rem] flex items-center">
-                      <Label
-                        htmlFor="netWeightKg"
-                      className="text-base font-medium text-gray-700"
-                      >
-                        Цэвэр жин (кг) <span className="text-red-500">*</span>
-                      </Label>
-                  </div>
-                  <div className="h-12">
-                      <Input
-                        id="netWeightKg"
-                        type="number"
-                        value={
-                          formState.netWeightKg !== null
-                            ? Math.abs(formState.netWeightKg)
-                            : ""
-                        }
-                        onChange={(e) => {
-                          if (e.target.value === "") {
-                            setFormState((prev) => ({
-                              ...prev,
-                              netWeightKg: null,
-                            }));
-                            return;
-                          }
-                          const value = parseFloat(e.target.value) || 0;
-                          const currentValue = formState.netWeightKg;
-                          const newValue =
-                            currentValue !== null && currentValue < 0
-                              ? -Math.abs(value)
-                              : Math.abs(value);
-                          setFormState((prev) => ({
-                            ...prev,
-                            netWeightKg: newValue,
-                          }));
-                        }}
-                      className="h-12 text-base w-full bg-white border border-gray-300 [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none [-moz-appearance:textfield]"
-                        placeholder="Цэвэр жин (кг)"
-                        required
-                      />
-                    </div>
-                </div>
-
-                {/* Seal Number */}
-                <div className="flex flex-col">
-                  <div className="mb-1 min-h-[1.25rem] flex items-center">
-                    <Label
-                      htmlFor="sealNumber"
-                      className="text-base font-medium text-gray-700"
-                    >
-                      Лацны дугаар
-                    </Label>
-                  </div>
-                  <div className="h-12">
-                    <Input
-                      id="sealNumber"
-                      value={formState.sealNumber}
-                      onChange={(e) =>
-                        setFormState((prev) => ({
-                          ...prev,
-                          sealNumber: e.target.value,
-                        }))
-                      }
-                      className="h-12 text-base w-full"
-                      placeholder="Лацны дугаар оруулах"
                     />
                   </div>
                 </div>
@@ -2136,7 +2360,7 @@ export const OutSessionForm = forwardRef<
                           driverName: selectedDriver?.name || "",
                         }));
                       }}
-                      disabled={isLoadingDrivers}
+                      disabled={isLoadingDrivers || hasInSessionData}
                       placeholder={
                         isLoadingDrivers ? "Уншиж байна..." : "Жолооч сонгох"
                       }
@@ -2169,7 +2393,7 @@ export const OutSessionForm = forwardRef<
                             transporterCompanyId: value,
                           }));
                         }}
-                        disabled={isLoadingCompanies}
+                        disabled={isLoadingCompanies || hasInSessionData}
                         placeholder={
                           isLoadingCompanies
                             ? "Уншиж байна..."
@@ -2204,7 +2428,7 @@ export const OutSessionForm = forwardRef<
                           productId: value,
                         }));
                       }}
-                      disabled={isLoadingProducts}
+                      disabled={isLoadingProducts || hasInSessionData}
                       placeholder={
                         isLoadingProducts
                           ? "Уншиж байна..."
@@ -2239,7 +2463,7 @@ export const OutSessionForm = forwardRef<
                             origin: value,
                           }))
                         }
-                        disabled={isLoadingLocations}
+                        disabled={isLoadingLocations || hasInSessionData}
                         placeholder={isLoadingLocations ? "Уншиж байна..." : "Байршил сонгох"}
                         searchPlaceholder="Байршил хайх..."
                         onCreateNewDialog={(initialValue) => handleOpenCreateDialog("location", initialValue)}
@@ -2269,7 +2493,7 @@ export const OutSessionForm = forwardRef<
                             destination: value,
                           }))
                         }
-                        disabled={isLoadingLocations}
+                        disabled={isLoadingLocations || hasInSessionData}
                         placeholder={isLoadingLocations ? "Уншиж байна..." : "Байршил сонгох"}
                         searchPlaceholder="Байршил хайх..."
                         onCreateNewDialog={(initialValue) => handleOpenCreateDialog("location", initialValue)}
@@ -2299,7 +2523,7 @@ export const OutSessionForm = forwardRef<
                             senderOrganizationId: value,
                           }));
                         }}
-                        disabled={isLoadingOrganizations}
+                        disabled={isLoadingOrganizations || hasInSessionData}
                         placeholder={
                           isLoadingOrganizations
                             ? "Уншиж байна..."
@@ -2333,7 +2557,7 @@ export const OutSessionForm = forwardRef<
                             receiverOrganizationId: value,
                           }));
                         }}
-                        disabled={isLoadingOrganizations}
+                        disabled={isLoadingOrganizations || hasInSessionData}
                         placeholder={
                           isLoadingOrganizations
                             ? "Уншиж байна..."
@@ -2367,6 +2591,7 @@ export const OutSessionForm = forwardRef<
                           notes: e.target.value,
                         }))
                       }
+                      disabled={hasInSessionData}
                       // Textarea has a default `min-h-16` in the shared component, so we must override it here.
                       className="text-base resize-none h-12 min-h-0 w-full"
                       placeholder="Нэмэлт мэдээлэл..."
@@ -2401,30 +2626,7 @@ export const OutSessionForm = forwardRef<
                 </div>
 
                 {/* Out Time */}
-                <div className="flex flex-col">
-                  <div className="mb-1 min-h-[1.25rem] flex items-center">
-                    <Label
-                      htmlFor="outTime"
-                      className="text-base font-medium text-gray-700"
-                    >
-                      Гарах цаг
-                    </Label>
-                  </div>
-                  <div className="h-12">
-                    <Input
-                      id="outTime"
-                      type="datetime-local"
-                      value={formState.outTime}
-                      onChange={(e) =>
-                        setFormState((prev) => ({
-                          ...prev,
-                          outTime: e.target.value,
-                        }))
-                      }
-                      className="h-12 text-base w-full"
-                    />
-                  </div>
-                </div>
+                
 
                 {/* Warning message under receiver organization - full width row */}
                 <div className="md:col-span-2 lg:col-span-3 flex flex-col gap-2">
@@ -2521,10 +2723,10 @@ export const OutSessionForm = forwardRef<
                       }}
                       disabled={
                         !formState.plateNumber.trim() ||
-                        !formState.outWeightKg ||
-                        !formState.netWeightKg
+                        !formState.totalWeight ||
+                        !formState.netWeightKg || formState.netWeightKg === 0
                       }
-                  className="h-12 px-5 text-base"
+                  className="h-14 px-6 text-base"
                       title="PDF файл татах"
                     >
                       <Printer className="w-4 h-4 mr-1" />
@@ -2590,6 +2792,30 @@ export const OutSessionForm = forwardRef<
                   className="bg-green-600 hover:bg-green-700 disabled:opacity-50 h-14 px-6 text-base"
                     >
                       {isSaving ? "Хадгалж байна..." : "Хадгалах"}
+                    </Button>
+                    <Button
+                      type="button"
+                      onClick={async () => {
+                        await performSendToThirdParty();
+                      }}
+                      disabled={
+                        !savedUniqueCode ||
+                        isSending ||
+                        isSaving
+                      }
+                      className="bg-blue-600 hover:bg-blue-700 disabled:opacity-50 h-14 px-6 text-base"
+                    >
+                      {isSending ? (
+                        <>
+                          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                          Илгээж байна...
+                        </>
+                      ) : (
+                        <>
+                          <Send className="w-4 h-4 mr-2" />
+                          Илгээх
+                        </>
+                      )}
                     </Button>
                     
                   </div>

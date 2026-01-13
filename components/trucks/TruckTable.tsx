@@ -508,7 +508,7 @@ export function TruckTable({ logs, onSend, onUpdate }: TruckTableProps) {
                               : "bg-blue-50 text-blue-700 border-blue-200 text-xs"
                           }
                         >
-                          {(log.direction === "OUT") || (log.direction === "IN" && log.netWeightKg !== undefined && log.netWeightKg !== null) ? "гарсан" : "орсон"}
+                          {(log.direction === "OUT") || (log.direction === "IN" && log.netWeightKg !== undefined && log.netWeightKg !== null) ? "орсон гарсан" : "орсон гараагүй"}
                         </Badge>
                         <div className="absolute right-0 top-1/2 -translate-y-1/2 w-px h-3 bg-gray-300"></div>
                       </TableCell>

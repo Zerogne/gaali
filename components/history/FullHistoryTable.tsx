@@ -662,7 +662,7 @@ export function FullHistoryTable({
                               : "bg-green-50 text-green-700 border-green-200"
                           }
                         >
-                          {log.direction === "IN" ? "ОРОХ" : "ГАРАХ"}
+                          {log.direction === "IN" ? "орсон гараагүй" : "орсон гарсан"}
                         </Badge>
                         <div className="absolute right-0 top-1/2 -translate-y-1/2 w-px h-3 bg-gray-300"></div>
                       </TableCell>

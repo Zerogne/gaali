@@ -234,7 +234,7 @@ export default function ReportsPage() {
         "Жолооч": log.driverName || "—",
         "Бүтээгдхүүн": log.cargoType || "—",
         "Тээврийн компани": getTransportCompanyName(log.transportCompanyId),
-        "Чиглэл": (log.direction === "OUT") || (log.direction === "IN" && log.netWeightKg !== undefined && log.netWeightKg !== null) ? "гарсан" : "орсон",
+        "Чиглэл": (log.direction === "OUT") || (log.direction === "IN" && log.netWeightKg !== undefined && log.netWeightKg !== null) ? "орсон гарсан" : "орсон гараагүй",
         "Төлөв": log.sentToCustoms ? "илгээгдсэн" : "илгээгдээгүй",
         "Жин (кг)": log.weightKg || "—",
         "Цэвэр жин (кг)": log.netWeightKg || "—",
@@ -553,7 +553,7 @@ export default function ReportsPage() {
                                       : "bg-blue-50 text-blue-700 border-blue-200 text-xs"
                                   }
                                 >
-                                  {(log.direction === "OUT") || (log.direction === "IN" && log.netWeightKg !== undefined && log.netWeightKg !== null) ? "гарсан" : "орсон"}
+                                  {(log.direction === "OUT") || (log.direction === "IN" && log.netWeightKg !== undefined && log.netWeightKg !== null) ? "орсон гарсан" : "орсон гараагүй"}
                                 </Badge>
                                 <div className="absolute right-0 top-1/2 -translate-y-1/2 w-px h-3 bg-gray-300"></div>
                               </TableCell>
