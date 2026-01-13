@@ -478,7 +478,7 @@ function generateLogHTML(
         }
         .document-title {
           text-align: center;
-          font-size: 20px;
+          font-size: 22px;
           font-weight: bold;
           margin: 4px 0 3px 0;
           color: rgb(0, 0, 0);
@@ -508,7 +508,7 @@ function generateLogHTML(
           text-align: right;
         }
         .info-item {
-          margin-bottom: 4px;
+          margin-bottom: 8px;
         }
         .info-label {
           font-size: 13px;
