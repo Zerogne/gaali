@@ -116,13 +116,16 @@ export default function DashboardPage() {
     async function loadLogs() {
       try {
         setIsLoading(true);
+        console.log("🔄 Loading logs for history...");
         // Get the 50 most recent logs for the home page
         const result = await getTruckLogs(1, 50);
+        console.log("🔄 Received", result.logs.length, "logs from API, total:", result.total);
         // Merge IN and OUT logs for the same plate
         const mergedLogs = mergeLogsByPlate(result.logs);
+        console.log("🔄 After merging:", mergedLogs.length, "merged logs");
         setLogs(mergedLogs);
       } catch (error) {
-        console.error("Error loading logs:", error);
+        console.error("❌ Error loading logs:", error);
         // If error loading logs, might be auth issue, redirect to login
         if (error instanceof Error && error.message.includes("redirect")) {
           router.push("/login");
@@ -133,6 +136,15 @@ export default function DashboardPage() {
     }
 
     loadLogs();
+    
+    // Set up interval to refresh logs every 5 seconds (for testing)
+    // Remove this in production or make it configurable
+    const refreshInterval = setInterval(() => {
+      console.log("🔄 Auto-refreshing logs...");
+      loadLogs();
+    }, 5000);
+    
+    return () => clearInterval(refreshInterval);
   }, [isCheckingAuth, router]);
 
   const handleSave = async (log: TruckLog) => {

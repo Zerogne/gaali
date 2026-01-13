@@ -204,11 +204,16 @@ export async function saveTruckSession(
     }
 
     // Insert into company's collection
-    console.log("💾 Attempting to insert session document:", JSON.stringify(sessionDoc, null, 2))
+    const collectionName = `company_${companyId}_truck_sessions`
+    console.log("💾 Attempting to insert session document into collection:", collectionName)
+    console.log("💾 Session document:", JSON.stringify(sessionDoc, null, 2))
     let insertResult
     try {
       insertResult = await sessionsCollection.insertOne(sessionDoc)
-      console.log("📝 Insert result:", insertResult)
+      console.log("📝 Insert result:", {
+        acknowledged: insertResult.acknowledged,
+        insertedId: insertResult.insertedId,
+      })
     } catch (error) {
       console.error("❌ Error inserting session:", error)
       if (error instanceof Error) {
@@ -222,6 +227,12 @@ export async function saveTruckSession(
       console.error("❌ Insert result has no insertedId:", insertResult)
       throw new Error("Failed to insert session into database - no insertedId returned")
     }
+    
+    if (!insertResult.acknowledged) {
+      console.error("❌ Insert was not acknowledged by database!")
+      throw new Error("Failed to insert session - database did not acknowledge the insert")
+    }
+    
     console.log("✅ Session saved with unique code:", uniqueCode, "insertedId:", insertResult.insertedId)
 
     // Verify the session was actually saved by querying it back

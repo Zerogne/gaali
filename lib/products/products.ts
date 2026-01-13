@@ -2,6 +2,7 @@
 
 import { getCompanyCollection } from "@/lib/db/companyDb"
 import { getActiveCompany } from "@/lib/auth/session"
+import { migrateDefaultProductsToDatabase } from "./migrate"
 
 export interface Product {
   id: string
@@ -11,45 +12,34 @@ export interface Product {
   createdAt?: string
 }
 
-// Default products that are always available
-const DEFAULT_PRODUCTS: Omit<Product, "id" | "isCustom" | "createdAt">[] = [
-  { value: "industrial", label: "Аж үйлдвэрийн тоног төхөөрөмж" },
-  { value: "food", label: "Хүнсний бүтээгдэхүүн" },
-  { value: "textiles", label: "Текстиль" },
-  { value: "electronics", label: "Электроник" },
-  { value: "construction", label: "Барилгын материал" },
-  { value: "machinery", label: "Машин механизм" },
-  { value: "chemicals", label: "Химийн бодис" },
-  { value: "other", label: "Бусад" },
-]
-
 /**
- * Get all products for the active company (default + custom)
+ * Get all products for the active company (from database only)
+ * Default products are now stored in the database
  */
 export async function getProducts(): Promise<Product[]> {
   const companyId = await getActiveCompany()
   const productsCollection = await getCompanyCollection<Product>(companyId, "products")
 
-  // Get custom products from database
-  const customProducts = await productsCollection.find({}).toArray()
+  // Get all products from database (default + custom)
+  const allProducts = await productsCollection.find({}).sort({ isCustom: 1, label: 1 }).toArray()
 
-  // Serialize and combine with default products
-  const defaultProducts: Product[] = DEFAULT_PRODUCTS.map((p) => ({
-    ...p,
-    id: `default-${p.value}`,
-    isCustom: false,
-  }))
+  // If no products exist, migrate defaults
+  if (allProducts.length === 0) {
+    console.log("📦 No products found, migrating default products...")
+    await migrateDefaultProductsToDatabase()
+    // Fetch again after migration
+    const migratedProducts = await productsCollection.find({}).sort({ isCustom: 1, label: 1 }).toArray()
+    return migratedProducts.map((p: any) => {
+      const { _id, ...productData } = p
+      return productData
+    })
+  }
 
-  const customProductsSerialized: Product[] = customProducts.map((p: any) => {
+  // Serialize MongoDB documents to plain objects
+  return allProducts.map((p: any) => {
     const { _id, ...productData } = p
-    return {
-      ...productData,
-      isCustom: true,
-    }
+    return productData
   })
-
-  // Combine: default products first, then custom products
-  return [...defaultProducts, ...customProductsSerialized]
 }
 
 /**
@@ -149,26 +139,17 @@ export async function deleteProduct(productId: string): Promise<void> {
 }
 
 /**
- * Get all products (for use in components that don't have company context)
+ * Get all products for a specific company (from database only)
  */
 export async function getAllProductsForCompany(companyId: string): Promise<Product[]> {
   const productsCollection = await getCompanyCollection<Product>(companyId, "products")
 
-  const customProducts = await productsCollection.find({}).toArray()
+  // Get all products from database
+  const allProducts = await productsCollection.find({}).sort({ isCustom: 1, label: 1 }).toArray()
 
-  const defaultProducts: Product[] = DEFAULT_PRODUCTS.map((p) => ({
-    ...p,
-    id: `default-${p.value}`,
-    isCustom: false,
-  }))
-
-  const customProductsSerialized: Product[] = customProducts.map((p: any) => {
+  // Serialize MongoDB documents to plain objects
+  return allProducts.map((p: any) => {
     const { _id, ...productData } = p
-    return {
-      ...productData,
-      isCustom: true,
-    }
+    return productData
   })
-
-  return [...defaultProducts, ...customProductsSerialized]
 }

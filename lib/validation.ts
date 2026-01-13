@@ -69,6 +69,7 @@ export const truckLogSchema = z.object({
     .string()
     .min(1, 'Cargo type is required')
     .max(100, 'Cargo type is too long'),
+  productId: z.string().max(100).optional(),
   weightKg: z
     .number()
     .positive('Weight must be positive')

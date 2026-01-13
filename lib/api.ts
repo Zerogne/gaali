@@ -23,6 +23,7 @@ export async function saveTruckLog(
       ...log,
       // Optional fields - convert empty strings to undefined
       driverId: (log.driverId === "" || log.driverId === null) ? undefined : log.driverId,
+      productId: ((log as any).productId === "" || (log as any).productId === null) ? undefined : (log as any).productId,
       weightKg: (log.weightKg === null || log.weightKg === undefined || isNaN(log.weightKg) || log.weightKg <= 0) ? undefined : log.weightKg,
       netWeightKg: (log.netWeightKg === null || log.netWeightKg === undefined || isNaN(log.netWeightKg) || log.netWeightKg <= 0) ? undefined : log.netWeightKg,
       comments: log.comments === "" ? undefined : log.comments,
@@ -68,7 +69,10 @@ export async function saveTruckLog(
     const companyId = await getActiveCompany()
 
     // Get company-scoped logs collection
-    const logsCollection = await getCompanyCollection<TruckLog>(companyId, "logs")
+    const collectionName = "logs"
+    const fullCollectionName = `company_${companyId}_${collectionName}`
+    console.log("💾 Using collection:", fullCollectionName)
+    const logsCollection = await getCompanyCollection<TruckLog>(companyId, collectionName)
 
     // Create log document
     const logDoc: TruckLog = {
@@ -80,32 +84,25 @@ export async function saveTruckLog(
 
     // Insert into company's collection
     console.log("💾 Inserting log document into database...")
-    await logsCollection.insertOne(logDoc)
+    console.log("💾 Log document:", JSON.stringify(logDoc, null, 2))
+    const insertResult = await logsCollection.insertOne(logDoc)
     console.log("✅ Log document inserted successfully")
+    console.log("✅ Insert result:", {
+      acknowledged: insertResult.acknowledged,
+      insertedId: insertResult.insertedId,
+    })
+    
+    if (!insertResult.acknowledged) {
+      console.error("❌ CRITICAL: Log insert was not acknowledged by database!")
+      throw new Error("Failed to insert log - database did not acknowledge the insert")
+    }
 
     // Serialize MongoDB document to plain object (remove _id, ensure all values are serializable)
     // Create a clean copy to avoid any MongoDB-specific properties
+    const { _id: _, ...logData } = logDoc as any
     const serializedLog: TruckLog = {
-      id: logDoc.id,
-      direction: logDoc.direction,
-      plate: logDoc.plate,
-      driverId: logDoc.driverId,
-      driverName: logDoc.driverName,
-      cargoType: logDoc.cargoType,
-      weightKg: logDoc.weightKg,
-      netWeightKg: logDoc.netWeightKg,
-      comments: logDoc.comments,
-      origin: logDoc.origin,
-      destination: logDoc.destination,
-      senderOrganizationId: logDoc.senderOrganizationId,
-      senderOrganization: logDoc.senderOrganization,
-      receiverOrganizationId: logDoc.receiverOrganizationId,
-      receiverOrganization: logDoc.receiverOrganization,
-      transportCompanyId: logDoc.transportCompanyId,
-      transportType: logDoc.transportType,
-      sealNumber: logDoc.sealNumber,
-      hasTrailer: logDoc.hasTrailer,
-      trailerPlate: logDoc.trailerPlate,
+      ...logData,
+      productId: logData.productId, // Include productId if present
       createdAt: logDoc.createdAt,
       sentToCustoms: logDoc.sentToCustoms,
     }
@@ -193,7 +190,14 @@ export async function getTruckLogs(
 ): Promise<{ logs: TruckLog[]; total: number; page: number; limit: number; totalPages: number }> {
   try {
     const companyId = await getActiveCompany()
-    const logsCollection = await getCompanyCollection<TruckLog>(companyId, "logs")
+    console.log("📖 getTruckLogs called for company:", companyId, "page:", page, "limit:", limit)
+    
+    // Verify we're using the correct collection name
+    const collectionName = "logs"
+    const fullCollectionName = `company_${companyId}_${collectionName}`
+    console.log("📖 Using collection:", fullCollectionName)
+    
+    const logsCollection = await getCompanyCollection<TruckLog>(companyId, collectionName)
 
     // Validate pagination params
     const validPage = Math.max(1, Math.floor(page))
@@ -202,6 +206,18 @@ export async function getTruckLogs(
 
     // Get total count
     const total = await logsCollection.countDocuments({})
+    console.log("📖 Total logs in 'logs' collection:", total)
+    
+    // Also check truck_sessions collection for comparison
+    try {
+      const { getCompanyCollection: getCompanyCollection2 } = await import("@/lib/db/companyDb")
+      const sessionsCollection = await getCompanyCollection2(companyId, "truck_sessions")
+      const sessionCount = await sessionsCollection.countDocuments({})
+      console.log("📖 Total sessions in 'truck_sessions' collection:", sessionCount)
+      console.log("📖 Difference (sessions - logs):", sessionCount - total, "- this should be 0 or small")
+    } catch (e) {
+      console.warn("⚠️ Could not check truck_sessions collection:", e)
+    }
 
     // Fetch logs with pagination, sorted by creation date (newest first)
     const logs = await logsCollection
@@ -210,18 +226,39 @@ export async function getTruckLogs(
       .skip(skip)
       .limit(validLimit)
       .toArray()
+    
+    console.log("📖 Fetched", logs.length, "logs from database")
+    if (logs.length > 0) {
+      console.log("📖 First log ID:", logs[0].id, "| Plate:", logs[0].plate, "| Created:", logs[0].createdAt)
+    } else {
+      console.warn("⚠️ No logs found in collection - this might indicate a problem")
+    }
 
     // Serialize MongoDB documents to plain objects
     const serializedLogs = logs.map((doc) => {
       const { _id, createdAt, ...log } = doc as any
-      return {
+      const serialized = {
         ...log,
+        productId: log.productId, // Include productId if present
         createdAt: typeof createdAt === 'string' 
           ? createdAt 
           : (createdAt instanceof Date 
               ? createdAt.toISOString() 
               : new Date(createdAt).toISOString()),
       } as TruckLog
+      
+      // Debug: Log first few logs to verify they're being serialized correctly
+      if (logs.indexOf(doc) < 3) {
+        console.log("📖 Serialized log", logs.indexOf(doc) + 1, ":", {
+          id: serialized.id,
+          plate: serialized.plate,
+          direction: serialized.direction,
+          cargoType: serialized.cargoType,
+          createdAt: serialized.createdAt,
+        })
+      }
+      
+      return serialized
     })
 
     return {
@@ -253,6 +290,7 @@ export async function getTruckLog(logId: string): Promise<TruckLog | null> {
   const { _id, createdAt, ...logData } = log as any
   return {
     ...logData,
+    productId: logData.productId, // Include productId if present
     createdAt: typeof createdAt === 'string' 
       ? createdAt 
       : (createdAt instanceof Date 
@@ -332,19 +370,10 @@ export async function updateTruckLog(
     // Serialize MongoDB document to plain object (remove _id, convert Date objects)
     // Create a plain object copy to avoid any MongoDB-specific properties
     const doc = updatedDoc as any
+    const { _id, ...logData } = doc
     const serializedLog: TruckLog = {
-      id: doc.id,
-      direction: doc.direction,
-      plate: doc.plate,
-      driverName: doc.driverName,
-      cargoType: doc.cargoType,
-      weightKg: doc.weightKg,
-      comments: doc.comments,
-      origin: doc.origin,
-      destination: doc.destination,
-      senderOrganization: doc.senderOrganization,
-      receiverOrganization: doc.receiverOrganization,
-      sentToCustoms: doc.sentToCustoms,
+      ...logData,
+      productId: doc.productId, // Include productId if present
       createdAt: typeof doc.createdAt === 'string' 
         ? doc.createdAt 
         : (doc.createdAt instanceof Date 

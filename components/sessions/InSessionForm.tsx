@@ -1483,10 +1483,24 @@ export const InSessionForm = forwardRef<
           setSavedUniqueCode(savedSession.session.uniqueCode);
         }
 
-        toast({
-          title: "Амжилттай",
-          description: "ОРОХ бүртгэл амжилттай хадгалагдлаа",
-        });
+        // Verify log was created by checking server response
+        console.log("✅ Session saved:", savedSession.session?.id);
+        console.log("✅ Session unique code:", savedSession.session?.uniqueCode);
+        
+        // Check if there's a warning about log creation
+        if (savedSession.warning) {
+          console.warn("⚠️ Warning from server:", savedSession.warning);
+          toast({
+            title: "Анхааруулга",
+            description: "Бүртгэл хадгалагдсан боловч түүхэнд харагдахгүй байж магадгүй",
+            variant: "destructive",
+          });
+        } else {
+          toast({
+            title: "Амжилттай",
+            description: "ОРОХ бүртгэл амжилттай хадгалагдлаа",
+          });
+        }
 
         // 3rd party sending removed for In Session
         if (false && savedSession.session && savedSession.session.uniqueCode) {

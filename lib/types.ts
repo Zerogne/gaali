@@ -34,7 +34,8 @@ export interface TruckLog {
   plate: string;
   driverId?: string; // Driver selection
   driverName: string; // Keep for backward compatibility
-  cargoType: string;
+  cargoType: string; // Product name (label) - for display
+  productId?: string; // Product ID (value) - for form selection
   weightKg?: number;
   netWeightKg?: number; // Цэвэр жин (net weight) - only for OUT direction
   comments?: string;

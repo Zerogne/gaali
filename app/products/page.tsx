@@ -35,6 +35,17 @@ export default function ProductsPage() {
   useEffect(() => {
     async function loadProducts() {
       try {
+        // First, ensure default products are migrated
+        try {
+          const migrateResponse = await fetch("/api/products/migrate", { method: "POST" })
+          if (migrateResponse.ok) {
+            console.log("✅ Default products migrated")
+          }
+        } catch (migrateError) {
+          console.warn("⚠️ Migration check failed (may already be migrated):", migrateError)
+        }
+        
+        // Then load products
         const response = await fetch("/api/products")
         if (response.ok) {
           const data = await response.json()

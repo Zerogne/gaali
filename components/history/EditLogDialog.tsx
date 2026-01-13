@@ -90,7 +90,8 @@ export function EditLogDialog({
         const response = await fetch("/api/drivers");
         if (response.ok) {
           const data = await response.json();
-          setDrivers(data.drivers || []);
+          // API returns array directly, not wrapped in drivers property
+          setDrivers(Array.isArray(data) ? data : (data.drivers || []));
         }
       } catch (error) {
         console.error("Error loading drivers:", error);
@@ -106,10 +107,11 @@ export function EditLogDialog({
     async function loadCompanies() {
       setIsLoadingCompanies(true);
       try {
-        const response = await fetch("/api/companies");
+        const response = await fetch("/api/transport-companies");
         if (response.ok) {
           const data = await response.json();
-          setTransportCompanies(data.companies || []);
+          // API returns array directly, not wrapped in companies property
+          setTransportCompanies(Array.isArray(data) ? data : (data.companies || []));
         }
       } catch (error) {
         console.error("Error loading companies:", error);
@@ -148,7 +150,8 @@ export function EditLogDialog({
         const response = await fetch("/api/products");
         if (response.ok) {
           const data = await response.json();
-          setProducts(data.products || []);
+          // API returns array directly, not wrapped in products property
+          setProducts(Array.isArray(data) ? data : (data.products || []));
         }
       } catch (error) {
         console.error("Error loading products:", error);
@@ -172,7 +175,74 @@ export function EditLogDialog({
       setPlate(log.plate || "");
       setDriverId(log.driverId || "");
       setDriverName(log.driverName || "");
-      setCargoType(log.cargoType || "");
+      
+      // Map cargoType (product name/label) to productId (product value) for FilterableSelect
+      // Priority: productId from log > find by cargoType (label) match > find by cargoType (value) match > cargoType as fallback
+      let productIdForSelect = "";
+      
+      console.log("📋 EditDialog: Initializing product field", {
+        logProductId: (log as any).productId,
+        logCargoType: log.cargoType,
+        productsCount: products.length,
+        availableProducts: products.map((p: Product) => ({ value: p.value, label: p.label })),
+      });
+      
+      // First, try to use productId if it exists in the log
+      if ((log as any).productId) {
+        // Check if this productId exists in the products list
+        const productExists = products.find((p: Product) => p.value === (log as any).productId);
+        if (productExists) {
+          productIdForSelect = productExists.value;
+          console.log("📋 EditDialog: Using productId from log (found in products):", productIdForSelect);
+        } else {
+          // ProductId exists but product not found - might be old format, try to match by cargoType
+          console.warn("⚠️ EditDialog: productId from log not found in products, trying cargoType match");
+          if (log.cargoType && products.length > 0) {
+            const matchedProduct = products.find((p: Product) => p.label === log.cargoType);
+            if (matchedProduct) {
+              productIdForSelect = matchedProduct.value;
+              console.log("📋 EditDialog: Found product by cargoType (label) match:", productIdForSelect);
+            }
+          }
+        }
+      } else if (log.cargoType) {
+        // If no productId, try to find product by matching cargoType to product label
+        if (products.length > 0) {
+          // First try: match cargoType to product label (most common case)
+          const labelMatch = products.find((p: Product) => p.label === log.cargoType);
+          if (labelMatch) {
+            productIdForSelect = labelMatch.value;
+            console.log("📋 EditDialog: Found product by label match:", {
+              cargoType: log.cargoType,
+              productValue: productIdForSelect,
+              productId: labelMatch.value,
+            });
+          } else {
+            // Second try: match cargoType to product value
+            const valueMatch = products.find((p: Product) => p.value === log.cargoType);
+            if (valueMatch) {
+              productIdForSelect = valueMatch.value;
+              console.log("📋 EditDialog: Found product by value match:", productIdForSelect);
+            } else {
+              // Last resort: use cargoType as-is (might be a custom value)
+              productIdForSelect = log.cargoType;
+              console.warn("⚠️ EditDialog: No product match found for cargoType:", log.cargoType, "- using as-is");
+              console.warn("⚠️ Available products:", products.map((p: Product) => `${p.label} (${p.value})`).join(", "));
+            }
+          }
+        } else {
+          // Products not loaded yet, use cargoType temporarily
+          // This will be updated when products load (useEffect dependency)
+          productIdForSelect = log.cargoType;
+          console.log("📋 EditDialog: Products not loaded yet, using cargoType temporarily:", log.cargoType);
+        }
+      }
+      
+      console.log("📋 EditDialog: Setting cargoType state to:", productIdForSelect);
+      console.log("📋 EditDialog: Available product values:", products.map((p: Product) => p.value));
+      console.log("📋 EditDialog: Will value be valid?", products.some((p: Product) => p.value === productIdForSelect));
+      setCargoType(productIdForSelect);
+      
       setWeight(log.weightKg?.toString() || "");
       setNetWeight(log.netWeightKg?.toString() || "");
       setComments(log.comments || "");
@@ -197,8 +267,26 @@ export function EditLogDialog({
         setInWeight("");
         setOutWeight("");
       }
+    } else {
+      // Reset form when log is null
+      setPlate("");
+      setDriverId("");
+      setDriverName("");
+      setCargoType("");
+      setWeight("");
+      setNetWeight("");
+      setComments("");
+      setOrigin("");
+      setDestination("");
+      setSenderOrganizationId("");
+      setReceiverOrganizationId("");
+      setTransportCompanyId("");
+      setSealNumber("");
+      setHasTrailer(false);
+      setTrailerPlate("");
+      setErrors({});
     }
-  }, [log]);
+  }, [log, products]); // Add products to dependencies so it re-runs when products load
 
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -212,14 +300,36 @@ export function EditLogDialog({
       const hasOutData = log.netWeightKg !== undefined && log.netWeightKg !== null;
       const isCombinedLog = hasOutData && direction === "IN";
 
+      // Find product label from productId (cargoType contains productId)
+      let cargoTypeLabel = cargoType.trim() || "Бусад";
+      if (cargoType && products.length > 0) {
+        const selectedProduct = products.find((p: Product) => p.value === cargoType);
+        if (selectedProduct) {
+          cargoTypeLabel = selectedProduct.label;
+        }
+      }
+      
+      // Find driver name from driverId if driverName is empty
+      let finalDriverName = driverName.trim();
+      if (!finalDriverName && driverId && drivers.length > 0) {
+        const selectedDriver = drivers.find((d) => d.id === driverId);
+        if (selectedDriver) {
+          finalDriverName = selectedDriver.name;
+        }
+      }
+      if (!finalDriverName) {
+        finalDriverName = "Тодорхойгүй";
+      }
+      
       const response = await fetch(`/api/logs/${log.id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           plate: plate.trim(),
           driverId: driverId || undefined,
-          driverName: driverName.trim() || "Тодорхойгүй",
-          cargoType: cargoType.trim() || "Бусад",
+          driverName: finalDriverName,
+          cargoType: cargoTypeLabel,
+          productId: cargoType || undefined, // Store productId for future use
           weightKg: isCombinedLog && outWeight ? Number(outWeight) : Number(weight),
           netWeightKg:
             (direction === "OUT" || isCombinedLog) && netWeight ? Number(netWeight) : undefined,
@@ -395,13 +505,47 @@ export function EditLogDialog({
                     value: product.value,
                     label: product.label,
                   }))}
-                  value={cargoType}
-                  onValueChange={setCargoType}
+                  value={
+                    // Only set value if it exists in the options, otherwise undefined
+                    (() => {
+                      const isValid = cargoType && products.length > 0 && products.some((p: Product) => p.value === cargoType);
+                      if (cargoType) {
+                        console.log("📋 EditDialog: FilterableSelect value check:", {
+                          cargoType,
+                          productsCount: products.length,
+                          isValid,
+                          availableValues: products.map((p: Product) => p.value),
+                          matchingProduct: products.find((p: Product) => p.value === cargoType),
+                        });
+                      }
+                      return isValid ? cargoType : undefined;
+                    })()
+                  }
+                  onValueChange={(value) => {
+                    setCargoType(value || "");
+                    console.log("📋 EditDialog: Product selected:", value);
+                    // Also update driverName if needed (for consistency)
+                    const selectedProduct = products.find((p: Product) => p.value === value);
+                    if (selectedProduct) {
+                      console.log("📋 EditDialog: Selected product:", selectedProduct.label);
+                    }
+                  }}
                   disabled={isLoadingProducts}
-                  placeholder={isLoadingProducts ? "Уншиж байна..." : "Бүтээгдэхүүн сонгох"}
+                  placeholder={
+                    isLoadingProducts
+                      ? "Уншиж байна..."
+                      : cargoType && !products.some((p: Product) => p.value === cargoType)
+                      ? `Бүтээгдэхүүн сонгох (${cargoType} олдсонгүй)`
+                      : "Бүтээгдэхүүн сонгох"
+                  }
                   searchPlaceholder="Бүтээгдэхүүн хайх..."
                   className="h-10"
                 />
+                {cargoType && !products.some((p: Product) => p.value === cargoType) && (
+                  <p className="mt-1 text-xs text-amber-600">
+                    ⚠️ "{cargoType}" бүтээгдэхүүн олдсонгүй. Шинэ бүтээгдэхүүн сонгоно уу.
+                  </p>
+                )}
                 {errors.cargoType && (
                   <p className="mt-1 text-xs text-red-600">{errors.cargoType}</p>
                 )}
