@@ -6,7 +6,13 @@ import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
-import { Loader2, Plus } from "lucide-react"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import { Loader2, Plus, MoreVertical, Edit, Trash2 } from "lucide-react"
 import type { Worker } from "@/lib/auth/mockData"
 import { handleWorkerSelect } from "@/lib/auth/authClient"
 import { useToast } from "@/hooks/use-toast"
@@ -36,6 +42,9 @@ export function WorkerSelector({
   const [isSelecting, setIsSelecting] = useState(false)
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const [isAdding, setIsAdding] = useState(false)
+  const [isEditing, setIsEditing] = useState(false)
+  const [isDeleting, setIsDeleting] = useState(false)
+  const [editingWorkerId, setEditingWorkerId] = useState<string | null>(null)
   const [workerData, setWorkerData] = useState({ name: "", role: "" })
   const { toast } = useToast()
 
@@ -130,6 +139,105 @@ export function WorkerSelector({
     }
   }
 
+  const handleEditWorker = (worker: Worker) => {
+    setEditingWorkerId(worker.id)
+    setWorkerData({ name: worker.name, role: worker.role })
+    setIsDialogOpen(true)
+  }
+
+  const handleUpdateWorker = async () => {
+    if (!editingWorkerId || !workerData.name.trim() || !workerData.role.trim()) {
+      toast({
+        title: "Алдаа",
+        description: "Нэр болон албан тушаал оруулах шаардлагатай",
+        variant: "destructive",
+      })
+      return
+    }
+
+    setIsEditing(true)
+    try {
+      const response = await fetch(`/api/companies/${companyId}/workers/${editingWorkerId}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+        body: JSON.stringify({
+          name: workerData.name.trim(),
+          role: workerData.role.trim(),
+        }),
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.error || "Failed to update worker")
+      }
+
+      toast({
+        title: "Амжилттай",
+        description: "Оператор амжилттай шинэчлэгдлээ",
+      })
+
+      setWorkerData({ name: "", role: "" })
+      setEditingWorkerId(null)
+      setIsDialogOpen(false)
+
+      // Refresh workers list
+      if (onWorkerAdded) {
+        onWorkerAdded()
+      }
+    } catch (error) {
+      toast({
+        title: "Алдаа",
+        description: error instanceof Error ? error.message : "Оператор шинэчлэхэд алдаа гарлаа",
+        variant: "destructive",
+      })
+    } finally {
+      setIsEditing(false)
+    }
+  }
+
+  const handleDeleteWorker = async (workerId: string) => {
+    if (!confirm("Та энэ операторыг устгахдаа итгэлтэй байна уу?")) {
+      return
+    }
+
+    setIsDeleting(true)
+    try {
+      const response = await fetch(`/api/companies/${companyId}/workers/${workerId}`, {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.error || "Failed to delete worker")
+      }
+
+      toast({
+        title: "Амжилттай",
+        description: "Оператор амжилттай устгагдлаа",
+      })
+
+      // Refresh workers list
+      if (onWorkerAdded) {
+        onWorkerAdded()
+      }
+    } catch (error) {
+      toast({
+        title: "Алдаа",
+        description: error instanceof Error ? error.message : "Оператор устгахад алдаа гарлаа",
+        variant: "destructive",
+      })
+    } finally {
+      setIsDeleting(false)
+    }
+  }
+
   return (
     <div className="space-y-6">
       <button
@@ -194,9 +302,8 @@ export function WorkerSelector({
                 return (
                   <Card
                     key={worker.id}
-                    onClick={() => !isSelecting && handleWorkerClick(worker.id)}
                     className={`
-                      p-4 cursor-pointer transition-all duration-200
+                      p-4 transition-all duration-200 relative
                       ${isSelected
                         ? "border-2 border-blue-600 bg-blue-50 shadow-md"
                         : "border border-gray-200 bg-white hover:border-blue-300 hover:shadow-md"
@@ -204,7 +311,10 @@ export function WorkerSelector({
                       ${isSelecting ? "opacity-50 cursor-wait" : ""}
                     `}
                   >
-                    <div className="flex items-center gap-3">
+                    <div 
+                      className="flex items-center gap-3 cursor-pointer"
+                      onClick={() => !isSelecting && handleWorkerClick(worker.id)}
+                    >
                       <div
                         className={`
                           w-10 h-10 rounded-full flex items-center justify-center text-white font-semibold text-sm
@@ -243,6 +353,46 @@ export function WorkerSelector({
                         </div>
                       )}
                     </div>
+                    {/* 3-dots menu */}
+                    <div className="absolute top-2 right-2">
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-8 w-8 p-0"
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              e.preventDefault()
+                            }}
+                          >
+                            <MoreVertical className="h-4 w-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              handleEditWorker(worker)
+                            }}
+                          >
+                            <Edit className="h-4 w-4 mr-2" />
+                            Засах
+                          </DropdownMenuItem>
+                          <DropdownMenuItem
+                            variant="destructive"
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              handleDeleteWorker(worker.id)
+                            }}
+                            disabled={isDeleting}
+                          >
+                            <Trash2 className="h-4 w-4 mr-2" />
+                            Устгах
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </div>
                   </Card>
                 )
               })}
@@ -257,13 +407,19 @@ export function WorkerSelector({
         )}
       </div>
 
-      {/* Add Worker Dialog */}
-      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+      {/* Add/Edit Worker Dialog */}
+      <Dialog open={isDialogOpen} onOpenChange={(open) => {
+        setIsDialogOpen(open)
+        if (!open) {
+          setWorkerData({ name: "", role: "" })
+          setEditingWorkerId(null)
+        }
+      }}>
         <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle>Оператор нэмэх</DialogTitle>
+            <DialogTitle>{editingWorkerId ? "Оператор засах" : "Оператор нэмэх"}</DialogTitle>
             <DialogDescription>
-              Шинэ оператор нэмэх
+              {editingWorkerId ? "Операторын мэдээллийг засах" : "Шинэ оператор нэмэх"}
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-4">
@@ -311,14 +467,16 @@ export function WorkerSelector({
             </Button>
             <Button
               type="button"
-              onClick={handleAddWorker}
-              disabled={isAdding || !workerData.name.trim() || !workerData.role.trim()}
+              onClick={editingWorkerId ? handleUpdateWorker : handleAddWorker}
+              disabled={(isAdding || isEditing) || !workerData.name.trim() || !workerData.role.trim()}
             >
-              {isAdding ? (
+              {(isAdding || isEditing) ? (
                 <>
                   <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                   Хадгалж байна...
                 </>
+              ) : editingWorkerId ? (
+                "Хадгалах"
               ) : (
                 "Нэмэх"
               )}
