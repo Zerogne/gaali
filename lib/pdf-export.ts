@@ -383,12 +383,59 @@ function generateLogHTML(
   // Use provided company name or default
   const displayCompanyName = companyName || "ТЭЭВРИЙН КОМПАНИ";
 
+  // Format date as M/D/YYYY for the receipt
+  const formatReceiptDate = (date: Date): string => {
+    const month = date.getMonth() + 1;
+    const day = date.getDate();
+    const year = date.getFullYear();
+    return `${month}/${day}/${year}`;
+  };
+
+  const receiptDate = log.createdAt ? formatReceiptDate(new Date(log.createdAt)) : "";
+
+  // Get in weight (entry weight) and out weight (exit weight)
+  // In weight: weight when entering (loaded/gross weight)
+  // For IN direction or merged logs: weightKg is the entry weight (loaded)
+  // For OUT-only: we might not have entry weight
+  let inWeight = null;
+  if (log.direction === "IN" || isMergedLog) {
+    inWeight = log.weightKg || null;
+  }
+  
+  // Out weight: weight when exiting (unloaded/tare weight)
+  // For OUT direction: weightKg is the exit weight (unloaded)
+  // For merged logs: calculate unloadedWeight = loaded - net
+  let outWeight = null;
+  if (log.direction === "OUT") {
+    outWeight = log.weightKg || null;
+  } else if (isMergedLog && log.weightKg && log.netWeightKg) {
+    outWeight = log.weightKg - log.netWeightKg;
+  }
+  
+  // Net weight: always use netWeightKg if available (allow 0 or positive values)
+  const netWeight = (log.netWeightKg !== undefined && log.netWeightKg !== null) ? log.netWeightKg : null;
+  
+  // Format time for display (HH:MM)
+  const formatTime = (date: Date): string => {
+    const hours = String(date.getHours()).padStart(2, "0");
+    const minutes = String(date.getMinutes()).padStart(2, "0");
+    return `${hours}:${minutes}`;
+  };
+  
+  const inTime = (log.direction === "IN" || isMergedLog) && log.createdAt
+    ? formatTime(new Date(log.createdAt))
+    : "";
+  
+  const outTime = (log.direction === "OUT" || isMergedLog) && log.createdAt
+    ? formatTime(new Date(log.createdAt))
+    : "";
+
   return `
     <!DOCTYPE html>
     <html>
     <head>
       <meta charset="UTF-8">
-      <title>Пүүний баримт</title>
+      <title>Авто пүүний Баримт</title>
       <style>
         @page {
           margin: 0;
@@ -401,7 +448,7 @@ function generateLogHTML(
           }
           body {
             margin: 0;
-            padding: 5mm 10mm 12mm 10mm;
+            padding: 5mm 8mm 8mm 8mm;
           }
         }
         * {
@@ -410,199 +457,227 @@ function generateLogHTML(
           box-sizing: border-box;
         }
         body {
-          font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+          font-family: Arial, sans-serif;
           font-size: 11px;
-          line-height: 1.5;
-          color: rgb(0, 0, 0);
-          background: rgb(255, 255, 255);
-          padding: 5mm 10mm 12mm 10mm;
+          line-height: 1.2;
+          color: rgb(0, 0, 139);
+          background: rgb(255, 250, 240);
+          padding: 5mm 8mm 8mm 8mm;
           width: 210mm;
         }
-        .company-name {
+        .header-top {
           text-align: center;
-          font-size: 16px;
+          margin-bottom: 6px;
+        }
+        .company-top-middle {
+          font-size: 20px;
           font-weight: bold;
-          margin-bottom: 8px;
-          margin-top: 0;
-        }
-        .document-header {
-          display: flex;
-          justify-content: space-between;
-          align-items: flex-start;
-          margin-bottom: 10px;
-          font-size: 11px;
-        }
-        .document-id {
+          color: rgb(0, 0, 139);
           text-align: center;
-          flex: 1;
-          font-size: 11px;
-          font-family: "Courier New", Courier, "Lucida Console", Monaco, monospace;
-          font-weight: 600;
-          letter-spacing: 0.5px;
+          margin-bottom: 0;
         }
-        .created-date {
-          text-align: right;
-          flex: 1;
-          font-size: 11px;
+        .document-title {
+          text-align: center;
+          font-size: 14px;
+          font-weight: bold;
+          margin: 4px 0 3px 0;
+          color: rgb(0, 0, 139);
         }
-        .parties-row {
+        .receipt-number {
+          text-align: center;
+          font-size: 11px;
+          margin-bottom: 6px;
+          color: rgb(0, 0, 139);
+        }
+        .divider-line {
+          border-top: 1px solid rgb(0, 0, 139);
+          margin: 10px 0;
+        }
+        .info-section {
           display: flex;
           justify-content: space-between;
-          align-items: flex-start;
-          margin-bottom: 8px;
-          font-size: 11px;
+          margin-bottom: 6px;
+          gap: 12px;
         }
-        .sender-info {
-          text-align: left;
+        .left-section {
           flex: 1;
         }
-        .receiver-info {
+        .right-section {
+          flex: 1;
           text-align: right;
-          flex: 1;
         }
-        .transporter-info {
-          text-align: left;
-          margin-bottom: 8px;
+        .info-item {
+          margin-bottom: 4px;
+        }
+        .info-label {
+          font-size: 10px;
+          color: rgb(0, 0, 139);
+          margin-bottom: 1px;
+        }
+        .info-value {
           font-size: 11px;
+          color: rgb(0, 0, 139);
         }
-        .contract-info {
-          text-align: left;
-          margin-bottom: 12px;
-          font-size: 11px;
-        }
-        .data-table {
+        .weight-table {
           width: 100%;
           border-collapse: collapse;
-          margin-top: 6px;
+          margin: 6px 0;
           font-size: 10px;
-          border: 0.5px solid rgb(156, 163, 175);
+          border: 1px solid rgb(0, 0, 139);
         }
-        .data-table td {
+        .weight-table th {
+          border: 1px solid rgb(0, 0, 139);
+          padding: 4px 3px;
+          text-align: center;
+          font-weight: bold;
+          background-color: rgb(255, 250, 240);
+          color: rgb(0, 0, 139);
+          font-size: 9px;
+        }
+        .weight-table td {
+          border: 1px solid rgb(0, 0, 139);
+          padding: 4px 3px;
+          text-align: center;
+          color: rgb(0, 0, 139);
+          font-size: 10px;
+        }
+        .weight-table .info-row td {
+          text-align: left;
           padding: 4px 6px;
-          border: 0.5px solid rgb(156, 163, 175);
-          vertical-align: middle;
-          background-color: rgb(255, 255, 255);
-          line-height: 1.4;
+          font-size: 9px;
         }
-        .data-table .label-cell {
-          font-weight: 600;
-          text-align: left;
-          white-space: nowrap;
-          width: 22%;
-          padding: 4px 4px 4px 6px;
+        .weight-table .info-row td strong {
+          font-weight: bold;
+          margin-right: 4px;
         }
-        .data-table .value-cell {
-          text-align: left;
-          width: 13%;
-          padding: 4px 4px;
+        .bottom-section {
+          display: flex;
+          justify-content: space-between;
+          align-items: flex-end;
+          margin-top: 6px;
         }
-        .data-table .weight-cell {
+        .bottom-left {
+          flex: 1;
+        }
+        .bottom-right {
+          flex: 1;
           text-align: right;
-          font-weight: 500;
         }
-        .data-table .empty-cell {
-          border: 0.5px solid rgb(156, 163, 175);
+        .operator-field {
+          text-align: right;
+        }
+        .field-with-dash {
+          display: inline-block;
+          border-bottom: 1px dashed rgb(0, 0, 139);
+          min-width: 150px;
+          padding-bottom: 2px;
+          margin-left: 4px;
+        }
+        .field-label {
+          font-size: 10px;
+          color: rgb(0, 0, 139);
+          display: inline-block;
+        }
+        .date-field {
+          font-size: 10px;
+          color: rgb(0, 0, 139);
         }
       </style>
     </head>
     <body>
-      <!-- Company name at top center -->
-      <div class="company-name">
-        ${escapeHtml(displayCompanyName)}
-      </div>
-
-      <!-- Document ID -->
-      <div class="document-header">
-        <div class="document-id">
-          ПҮҮНИЙ БАРИМТ: ${receiptNumber}
-        </div>
-        <div class="created-date">
+      <!-- Top: Company name left, company name right -->
+      <div class="header-top">
+        <div class="company-top-middle">
+          ${escapeHtml(displayCompanyName)}
         </div>
       </div>
 
-      <!-- Sender and Receiver -->
-      <div class="parties-row">
-        <div class="sender-info">
-          Илгээгч байгууллага: ${escapeHtml(senderOrg)}
+      <!-- Center: Document title -->
+      <div class="document-title">
+        Авто пүүний Баримт/Receipt
+      </div>
+
+      <!-- Receipt number -->
+      <div class="receipt-number">
+        No: ${receiptNumber}
+      </div>
+
+
+      <!-- Left and Right sections -->
+      <div class="info-section">
+        <div class="left-section">
+          <div class="info-item">
+            <div class="info-label">Илгээгч байгууллага/Sender organization</div>
+            <div class="info-value">${escapeHtml(senderOrg)}</div>
+          </div>
+          <div class="info-item">
+            <div class="info-label">Тээвэрлэгч байгууллага/Transporter organization</div>
+            <div class="info-value">${escapeHtml(transportCompany)}</div>
+          </div>
         </div>
-        <div class="receiver-info">
-          Хүлээн авагч: ${escapeHtml(receiverOrg)}
+        <div class="right-section">
+          <div class="info-item">
+            <div class="info-label">Хүлээн авагч/Trainee</div>
+            <div class="info-value">${escapeHtml(receiverOrg)}</div>
+          </div>
+          <div class="info-item">
+            <div class="info-label">Чиглэл/Trend</div>
+            <div class="info-value">${escapeHtml(log.direction === "IN" ? "Орсон" : "Гарсан")}</div>
+          </div>
         </div>
       </div>
 
-      <!-- Transporter Organization -->
-      <div class="transporter-info">
-        Тээвэрлэгч байгууллага: ${escapeHtml(transportCompany)}
-      </div>
-
-      <!-- Contract -->
-      <div class="contract-info">
-        Гэрээ:-
-      </div>
-
-      <!-- Data table -->
-      <table class="data-table">
-        <!-- Row 1: Vehicle and Weight info (6 columns) -->
-        <tr>
-          <td class="label-cell">Улсын дугаар:</td>
-          <td class="value-cell">${escapeHtml(log.plate || "")}</td>
-          <td class="label-cell">Чиргүүлийн дугаар:</td>
-          <td class="value-cell">${escapeHtml(log.trailerPlate || "")}</td>
-          <td class="label-cell">Гаалийн лац:</td>
-          <td class="value-cell">${escapeHtml(log.sealNumber || "")}</td>
-        </tr>
-        <tr>
-          <td class="label-cell">Ачаатай жин/кг/:</td>
-          <td class="value-cell weight-cell">${
-            log.weightKg ? log.weightKg.toLocaleString() : ""
-          }</td>
-          <td class="label-cell">Ачаагүй жин /кг/:</td>
-          <td class="value-cell weight-cell">${
-            unloadedWeight ? unloadedWeight.toLocaleString() : ""
-          }</td>
-          <td class="label-cell">Цэвэр жин/кг/:</td>
-          <td class="value-cell weight-cell">${
-            log.netWeightKg ? log.netWeightKg.toLocaleString() : ""
-          }</td>
-        </tr>
-        <!-- Row 2: Product, Dates, and Location codes (5 columns) -->
-        <tr>
-          <td class="label-cell">Бүтээгдэхүүн:</td>
-          <td class="value-cell">${escapeHtml(log.cargoType || "")}</td>
-          <td class="label-cell">Орсон огноо:</td>
-          <td class="value-cell">${entryDate !== "—" ? entryDate : ""}</td>
-          <td class="label-cell">Гарсан огноо:</td>
-          <td class="value-cell">${exitDate !== "—" ? exitDate : ""}</td>
-        </tr>
-        <tr>
-          <td class="label-cell">Ачих газрын код:</td>
-          <td class="value-cell">${escapeHtml(log.origin || "")}</td>
-          <td class="label-cell">Хүрэх газрын код:</td>
-          <td class="value-cell">${escapeHtml(log.destination || "")}</td>
-          <td class="empty-cell"></td>
-          <td class="empty-cell"></td>
-        </tr>
-        <!-- Row 3: Container and Exchange (2 columns) -->
-        <tr>
-          <td class="label-cell">Чингэлэг дугаар:</td>
-          <td class="value-cell"></td>
-          <td class="label-cell">Бирж дугаар:</td>
-          <td class="value-cell"></td>
-          <td class="empty-cell"></td>
-          <td class="empty-cell"></td>
-        </tr>
-        <!-- Row 4: Loader, Driver, and Approval -->
-        <tr>
-          <td class="label-cell">Пүүлэгч:</td>
-          <td class="value-cell">${escapeHtml(loaderName || "")}</td>
-          <td class="label-cell">Жолооч:</td>
-          <td class="value-cell">${escapeHtml(
-            driverFullInfo !== "—" ? driverFullInfo : ""
-          )}</td>
-          <td class="label-cell">С Зөвшөөрөл:</td>
-          <td class="value-cell">-</td>
-        </tr>
+      <!-- Weight table -->
+      <table class="weight-table">
+        <thead>
+          <tr>
+            <th>Машины дугаар / Registration No</th>
+            <th>Чиргуулийн дугаар / Trailer No</th>
+            <th>Оролтын жин /кг/ / In Weight /kg/</th>
+            <th>Гаралтын жин /кг/ / OutWeight /kg/</th>
+            <th>Цэвэр жин /кг/ / Net Weight /kg/</th>
+            <th>Гаалийн лац Custom / No</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>${escapeHtml(log.plate || "")}</td>
+            <td>${escapeHtml(log.trailerPlate || "")}</td>
+            <td>${inWeight !== null && inWeight > 0 ? inWeight.toLocaleString() : ""}</td>
+            <td>${outWeight !== null && outWeight > 0 ? outWeight.toLocaleString() : ""}</td>
+            <td>${netWeight !== null ? Math.abs(netWeight).toLocaleString() : ""}</td>
+            <td>${escapeHtml(log.sealNumber || "")}</td>
+          </tr>
+          <tr class="info-row">
+            <td colspan="2">
+              <strong>Бүтээгдэхүүн/Product:</strong> ${escapeHtml(log.cargoType || "")}
+            </td>
+            <td colspan="2">
+              <strong>Орсон цаг/In Time:</strong> ${inTime}
+            </td>
+            <td colspan="2">
+              <strong>Гарсан цаг/Out Time:</strong> ${outTime}
+            </td>
+          </tr>
+        </tbody>
       </table>
+
+      <!-- Bottom section: Driver, Operator, Date -->
+      <div class="bottom-section">
+        <div class="bottom-left">
+          <div style="margin-bottom: 6px;">
+            <span class="field-label">Жолооч/Driver:</span>
+            <span class="field-with-dash">${escapeHtml(driverFullInfo !== "—" ? driverFullInfo : "")}</span>
+          </div>
+        </div>
+        <div class="bottom-right">
+          <div class="operator-field" style="margin-bottom: 6px;">
+            <span class="field-label">Пүүний оператор/Operator:</span>
+            <span class="field-with-dash">${escapeHtml(loaderName || "")}</span>
+          </div>
+          
+        </div>
+      </div>
     </body>
     </html>
   `;
