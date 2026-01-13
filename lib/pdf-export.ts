@@ -478,7 +478,7 @@ function generateLogHTML(
         }
         .document-title {
           text-align: center;
-          font-size: 18px;
+          font-size: 20px;
           font-weight: bold;
           margin: 4px 0 3px 0;
           color: rgb(0, 0, 0);
