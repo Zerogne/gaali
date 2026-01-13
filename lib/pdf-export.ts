@@ -1,6 +1,7 @@
 import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
 import type { TruckLog } from "./types";
+import { date } from "zod";
 
 /**
  * Fetch related data for the log (transport company, organizations, driver)
@@ -457,134 +458,156 @@ function generateLogHTML(
           box-sizing: border-box;
         }
         body {
-          font-family: "Times New Roman", Times, serif;
-          font-size: 14px;
-          line-height: 1.2;
-          color: rgb(0, 0, 0);
-          background: rgb(255, 250, 240);
-          padding: 5mm 8mm 8mm 8mm;
-          width: 210mm;
-        }
-        .header-top {
-          text-align: center;
-          margin-bottom: 6px;
-        }
-        .company-top-middle {
-          font-size: 26px;
-          font-weight: bold;
-          color: rgb(0, 0, 0);
-          text-align: center;
-          margin-bottom: 0;
-        }
-        .document-title {
-          text-align: center;
-          font-size: 22px;
-          font-weight: bold;
-          margin: 4px 0 3px 0;
-          color: rgb(0, 0, 0);
-          margin-top: 20px;
-        }
-        .receipt-number {
-          text-align: center;
-          font-size: 16px;
-          margin-bottom: 6px;
-          color: rgb(0, 0, 0);
-        }
-        .divider-line {
-          border-top: 1px solid rgb(0, 0, 0);
-          margin: 10px 0;
-        }
-        .info-section {
-          display: flex;
-          justify-content: space-between;
-          margin-bottom: 6px;
-          gap: 12px;
-        }
-        .left-section {
-          flex: 1;
-        }
-        .right-section {
-          flex: 1;
-          text-align: right;
-        }
-        .info-item {
-          margin-bottom: 8px;
-        }
-        .info-label {
-          font-size: 13px;
-          color: rgb(0, 0, 0);
-          margin-bottom: 1px;
-        }
-        .info-value {
-          font-size: 14px;
-          color: rgb(0, 0, 0);
-        }
-        .weight-table {
-          width: 100%;
-          border-collapse: collapse;
-          margin: 6px 0;
-          font-size: 13px;
-          border: 1px solid rgb(0, 0, 0);
-        }
-        .weight-table th {
-          border: 1px solid rgb(0, 0, 0);
-          padding: 4px 3px;
-          text-align: center;
-          font-weight: bold;
-          background-color: rgb(255, 250, 240);
-          color: rgb(0, 0, 0);
-          font-size: 12px;
-        }
-        .weight-table td {
-          border: 1px solid rgb(0, 0, 0);
-          padding: 4px 3px;
-          text-align: center;
-          color: rgb(0, 0, 0);
-          font-size: 13px;
-        }
-        .weight-table .info-row td {
-          text-align: left;
-          padding: 4px 6px;
-          font-size: 12px;
-        }
-        .weight-table .info-row td strong {
-          font-weight: bold;
-          margin-right: 4px;
-        }
-        .bottom-section {
-          display: flex;
-          justify-content: space-between;
-          align-items: flex-end;
-          margin-top: 6px;
-        }
-        .bottom-left {
-          flex: 1;
-          margin-top: 20px;
-        }
-        .bottom-right {
-          flex: 1;
-          text-align: right;
-          margin-top: 20px;
-        }
-        .operator-field {
-          text-align: right;
-        }
-        .field-with-dash {
-          display: inline-block;
-          border-bottom: 1px dashed rgb(0, 0, 0);
-          min-width: 150px;
-          padding-bottom: 2px;
-          margin-left: 4px;
-        }
-        .field-label {
-          font-size: 13px;
-          color: rgb(0, 0, 0);
-          display: inline-block;
-        }
-        .date-field {
-          font-size: 13px;
-          color: rgb(0, 0, 0);
-        }
+        font-family: "Times New Roman", Times, serif;
+        font-size: 17px; /* was 14px */
+        line-height: 1.2;
+        color: rgb(0, 0, 0);
+        background: rgb(255, 250, 240);
+        padding: 5mm 8mm 8mm 8mm;
+        width: 210mm;
+      }
+
+      .header-top {
+        text-align: center;
+        margin-bottom: 6px;
+      }
+
+      .company-top-middle {
+        font-size: 29px; /* was 26px */
+        font-weight: bold;
+        color: rgb(0, 0, 0);
+        text-align: center;
+        margin-bottom: 0;
+      }
+
+      .document-title {
+        text-align: center;
+        font-size: 25px; /* was 22px */
+        font-weight: bold;
+        margin: 4px 0 3px 0;
+        color: rgb(0, 0, 0);
+        margin-top: 20px;
+      }
+
+      .receipt-number {
+        text-align: center;
+        font-size: 19px; /* was 16px */
+        margin-bottom: 6px;
+        color: rgb(0, 0, 0);
+      }
+
+      .divider-line {
+        border-top: 1px solid rgb(0, 0, 0);
+        margin: 10px 0;
+      }
+
+      .info-section {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 6px;
+        gap: 12px;
+      }
+
+      .left-section {
+        flex: 1;
+      }
+
+      .right-section {
+        flex: 1;
+        text-align: right;
+      }
+
+      .info-item {
+        margin-bottom: 10px;
+      }
+
+      .info-label {
+        font-size: 16px; /* was 13px */
+        color: rgb(0, 0, 0);
+        margin-bottom: 1px;
+      }
+
+      .info-value {
+        font-size: 17px; /* was 14px */
+        color: rgb(0, 0, 0);
+      }
+
+      .weight-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 6px 0;
+        font-size: 16px; /* was 13px */
+        border: 1px solid rgb(0, 0, 0);
+      }
+
+      .weight-table th {
+        border: 1px solid rgb(0, 0, 0);
+        padding: 4px 3px;
+        text-align: center;
+        background-color: rgb(255, 250, 240);
+        color: rgb(0, 0, 0);
+        font-size: 15px; /* was 12px */
+      }
+
+      .weight-table td {
+        border: 1px solid rgb(0, 0, 0);
+        padding: 4px 3px;
+        text-align: center;
+        color: rgb(0, 0, 0);
+        font-size: 16px; /* was 13px */
+      }
+
+      .weight-table .info-row td {
+        text-align: left;
+        padding: 4px 6px;
+        font-size: 15px; /* was 12px */
+      }
+
+      .weight-table .info-row td strong {
+        
+        margin-right: 4px;
+      }
+
+      .bottom-section {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-end;
+        margin-top: 6px;
+      }
+
+      .bottom-left {
+        flex: 1;
+        margin-top: 20px;
+      }
+
+      .bottom-right {
+        flex: 1;
+        text-align: right;
+        margin-top: 20px;
+      }
+
+      .operator-field {
+        text-align: right;
+      }
+
+      .field-with-dash {
+        display: inline-block;
+        border-bottom: 1px dashed rgb(0, 0, 0);
+        min-width: 150px;
+        padding-bottom: 2px;
+        margin-left: 4px;
+      }
+
+      .field-label {
+        font-size: 16px; /* was 13px */
+        color: rgb(0, 0, 0);
+        display: inline-block;
+      }
+
+      .date-field {
+        font-size: 16px; /* was 13px */
+        color: rgb(0, 0, 0);
+      }
       </style>
     </head>
     <body>
@@ -656,10 +679,10 @@ function generateLogHTML(
               <strong>Бүтээгдэхүүн/Product:</strong> ${escapeHtml(log.cargoType || "")}
             </td>
             <td colspan="2">
-              <strong>Орсон цаг/In Time:</strong> ${inTime}
+              <strong>Орсон огноо:</strong> ${inTime || date}
             </td>
             <td colspan="2">
-              <strong>Гарсан цаг/Out Time:</strong> ${outTime}
+              <strong>Гарсан огноо:</strong ${outTime || date}
             </td>
           </tr>
         </tbody>
@@ -677,6 +700,7 @@ function generateLogHTML(
             <span class="field-label">Пүүний оператор/Operator:${escapeHtml(loaderName || "")}</span>
           </div>
         </div>
+        
       </div>
     </body>
     </html>
