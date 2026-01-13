@@ -158,12 +158,23 @@ export async function POST(request: Request) {
     }
 
     // Clean up the data before passing to saveTruckSession
-    // Ensure grossWeightKg is a number
-    const grossWeightKg = typeof body.grossWeightKg === 'number' 
-      ? body.grossWeightKg 
-      : (typeof body.grossWeightKg === 'string' 
-          ? parseFloat(body.grossWeightKg) 
-          : null)
+    // Ensure grossWeightKg is a number (for OUT sessions, can come from totalWeight)
+    // For OUT sessions, use totalWeight if grossWeightKg is not provided
+    let grossWeightKg: number | null = null;
+    if (body.grossWeightKg !== undefined && body.grossWeightKg !== null) {
+      grossWeightKg = typeof body.grossWeightKg === 'number' 
+        ? body.grossWeightKg 
+        : (typeof body.grossWeightKg === 'string' 
+            ? parseFloat(body.grossWeightKg) 
+            : null);
+    } else if (body.direction === "OUT" && body.totalWeight !== undefined && body.totalWeight !== null) {
+      // For OUT sessions, use totalWeight as grossWeightKg
+      grossWeightKg = typeof body.totalWeight === 'number' 
+        ? body.totalWeight 
+        : (typeof body.totalWeight === 'string' 
+            ? parseFloat(body.totalWeight) 
+            : null);
+    }
     
     if (!grossWeightKg || isNaN(grossWeightKg) || grossWeightKg <= 0) {
       throw new Error("Gross weight must be a positive number")

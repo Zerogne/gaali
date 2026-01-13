@@ -869,10 +869,8 @@ export const OutSessionForm = forwardRef<
             };
           }
           
-          // Also update outWeightKg if it's empty (for OUT form)
-          if (!prev.outWeightKg) {
-            updated.outWeightKg = weightStatus.status.latestWeight;
-          }
+          // Also update outWeightKg for API compatibility
+          updated.outWeightKg = updated.totalWeight;
           
           return updated;
         });
@@ -1135,7 +1133,7 @@ export const OutSessionForm = forwardRef<
     useEffect(() => {
       // Only calculate if we have plate number and out weight is set (can be 0)
       const plateNumber = formState.plateNumber.trim();
-      const outWeight = formState.outWeightKg;
+      const outWeight = formState.totalWeight || formState.grossWeightKg;
       
       if (!plateNumber || outWeight === null || outWeight === undefined) {
         return;
@@ -1159,7 +1157,8 @@ export const OutSessionForm = forwardRef<
               const inLog = data.log; // Log has all the fields including weightKg (totalWeight)
 
               // Verify plate number and weight haven't changed
-              if (!isMounted || formState.plateNumber.trim() !== plateNumber || formState.outWeightKg !== outWeight) {
+              const currentOutWeight = formState.totalWeight || formState.grossWeightKg;
+              if (!isMounted || formState.plateNumber.trim() !== plateNumber || currentOutWeight !== outWeight) {
                 return;
               }
 
@@ -1173,7 +1172,8 @@ export const OutSessionForm = forwardRef<
               // Update form state with calculated net weight
               setFormState((prev) => {
                 // Double-check values haven't changed
-                if (!isMounted || prev.plateNumber.trim() !== plateNumber || prev.outWeightKg !== outWeight) {
+                const prevOutWeight = prev.totalWeight || prev.grossWeightKg;
+                if (!isMounted || prev.plateNumber.trim() !== plateNumber || prevOutWeight !== outWeight) {
                   return prev;
                 }
                 return {
@@ -1203,7 +1203,7 @@ export const OutSessionForm = forwardRef<
         isMounted = false;
         abortController.abort();
       };
-    }, [formState.plateNumber, formState.outWeightKg]);
+    }, [formState.plateNumber, formState.totalWeight, formState.grossWeightKg]);
 
     // Check if form has unsaved data
     const hasUnsavedData = (): boolean => {
@@ -1216,7 +1216,7 @@ export const OutSessionForm = forwardRef<
         formState.destination.trim() ||
         formState.senderOrganizationId ||
         formState.receiverOrganizationId ||
-        formState.outWeightKg ||
+        formState.totalWeight ||
         formState.netWeightKg ||
         formState.sealNumber.trim() ||
         formState.hasTrailer ||
@@ -1247,14 +1247,14 @@ export const OutSessionForm = forwardRef<
             return true;
           }
 
-          if (!formState.outWeightKg) {
-            toast({
-              title: "Алдаа",
-              description: "Гарах жин оруулах шаардлагатай",
-              variant: "destructive",
-            });
-            return false;
-          }
+      if (!formState.totalWeight || formState.totalWeight <= 0) {
+        toast({
+          title: "Алдаа",
+          description: "Гарах үеийн нийт жин оруулах шаардлагатай",
+          variant: "destructive",
+        });
+        return false;
+      }
 
           return await performSave();
         },
@@ -1321,7 +1321,7 @@ export const OutSessionForm = forwardRef<
             receiverOrganizationId:
               formState.receiverOrganizationId || undefined,
             receiverOrganization: receiverOrgName || undefined,
-            weightKg: formState.outWeightKg || undefined,
+            weightKg: formState.totalWeight || formState.grossWeightKg || undefined,
             netWeightKg:
               formState.netWeightKg !== null &&
               formState.netWeightKg !== undefined
@@ -1396,7 +1396,8 @@ export const OutSessionForm = forwardRef<
           destination: formState.destination.trim() || undefined,
           senderOrganizationId: formState.senderOrganizationId || undefined,
           receiverOrganizationId: formState.receiverOrganizationId || undefined,
-          grossWeightKg: formState.outWeightKg,
+          grossWeightKg: formState.totalWeight || formState.grossWeightKg || undefined,
+          totalWeight: formState.totalWeight || undefined, // Also send totalWeight for API
           netWeightKg:
             formState.netWeightKg !== null &&
             formState.netWeightKg !== undefined
@@ -1521,7 +1522,7 @@ export const OutSessionForm = forwardRef<
                   : "",
                 UPC: formState.destination.trim() || receiverOrgName,
                 VNO: formState.plateNumber.trim().toUpperCase(),
-                WGT: formState.outWeightKg || 0,
+                WGT: formState.totalWeight || formState.grossWeightKg || 0,
                 
                 // New fields (updated API format)
                 PRM: "", // Premium/Permit number
@@ -1762,10 +1763,10 @@ export const OutSessionForm = forwardRef<
     const handleSubmit = async (e: React.FormEvent) => {
       e.preventDefault();
 
-      if (!formState.outWeightKg) {
+      if (!formState.totalWeight || formState.totalWeight <= 0) {
         toast({
           title: "Алдаа",
-          description: "Гарах жин оруулах шаардлагатай",
+          description: "Гарах үеийн нийт жин оруулах шаардлагатай",
           variant: "destructive",
         });
         return;
@@ -1788,12 +1789,12 @@ export const OutSessionForm = forwardRef<
         >
           {/* Form Content - Single Section Layout */}
           <div className="flex-1 min-h-0 overflow-auto flex justify-center p-4">
-            <Card className="p-4 pb-8 w-full max-w-6xl min-h-[calc(100vh+6rem)] flex flex-col">
+            <Card className="p-4 pb-8 w-full max-w-6xl min-h-[calc(100vh-4rem)]">
               {/* License Plate Input with Warning */}
-              <div className="mb-6">
+              <div>
                 <div className="flex gap-2">
                   <div className="w-full md:w-1/2 lg:w-1/3">
-                    <div className="bg-white rounded-lg flex items-center justify-center border border-black px-3 py-1 relative h-14" style={{ borderWidth: '0.5px' }}>
+                    <div className="bg-white rounded-lg flex items-center justify-center border border-black px-3 py-1 relative h-14" style={{ borderWidth: '3px' }}>
                       <Input
                         ref={setPlateInputRef}
                         id="plateNumber"
@@ -1829,10 +1830,10 @@ export const OutSessionForm = forwardRef<
                         />
                         {/* Numbers and Letters in one row */}
                         <div className="flex items-center gap-1.5">
-                          <div className="text-4xl font-mono font-bold text-black leading-none">
+                          <div className="text-5xl font-mono font-bold text-black leading-none">
                             {formState.plateNumber.replace(/[^0-9]/g, '')}
                           </div>
-                          <div className="text-4xl font-mono font-bold text-black leading-none">
+                          <div className="text-5xl font-mono font-bold text-black leading-none">
                             {formState.plateNumber.replace(/[0-9]/g, '').toUpperCase()}
                           </div>
                         </div>
@@ -1842,15 +1843,20 @@ export const OutSessionForm = forwardRef<
                   <div className="w-2/3 flex flex-col gap-1.5">
                     <div className="bg-blue-50 border border-blue-200 rounded p-2 flex items-center w-full">
                       <p className="text-gray-700 text-xs leading-relaxed">
-                        Камер ачааллахын тулд дэлгэцэн дээр байрлах <span className="text-[#0073c4]">Gaali Camera Bridge</span> программыг ажиллуулж байж дүрс гарах тул уг программыг эхлээд асаасан байх шаардлагатай.
+                        Машины дугаар, жинг оруулахын тулд <span className="text-[#0073c4]">Gaali Bridge</span> программыг ажиллуулсан байх шаардлагатай.
+                      </p>
+                    </div>
+                    <div className="bg-red-50 border border-red-300 rounded p-2 w-full">
+                      <p className="text-red-600 text-sm leading-tight">
+                        Гараас өгөгдөл оруулах дохиололд Гаалийн газраас зөвшөөрөгдөөгүй тул анхаарна уу!
                       </p>
                     </div>
                   </div>
                 </div>
               </div>
 
-              {/* Weight Inputs - Full width section like IN form */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-x-6 gap-y-4 -mt-2 mb-4">
+              {/* Weight Inputs - Full width, directly under license plate and warning */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-x-6 gap-y-4 -mt-2">
                 {/* Car Weight */}
                 <div className="flex flex-col">
                   <div className="mb-1 min-h-[1.25rem] flex items-center">
@@ -1885,6 +1891,7 @@ export const OutSessionForm = forwardRef<
                             carWeight: newCarWeight,
                             totalWeight: newTotalWeight,
                             grossWeightKg: newTotalWeight,
+                            outWeightKg: newTotalWeight, // Also update outWeightKg for API compatibility
                           };
                         });
                       }}
@@ -1937,6 +1944,7 @@ export const OutSessionForm = forwardRef<
                             trailerWeight: newTrailerWeight,
                             totalWeight: newTotalWeight,
                             grossWeightKg: newTotalWeight,
+                            outWeightKg: newTotalWeight, // Also update outWeightKg for API compatibility
                           };
                         });
                       }}
@@ -1952,7 +1960,7 @@ export const OutSessionForm = forwardRef<
                       htmlFor="totalWeight"
                       className="text-base font-medium text-gray-700"
                     >
-                      Орох үеийн нийт жин (кг) <span className="text-red-500">*</span>
+                      Гарах үеийн нийт жин (кг) <span className="text-red-500">*</span>
                     </Label>
                   </div>
                   <div className="h-14">
@@ -1972,6 +1980,7 @@ export const OutSessionForm = forwardRef<
                           ...prev,
                           totalWeight: value,
                           grossWeightKg: value,
+                          outWeightKg: value, // Also update outWeightKg for API compatibility
                         }));
                       }}
                       className="h-14 !text-5xl !md:text-5xl font-mono font-bold !text-green-600 w-full bg-white [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none [-moz-appearance:textfield]"
@@ -1981,45 +1990,8 @@ export const OutSessionForm = forwardRef<
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-4 auto-rows-min">
-                {/* Out Weight Input - Same width as other inputs */}
-                <div className="flex flex-col">
-                  <div className="mb-1 min-h-[1.25rem] flex items-center">
-                    <Label
-                      htmlFor="outWeightKg"
-                      className="text-base font-medium text-gray-700"
-                    >
-                      Гарах жин (кг) <span className="text-red-500">*</span>
-                    </Label>
-                  </div>
-                  <div className="h-12">
-                    <Input
-                      id="outWeightKg"
-                      type="number"
-                      value={formState.outWeightKg ?? ""}
-                      onChange={(e) => {
-                        const value =
-                          e.target.value === ""
-                            ? null
-                            : parseFloat(e.target.value);
-                        // #region agent log - Debug manual weight input
-                        console.log(`[DEBUG-WEIGHT] Manual input: value=${value}, formState.outWeightKg=${formState.outWeightKg}`);
-                        // #endregion
-                        setFormState((prev) => ({
-                          ...prev,
-                          outWeightKg: value,
-                        }));
-                      }}
-                      className="h-12 text-base w-full bg-green-600 text-white placeholder:text-white [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none [-moz-appearance:textfield]"
-                      placeholder="Жин оруулах (кг)"
-                      required
-                    />
-                  </div>
-                </div>
-                
-
-
-                {/* In Weight Input */}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-4">
+                {/* In Weight Input - Read-only display from IN session */}
                 <div className="flex flex-col min-w-0">
                   <div className="mb-1 min-h-[1.25rem] flex items-center">
                     <Label
@@ -2035,7 +2007,7 @@ export const OutSessionForm = forwardRef<
                       type="number"
                       value={inWeightKg ?? ""}
                       readOnly
-                      className="h-12 text-base w-full max-w-full bg-green-600 text-white placeholder:text-white [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none [-moz-appearance:textfield] box-border"
+                      className="h-12 text-base w-full max-w-full bg-white border border-gray-300 [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none [-moz-appearance:textfield] box-border"
                       placeholder="Орох жин (кг)"
                     />
                   </div>
@@ -2107,7 +2079,7 @@ export const OutSessionForm = forwardRef<
                             netWeightKg: newValue,
                           }));
                         }}
-                      className="h-12 text-base w-full bg-green-600 text-white placeholder:text-white [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none [-moz-appearance:textfield]"
+                      className="h-12 text-base w-full bg-white border border-gray-300 [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none [-moz-appearance:textfield]"
                         placeholder="Цэвэр жин (кг)"
                         required
                       />
@@ -2375,9 +2347,9 @@ export const OutSessionForm = forwardRef<
                     </div>
               </div>
 
-                {/* Notes - Wider, Reduced Height */}
-                <div className="md:col-span-2 flex flex-col">
-                  <div className="mb-1 min-h-[1.25rem] flex items-center">
+                {/* Notes - Next to Receiver Organization */}
+                <div className="flex flex-col">
+                  <div className="mb-1 min-h-[1.25rem] flex items-center width-full">
                     <Label
                       htmlFor="notes"
                       className="text-base font-medium text-gray-700"
@@ -2461,16 +2433,11 @@ export const OutSessionForm = forwardRef<
                       <span className="text-lg font-bold">*</span> Улаан одоор тэмдэглэгдсэн нүдний мэдээлэл Гаалын мэдээллийн санд өгөгдөл болон дамжуулагдах тул анхааралтай бөглөнө үү.
                     </p>
                   </div>
-                  <div className="bg-red-50 border border-red-300 rounded p-2 w-full">
-                    <p className="text-red-600 text-sm leading-tight">
-                      Гараас өгөгдөл оруулах дохиололд Гаалийн газраас зөвшөөрөгдөөгүй тул анхаарна уу!
-                    </p>
-                  </div>
                 </div>
               </div>
 
               {/* Action Buttons */}
-              <div className="flex items-center justify-end gap-2 mt-auto pt-3 border-t border-gray-200">
+              <div className="flex items-center justify-end gap-2 mt-3 pt-3 border-t border-gray-200">
                     <Button
                       type="button"
                       variant="outline"
@@ -2516,7 +2483,7 @@ export const OutSessionForm = forwardRef<
                             driverId: formState.driverId || undefined,
                             driverName: formState.driverName || "",
                             cargoType: productName || "",
-                            weightKg: formState.outWeightKg || undefined,
+                            weightKg: formState.totalWeight || formState.grossWeightKg || undefined,
                             netWeightKg: formState.netWeightKg || undefined,
                             comments: formState.notes || undefined,
                             origin: formState.origin || undefined,
@@ -2616,7 +2583,7 @@ export const OutSessionForm = forwardRef<
                       type="submit"
                       onClick={handleSubmit}
                       disabled={
-                        !formState.outWeightKg ||
+                        !formState.totalWeight ||
                         !formState.netWeightKg ||
                         isSaving
                       }
