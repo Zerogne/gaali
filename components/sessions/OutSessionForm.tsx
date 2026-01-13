@@ -2367,7 +2367,7 @@ export const OutSessionForm = forwardRef<
                       searchPlaceholder="Жолооч хайх..."
                       onCreateNewDialog={(initialValue) => handleOpenCreateDialog("driver", initialValue)}
                       createNewLabel="+ Нэмэх ..."
-                      className="h-12"
+                      className="h-12 !bg-blue-400 !text-white !border-blue-400 hover:!bg-blue-500 hover:!border-blue-500 [&>span]:!text-white [&>span.text-muted-foreground]:!text-white/90"
                       required
                     />
                   </div>
@@ -2402,7 +2402,7 @@ export const OutSessionForm = forwardRef<
                         searchPlaceholder="Тээврийн компани хайх..."
                         onCreateNewDialog={(initialValue) => handleOpenCreateDialog("transportCompany", initialValue)}
                         createNewLabel="+ Нэмэх ..."
-                      className="h-12"
+                      className="h-12 !bg-blue-400 !text-white !border-blue-400 hover:!bg-blue-500 hover:!border-blue-500 [&>span]:!text-white [&>span.text-muted-foreground]:!text-white/90"
                         required
                       />
                     </div>
@@ -2437,7 +2437,7 @@ export const OutSessionForm = forwardRef<
                       searchPlaceholder="Бүтээгдэхүүн хайх..."
                       onCreateNewDialog={(initialValue) => handleOpenCreateDialog("product", initialValue)}
                       createNewLabel="+ Нэмэх ..."
-                      className="h-12"
+                      className="h-12 !bg-blue-400 !text-white !border-blue-400 hover:!bg-blue-500 hover:!border-blue-500 [&>span]:!text-white [&>span.text-muted-foreground]:!text-white/90"
                       required
                     />
                   </div>
@@ -2468,7 +2468,7 @@ export const OutSessionForm = forwardRef<
                         searchPlaceholder="Байршил хайх..."
                         onCreateNewDialog={(initialValue) => handleOpenCreateDialog("location", initialValue)}
                         createNewLabel="+ Нэмэх ..."
-                        className="h-12 text-base w-full"
+                        className="h-12 text-base w-full !bg-blue-400 !text-white !border-blue-400 hover:!bg-blue-500 hover:!border-blue-500 [&>span]:!text-white [&>span.text-muted-foreground]:!text-white/90"
                       />
                     </div>
                 </div>
@@ -2498,7 +2498,7 @@ export const OutSessionForm = forwardRef<
                         searchPlaceholder="Байршил хайх..."
                         onCreateNewDialog={(initialValue) => handleOpenCreateDialog("location", initialValue)}
                         createNewLabel="+ Нэмэх ..."
-                        className="h-12 text-base w-full"
+                        className="h-12 text-base w-full !bg-blue-400 !text-white !border-blue-400 hover:!bg-blue-500 hover:!border-blue-500 [&>span]:!text-white [&>span.text-muted-foreground]:!text-white/90"
                       />
                     </div>
                     </div>
@@ -2532,7 +2532,7 @@ export const OutSessionForm = forwardRef<
                         searchPlaceholder="Илгээч байгууллага хайх..."
                         onCreateNewDialog={(initialValue) => handleOpenCreateDialog("organization", initialValue)}
                         createNewLabel="+ Нэмэх ..."
-                      className="h-12"
+                      className="h-12 !bg-blue-400 !text-white !border-blue-400 hover:!bg-blue-500 hover:!border-blue-500 [&>span]:!text-white [&>span.text-muted-foreground]:!text-white/90"
                       />
                     </div>
                 </div>
@@ -2566,7 +2566,7 @@ export const OutSessionForm = forwardRef<
                         searchPlaceholder="Хүлээн авагч байгууллага хайх..."
                         onCreateNewDialog={(initialValue) => handleOpenCreateDialog("organization", initialValue)}
                         createNewLabel="+ Нэмэх ..."
-                      className="h-12"
+                      className="h-12 !bg-blue-400 !text-white !border-blue-400 hover:!bg-blue-500 hover:!border-blue-500 [&>span]:!text-white [&>span.text-muted-foreground]:!text-white/90"
                       />
                     </div>
               </div>
@@ -2593,7 +2593,7 @@ export const OutSessionForm = forwardRef<
                       }
                       disabled={hasInSessionData}
                       // Textarea has a default `min-h-16` in the shared component, so we must override it here.
-                      className="text-base resize-none h-12 min-h-0 w-full"
+                      className="text-base resize-none h-12 min-h-0 w-full !bg-blue-400 !text-white !border-blue-400 placeholder:!text-white/90"
                       placeholder="Нэмэлт мэдээлэл..."
                     />
                   </div>
@@ -2640,6 +2640,18 @@ export const OutSessionForm = forwardRef<
 
               {/* Action Buttons */}
               <div className="flex items-center justify-end gap-2 mt-3 pt-3 border-t border-gray-200">
+                    <Button
+                      type="submit"
+                      onClick={handleSubmit}
+                      disabled={
+                        !formState.totalWeight ||
+                        !formState.netWeightKg ||
+                        isSaving
+                      }
+                  className="bg-green-600 hover:bg-green-700 disabled:opacity-50 h-14 px-6 text-base"
+                    >
+                      {isSaving ? "Хадгалж байна..." : "Хадгалах"}
+                    </Button>
                     <Button
                       type="button"
                       variant="outline"
@@ -2781,18 +2793,6 @@ export const OutSessionForm = forwardRef<
                         )}
                       </Button>
                     )}
-                    <Button
-                      type="submit"
-                      onClick={handleSubmit}
-                      disabled={
-                        !formState.totalWeight ||
-                        !formState.netWeightKg ||
-                        isSaving
-                      }
-                  className="bg-green-600 hover:bg-green-700 disabled:opacity-50 h-14 px-6 text-base"
-                    >
-                      {isSaving ? "Хадгалж байна..." : "Хадгалах"}
-                    </Button>
                     <Button
                       type="button"
                       onClick={async () => {
