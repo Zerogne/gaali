@@ -460,7 +460,7 @@ function generateLogHTML(
           font-family: Arial, sans-serif;
           font-size: 11px;
           line-height: 1.2;
-          color: rgb(0, 0, 139);
+          color: rgb(0, 0, 0);
           background: rgb(255, 250, 240);
           padding: 5mm 8mm 8mm 8mm;
           width: 210mm;
@@ -472,7 +472,7 @@ function generateLogHTML(
         .company-top-middle {
           font-size: 20px;
           font-weight: bold;
-          color: rgb(0, 0, 139);
+          color: rgb(0, 0, 0);
           text-align: center;
           margin-bottom: 0;
         }
@@ -481,13 +481,13 @@ function generateLogHTML(
           font-size: 14px;
           font-weight: bold;
           margin: 4px 0 3px 0;
-          color: rgb(0, 0, 139);
+          color: rgb(0, 0, 0);
         }
         .receipt-number {
           text-align: center;
           font-size: 11px;
           margin-bottom: 6px;
-          color: rgb(0, 0, 139);
+          color: rgb(0, 0, 0);
         }
         .divider-line {
           border-top: 1px solid rgb(0, 0, 139);
@@ -511,34 +511,34 @@ function generateLogHTML(
         }
         .info-label {
           font-size: 10px;
-          color: rgb(0, 0, 139);
+          color: rgb(0, 0, 0);
           margin-bottom: 1px;
         }
         .info-value {
           font-size: 11px;
-          color: rgb(0, 0, 139);
+          color: rgb(0, 0, 0);
         }
         .weight-table {
           width: 100%;
           border-collapse: collapse;
           margin: 6px 0;
           font-size: 10px;
-          border: 1px solid rgb(0, 0, 139);
+          border: 1px solid rgb(0, 0, 0);
         }
         .weight-table th {
-          border: 1px solid rgb(0, 0, 139);
+          border: 1px solid rgb(0, 0, 0);
           padding: 4px 3px;
           text-align: center;
           font-weight: bold;
           background-color: rgb(255, 250, 240);
-          color: rgb(0, 0, 139);
+          color: rgb(0, 0, 0);
           font-size: 9px;
         }
         .weight-table td {
-          border: 1px solid rgb(0, 0, 139);
+          border: 1px solid rgb(0, 0, 0);
           padding: 4px 3px;
           text-align: center;
-          color: rgb(0, 0, 139);
+          color: rgb(0, 0, 0);
           font-size: 10px;
         }
         .weight-table .info-row td {
@@ -568,19 +568,19 @@ function generateLogHTML(
         }
         .field-with-dash {
           display: inline-block;
-          border-bottom: 1px dashed rgb(0, 0, 139);
+          border-bottom: 1px dashed rgb(0, 0, 0);
           min-width: 150px;
           padding-bottom: 2px;
           margin-left: 4px;
         }
         .field-label {
           font-size: 10px;
-          color: rgb(0, 0, 139);
+          color: rgb(0, 0, 0);
           display: inline-block;
         }
         .date-field {
           font-size: 10px;
-          color: rgb(0, 0, 139);
+          color: rgb(0, 0, 0);
         }
       </style>
     </head>
