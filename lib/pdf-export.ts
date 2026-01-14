@@ -1,7 +1,6 @@
 import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
 import type { TruckLog } from "./types";
-import { date } from "zod";
 
 /**
  * Fetch related data for the log (transport company, organizations, driver)
@@ -418,10 +417,14 @@ function generateLogHTML(
   
   // Format time for display (HH:MM)
   const formatTime = (date: Date): string => {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
     const hours = String(date.getHours()).padStart(2, "0");
     const minutes = String(date.getMinutes()).padStart(2, "0");
-    return `${hours}:${minutes}`;
+    return `${year}-${month}-${day} ${hours}:${minutes}`;
   };
+  
   
   const inTime = (log.direction === "IN" || isMergedLog) && log.createdAt
     ? formatTime(new Date(log.createdAt))
@@ -518,7 +521,7 @@ function generateLogHTML(
       }
 
       .info-item {
-        margin-bottom: 10px;
+        margin-bottom: 8px;
       }
 
       .info-label {
@@ -538,15 +541,18 @@ function generateLogHTML(
         margin: 6px 0;
         font-size: 16px; /* was 13px */
         border: 1px solid rgb(0, 0, 0);
+        font-weight: normal;
       }
 
       .weight-table th {
         border: 1px solid rgb(0, 0, 0);
         padding: 4px 3px;
         text-align: center;
+        font-weight: bold;
         background-color: rgb(255, 250, 240);
         color: rgb(0, 0, 0);
         font-size: 15px; /* was 12px */
+        font-weight: normal;
       }
 
       .weight-table td {
@@ -564,7 +570,7 @@ function generateLogHTML(
       }
 
       .weight-table .info-row td strong {
-        
+        font-weight: bold;
         margin-right: 4px;
       }
 
@@ -602,6 +608,7 @@ function generateLogHTML(
         font-size: 16px; /* was 13px */
         color: rgb(0, 0, 0);
         display: inline-block;
+        margin-bottom: 20px;
       }
 
       .date-field {
@@ -633,22 +640,22 @@ function generateLogHTML(
       <div class="info-section">
         <div class="left-section">
           <div class="info-item">
-            <span class="field-with-dash"><div class="info-value">${escapeHtml(senderOrg)}</div></span>
+            <span class="field-with-dash">${escapeHtml(senderOrg)}</span>
             <div class="info-label">Илгээгч байгууллага/Sender organization</div>
           </div>
           <div class="info-item">
-            <span class="field-with-dash"><div class="info-value">${escapeHtml(transportCompany)}</div></span>
+            <span class="field-with-dash">${escapeHtml(transportCompany)}</span>
             <div class="info-label">Тээвэрлэгч байгууллага/Transporter organization</div>
           </div>
         </div>
         <div class="right-section">
           <div class="info-item">
-            <span class="field-with-dash"><div class="info-value">${escapeHtml(receiverOrg)}</div></span>
+            <span class="field-with-dash">${escapeHtml(receiverOrg)}</span>
             <div class="info-label">Хүлээн авагч/Trainee</div>
           </div>
           <div class="info-item">
-            <span class="field-with-dash"><div class="info-value">${escapeHtml(log.origin || "")}, ${escapeHtml(log.destination || "")}</div></span>
-            <div class="info-label">Гарсан хаана/Out Location</div>
+            <span class="field-with-dash">${log.origin} - ${log.destination}</span>
+            <div class="info-label">Чиглэл/Trend</div>
           </div>
         </div>
       </div>
@@ -676,13 +683,13 @@ function generateLogHTML(
           </tr>
           <tr class="info-row">
             <td colspan="2">
-              <strong>Бүтээгдэхүүн/Product:</strong> ${escapeHtml(log.cargoType || "")}
+             Бүтээгдэхүүн/Product:${escapeHtml(log.cargoType || "")}
             </td>
             <td colspan="2">
-              <strong>Орсон огноо:</strong> ${inTime || date}
+             Орсон огноо:${inTime}
             </td>
             <td colspan="2">
-              <strong>Гарсан огноо:</strong ${outTime || date}
+              Гарсан огноо:${outTime}
             </td>
           </tr>
         </tbody>
@@ -692,15 +699,11 @@ function generateLogHTML(
       <div class="bottom-section">
         <div class="bottom-left">
           <div style="margin-bottom: 6px;">
-            <span class="field-label">Жолооч/Driver:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;${escapeHtml(driverFullInfo !== "—" ? driverFullInfo : "")}</span></span>
+            <span class="field-label">Жолооч/Driver:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;${escapeHtml(driverFullInfo !== "—" ? driverFullInfo : "")}</span>           
+            <span class="field-label">Пүүний оператор/Operator:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;${escapeHtml(loaderName || "")}</span>
           </div>
         </div>
-        <div class="bottom-right">
-          <div class="operator-field" style="margin-bottom: 6px;">
-            <span class="field-label">Пүүний оператор/Operator:${escapeHtml(loaderName || "")}</span>
-          </div>
-        </div>
-        
+       
       </div>
     </body>
     </html>
