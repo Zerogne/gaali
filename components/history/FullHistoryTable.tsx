@@ -25,7 +25,7 @@ import {
 } from "@/components/ui/table";
 import { useToast } from "@/hooks/use-toast";
 import { sendTruckLogToCustoms } from "@/lib/api";
-import { printLog } from "@/lib/pdf-export";
+import { exportLogToPDF, printLog } from "@/lib/pdf-export";
 import type { Direction, TruckLog, TransportCompany } from "@/lib/types";
 import { Edit, FileDown, Search, Send, X, ChevronLeft, ChevronRight, Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -1048,6 +1048,19 @@ export function FullHistoryTable({
                           >
                             <FileDown className="w-4 h-4 mr-2" />
                             Хэвлэх
+                          </Button>
+                          <Button
+                            size="default"
+                            variant="outline"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              console.log("PDF clicked", log.id);
+                              exportLogToPDF(log);
+                            }}
+                            title="PDF татах"
+                            className="border-gray-300 hover:bg-gray-50 h-9 px-4 text-sm"
+                          >
+                            PDF
                           </Button>
                           {log.sentToCustoms ? (
                             <Button

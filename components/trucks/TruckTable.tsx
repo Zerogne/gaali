@@ -14,7 +14,7 @@ import {
 } from "@/components/ui/table";
 import { useToast } from "@/hooks/use-toast";
 import { sendTruckLogToCustoms } from "@/lib/api";
-import { printLog } from "@/lib/pdf-export";
+import { exportLogToPDF, printLog } from "@/lib/pdf-export";
 import type { Direction, TruckLog, TransportCompany } from "@/lib/types";
 import { Edit, FileDown, Search, ArrowRight, X, Send, Trash2, Download } from "lucide-react";
 import * as XLSX from "xlsx";
@@ -510,11 +510,29 @@ export function TruckTable({ logs, onSend, onUpdate }: TruckTableProps) {
   // Fetch unique codes when logs change
   useEffect(() => {
     if (logs.length > 0) {
-      fetchUniqueCodesForLogs(logs).catch(console.error)
+      fetchUniqueCodesForLogs(logs).catch(console.error);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [logs])
+  }, [logs]);
 
+  // Updated: More robust PDF download handler
+  // This function will export a session log as PDF using export-pdf.
+
+  const handleExportLogToPDF = async (log: TruckLog) => {
+    try {
+      await exportLogToPDF(log);
+    } catch (error) {
+      console.error("Error exporting log PDF:", error);
+      toast({
+        title: "Алдаа",
+        description:
+          error instanceof Error
+            ? error.message
+            : "Сешн PDF татахад алдаа гарлаа. Та сүлжээгээ шалгана уу эсвэл PDF үүсгэх сервер ажиллаж буй эсэхийг шалгана уу.",
+        variant: "destructive",
+      });
+    }
+  };
   // Helper function to format from/to
   const formatFromTo = (origin?: string, destination?: string): string => {
     if (!origin && !destination) return "—";
@@ -989,6 +1007,19 @@ export function TruckTable({ logs, onSend, onUpdate }: TruckTableProps) {
                           >
                             <FileDown className="w-3 h-3 mr-1.5" />
                             Хэвлэх
+                          </Button>
+                          <Button
+                            size="default"
+                            variant="outline"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              console.log("PDF clicked", log.id);
+                              handleExportLogToPDF(log);
+                            }}
+                            title="PDF татах"
+                            className="border-gray-300 hover:bg-gray-50 h-9 px-4 text-sm"
+                          >
+                            PDF
                           </Button>
                         </div>
                       </TableCell>
