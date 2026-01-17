@@ -1,5 +1,6 @@
 import { Collection, Db } from "mongodb"
 import { getDatabase } from "./client"
+import clientPromise from "./client"
 
 /**
  * Get a company-scoped collection.
@@ -44,12 +45,26 @@ export async function getCompanyDB(companyId: string): Promise<Db> {
 }
 
 /**
+ * Get the admin/root database for global metadata
+ * Companies are stored in a separate admin database, not in the main application database
+ */
+async function getAdminDatabase(): Promise<Db> {
+  const client = await clientPromise
+  // Use a separate admin database for global company metadata
+  // Default to "gaali-admin" database (can be overridden with MONGODB_ADMIN_DB_NAME environment variable)
+  const adminDbName = process.env.MONGODB_ADMIN_DB_NAME || "gaali-admin"
+  console.log(`🔍 [getAdminDatabase] Using database: ${adminDbName}`)
+  return client.db(adminDbName)
+}
+
+/**
  * Get the global companies metadata collection
  * This is the ONLY shared collection across all companies
+ * Stored in the admin/root database, not in the application database
  */
 export async function getCompaniesCollection() {
-  const db = await getDatabase()
-  return db.collection("companies")
+  const adminDb = await getAdminDatabase()
+  return adminDb.collection("companies")
 }
 
 /**

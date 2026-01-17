@@ -27,6 +27,7 @@ export interface CompanyMetadata {
 export async function getAllCompanies(): Promise<CompanyMetadata[]> {
   try {
     console.log("📥 getAllCompanies: Getting companies collection...")
+    console.log(`🔍 [getAllCompanies] MONGODB_ADMIN_DB_NAME: ${process.env.MONGODB_ADMIN_DB_NAME || "not set (using default: gaali-admin)"}`)
     const companiesCollection = await getCompaniesCollection()
     console.log("📥 getAllCompanies: Finding companies...")
     const companies = await companiesCollection

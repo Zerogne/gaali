@@ -45,3 +45,5 @@ next-env.d.ts
 
 # Large binaries (host externally)
 /public/Gaali Bridge.exe
+
+/lib/generated/prisma

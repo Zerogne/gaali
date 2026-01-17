@@ -34,9 +34,52 @@ export default async function proxy(request: Request) {
     return NextResponse.next()
   }
 
-  // Get cookies from request
+  // Get cookies from request (used for both admin and regular routes)
   const cookieHeader = request.headers.get('cookie') || ''
   const cookies = parseCookies(cookieHeader)
+
+  // Handle admin routes separately
+  if (pathname.startsWith('/admin') || pathname.startsWith('/api/admin')) {
+    const adminSession = cookies['admin-session']
+    const adminSessionExpires = cookies['admin-session-expires']
+
+    // Allow /admin login page and API login without authentication
+    if (pathname === '/admin' || pathname === '/admin/' || pathname === '/api/admin/login') {
+      // If already authenticated on login page, redirect to dashboard
+      if (pathname !== '/api/admin/login' && adminSession && adminSessionExpires) {
+        const expires = parseInt(adminSessionExpires, 10)
+        if (!isNaN(expires) && expires > Date.now()) {
+          return NextResponse.redirect(new URL('/admin/dashboard', url))
+        }
+      }
+      return NextResponse.next()
+    }
+
+    // All other /admin/* routes require authentication
+    if (!adminSession || !adminSessionExpires) {
+      if (pathname.startsWith('/api/')) {
+        return NextResponse.json(
+          { error: 'Admin authentication required' },
+          { status: 401 }
+        )
+      }
+      return NextResponse.redirect(new URL('/admin', url))
+    }
+
+    // Check session expiration
+    const expires = parseInt(adminSessionExpires, 10)
+    if (isNaN(expires) || expires <= Date.now()) {
+      const response = pathname.startsWith('/api/')
+        ? NextResponse.json({ error: 'Admin session expired' }, { status: 401 })
+        : NextResponse.redirect(new URL('/admin', url))
+      
+      response.cookies.delete('admin-session')
+      response.cookies.delete('admin-session-expires')
+      return response
+    }
+
+    return NextResponse.next()
+  }
   
   const companyId = cookies['company-id']
   const workerId = cookies['worker-id']
