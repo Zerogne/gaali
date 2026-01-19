@@ -1,13 +1,13 @@
 "use client"
 
-import { useState, useEffect } from "react"
-import Image from "next/image"
-import { Card } from "@/components/ui/card"
 import { CompanyLoginForm } from "@/components/auth/CompanyLoginForm"
 import { WorkerSelector } from "@/components/auth/WorkerSelector"
-import { getCompanyWorkers } from "@/lib/companies/workers"
-import type { CompanyMetadata } from "@/lib/companies/metadata"
+import { Card } from "@/components/ui/card"
 import type { Worker } from "@/lib/auth/mockData"
+import type { CompanyMetadata } from "@/lib/companies/metadata"
+import { getCompanyWorkers } from "@/lib/companies/workers"
+import Image from "next/image"
+import { useEffect, useState } from "react"
 
 type LoginStep = "company" | "worker"
 
@@ -97,23 +97,23 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-      <div className="w-full max-w-4xl">
+      <div className="w-full max-w-2xl">
         {/* Logo/Header */}
-        <div className="text-center mb-8">
-          <div className="flex items-center justify-center mb-4">
+        <div className="text-center mb-6">
+          <div className="flex items-center justify-center mb-3">
             <Image
               src="/logo.png"
               alt="УХААЛАГ ГАРЦ СИСТЕМ"
               width={800}
               height={200}
-              className="w-full max-w-4xl h-auto"
+              className="w-full max-w-2xl h-auto rounded-xl"
               priority
             />
           </div>
         </div>
 
         {/* Main Card */}
-        <Card className="p-6 md:p-8 bg-white border-gray-200 shadow-lg">
+        <Card className="p-4 md:p-6 bg-white border-gray-200 shadow-lg">
           <div
             className={`
               transition-opacity duration-300
@@ -188,4 +188,3 @@ export default function LoginPage() {
     </div>
   )
 }
-

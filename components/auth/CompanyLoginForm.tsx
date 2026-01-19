@@ -92,7 +92,7 @@ export function CompanyLoginForm({
               setError(null) // Clear error when typing
             }}
             disabled={isLoggingIn}
-            className="mt-1 bg-white border-gray-300 focus:border-blue-500 focus:ring-blue-500"
+            className="mt-1 h-8 text-sm bg-white border-gray-300 focus:border-blue-500 focus:ring-blue-500"
             placeholder="Компанийн нэр"
             autoFocus
           />
@@ -111,7 +111,7 @@ export function CompanyLoginForm({
               setError(null) // Clear error when typing
             }}
             disabled={isLoggingIn}
-            className="mt-1 bg-white border-gray-300 focus:border-blue-500 focus:ring-blue-500"
+            className="mt-1 h-8 text-sm bg-white border-gray-300 focus:border-blue-500 focus:ring-blue-500"
             placeholder="******"
           />
           {error && (
@@ -145,4 +145,3 @@ export function CompanyLoginForm({
     </div>
   )
 }
-
