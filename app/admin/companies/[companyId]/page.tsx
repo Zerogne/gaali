@@ -7,6 +7,7 @@ import { ArrowLeft } from "lucide-react"
 import Link from "next/link"
 import { WorkerList } from "@/components/admin/worker-list"
 import { DeleteCompanyDialog } from "@/components/admin/delete-company-dialog"
+import { ChangeCompanyPasswordDialog } from "@/components/admin/change-company-password-dialog"
 
 export default async function CompanyDetailPage({
   params,
@@ -37,7 +38,13 @@ export default async function CompanyDetailPage({
             <p className="text-muted-foreground mt-2">Company ID: {company.companyId}</p>
             {company.notes && <p className="text-muted-foreground mt-1">{company.notes}</p>}
           </div>
-          <DeleteCompanyDialog companyId={company.companyId} companyName={company.name} />
+          <div className="flex gap-2">
+            <ChangeCompanyPasswordDialog
+              companyId={company.companyId}
+              companyName={company.name}
+            />
+            <DeleteCompanyDialog companyId={company.companyId} companyName={company.name} />
+          </div>
         </div>
       </div>
 

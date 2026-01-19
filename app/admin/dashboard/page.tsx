@@ -5,7 +5,6 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Building2, Plus } from "lucide-react"
 import Link from "next/link"
-import { ChangePasswordDialog } from "@/components/admin/change-password-dialog"
 
 export default async function AdminDashboardPage() {
   await requireAdmin()
@@ -14,12 +13,9 @@ export default async function AdminDashboardPage() {
 
   return (
     <div className="container mx-auto py-8 px-4">
-      <div className="mb-8 flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold">Admin Dashboard</h1>
-          <p className="text-muted-foreground mt-2">Manage companies and workers</p>
-        </div>
-        <ChangePasswordDialog />
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold">Admin Dashboard</h1>
+        <p className="text-muted-foreground mt-2">Manage companies and workers</p>
       </div>
 
       <Card className="mb-6">

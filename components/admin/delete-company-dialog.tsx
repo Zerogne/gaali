@@ -73,9 +73,8 @@ export function DeleteCompanyDialog({ companyId, companyName }: DeleteCompanyDia
   return (
     <AlertDialog open={open} onOpenChange={setOpen}>
       <AlertDialogTrigger asChild>
-        <Button variant="destructive">
-          <Trash2 className="mr-2 h-4 w-4" />
-          Delete Company
+        <Button variant="destructive" size="icon-sm" title="Delete Company" aria-label="Delete Company">
+          <Trash2 className="h-4 w-4" />
         </Button>
       </AlertDialogTrigger>
       <AlertDialogContent>
