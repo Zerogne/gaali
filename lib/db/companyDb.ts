@@ -58,6 +58,25 @@ async function getAdminDatabase(): Promise<Db> {
 }
 
 /**
+ * Get the admin users collection (global admins)
+ * Stored in the same admin/root database as global company metadata.
+ */
+export async function getAdminUsersCollection() {
+  const adminDb = await getAdminDatabase()
+  return adminDb.collection("admin_users")
+}
+
+/**
+ * Ensure indexes for admin users
+ */
+export async function ensureAdminUsersIndexes() {
+  const adminUsers = await getAdminUsersCollection()
+  // Case-insensitive uniqueness is implemented by storing a normalized email
+  await adminUsers.createIndex({ emailNormalized: 1 }, { unique: true })
+  await adminUsers.createIndex({ createdAt: -1 })
+}
+
+/**
  * Get the global companies metadata collection
  * This is the ONLY shared collection across all companies
  * Stored in the admin/root database, not in the application database

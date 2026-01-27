@@ -4,6 +4,7 @@ import { cookies } from "next/headers"
 import { redirect } from "next/navigation"
 import bcrypt from "bcryptjs"
 import { rateLimit } from "@/lib/rateLimit"
+import { getAdminUsersCollection } from "@/lib/db/companyDb"
 
 const ADMIN_SESSION_COOKIE = "admin-session"
 const ADMIN_SESSION_EXPIRES_COOKIE = "admin-session-expires"
@@ -15,14 +16,28 @@ export interface AdminLoginResult {
   error?: string
 }
 
+interface AdminUserDoc {
+  email: string
+  emailNormalized: string
+  passwordHash: string
+  role: "admin"
+  createdAt: Date
+  updatedAt: Date
+}
+
+function normalizeEmail(email: string): string {
+  return email.toLowerCase().trim()
+}
+
 /**
  * Login admin user with email and password
- * Uses environment variables for admin credentials
+ * Prefers MongoDB-backed admin users (bcrypt-hashed password), with env fallback for backwards compatibility.
  */
 export async function loginAdmin(email: string, password: string): Promise<AdminLoginResult> {
   try {
     // Rate limiting by email
-    const rateLimitResult = await rateLimit(`admin-login-${email.toLowerCase()}`, 5, 15 * 60 * 1000)
+    const emailNormalized = normalizeEmail(email)
+    const rateLimitResult = await rateLimit(`admin-login-${emailNormalized}`, 5, 15 * 60 * 1000)
 
     if (!rateLimitResult.success) {
       return {
@@ -31,39 +46,43 @@ export async function loginAdmin(email: string, password: string): Promise<Admin
       }
     }
 
-    // Get admin credentials from environment
+    // 1) Prefer DB-backed admin users, if Mongo is configured
+    if (process.env.MONGODB_URI) {
+      try {
+        const adminUsers = await getAdminUsersCollection()
+        const adminUser = await adminUsers.findOne<AdminUserDoc>({ emailNormalized })
+
+        if (adminUser) {
+          const isValid = await bcrypt.compare(password, adminUser.passwordHash)
+          if (!isValid) {
+            return { success: false, error: "Invalid credentials" }
+          }
+
+          await setAdminSession(adminUser.email)
+          return { success: true }
+        }
+      } catch (dbError) {
+        // Don't hard-fail admin login if DB is temporarily unavailable; allow env fallback.
+        console.error("Admin DB auth error (falling back to env):", dbError)
+      }
+    }
+
+    // 2) Backwards-compatible env-based admin login
     const adminEmail = process.env.ADMIN_EMAIL
     const adminPassword = process.env.ADMIN_PASSWORD
 
-    if (!adminEmail || !adminPassword) {
-      console.error("ADMIN_EMAIL or ADMIN_PASSWORD not set in environment")
-      return {
-        success: false,
-        error: "Admin authentication not configured",
+    if (adminEmail && adminPassword) {
+      if (emailNormalized !== normalizeEmail(adminEmail)) {
+        return { success: false, error: "Invalid credentials" }
       }
+      if (password !== adminPassword) {
+        return { success: false, error: "Invalid credentials" }
+      }
+      await setAdminSession(adminEmail)
+      return { success: true }
     }
 
-    // Check if email matches
-    if (email.toLowerCase().trim() !== adminEmail.toLowerCase().trim()) {
-      return {
-        success: false,
-        error: "Invalid credentials",
-      }
-    }
-
-    // Verify password (compare with plaintext from env)
-    // In production, you might want to hash this and compare
-    if (password !== adminPassword) {
-      return {
-        success: false,
-        error: "Invalid credentials",
-      }
-    }
-
-    // Set admin session
-    await setAdminSession(adminEmail)
-
-    return { success: true }
+    return { success: false, error: "Admin authentication not configured" }
   } catch (error) {
     console.error("Admin login error:", error)
     return {
