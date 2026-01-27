@@ -108,6 +108,7 @@ export default function LoginPage() {
               height={200}
               className="w-full max-w-2xl h-auto rounded-xl"
               priority
+              
             />
           </div>
         </div>
