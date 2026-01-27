@@ -2,6 +2,7 @@ import { NextResponse } from "next/server"
 import { requireAdmin } from "@/lib/auth/admin"
 import { getCompaniesCollection } from "@/lib/db/companyDb"
 import bcrypt from "bcryptjs"
+import { generateSecurePassword } from "@/lib/utils/password"
 
 export async function POST() {
   try {
@@ -25,8 +26,8 @@ export async function POST() {
       })
     }
 
-    // Hash password for the dummy company
-    const plainPassword = "password123"
+    // Generate a unique secure password for the dummy company
+    const plainPassword = generateSecurePassword(12)
     const hashedPassword = await bcrypt.hash(plainPassword, 10)
 
     // Create dummy company with all fields
@@ -57,8 +58,8 @@ export async function POST() {
         logoInitials: dummyCompany.logoInitials,
         companyCode: dummyCompany.companyCode,
         cameraSettings: dummyCompany.cameraSettings,
-        password: "password123", // Return plain password for reference (not stored in DB)
       },
+      password: plainPassword, // Return plain password so admin can use it
       insertedId: result.insertedId,
     })
   } catch (error) {

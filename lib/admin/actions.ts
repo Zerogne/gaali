@@ -2,6 +2,8 @@
 
 import { getCompaniesCollection, getCompanyCollection } from "@/lib/db/companyDb"
 import { requireAdmin } from "@/lib/auth/admin"
+import bcrypt from "bcryptjs"
+import { generateSecurePassword } from "@/lib/utils/password"
 
 export interface ActionResult<T = void> {
   success: boolean
@@ -10,15 +12,16 @@ export interface ActionResult<T = void> {
 }
 
 /**
- * Create a new company
+ * Create a new company with a unique generated password
  */
-export async function createCompany(formData: FormData): Promise<ActionResult<{ companyId: string }>> {
+export async function createCompany(formData: FormData): Promise<ActionResult<{ companyId: string; password: string }>> {
   try {
     await requireAdmin()
 
     const name = formData.get("name") as string
     const slug = formData.get("slug") as string
     const notes = formData.get("notes") as string | null
+    const customPassword = formData.get("password") as string | null
 
     if (!name || !slug) {
       return {
@@ -47,18 +50,35 @@ export async function createCompany(formData: FormData): Promise<ActionResult<{ 
       }
     }
 
-    // Create company
+    // Use custom password if provided, otherwise generate a unique secure password
+    const plainPassword = customPassword?.trim() || generateSecurePassword(12)
+    
+    // Validate password if custom (minimum 8 characters)
+    if (customPassword && customPassword.trim().length < 8) {
+      return {
+        success: false,
+        error: "Password must be at least 8 characters long",
+      }
+    }
+    
+    const hashedPassword = await bcrypt.hash(plainPassword, 10)
+
+    // Create company with hashed password
     await companiesCollection.insertOne({
       companyId: slug,
       name,
       notes: notes || null,
+      password: hashedPassword, // Store hashed password
       createdAt: new Date(),
       updatedAt: new Date(),
     })
 
     return {
       success: true,
-      data: { companyId: slug },
+      data: { 
+        companyId: slug,
+        password: plainPassword, // Return plain password so admin can share it
+      },
     }
   } catch (error) {
     console.error("Create company error:", error)
