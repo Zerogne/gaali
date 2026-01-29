@@ -3,6 +3,31 @@
  * Validates Origin and Referer headers to prevent cross-site request forgery
  */
 
+function normalizeOrigin(url: string): string | null {
+  try {
+    const parsed = new URL(url.startsWith('http') ? url : `https://${url}`)
+    return parsed.origin
+  } catch {
+    return null
+  }
+}
+
+/** Build list of allowed origins for production (custom domain, Vercel URL, fallback) */
+function getAllowedOrigins(): string[] {
+  const origins: string[] = []
+  if (process.env.NEXT_PUBLIC_APP_URL) {
+    const o = normalizeOrigin(process.env.NEXT_PUBLIC_APP_URL)
+    if (o && !origins.includes(o)) origins.push(o)
+  }
+  if (process.env.VERCEL_URL) {
+    const o = normalizeOrigin(process.env.VERCEL_URL)
+    if (o && !origins.includes(o)) origins.push(o)
+  }
+  const fallback = 'https://gaali.vercel.app'
+  if (!origins.includes(fallback)) origins.push(fallback)
+  return origins
+}
+
 /**
  * Validate CSRF by checking Origin/Referer headers
  * Returns true if request is safe, false if potential CSRF
@@ -10,7 +35,7 @@
 export function validateCSRF(request: Request): boolean {
   const origin = request.headers.get('origin')
   const referer = request.headers.get('referer')
-  
+
   // In development, allow localhost requests
   if (process.env.NODE_ENV === 'development') {
     if (origin) {
@@ -38,34 +63,25 @@ export function validateCSRF(request: Request): boolean {
       return true
     }
   }
-  
-  // Get allowed origin from environment
-  const allowedOrigin = process.env.NEXT_PUBLIC_APP_URL || (process.env.VERCEL_URL
-    ? `https://${process.env.VERCEL_URL}`
-    : 'https://gaali.vercel.app')
-  
-  // For same-origin requests (no Origin header), check Referer
-  if (!origin) {
-    if (!referer) {
-      // No Origin or Referer - could be a direct API call (allow in dev, restrict in prod)
-      return process.env.NODE_ENV === 'development'
-    }
-    
-    // Check if Referer matches allowed origin
-    try {
-      const refererUrl = new URL(referer)
-      const allowedUrl = new URL(allowedOrigin)
-      return refererUrl.origin === allowedUrl.origin
-    } catch {
-      return false
-    }
+
+  const allowedOrigins = getAllowedOrigins()
+
+  const requestOrigin = origin || (referer ? normalizeOrigin(referer) : null)
+  if (!requestOrigin) {
+    return process.env.NODE_ENV === 'development'
   }
-  
-  // Check if Origin matches allowed origin
+
   try {
-    const originUrl = new URL(origin)
-    const allowedUrl = new URL(allowedOrigin)
-    return originUrl.origin === allowedUrl.origin
+    const requestOriginParsed = new URL(requestOrigin)
+    const requestOriginNormalized = requestOriginParsed.origin
+    return allowedOrigins.some((allowed) => {
+      try {
+        const allowedParsed = new URL(allowed)
+        return requestOriginNormalized === allowedParsed.origin
+      } catch {
+        return false
+      }
+    })
   } catch {
     return false
   }
