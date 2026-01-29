@@ -11,7 +11,7 @@ import { useThirdPartyAutofill } from "@/hooks/useThirdPartyAutofill";
 import { useWeightStatus } from "@/hooks/useWeightStatus";
 import { useLatestLpr } from "@/hooks/useLatestLpr";
 import { updateTruckLog, sendTruckLogToCustoms } from "@/lib/api";
-import { exportLogToPDF } from "@/lib/pdf-export";
+import { printLog } from "@/lib/pdf-export";
 import type { Product } from "@/lib/products/products";
 import type {
   Driver,
@@ -2717,18 +2717,18 @@ export const OutSessionForm = forwardRef<
                             sentToCustoms: false,
                           };
 
-                          // Pass the unique code directly to the export function
-                          await exportLogToPDF(logData, uniqueCode);
+                          // Open print dialog (no PDF download)
+                          await printLog(logData, uniqueCode);
 
                           toast({
-                            title: "Амжилттай",
-                            description: "PDF файл татагдлаа",
+                            title: "Хэвлэх цонх нээгдлээ",
+                            description: "Хэвлэх цонхоос хэвлэх эсвэл PDF хадгалах боломжтой",
                           });
                         } catch (error) {
-                          console.error("Error exporting PDF:", error);
+                          console.error("Error opening print:", error);
                           toast({
                             title: "Алдаа",
-                            description: "PDF файл татахад алдаа гарлаа",
+                            description: "Хэвлэх цонх нээхэд алдаа гарлаа. Поп-ап зөвшөөрөгдсөн эсэхийг шалгана уу.",
                             variant: "destructive",
                           });
                         }
@@ -2739,7 +2739,7 @@ export const OutSessionForm = forwardRef<
                         !formState.netWeightKg || formState.netWeightKg === 0
                       }
                   className="h-14 px-6 text-base"
-                      title="PDF файл татах"
+                      title="Хэвлэх цонх нээх"
                     >
                       <Printer className="w-4 h-4 mr-1" />
                       Хэвлэх
