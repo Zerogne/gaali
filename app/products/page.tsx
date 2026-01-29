@@ -10,6 +10,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Package, Plus, X, Loader2, Edit } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import { findSimilarValue } from "@/lib/utils/string-similarity"
+import { AddProductDialog } from "@/components/products/AddProductDialog"
 
 interface Product {
   id: string
@@ -21,8 +22,9 @@ interface Product {
 export default function ProductsPage() {
   const { toast } = useToast()
   const [products, setProducts] = useState<Product[]>([])
-  const [newProductLabel, setNewProductLabel] = useState("")
-  const [isAdding, setIsAdding] = useState(false)
+  const [productsLoading, setProductsLoading] = useState(true)
+  const [addProductDialogOpen, setAddProductDialogOpen] = useState(false)
+  const [productSearchQuery, setProductSearchQuery] = useState("")
   const [isDeleting, setIsDeleting] = useState<string | null>(null)
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [productToDelete, setProductToDelete] = useState<string | null>(null)
@@ -32,100 +34,41 @@ export default function ProductsPage() {
   const [duplicateDialogOpen, setDuplicateDialogOpen] = useState(false)
   const [duplicateValue, setDuplicateValue] = useState<string | null>(null)
 
-  useEffect(() => {
-    async function loadProducts() {
-      try {
-        // First, ensure default products are migrated
-        try {
-          const migrateResponse = await fetch("/api/products/migrate", { method: "POST" })
-          if (migrateResponse.ok) {
-            console.log("✅ Default products migrated")
-          }
-        } catch (migrateError) {
-          console.warn("⚠️ Migration check failed (may already be migrated):", migrateError)
-        }
-        
-        // Then load products
-        const response = await fetch("/api/products")
-        if (response.ok) {
-          const data = await response.json()
-          setProducts(data)
-        }
-      } catch (error) {
-        console.error("Error loading products:", error)
-      }
-    }
-    loadProducts()
-
-    // Listen for refresh events
-    const handleRefresh = () => {
-      loadProducts()
-    }
-    window.addEventListener("refreshDropdownData", handleRefresh)
-    return () => {
-      window.removeEventListener("refreshDropdownData", handleRefresh)
-    }
-  }, [])
-
-  const handleAddProduct = async () => {
-    if (!newProductLabel.trim()) {
-      toast({
-        title: "Error",
-        description: "Product name is required",
-        variant: "destructive",
-      })
-      return
-    }
-
-    // Check for similar/duplicate products
-    const existingLabels = customProducts.map(p => p.label)
-    const similarProduct = findSimilarValue(newProductLabel.trim(), existingLabels)
-    
-    if (similarProduct) {
-      setDuplicateValue(similarProduct)
-      setDuplicateDialogOpen(true)
-      return
-    }
-
-    setIsAdding(true)
+  const loadProducts = async () => {
+    setProductsLoading(true)
     try {
-      const response = await fetch("/api/products", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ label: newProductLabel.trim() }),
-      })
-
-      if (!response.ok) {
-        const error = await response.json()
-        throw new Error(error.error || "Failed to add product")
+      try {
+        await fetch("/api/products/migrate", { method: "POST", credentials: "include" })
+      } catch {
+        // ignore
       }
-
-      toast({
-        title: "Success",
-        description: "Product added successfully",
-      })
-
-      setNewProductLabel("")
-      
-      // Dispatch custom event to refresh all sections
-      window.dispatchEvent(new CustomEvent("refreshDropdownData"))
-      
-      // Reload products
-      const reloadResponse = await fetch("/api/products")
-      if (reloadResponse.ok) {
-        const data = await reloadResponse.json()
-        setProducts(data)
+      const response = await fetch("/api/products", { credentials: "include" })
+      const data = await response.json().catch(() => [])
+      if (!response.ok) {
+        toast({
+          title: "Алдаа",
+          description: typeof data?.error === "string" ? data.error : "Бүтээгдэхүүн унших боломжгүй",
+          variant: "destructive",
+        })
+        setProducts([])
+      } else {
+        setProducts(Array.isArray(data) ? data : [])
       }
     } catch (error) {
-      toast({
-        title: "Error",
-        description: error instanceof Error ? error.message : "Failed to add product",
-        variant: "destructive",
-      })
+      console.error("Error loading products:", error)
+      setProducts([])
     } finally {
-      setIsAdding(false)
+      setProductsLoading(false)
     }
   }
+
+  useEffect(() => {
+    loadProducts()
+
+    const handleRefresh = () => loadProducts()
+    window.addEventListener("refreshDropdownData", handleRefresh)
+    return () => window.removeEventListener("refreshDropdownData", handleRefresh)
+  }, [])
 
   const handleEditClick = (product: Product) => {
     setEditingProduct(product.id)
@@ -148,9 +91,9 @@ export default function ProductsPage() {
     }
 
     // Check for similar/duplicate products (excluding current product)
-    const existingLabels = customProducts
-      .filter(p => p.id !== productId)
-      .map(p => p.label)
+    const existingLabels = products
+      .filter((p) => p.id !== productId)
+      .map((p) => p.label)
     const similarProduct = findSimilarValue(editingProductName.trim(), existingLabels)
     
     if (similarProduct) {
@@ -184,12 +127,7 @@ export default function ProductsPage() {
       // Dispatch custom event to refresh all sections
       window.dispatchEvent(new CustomEvent("refreshDropdownData"))
 
-      // Reload products
-      const reloadResponse = await fetch("/api/products")
-      if (reloadResponse.ok) {
-        const data = await reloadResponse.json()
-        setProducts(data)
-      }
+      await loadProducts()
     } catch (error) {
       toast({
         title: "Error",
@@ -229,12 +167,7 @@ export default function ProductsPage() {
       // Dispatch custom event to refresh all sections
       window.dispatchEvent(new CustomEvent("refreshDropdownData"))
 
-      // Reload products
-      const reloadResponse = await fetch("/api/products")
-      if (reloadResponse.ok) {
-        const data = await reloadResponse.json()
-        setProducts(data)
-      }
+      await loadProducts()
     } catch (error) {
       toast({
         title: "Error",
@@ -248,6 +181,11 @@ export default function ProductsPage() {
   }
 
   const customProducts = products.filter((p) => p.isCustom)
+  // Show all products from DB, filtered by search bar
+  const searchLower = productSearchQuery.trim().toLowerCase()
+  const allProductsForDisplay = searchLower
+    ? products.filter((p) => (p.label || "").toLowerCase().includes(searchLower))
+    : products
 
   return (
     <div className="flex h-screen bg-background">
@@ -262,34 +200,35 @@ export default function ProductsPage() {
               </h2>
             </div>
             
-            {/* Add Product Input */}
+            {/* Search bar + Add Product */}
             <div className="flex gap-2 mb-6">
               <Input
-                value={newProductLabel}
-                onChange={(e) => setNewProductLabel(e.target.value)}
-                placeholder="Бүтээгдэхүүний нэр оруулах"
-                onKeyDown={(e) => {
-                  if (e.key === "Enter" && !isAdding && newProductLabel.trim()) {
-                    handleAddProduct()
-                  }
-                }}
+                value={productSearchQuery}
+                onChange={(e) => setProductSearchQuery(e.target.value)}
+                placeholder="Бүтээгдэхүүн хайх..."
                 className="flex-1"
               />
               <Button
-                onClick={handleAddProduct}
-                disabled={isAdding || !newProductLabel.trim()}
+                onClick={() => setAddProductDialogOpen(true)}
                 className="gap-2"
               >
-                {isAdding ? (
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                ) : (
-                  <Plus className="w-4 h-4" />
-                )}
+                <Plus className="w-4 h-4" />
                 Нэмэх
               </Button>
             </div>
+            <AddProductDialog
+              open={addProductDialogOpen}
+              onOpenChange={setAddProductDialogOpen}
+              existingLabels={products.map((p) => p.label)}
+              onSuccess={() => loadProducts()}
+            />
 
-            {customProducts.length > 0 ? (
+            {productsLoading ? (
+              <p className="text-sm text-muted-foreground text-center py-8 flex items-center justify-center gap-2">
+                <Loader2 className="w-4 h-4 animate-spin" />
+                Уншиж байна...
+              </p>
+            ) : allProductsForDisplay.length > 0 ? (
               <div className="border rounded-lg">
                 <Table>
                   <TableHeader>
@@ -299,7 +238,7 @@ export default function ProductsPage() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {customProducts.map((product) => (
+                    {allProductsForDisplay.map((product) => (
                       <TableRow key={product.id}>
                         <TableCell className="font-medium">
                           {editingProduct === product.id ? (
@@ -346,7 +285,7 @@ export default function ProductsPage() {
                         </TableCell>
                         <TableCell>
                           <div className="flex items-center gap-1">
-                            {editingProduct !== product.id && (
+                            {editingProduct !== product.id && product.isCustom && (
                               <>
                                 <Button
                                   variant="ghost"

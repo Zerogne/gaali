@@ -12,16 +12,8 @@ export async function migrateDefaultProductsToDatabase(): Promise<void> {
   const companyId = await getActiveCompany()
   const productsCollection = await getCompanyCollection<Product>(companyId, "products")
 
-  const defaultProducts = [
-    { value: "industrial", label: "Аж үйлдвэрийн тоног төхөөрөмж" },
-    { value: "food", label: "Хүнсний бүтээгдэхүүн" },
-    { value: "textiles", label: "Текстиль" },
-    { value: "electronics", label: "Электроник" },
-    { value: "construction", label: "Барилгын материал" },
-    { value: "machinery", label: "Машин механизм" },
-    { value: "chemicals", label: "Химийн бодис" },
-    { value: "other", label: "Бусад" },
-  ]
+  // No hardcoded defaults – products come from DB only (add via Product manager or session dropdown)
+  const defaultProducts: { value: string; label: string }[] = []
 
   console.log(`🔄 Migrating default products to database for company: ${companyId}`)
 
@@ -74,16 +66,8 @@ export async function migrateDefaultProductsForAllCompanies(): Promise<void> {
     try {
       const productsCollection = await getCompanyCollection<Product>(companyId, "products")
       
-      const defaultProducts = [
-        { value: "industrial", label: "Аж үйлдвэрийн тоног төхөөрөмж" },
-        { value: "food", label: "Хүнсний бүтээгдэхүүн" },
-        { value: "textiles", label: "Текстиль" },
-        { value: "electronics", label: "Электроник" },
-        { value: "construction", label: "Барилгын материал" },
-        { value: "machinery", label: "Машин механизм" },
-        { value: "chemicals", label: "Химийн бодис" },
-        { value: "other", label: "Бусад" },
-      ]
+      // No hardcoded defaults – products are managed per company
+      const defaultProducts: { value: string; label: string }[] = []
 
       for (const product of defaultProducts) {
         const existing = await productsCollection.findOne({ value: product.value })
