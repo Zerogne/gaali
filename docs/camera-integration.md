@@ -14,7 +14,7 @@ Create or update `.env.local` in the project root with the following variables:
 
 ```bash
 # Camera base IP address
-CAMERA_BASE_URL=http://192.168.1.100
+CAMERA_BASE_URL=http://192.168.1.10
 
 # The endpoint that returns latest recognition JSON
 # Discover the exact path from Chrome DevTools → Network → Fetch/XHR
