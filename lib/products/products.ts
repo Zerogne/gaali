@@ -43,17 +43,26 @@ export async function getProducts(): Promise<Product[]> {
 }
 
 /**
+ * Generate a URL-safe value/slug from a label. Supports Cyrillic (e.g. Mongolian) and other Unicode letters.
+ * Falls back to a unique string if the label yields an empty slug.
+ */
+function slugFromLabel(label: string, fallbackUnique?: string): string {
+  const slug = label
+    .toLowerCase()
+    .trim()
+    .replace(/\s+/g, "-")
+    .replace(/[^\p{L}\p{N}-]/gu, "")
+  return slug || fallbackUnique || `custom-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`
+}
+
+/**
  * Add a new custom product to the company's collection
  */
 export async function addProduct(label: string): Promise<Product> {
   const companyId = await getActiveCompany()
   const productsCollection = await getCompanyCollection<Product>(companyId, "products")
 
-  // Generate value from label (lowercase, replace spaces with hyphens)
-  const value = label
-    .toLowerCase()
-    .replace(/\s+/g, "-")
-    .replace(/[^a-z0-9-]/g, "")
+  const value = slugFromLabel(label)
 
   // Check if product with this value already exists
   const existing = await productsCollection.findOne({ value })
@@ -81,11 +90,7 @@ export async function updateProduct(productId: string, label: string): Promise<P
   const companyId = await getActiveCompany()
   const productsCollection = await getCompanyCollection<Product>(companyId, "products")
 
-  // Generate value from label (lowercase, replace spaces with hyphens)
-  const value = label
-    .toLowerCase()
-    .replace(/\s+/g, "-")
-    .replace(/[^a-z0-9-]/g, "")
+  const value = slugFromLabel(label)
 
   // Check if another product with this value already exists (excluding current product)
   const existing = await productsCollection.findOne({ 
