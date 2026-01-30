@@ -36,6 +36,7 @@ import {
 
 interface InSessionFormState {
   plateNumber: string;
+  rfid: string;
   driverId: string;
   driverName: string;
   productId: string;
@@ -210,6 +211,7 @@ export const InSessionForm = forwardRef<
 
     const [formState, setFormState] = useState<InSessionFormState>({
       plateNumber: "",
+      rfid: "",
       driverId: "",
       driverName: "",
       productId: "",
@@ -345,6 +347,7 @@ export const InSessionForm = forwardRef<
         // Set form state immediately with available data, inTime will be updated async
         setFormState({
           plateNumber: editLog.plate || "",
+          rfid: "",
           driverId: driver?.id || "",
           driverName: editLog.driverName || "",
           productId: product?.id || "",
@@ -1462,6 +1465,7 @@ export const InSessionForm = forwardRef<
           setSavedUniqueCode(null);
           setFormState({
             plateNumber: "",
+            rfid: "",
             driverId: "",
             driverName: "",
             productId: "",
@@ -1840,6 +1844,7 @@ export const InSessionForm = forwardRef<
         setSavedUniqueCode(null);
         setFormState({
           plateNumber: "",
+          rfid: "",
           driverId: "",
           driverName: "",
           productId: "",
@@ -1954,16 +1959,28 @@ export const InSessionForm = forwardRef<
                       </div>
                     </div>
                   </div>
-                  <div className="w-2/3 flex flex-col gap-1.5">
-                    <div className="bg-blue-50 border border-blue-200 rounded p-2 flex items-center w-full">
-                      <p className="text-gray-700 text-xs leading-relaxed">
-                        Машины дугаар, жинг оруулахын тулд <span className="text-[#0073c4]">Gaali Bridge</span> программыг ажиллуулсан байх шаардлагатай.
-                      </p>
-                    </div>
-                    <div className="bg-red-50 border border-red-300 rounded p-2 w-full">
-                      <p className="text-red-600 text-sm leading-tight">
-                        Гараас өгөгдөл оруулах дохиололд Гаалийн газраас зөвшөөрөгдөөгүй тул анхаарна уу!
-                      </p>
+                  <div className="w-full md:w-1/2 lg:w-1/3">
+                    <div className="bg-white rounded-lg flex items-center justify-center border border-black px-3 py-1 relative h-14" style={{ borderWidth: '3px' }}>
+                      <Input
+                        id="rfid"
+                        value={formState.rfid}
+                        onChange={(e) =>
+                          setFormState((prev) => ({ ...prev, rfid: e.target.value }))
+                        }
+                        className="absolute inset-0 w-full h-full font-mono font-bold bg-transparent text-transparent border-0 focus:ring-0 focus-visible:ring-0 text-center caret-black z-10"
+                        placeholder=""
+                      />
+                      <div className="flex items-center justify-center w-full h-full pointer-events-none">
+                        {formState.rfid ? (
+                          <div className="text-5xl font-mono font-bold text-black leading-none">
+                            {formState.rfid}
+                          </div>
+                        ) : (
+                          <div className="text-6xl font-mono font-bold text-gray-400 leading-none">
+                            RFID
+                          </div>
+                        )}
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -2408,6 +2425,11 @@ export const InSessionForm = forwardRef<
                       <span className="text-lg font-bold">*</span> Улаан одоор тэмдэглэгдсэн нүдний мэдээлэл Гаалын мэдээллийн санд өгөгдөл болон дамжуулагдах тул анхааралтай бөглөнө үү.
                     </p>
                   </div>
+                  <div className="bg-red-50 border border-red-300 rounded p-2 w-full">
+                      <p className="text-red-600 text-sm leading-tight">
+                        Гараас өгөгдөл оруулах дохиололд Гаалийн газраас зөвшөөрөгдөөгүй тул анхаарна уу!
+                      </p>
+                    </div>
                 </div>
               </div>
 

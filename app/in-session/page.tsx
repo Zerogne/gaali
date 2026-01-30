@@ -221,6 +221,11 @@ function InSessionContent() {
                     required
                   />
                 </div>
+                <div className="bg-blue-50 border border-blue-200 rounded p-2 flex items-center w-full">
+                      <p className="text-gray-700 text-xs leading-relaxed">
+                        Машины дугаар, жинг оруулахын тулд <span className="text-[#0073c4]">Gaali Bridge</span> программыг ажиллуулсан байх шаардлагатай.
+                      </p>
+                    </div>
               </div>
               <div className="ml-auto flex items-center gap-3">
                 <Button
