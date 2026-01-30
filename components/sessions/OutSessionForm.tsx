@@ -55,6 +55,7 @@ interface OutSessionFormState {
   sealNumber: string;
   hasTrailer: boolean;
   trailerNumber: string;
+  bagQuantity: string;
   notes: string;
   inSessionId?: string;
 }
@@ -219,6 +220,7 @@ export const OutSessionForm = forwardRef<
       sealNumber: "",
       hasTrailer: false,
       trailerNumber: "",
+      bagQuantity: "",
       notes: "",
       inSessionId: undefined,
     });
@@ -390,6 +392,7 @@ export const OutSessionForm = forwardRef<
           sealNumber: editLog.sealNumber || "",
           hasTrailer: editLog.hasTrailer || false,
           trailerNumber: editLog.trailerPlate || "",
+          bagQuantity: editLog.bagQuantity ?? "",
           notes: editLog.comments || "",
           inSessionId: undefined,
         });
@@ -1514,6 +1517,7 @@ export const OutSessionForm = forwardRef<
               : undefined,
             sealNumber: formState.sealNumber.trim() || undefined,
             comments: formState.notes.trim() || undefined,
+            bagQuantity: formState.bagQuantity.trim() || undefined,
           };
 
           const result = await updateTruckLog(editLogId, updateData);
@@ -1551,6 +1555,7 @@ export const OutSessionForm = forwardRef<
             sealNumber: "",
             hasTrailer: false,
             trailerNumber: "",
+            bagQuantity: "",
             notes: "",
             inSessionId: undefined,
           });
@@ -1595,6 +1600,7 @@ export const OutSessionForm = forwardRef<
           hasTrailer: hasTrailer || undefined,
           trailerNumber: hasTrailer ? formState.trailerNumber.trim() : undefined,
           notes: formState.notes.trim() || undefined,
+          bagQuantity: formState.bagQuantity.trim() || undefined,
         };
 
         const response = await fetch("/api/truck-sessions", {
@@ -2591,6 +2597,34 @@ export const OutSessionForm = forwardRef<
                       />
                     </div>
               </div>
+
+                {/* Шуудайны тоо хэмжээ - before Notes */}
+                <div className="flex flex-col">
+                  <div className="mb-1 min-h-[1.25rem] flex items-center width-full">
+                    <Label
+                      htmlFor="bagQuantity"
+                      className="text-base font-medium text-gray-700"
+                    >
+                      Шуудайны тоо хэмжээ
+                    </Label>
+                  </div>
+                  <div className="h-12">
+                    <Input
+                      id="bagQuantity"
+                      type="text"
+                      value={formState.bagQuantity}
+                      onChange={(e) =>
+                        setFormState((prev) => ({
+                          ...prev,
+                          bagQuantity: e.target.value,
+                        }))
+                      }
+                      disabled={hasInSessionData}
+                      className="h-12 text-base w-full !bg-blue-400 !text-black !border-blue-400 placeholder:!text-gray-600"
+                      placeholder=""
+                    />
+                  </div>
+                </div>
 
                 {/* Notes - Next to Receiver Organization */}
                 <div className="flex flex-col">

@@ -52,6 +52,7 @@ export interface TruckLog {
   trailerPlate?: string; // Trailer plate (shown when hasTrailer is true)
   vehicleRegistrationNumber?: string; // Vehicle registration number
   vehicleRegistrationYear?: string; // Vehicle registration year
+  bagQuantity?: string; // Шуудайны тоо хэмжээ (bag/sack quantity)
   createdAt: string;
   sentToCustoms: boolean;
 }

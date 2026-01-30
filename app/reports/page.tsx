@@ -22,6 +22,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { FilterableSelect } from "@/components/ui/filterable-select";
 import { Badge } from "@/components/ui/badge";
 import { FileText, Download, X, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
@@ -36,10 +37,14 @@ export default function ReportsPage() {
   const [transportCompanies, setTransportCompanies] = useState<TransportCompany[]>([]);
   const [uniqueCodes, setUniqueCodes] = useState<Map<string, string>>(new Map());
   
-  // Filters
+  // Filters (match dashboard / TruckTable)
   const [directionFilter, setDirectionFilter] = useState<Direction | "ALL">("ALL");
   const [plateSearch, setPlateSearch] = useState("");
   const [driverSearch, setDriverSearch] = useState("");
+  const [productSearch, setProductSearch] = useState("");
+  const [trailerSearch, setTrailerSearch] = useState("");
+  const [contractSearch, setContractSearch] = useState("");
+  const [vehicleSearch, setVehicleSearch] = useState("");
   const [dateFrom, setDateFrom] = useState("");
   const [dateTo, setDateTo] = useState("");
   const [companyFilter, setCompanyFilter] = useState<string>("ALL");
@@ -156,65 +161,125 @@ export default function ReportsPage() {
     }
   }, [logs]);
 
-  // Filter logs
+  // Unique options for FilterableSelect (from logs / transportCompanies) — match dashboard
+  const uniqueDrivers = useMemo(() => {
+    const set = new Set<string>();
+    logs.forEach((log) => {
+      if (log.driverName?.trim()) set.add(log.driverName.trim());
+    });
+    return Array.from(set).sort().map((name) => ({ value: name, label: name }));
+  }, [logs]);
+
+  const uniqueProducts = useMemo(() => {
+    const set = new Set<string>();
+    logs.forEach((log) => {
+      if (log.cargoType?.trim()) set.add(log.cargoType.trim());
+    });
+    return Array.from(set).sort().map((name) => ({ value: name, label: name }));
+  }, [logs]);
+
+  const uniqueTrailers = useMemo(() => {
+    const set = new Set<string>();
+    logs.forEach((log) => {
+      if (log.trailerPlate?.trim()) set.add(log.trailerPlate.trim());
+    });
+    return Array.from(set).sort().map((name) => ({ value: name, label: name }));
+  }, [logs]);
+
+  const uniqueContracts = useMemo(() => {
+    const set = new Set<string>();
+    transportCompanies.forEach((c) => {
+      if (c.contract?.trim()) set.add(c.contract.trim());
+    });
+    return Array.from(set).sort().map((name) => ({ value: name, label: name }));
+  }, [transportCompanies]);
+
+  const uniqueVehicles = useMemo(() => {
+    const set = new Set<string>();
+    logs.forEach((log) => {
+      const v = log.vehicleRegistrationNumber?.trim();
+      if (v) set.add(v);
+    });
+    return Array.from(set).sort().map((name) => ({ value: name, label: name }));
+  }, [logs]);
+
+  // Filter logs (same logic as dashboard TruckTable)
   const filteredLogs = useMemo(() => {
     let result = [...logs];
-    
-    // Direction filter
+
     if (directionFilter !== "ALL") {
       result = result.filter((log) => log.direction === directionFilter);
     }
-    
-    // Plate search
     if (plateSearch.trim()) {
-      const query = plateSearch.toLowerCase().trim();
-      result = result.filter((log) => 
-        log.plate.toLowerCase().includes(query)
-      );
+      const q = plateSearch.toLowerCase().trim();
+      result = result.filter((log) => log.plate.toLowerCase().includes(q));
     }
-    
-    // Driver search
     if (driverSearch.trim()) {
-      const query = driverSearch.toLowerCase().trim();
-      result = result.filter((log) => 
-        log.driverName?.toLowerCase().includes(query)
+      const q = driverSearch.toLowerCase().trim();
+      result = result.filter((log) => log.driverName?.toLowerCase().includes(q));
+    }
+    if (productSearch.trim()) {
+      const q = productSearch.toLowerCase().trim();
+      result = result.filter((log) => log.cargoType?.toLowerCase().includes(q));
+    }
+    if (trailerSearch.trim()) {
+      const q = trailerSearch.toLowerCase().trim();
+      result = result.filter((log) => log.trailerPlate?.toLowerCase().includes(q));
+    }
+    if (contractSearch.trim()) {
+      const q = contractSearch.toLowerCase().trim();
+      result = result.filter((log) => {
+        if (!log.transportCompanyId) return false;
+        const company = transportCompanies.find((c) => c.id === log.transportCompanyId);
+        return company?.contract?.toLowerCase().includes(q);
+      });
+    }
+    if (vehicleSearch.trim()) {
+      const q = vehicleSearch.toLowerCase().trim();
+      result = result.filter((log) =>
+        log.vehicleRegistrationNumber?.toLowerCase().includes(q)
       );
     }
-    
-    // Company filter
     if (companyFilter !== "ALL") {
       result = result.filter((log) => log.transportCompanyId === companyFilter);
     }
-    
-    // Date filters
     if (dateFrom) {
-      const fromDate = new Date(dateFrom);
-      result = result.filter((log) => {
-        const logDate = new Date(log.createdAt);
-        return logDate >= fromDate;
-      });
+      const from = new Date(dateFrom);
+      result = result.filter((log) => new Date(log.createdAt) >= from);
     }
     if (dateTo) {
-      const toDate = new Date(dateTo);
-      toDate.setHours(23, 59, 59, 999);
-      result = result.filter((log) => {
-        const logDate = new Date(log.createdAt);
-        return logDate <= toDate;
-      });
+      const to = new Date(dateTo);
+      to.setHours(23, 59, 59, 999);
+      result = result.filter((log) => new Date(log.createdAt) <= to);
     }
-    
-    // Sort by date (newest first)
+
     return result.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
-  }, [logs, directionFilter, plateSearch, driverSearch, companyFilter, dateFrom, dateTo]);
+  }, [logs, directionFilter, plateSearch, driverSearch, productSearch, trailerSearch, contractSearch, vehicleSearch, companyFilter, dateFrom, dateTo, transportCompanies]);
 
   const clearFilters = () => {
     setDirectionFilter("ALL");
     setPlateSearch("");
     setDriverSearch("");
+    setProductSearch("");
+    setTrailerSearch("");
+    setContractSearch("");
+    setVehicleSearch("");
     setDateFrom("");
     setDateTo("");
     setCompanyFilter("ALL");
   };
+
+  const hasActiveFilters =
+    directionFilter !== "ALL" ||
+    !!plateSearch ||
+    !!driverSearch ||
+    !!productSearch ||
+    !!trailerSearch ||
+    !!contractSearch ||
+    !!vehicleSearch ||
+    !!dateFrom ||
+    !!dateTo ||
+    companyFilter !== "ALL";
 
   // Helper function to get transport company name
   const getTransportCompanyName = (companyId?: string): string => {
@@ -223,51 +288,117 @@ export default function ReportsPage() {
     return company?.name || "—";
   };
 
-  // Export to Excel
+  // Report summary for government/official use: period, total weight IN, total weight OUT
+  // OUT sessions usually merge into the IN log (direction stays "IN", netWeightKg set, weightKg = exit weight).
+  // So "total out" must include: direction===OUT (standalone) + direction===IN with netWeightKg (merged/completed).
+  const reportSummary = useMemo(() => {
+    const totalWeightIn = filteredLogs
+      .filter((log) => log.direction === "IN")
+      .reduce((sum, log) => sum + (typeof log.weightKg === "number" && !isNaN(log.weightKg) ? log.weightKg : 0), 0);
+    const isMergedOrOut = (log: TruckLog) =>
+      log.direction === "OUT" || (log.direction === "IN" && log.netWeightKg != null && log.netWeightKg !== undefined);
+    const totalWeightOut = filteredLogs
+      .filter(isMergedOrOut)
+      .reduce((sum, log) => sum + (typeof log.weightKg === "number" && !isNaN(log.weightKg) ? log.weightKg : 0), 0);
+    const periodLabel =
+      dateFrom && dateTo
+        ? `${dateFrom} - ${dateTo}`
+        : dateFrom
+          ? `${dateFrom} - (одоо)`
+          : dateTo
+            ? `(эхлэх) - ${dateTo}`
+            : "Бүх хугацаа";
+    return {
+      periodLabel,
+      totalWeightIn,
+      totalWeightOut,
+      totalRecords: filteredLogs.length,
+    };
+  }, [filteredLogs, dateFrom, dateTo]);
+
+  // Export to Excel — government/official report with header (when-to-when, totals)
   const handleExportToExcel = () => {
     try {
-      // Prepare data for Excel
+      const { periodLabel, totalWeightIn, totalWeightOut, totalRecords } = reportSummary;
+
+      // Ensure "when to when" is explicit in Excel: use filter dates or derive from data (never empty)
+      let excelPeriodFrom = dateFrom;
+      let excelPeriodTo = dateTo;
+      if (!excelPeriodFrom || !excelPeriodTo) {
+        if (filteredLogs.length > 0) {
+          const dates = filteredLogs.map((log) => new Date(log.createdAt).getTime());
+          const minDate = new Date(Math.min(...dates));
+          const maxDate = new Date(Math.max(...dates));
+          excelPeriodFrom = minDate.toISOString().split("T")[0];
+          excelPeriodTo = maxDate.toISOString().split("T")[0];
+        } else {
+          const today = new Date().toISOString().split("T")[0];
+          excelPeriodFrom = excelPeriodFrom || today;
+          excelPeriodTo = excelPeriodTo || today;
+        }
+      }
+      const whenToWhenLabel =
+        [excelPeriodFrom, excelPeriodTo].every(Boolean) ? `${excelPeriodFrom} - ${excelPeriodTo}` : "";
+      const whenToWhenDisplay =
+        whenToWhenLabel || `${new Date().toISOString().split("T")[0]} - ${new Date().toISOString().split("T")[0]}`;
+
+      // Prepare row data — use numbers for weights so Excel shows and sums correctly
       const excelData = filteredLogs.map((log) => ({
-        "Дугаар": uniqueCodes.get(log.id) || "—",
-        "Улсын дугаар": log.plate,
-        "Чиргүүл": log.trailerPlate || "—",
-        "Жолооч": log.driverName || "—",
-        "Бүтээгдхүүн": log.cargoType || "—",
+        "Дугаар": uniqueCodes.get(log.id) ?? "",
+        "Улсын дугаар": log.plate ?? "",
+        "Чиргүүл": log.trailerPlate ?? "",
+        "Жолооч": log.driverName ?? "",
+        "Бүтээгдэхүүн": log.cargoType ?? "",
         "Тээврийн компани": getTransportCompanyName(log.transportCompanyId),
-        "Чиглэл": (log.direction === "OUT") || (log.direction === "IN" && log.netWeightKg !== undefined && log.netWeightKg !== null) ? "орсон гарсан" : "орсон гараагүй",
+        "Чиглэл": (log.direction === "OUT") || (log.direction === "IN" && log.netWeightKg != null) ? "орсон гарсан" : "орсон гараагүй",
         "Төлөв": log.sentToCustoms ? "илгээгдсэн" : "илгээгдээгүй",
-        "Жин (кг)": log.weightKg || "—",
-        "Цэвэр жин (кг)": log.netWeightKg || "—",
-        "Гарал": log.origin || "—",
-        "Хаялга": log.destination || "—",
-        "Илгээч": log.senderOrganization || "—",
-        "Хүлээн авагч": log.receiverOrganization || "—",
-        "Огноо": new Date(log.createdAt).toLocaleString("mn-MN", {
-          year: "numeric",
-          month: "2-digit",
-          day: "2-digit",
-          hour: "2-digit",
-          minute: "2-digit",
-        }),
+        "Жин (кг)": typeof log.weightKg === "number" && !isNaN(log.weightKg) ? log.weightKg : "",
+        "Цэвэр жин (кг)": typeof log.netWeightKg === "number" && !isNaN(log.netWeightKg) ? log.netWeightKg : "",
+        "Хаанаас": log.origin ?? "",
+        "Хаашаа": log.destination ?? "",
+        "Илгээч": log.senderOrganization ?? "",
+        "Хүлээн авагч": log.receiverOrganization ?? "",
+        "Огноо": formatDateTimeForExcel(log.createdAt),
       }));
 
-      // Create workbook and worksheet
-      const ws = XLSX.utils.json_to_sheet(excelData);
+      // Summary block: title merged across all columns; compact key-value rows to use horizontal space
+      const reportName = "Тээврийн хэрэгслийн орсон гарсан бүртгэлийн тайлан";
+      const headerRows: (string | number)[][] = [
+        ["ТЭЭВРИЙН ХЭРЭГСЛИЙН ОРСОН ГАРСАН ТАЙЛАН"],
+        ["Хугацаа (эхлэх - дуусах)", whenToWhenDisplay, "Тайлангийн нэр", reportName],
+        ["Нийт орсон жин (кг)", totalWeightIn, "Нийт гарсан жин (кг)", totalWeightOut, "Нийт бүртгэлийн тоо", totalRecords],
+        [],
+      ];
+      const dataHeaders = excelData.length > 0 ? Object.keys(excelData[0]) : [
+        "Дугаар", "Улсын дугаар", "Чиргүүл", "Жолооч", "Бүтээгдэхүүн", "Тээврийн компани",
+        "Чиглэл", "Төлөв", "Жин (кг)", "Цэвэр жин (кг)", "Хаанаас", "Хаашаа", "Илгээч", "Хүлээн авагч", "Огноо",
+      ];
+      const dataRows = excelData.map((row) => Object.values(row));
+      const aoa = [...headerRows, dataHeaders, ...dataRows];
+      const ws = XLSX.utils.aoa_to_sheet(aoa);
+
+      const numCols = dataHeaders.length;
+
+      // Merge title row (row 0) across all columns for a cleaner header
+      ws["!merges"] = [{ s: { r: 0, c: 0 }, e: { r: 0, c: numCols - 1 } }];
+
+      // Column widths: balanced for summary (A–B) and data table; avoid cramped or oversized columns
+      const colWidths = dataHeaders.map((_, i) => {
+        const w = i === 0 ? 20 : i === 1 ? 12 : i === 2 ? 12 : i <= 6 ? 14 : i <= 9 ? 12 : 14;
+        return { wch: Math.min(Math.max(w, 10), 24) };
+      });
+      ws["!cols"] = colWidths;
+
       const wb = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(wb, ws, "Тайлан");
 
-      // Generate filename with date range
-      const dateStr = dateFrom && dateTo 
-        ? `${dateFrom}_${dateTo}`
-        : new Date().toISOString().split("T")[0];
+      const dateStr = dateFrom && dateTo ? `${dateFrom}_${dateTo}` : new Date().toISOString().split("T")[0];
       const filename = `Тайлан_${dateStr}.xlsx`;
-
-      // Download
       XLSX.writeFile(wb, filename);
 
       toast({
         title: "Амжилттай",
-        description: `${filteredLogs.length} бүртгэл Excel файлд экспорт хийгдлээ`,
+        description: `${totalRecords} бүртгэл, нийт орсон жин ${totalWeightIn.toLocaleString("mn-MN")} кг, гарсан жин ${totalWeightOut.toLocaleString("mn-MN")} кг татагдлаа`,
       });
     } catch (error) {
       console.error("Error exporting to Excel:", error);
@@ -287,6 +418,17 @@ export default function ReportsPage() {
       hour: "2-digit",
       minute: "2-digit",
     });
+  };
+
+  // Format date+time for Excel so time is visible (locale string can be date-only in some environments)
+  const formatDateTimeForExcel = (dateString: string): string => {
+    const d = new Date(dateString);
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, "0");
+    const day = String(d.getDate()).padStart(2, "0");
+    const h = String(d.getHours()).padStart(2, "0");
+    const min = String(d.getMinutes()).padStart(2, "0");
+    return `${y}-${m}-${day} ${h}:${min}`;
   };
 
   return (
@@ -332,12 +474,33 @@ export default function ReportsPage() {
               </CardHeader>
               <Separator className="flex-shrink-0" />
               <CardContent className="pt-1.5 flex-1 min-h-[550px] overflow-hidden flex flex-col px-4 pb-3">
-                {/* Filters Section */}
+                {/* Report summary: when-to-when + total weight IN/OUT — always visible (also included in Excel download) */}
+                <div className="flex-shrink-0 mb-3 p-3 bg-slate-50 border border-slate-200 rounded-lg">
+                  <h3 className="text-sm font-semibold text-slate-800 mb-2">Тайлангийн тойм</h3>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 text-sm">
+                    <div>
+                      <span className="text-slate-500 block">Хугацаа</span>
+                      <span className="font-medium text-slate-900">{reportSummary.periodLabel}</span>
+                    </div>
+                    <div>
+                      <span className="text-slate-500 block">Нийт орсон жин (кг)</span>
+                      <span className="font-medium text-green-700">{reportSummary.totalWeightIn.toLocaleString("mn-MN")}</span>
+                    </div>
+                    <div>
+                      <span className="text-slate-500 block">Нийт гарсан жин (кг)</span>
+                      <span className="font-medium text-blue-700">{reportSummary.totalWeightOut.toLocaleString("mn-MN")}</span>
+                    </div>
+                    <div>
+                      <span className="text-slate-500 block">Нийт бүртгэл</span>
+                      <span className="font-medium text-slate-900">{reportSummary.totalRecords}</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Filters Section — same as dashboard (Нүүр) TruckTable */}
                 <div className="space-y-2 mb-2 p-2.5 bg-gray-50 rounded-lg border border-gray-200 flex-shrink-0">
                   <div className="flex items-center justify-between mb-1">
-                    
-                    
-                    {(directionFilter !== "ALL" || plateSearch || driverSearch || dateFrom || dateTo || companyFilter !== "ALL") && (
+                    {hasActiveFilters && (
                       <Button
                         variant="ghost"
                         size="sm"
@@ -351,7 +514,7 @@ export default function ReportsPage() {
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2.5">
-                    {/* Direction Filter */}
+                    {/* Direction */}
                     <div>
                       <Label htmlFor="direction" className="text-xs font-medium text-gray-700 mb-0.5">
                         Чиглэл
@@ -371,7 +534,7 @@ export default function ReportsPage() {
                       </Select>
                     </div>
 
-                    {/* Plate Search */}
+                    {/* Plate */}
                     <div>
                       <Label htmlFor="plate" className="text-xs font-medium text-gray-700 mb-0.5">
                         Улсын дугаар
@@ -385,28 +548,29 @@ export default function ReportsPage() {
                       />
                     </div>
 
-                    {/* Driver Search */}
+                    {/* Driver */}
                     <div>
                       <Label htmlFor="driver" className="text-xs font-medium text-gray-700 mb-0.5">
                         Жолооч
                       </Label>
-                      <Input
-                        id="driver"
-                        placeholder="Хайх..."
+                      <FilterableSelect
+                        options={uniqueDrivers}
                         value={driverSearch}
-                        onChange={(e) => setDriverSearch(e.target.value)}
+                        onValueChange={setDriverSearch}
+                        placeholder="Жолооч сонгох..."
+                        searchPlaceholder="Жолооч хайх..."
                         className="bg-white"
                       />
                     </div>
 
-                    {/* Company Filter */}
+                    {/* Company */}
                     <div>
                       <Label htmlFor="company" className="text-xs font-medium text-gray-700 mb-0.5">
                         Тээврийн компани
                       </Label>
                       <Select
                         value={companyFilter}
-                        onValueChange={(value) => setCompanyFilter(value)}
+                        onValueChange={setCompanyFilter}
                       >
                         <SelectTrigger className="w-full bg-white">
                           <SelectValue />
@@ -420,6 +584,66 @@ export default function ReportsPage() {
                           ))}
                         </SelectContent>
                       </Select>
+                    </div>
+
+                    {/* Product */}
+                    <div>
+                      <Label htmlFor="product" className="text-xs font-medium text-gray-700 mb-0.5">
+                        Бүтээгдэхүүн
+                      </Label>
+                      <FilterableSelect
+                        options={uniqueProducts}
+                        value={productSearch}
+                        onValueChange={setProductSearch}
+                        placeholder="Бүтээгдэхүүн сонгох..."
+                        searchPlaceholder="Бүтээгдэхүүн хайх..."
+                        className="bg-white"
+                      />
+                    </div>
+
+                    {/* Trailer */}
+                    <div>
+                      <Label htmlFor="trailer" className="text-xs font-medium text-gray-700 mb-0.5">
+                        Чиргүүл
+                      </Label>
+                      <FilterableSelect
+                        options={uniqueTrailers}
+                        value={trailerSearch}
+                        onValueChange={setTrailerSearch}
+                        placeholder="Чиргүүл сонгох..."
+                        searchPlaceholder="Чиргүүл хайх..."
+                        className="bg-white"
+                      />
+                    </div>
+
+                    {/* Contract */}
+                    <div>
+                      <Label htmlFor="contract" className="text-xs font-medium text-gray-700 mb-0.5">
+                        Гэрээ
+                      </Label>
+                      <FilterableSelect
+                        options={uniqueContracts}
+                        value={contractSearch}
+                        onValueChange={setContractSearch}
+                        placeholder="Гэрээ сонгох..."
+                        searchPlaceholder="Гэрээ хайх..."
+                        className="bg-white"
+                      />
+                    </div>
+
+                    {/* Vehicle */}
+                    <div>
+                      <Label htmlFor="vehicle" className="text-xs font-medium text-gray-700 mb-0.5">
+                        Тээврийн хэрэгсэл
+                      </Label>
+                      <FilterableSelect
+                        options={uniqueVehicles}
+                        value={vehicleSearch}
+                        onValueChange={setVehicleSearch}
+                        placeholder="Тээврийн хэрэгсэл сонгох..."
+                        searchPlaceholder="Тээврийн хэрэгсэл хайх..."
+                        className="bg-white"
+                      />
                     </div>
 
                     {/* Date From */}

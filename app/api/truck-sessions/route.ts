@@ -545,6 +545,7 @@ export async function POST(request: Request) {
               sealNumber: body.sealNumber || undefined,
               hasTrailer: body.hasTrailer || undefined,
               trailerPlate: body.trailerNumber || body.trailerPlate || undefined,
+              bagQuantity: body.bagQuantity || undefined,
             }
             
             // Add carWeight and trailerWeight for OUT sessions if provided
@@ -593,6 +594,7 @@ export async function POST(request: Request) {
             sealNumber: body.sealNumber || undefined,
             hasTrailer: body.hasTrailer || undefined,
             trailerPlate: body.trailerNumber || body.trailerPlate || undefined,
+            bagQuantity: body.bagQuantity || undefined,
           }
           
           // Add carWeight and trailerWeight if provided
@@ -644,6 +646,7 @@ export async function POST(request: Request) {
           sealNumber: body.sealNumber || undefined,
           hasTrailer: body.hasTrailer !== undefined ? body.hasTrailer : undefined,
           trailerPlate: body.trailerNumber || body.trailerPlate || undefined,
+          bagQuantity: body.bagQuantity || undefined,
         }
         
         console.log("📋 Log data with lookups:", {

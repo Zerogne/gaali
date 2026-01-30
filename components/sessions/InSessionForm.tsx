@@ -52,6 +52,7 @@ interface InSessionFormState {
   totalWeight: number | null;
   hasTrailer: boolean;
   trailerNumber: string;
+  bagQuantity: string;
   notes: string;
 }
 
@@ -235,6 +236,7 @@ export const InSessionForm = forwardRef<
       totalWeight: 0,
       hasTrailer: false,
       trailerNumber: "",
+      bagQuantity: "",
       notes: "",
     });
 
@@ -363,6 +365,7 @@ export const InSessionForm = forwardRef<
           totalWeight: editLog.weightKg || null,
           hasTrailer: editLog.hasTrailer || false,
           trailerNumber: editLog.trailerPlate || "",
+          bagQuantity: editLog.bagQuantity ?? "",
           notes: editLog.comments || "",
         });
         
@@ -1448,6 +1451,7 @@ export const InSessionForm = forwardRef<
               ? formState.trailerNumber.trim().toUpperCase()
               : undefined,
             comments: formState.notes.trim() || undefined,
+            bagQuantity: formState.bagQuantity.trim() || undefined,
           };
 
           const result = await updateTruckLog(editLogId, updateData);
@@ -1481,6 +1485,7 @@ export const InSessionForm = forwardRef<
           totalWeight: 0,
             hasTrailer: false,
             trailerNumber: "",
+            bagQuantity: "",
             notes: "",
           });
 
@@ -1515,6 +1520,7 @@ export const InSessionForm = forwardRef<
               ? formState.trailerNumber.trim().toUpperCase()
               : undefined,
           notes: formState.notes.trim() || undefined,
+          bagQuantity: formState.bagQuantity.trim() || undefined,
         };
 
         const response = await fetch("/api/truck-sessions", {
@@ -1860,6 +1866,7 @@ export const InSessionForm = forwardRef<
           totalWeight: null,
           hasTrailer: false,
           trailerNumber: "",
+          bagQuantity: "",
           notes: "",
         });
 
@@ -2388,6 +2395,33 @@ export const InSessionForm = forwardRef<
                         createNewLabel="+ Нэмэх ..."
                       className="h-12"
                       />
+                  </div>
+                </div>
+
+                {/* Шуудайны тоо хэмжээ - before Notes */}
+                <div className="flex flex-col">
+                  <div className="mb-1 min-h-[1.25rem] flex items-center width-full">
+                    <Label
+                      htmlFor="bagQuantity"
+                      className="text-base font-medium text-gray-700"
+                    >
+                      Шуудайны тоо хэмжээ
+                    </Label>
+                  </div>
+                  <div className="h-12">
+                    <Input
+                      id="bagQuantity"
+                      type="text"
+                      value={formState.bagQuantity}
+                      onChange={(e) =>
+                        setFormState((prev) => ({
+                          ...prev,
+                          bagQuantity: e.target.value,
+                        }))
+                      }
+                      className="h-12 text-base w-full"
+                      placeholder=""
+                    />
                   </div>
                 </div>
 

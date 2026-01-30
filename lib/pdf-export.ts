@@ -472,7 +472,6 @@ function generateLogHTML(
 
       .header-top {
         text-align: center;
-        margin-bottom: 6px;
       }
 
       .company-top-middle {
@@ -489,7 +488,7 @@ function generateLogHTML(
         font-weight: bold;
         margin: 4px 0 3px 0;
         color: rgb(0, 0, 0);
-        margin-top: 20px;
+        margin-top: 5px;
       }
 
       .receipt-number {
@@ -691,6 +690,10 @@ function generateLogHTML(
             <td colspan="2">
               Гарсан огноо:${outTime}
             </td>
+          </tr>
+          <tr class="info-row">
+            <td colspan="2">Шуудайны тоо хэмжээ</td>
+            <td colspan="4">${escapeHtml(log.bagQuantity ?? "")}</td>
           </tr>
         </tbody>
       </table>
