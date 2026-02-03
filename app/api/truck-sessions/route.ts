@@ -493,7 +493,9 @@ export async function POST(request: Request) {
               hasTrailer: body.hasTrailer !== undefined ? body.hasTrailer : existingInLog.hasTrailer,
               trailerPlate: body.trailerNumber || body.trailerPlate || existingInLog.trailerPlate,
               comments: session.notes || existingInLog.comments,
-              bagQuantity: body.bagQuantity || (existingInLog as any).bagQuantity || undefined,
+              bagQuantity: (existingInLog as any).bagQuantity || undefined, // Keep IN value
+              bagQuantityOut: body.bagQuantity || undefined, // OUT value
+              rfid: body.rfid || (existingInLog as any).rfid || undefined,
             }
             
             // Preserve or update carWeight and trailerWeight
@@ -547,7 +549,8 @@ export async function POST(request: Request) {
               sealNumber: body.sealNumber || undefined,
               hasTrailer: body.hasTrailer || undefined,
               trailerPlate: body.trailerNumber || body.trailerPlate || undefined,
-              bagQuantity: body.bagQuantity || undefined,
+              bagQuantityOut: body.bagQuantity || undefined, // OUT-only log
+              rfid: body.rfid || undefined,
             }
             
             // Add carWeight and trailerWeight for OUT sessions if provided
@@ -596,7 +599,8 @@ export async function POST(request: Request) {
             sealNumber: body.sealNumber || undefined,
             hasTrailer: body.hasTrailer || undefined,
             trailerPlate: body.trailerNumber || body.trailerPlate || undefined,
-            bagQuantity: body.bagQuantity || undefined,
+            bagQuantityOut: body.bagQuantity || undefined,
+            rfid: body.rfid || undefined,
           }
           
           // Add carWeight and trailerWeight if provided
@@ -649,6 +653,7 @@ export async function POST(request: Request) {
           hasTrailer: body.hasTrailer !== undefined ? body.hasTrailer : undefined,
           trailerPlate: body.trailerNumber || body.trailerPlate || undefined,
           bagQuantity: body.bagQuantity || undefined,
+          rfid: body.rfid || undefined,
         }
         
         console.log("📋 Log data with lookups:", {

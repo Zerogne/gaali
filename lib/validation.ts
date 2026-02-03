@@ -94,7 +94,9 @@ export const truckLogSchema = z.object({
   sealNumber: z.string().max(100).optional(),
   hasTrailer: z.boolean().optional(),
   trailerPlate: z.string().max(20).optional(),
-  bagQuantity: z.string().max(200).optional(), // Шуудайны тоо хэмжээ
+  bagQuantity: z.string().max(200).optional(), // Шуудайны тоо хэмжээ орсон/IN
+  bagQuantityOut: z.string().max(200).optional(), // Шуудайны тоо хэмжээ гарсан/OUT
+  rfid: z.string().max(100).optional(), // RFID дугаар
 })
 
 export type TruckLogInput = z.infer<typeof truckLogSchema>

@@ -7,7 +7,8 @@ import type { TruckLog } from "@/lib/types";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Plus } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { ArrowRight, ArrowLeft, Plus } from "lucide-react";
 
 export default function DashboardPage() {
   const router = useRouter();
@@ -104,24 +105,63 @@ export default function DashboardPage() {
       <div className="flex-1 flex flex-col overflow-y-auto min-w-0">
         <main className="flex-1 flex flex-col">
           <div className="flex flex-col max-w-[1920px] w-full mx-auto p-1.5 lg:p-2">
-            {/* Орох / Гарах - Just buttons */}
-            <div className="flex gap-2 mb-2">
-              <Button
-                onClick={() => router.push("/in-session")}
-                className="flex-1 min-w-[140px] px-8 py-2.5 bg-blue-600 hover:bg-blue-700 text-white"
-                size="default"
-              >
-                <Plus className="w-4 h-4 mr-2" />
-                ОРОХ
-              </Button>
-              <Button
-                onClick={() => router.push("/out-session")}
-                className="flex-1 min-w-[140px] px-8 py-2.5 bg-green-600 hover:bg-green-700 text-white"
-                size="default"
-              >
-                <Plus className="w-4 h-4 mr-2" />
-                ГАРАХ
-              </Button>
+            {/* Орох / Гарах Navigation Block - Single row layout to fill space */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mb-2">
+              {/* ОРОХ Card */}
+              <Card className="border-2 hover:shadow-xl transition-all duration-300 relative overflow-hidden bg-gradient-to-br from-blue-50 via-white to-blue-50/30 border-blue-200">
+                <div className="absolute top-0 right-0 w-20 h-20 opacity-10 bg-blue-500 rounded-full -mr-10 -mt-10"></div>
+                <div className="relative z-10 flex items-center justify-between gap-3 px-3 py-2">
+                  <div className="flex items-center gap-2 min-w-0 flex-1">
+                    <div className="p-1.5 rounded-lg shadow-sm bg-blue-100 text-blue-600 shrink-0">
+                      <ArrowRight className="w-4 h-4" />
+                    </div>
+                    <div className="min-w-0">
+                      <CardTitle className="text-gray-900 text-base font-bold mb-0 truncate">
+                        Тээврийн хэрэгсэл орох
+                      </CardTitle>
+                      <p className="text-[10px] text-gray-500 truncate">
+                        Тээврийн хэрэгсэл орох бүртгэл хийх
+                      </p>
+                    </div>
+                  </div>
+                  <Button
+                    onClick={() => router.push("/in-session")}
+                    className="shadow-md hover:shadow-lg transition-all px-5 py-2.5 text-sm bg-blue-600 hover:bg-blue-700 text-white shrink-0"
+                    size="default"
+                  >
+                    <Plus className="w-4 h-4 mr-1.5" />
+                    ОРОХ
+                  </Button>
+                </div>
+              </Card>
+
+              {/* ГАРАХ Card */}
+              <Card className="border-2 hover:shadow-xl transition-all duration-300 relative overflow-hidden bg-gradient-to-br from-green-50 via-white to-green-50/30 border-green-200">
+                <div className="absolute top-0 right-0 w-20 h-20 opacity-10 bg-green-500 rounded-full -mr-10 -mt-10"></div>
+                <div className="relative z-10 flex items-center justify-between gap-3 px-3 py-2">
+                  <div className="flex items-center gap-2 min-w-0 flex-1">
+                    <div className="p-1.5 rounded-lg shadow-sm bg-green-100 text-green-600 shrink-0">
+                      <ArrowLeft className="w-4 h-4" />
+                    </div>
+                    <div className="min-w-0">
+                      <CardTitle className="text-gray-900 text-base font-bold mb-0 truncate">
+                        Тээврийн хэрэгсэл гарах
+                      </CardTitle>
+                      <p className="text-[10px] text-gray-500 truncate">
+                        Тээврийн хэрэгсэл гарах бүртгэл хийх
+                      </p>
+                    </div>
+                  </div>
+                  <Button
+                    onClick={() => router.push("/out-session")}
+                    className="shadow-md hover:shadow-lg transition-all px-5 py-2.5 text-sm bg-green-600 hover:bg-green-700 text-white shrink-0"
+                    size="default"
+                  >
+                    <Plus className="w-4 h-4 mr-1.5" />
+                    ГАРАХ
+                  </Button>
+                </div>
+              </Card>
             </div>
 
             {/* History Table - More space for drafts */}

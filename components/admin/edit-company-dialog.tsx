@@ -23,6 +23,8 @@ interface Company {
   companyId: string;
   name: string;
   notes?: string | null;
+  companyCode?: string | null;
+  uniqueCodePrefix?: string | null;
   workerCount?: number;
 }
 
@@ -36,6 +38,8 @@ export function EditCompanyDialog({ company }: EditCompanyDialogProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [name, setName] = useState(company.name);
   const [notes, setNotes] = useState(company.notes ?? "");
+  const [companyCode, setCompanyCode] = useState(company.companyCode ?? "");
+  const [uniqueCodePrefix, setUniqueCodePrefix] = useState(company.uniqueCodePrefix ?? "");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
 
@@ -44,6 +48,8 @@ export function EditCompanyDialog({ company }: EditCompanyDialogProps) {
     if (next) {
       setName(company.name);
       setNotes(company.notes ?? "");
+      setCompanyCode(company.companyCode ?? "");
+      setUniqueCodePrefix(company.uniqueCodePrefix ?? "");
       setPassword("");
       setShowPassword(false);
     }
@@ -56,6 +62,8 @@ export function EditCompanyDialog({ company }: EditCompanyDialogProps) {
       const formData = new FormData();
       formData.set("name", name.trim());
       formData.set("notes", notes.trim() || "");
+      formData.set("companyCode", companyCode.trim());
+      formData.set("uniqueCodePrefix", uniqueCodePrefix.trim());
       if (password.trim()) formData.set("password", password.trim());
       const result = await updateCompany(company.companyId, formData);
       if (result.success) {
@@ -146,6 +154,33 @@ export function EditCompanyDialog({ company }: EditCompanyDialogProps) {
               <p className="text-xs text-muted-foreground">
                 Min 8 characters. Only set if changing password.
               </p>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="edit-companyCode">Company Code (4 digits)</Label>
+                <Input
+                  id="edit-companyCode"
+                  value={companyCode}
+                  onChange={(e) => setCompanyCode(e.target.value.replace(/\D/g, "").slice(0, 4))}
+                  placeholder="1001"
+                  className="font-mono"
+                />
+                <p className="text-xs text-muted-foreground">For unique code generation.</p>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="edit-uniqueCodePrefix">Unique Code 1st Digit</Label>
+                <Input
+                  id="edit-uniqueCodePrefix"
+                  value={uniqueCodePrefix}
+                  onChange={(e) => {
+                    const v = e.target.value.replace(/\D/g, "").slice(0, 1);
+                    if (v === "" || /^[3-9]$/.test(v)) setUniqueCodePrefix(v);
+                  }}
+                  placeholder="3"
+                  className="font-mono w-14"
+                />
+                <p className="text-xs text-muted-foreground">3=108oil, 4,5,6 for others.</p>
+              </div>
             </div>
             <div className="space-y-2">
               <Label htmlFor="edit-notes">Notes (optional)</Label>

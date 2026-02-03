@@ -692,18 +692,21 @@ function generateLogHTML(
             </td>
           </tr>
           <tr class="info-row">
-            <td colspan="2">Шуудайны тоо хэмжээ</td>
-            <td colspan="4">${escapeHtml(log.bagQuantity ?? "")}</td>
+            <td colspan="3">Шуудайны тоо хэмжээ орсон/IN Bag Qty: ${escapeHtml(log.bagQuantity ?? "—")}</td>
+            <td colspan="3">Шуудайны тоо хэмжээ гарсан/OUT Bag Qty: ${escapeHtml(log.bagQuantityOut ?? "—")}</td>
           </tr>
         </tbody>
       </table>
 
-      <!-- Bottom section: Driver, Operator, Date -->
+      <!-- Bottom section: Driver, Operator, RFID, Date -->
       <div class="bottom-section">
         <div class="bottom-left">
           <div style="margin-bottom: 6px;">
             <span class="field-label">Жолооч/Driver:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;${escapeHtml(driverFullInfo !== "—" ? driverFullInfo : "")}</span>           
             <span class="field-label">Пүүний оператор/Operator:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;${escapeHtml(loaderName || "")}</span>
+          </div>
+          <div style="margin-top: 4px;">
+            <span class="field-label">RFID дугаар/RFID No:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;${escapeHtml(log.rfid || "—")}</span>
           </div>
         </div>
        

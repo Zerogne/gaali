@@ -349,7 +349,7 @@ export const InSessionForm = forwardRef<
         // Set form state immediately with available data, inTime will be updated async
         setFormState({
           plateNumber: editLog.plate || "",
-          rfid: "",
+          rfid: editLog.rfid ?? "",
           driverId: driver?.id || "",
           driverName: editLog.driverName || "",
           productId: product?.id || "",
@@ -1452,6 +1452,7 @@ export const InSessionForm = forwardRef<
               : undefined,
             comments: formState.notes.trim() || undefined,
             bagQuantity: formState.bagQuantity.trim() || undefined,
+            rfid: formState.rfid.trim() || undefined,
           };
 
           const result = await updateTruckLog(editLogId, updateData);
@@ -1521,6 +1522,7 @@ export const InSessionForm = forwardRef<
               : undefined,
           notes: formState.notes.trim() || undefined,
           bagQuantity: formState.bagQuantity.trim() || undefined,
+          rfid: formState.rfid.trim() || undefined,
         };
 
         const response = await fetch("/api/truck-sessions", {

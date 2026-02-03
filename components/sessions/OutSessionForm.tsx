@@ -228,7 +228,7 @@ export const OutSessionForm = forwardRef<
     // Helper function to get current datetime in datetime-local format (local time)
     const getCurrentDateTime = (): string => {
       const now = new Date();
-      const year = now.getFullYear();
+      const year = now.getFullYear(); 
       const month = String(now.getMonth() + 1).padStart(2, "0");
       const day = String(now.getDate()).padStart(2, "0");
       const hours = String(now.getHours()).padStart(2, "0");
@@ -372,7 +372,7 @@ export const OutSessionForm = forwardRef<
         // Set form state immediately with available data, times will be updated async
         setFormState({
           plateNumber: editLog.plate || "",
-          rfid: "",
+          rfid: editLog.rfid || "",
           driverId: driver?.id || "",
           driverName: editLog.driverName || "",
           productId: product?.id || "",
@@ -392,7 +392,7 @@ export const OutSessionForm = forwardRef<
           sealNumber: editLog.sealNumber || "",
           hasTrailer: editLog.hasTrailer || false,
           trailerNumber: editLog.trailerPlate || "",
-          bagQuantity: editLog.bagQuantity ?? "",
+          bagQuantity: editLog.bagQuantityOut ?? editLog.bagQuantity ?? "",
           notes: editLog.comments || "",
           inSessionId: undefined,
         });
@@ -1517,7 +1517,8 @@ export const OutSessionForm = forwardRef<
               : undefined,
             sealNumber: formState.sealNumber.trim() || undefined,
             comments: formState.notes.trim() || undefined,
-            bagQuantity: formState.bagQuantity.trim() || undefined,
+            bagQuantityOut: formState.bagQuantity.trim() || undefined,
+            rfid: formState.rfid.trim() || undefined,
           };
 
           const result = await updateTruckLog(editLogId, updateData);
@@ -1601,6 +1602,7 @@ export const OutSessionForm = forwardRef<
           trailerNumber: hasTrailer ? formState.trailerNumber.trim() : undefined,
           notes: formState.notes.trim() || undefined,
           bagQuantity: formState.bagQuantity.trim() || undefined,
+          rfid: formState.rfid.trim() || undefined,
         };
 
         const response = await fetch("/api/truck-sessions", {
@@ -2623,8 +2625,7 @@ export const OutSessionForm = forwardRef<
                           bagQuantity: e.target.value,
                         }))
                       }
-                      disabled={hasInSessionData}
-                      className="h-12 text-base w-full !bg-blue-400 !text-black !border-blue-400 placeholder:!text-gray-600"
+                      className="h-12 text-base w-full bg-white text-gray-900 border-gray-300"
                       placeholder=""
                     />
                   </div>

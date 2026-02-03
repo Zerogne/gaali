@@ -195,6 +195,32 @@ export function CreateCompanyDialog() {
                   Leave empty to auto-generate a secure password. You can customize it or click the refresh icon to generate a new one.
                 </p>
               </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="companyCode">Company Code (4 digits)</Label>
+                  <Input
+                    id="companyCode"
+                    name="companyCode"
+                    placeholder="1001"
+                    maxLength={4}
+                    pattern="\d{4}"
+                    className="font-mono"
+                  />
+                  <p className="text-xs text-muted-foreground">e.g. 1001, 1002. For unique code generation.</p>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="uniqueCodePrefix">Unique Code 1st Digit</Label>
+                  <Input
+                    id="uniqueCodePrefix"
+                    name="uniqueCodePrefix"
+                    placeholder="3"
+                    maxLength={1}
+                    pattern="[3-9]"
+                    className="font-mono w-14"
+                  />
+                  <p className="text-xs text-muted-foreground">3=108oil, 4,5,6 for others. Single digit.</p>
+                </div>
+              </div>
               <div className="space-y-2">
                 <Label htmlFor="notes">Notes (Optional)</Label>
                 <Textarea id="notes" name="notes" placeholder="Additional information about the company" rows={3} />

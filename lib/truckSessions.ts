@@ -47,18 +47,19 @@ async function generateUniqueCode(
   companyId: string,
   sessionsCollection: any
 ): Promise<string> {
-  // Get company code from metadata (defaults to "1001" if not set)
+  // Get company code and uniqueCodePrefix from metadata
   const { getCompany } = await import("@/lib/companies/metadata")
-  let companyCode = "1001" // Default company code
+  let companyCode = "1001"
+  let uniqueCodePrefix = "3" // 108oil stays as 3, others use 4,5,6 from DB
   try {
     const company = await getCompany(companyId)
-    if (company?.companyCode) {
-      companyCode = company.companyCode
-    } else {
-      console.warn(`⚠️ Company code not set for ${companyId}, using default: 1001`)
+    if (company?.companyCode) companyCode = company.companyCode
+    else console.warn(`⚠️ Company code not set for ${companyId}, using default: 1001`)
+    if (company?.uniqueCodePrefix && /^[3-9]$/.test(company.uniqueCodePrefix)) {
+      uniqueCodePrefix = company.uniqueCodePrefix
     }
   } catch (error) {
-    console.warn(`⚠️ Could not fetch company code for ${companyId}, using default: 1001`, error)
+    console.warn(`⚠️ Could not fetch company metadata for ${companyId}, using defaults`, error)
   }
   
   // Ensure company code is 4 digits
@@ -67,7 +68,8 @@ async function generateUniqueCode(
     companyCode = "1001"
   }
   
-  const companyPrefix = "31"
+  // Full prefix: first digit from DB (3,4,5,6...) + "1" e.g. "31", "41", "51"
+  const companyPrefix = `${uniqueCodePrefix}1`
   const now = new Date()
   const dateStr = now.toISOString().slice(0, 10).replace(/-/g, "") // YYYYMMDD (8 digits)
   

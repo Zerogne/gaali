@@ -52,7 +52,9 @@ export interface TruckLog {
   trailerPlate?: string; // Trailer plate (shown when hasTrailer is true)
   vehicleRegistrationNumber?: string; // Vehicle registration number
   vehicleRegistrationYear?: string; // Vehicle registration year
-  bagQuantity?: string; // Шуудайны тоо хэмжээ (bag/sack quantity)
+  bagQuantity?: string; // Шуудайны тоо хэмжээ орсон/IN (bag quantity at entry)
+  bagQuantityOut?: string; // Шуудайны тоо хэмжээ гарсан/OUT (bag quantity at exit)
+  rfid?: string; // RFID дугаар
   createdAt: string;
   sentToCustoms: boolean;
 }

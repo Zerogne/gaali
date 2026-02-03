@@ -68,12 +68,17 @@ export async function createCompany(
 
     const hashedPassword = await bcrypt.hash(plainPassword, 10);
 
+    const companyCode = (formData.get("companyCode") as string)?.trim() || null;
+    const uniqueCodePrefix = (formData.get("uniqueCodePrefix") as string)?.trim() || null;
+
     // Create company with hashed password
     await companiesCollection.insertOne({
       companyId: slug,
       name,
       notes: notes || null,
       password: hashedPassword, // Store hashed password
+      companyCode: companyCode && /^\d{4}$/.test(companyCode) ? companyCode : null,
+      uniqueCodePrefix: uniqueCodePrefix && /^[3-9]$/.test(uniqueCodePrefix) ? uniqueCodePrefix : null,
       createdAt: new Date(),
       updatedAt: new Date(),
     });
@@ -174,6 +179,8 @@ export async function updateCompany(
     const notes = (formData.get("notes") as string) || null;
     const newPassword = (formData.get("password") as string) || null;
     const passwordTrimmed = newPassword?.trim() || null;
+    const companyCode = (formData.get("companyCode") as string)?.trim() || null;
+    const uniqueCodePrefix = (formData.get("uniqueCodePrefix") as string)?.trim() || null;
 
     if (!name?.trim()) {
       return { success: false, error: "Company name is required" };
@@ -192,9 +199,18 @@ export async function updateCompany(
       };
     }
 
+    if (companyCode && (companyCode.length !== 4 || !/^\d{4}$/.test(companyCode))) {
+      return { success: false, error: "Company code must be 4 digits (e.g. 1001)" };
+    }
+    if (uniqueCodePrefix && !/^[3-9]$/.test(uniqueCodePrefix)) {
+      return { success: false, error: "Unique code prefix must be a single digit 3-9" };
+    }
+
     const update: Record<string, unknown> = {
       name: name.trim(),
       notes: notes?.trim() || null,
+      companyCode: companyCode ? companyCode : ((company as any).companyCode ?? null),
+      uniqueCodePrefix: uniqueCodePrefix ? uniqueCodePrefix : ((company as any).uniqueCodePrefix ?? null),
       updatedAt: new Date(),
     };
     if (passwordTrimmed) {
@@ -237,6 +253,8 @@ export async function getCompanies() {
         companyId: company.companyId,
         name: company.name,
         notes: company.notes || null,
+        companyCode: company.companyCode || null,
+        uniqueCodePrefix: company.uniqueCodePrefix || null,
         createdAt: company.createdAt,
         workerCount,
       };
@@ -269,6 +287,8 @@ export async function getCompanyWithWorkers(companyId: string) {
     companyId: company.companyId,
     name: company.name,
     notes: company.notes || null,
+    companyCode: company.companyCode || null,
+    uniqueCodePrefix: company.uniqueCodePrefix || null,
     createdAt: company.createdAt,
     workers: workers.map((w: any) => ({
       id: w.id,

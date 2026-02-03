@@ -608,8 +608,8 @@ export function TruckTable({ logs, onSend, onUpdate }: TruckTableProps) {
   };
 
   return (
-    <Card className="border-gray-200 bg-white shadow-sm min-h-[600px] flex flex-col">
-      <CardHeader className="pb-1 flex-shrink-0 px-3 pt-2">
+    <Card className="border-gray-200 bg-white shadow-sm min-h-[600px] flex flex-col !py-0 !gap-1">
+      <CardHeader className="!py-1.5 flex-shrink-0 px-2">
         <div className="flex items-center justify-between">
           <CardTitle className="text-lg font-bold text-gray-900">
             Тээврийн хэрэгслийн түүх, хайлт
@@ -736,48 +736,48 @@ export function TruckTable({ logs, onSend, onUpdate }: TruckTableProps) {
               )}
             </div>
             <div className="flex-1 min-h-0 overflow-auto rounded-lg border border-gray-200">
-              <Table>
+              <Table className="text-xs">
                 <TableHeader>
-                  <TableRow className="bg-gray-50">
-                    <TableHead className="w-10">
+                  <TableRow className="bg-gray-50 h-8">
+                    <TableHead className="w-8 !py-1 !px-1.5 [&_[role=checkbox]]:scale-75">
                       <Checkbox
                         checked={selectedLogIds.size === filteredLogs.length && filteredLogs.length > 0}
                         onCheckedChange={handleSelectAll}
                       />
                     </TableHead>
-                    <TableHead className="text-gray-700 font-semibold text-xs relative pr-3">
+                    <TableHead className="text-gray-700 font-semibold text-xs relative pr-2 !py-1 !px-1.5">
                       Дугаар
                       <div className="absolute right-0 top-1/2 -translate-y-1/2 w-px h-3 bg-gray-300"></div>
                     </TableHead>
-                    <TableHead className="text-gray-700 font-semibold text-xs relative pr-3">
+                    <TableHead className="text-gray-700 font-semibold text-xs relative pr-2 !py-1 !px-1.5">
                       Улсын дугаар
                       <div className="absolute right-0 top-1/2 -translate-y-1/2 w-px h-3 bg-gray-300"></div>
                     </TableHead>
-                    <TableHead className="text-gray-700 font-semibold text-xs relative pr-3">
+                    <TableHead className="text-gray-700 font-semibold text-xs relative pr-2 !py-1 !px-1.5">
                       Чиргүүл
                       <div className="absolute right-0 top-1/2 -translate-y-1/2 w-px h-3 bg-gray-300"></div>
                     </TableHead>
-                    <TableHead className="text-gray-700 font-semibold text-xs relative pr-3">
+                    <TableHead className="text-gray-700 font-semibold text-xs relative pr-2 !py-1 !px-1.5">
                       Жолооч
                       <div className="absolute right-0 top-1/2 -translate-y-1/2 w-px h-3 bg-gray-300"></div>
                     </TableHead>
-                    <TableHead className="text-gray-700 font-semibold text-xs relative pr-3">
+                    <TableHead className="text-gray-700 font-semibold text-xs relative pr-2 !py-1 !px-1.5">
                       Бүтээгдхүүн
                       <div className="absolute right-0 top-1/2 -translate-y-1/2 w-px h-3 bg-gray-300"></div>
                     </TableHead>
-                    <TableHead className="text-gray-700 font-semibold text-xs relative pr-3">
+                    <TableHead className="text-gray-700 font-semibold text-xs relative pr-2 !py-1 !px-1.5">
                       Тээврийн компани
                       <div className="absolute right-0 top-1/2 -translate-y-1/2 w-px h-3 bg-gray-300"></div>
                     </TableHead>
-                    <TableHead className="text-gray-700 font-semibold text-xs relative pr-3">
+                    <TableHead className="text-gray-700 font-semibold text-xs relative pr-2 !py-1 !px-1.5">
                       Чиглэл
                       <div className="absolute right-0 top-1/2 -translate-y-1/2 w-px h-3 bg-gray-300"></div>
                     </TableHead>
-                    <TableHead className="text-gray-700 font-semibold text-xs relative pr-3">
+                    <TableHead className="text-gray-700 font-semibold text-xs relative pr-2 !py-1 !px-1.5">
                       Төлөв
                       <div className="absolute right-0 top-1/2 -translate-y-1/2 w-px h-3 bg-gray-300"></div>
                     </TableHead>
-                    <TableHead className="text-gray-700 font-semibold text-xs">
+                    <TableHead className="text-gray-700 font-semibold text-xs !py-1 !px-1.5">
                       Үйлдэл
                     </TableHead>
                   </TableRow>
@@ -786,7 +786,7 @@ export function TruckTable({ logs, onSend, onUpdate }: TruckTableProps) {
                   {filteredLogs.map((log) => (
                     <TableRow 
                       key={log.id} 
-                      className="hover:bg-gray-50 cursor-pointer"
+                      className="hover:bg-gray-50 cursor-pointer h-8"
                       onDoubleClick={(e) => {
                         e.preventDefault()
                         e.stopPropagation()
@@ -794,38 +794,38 @@ export function TruckTable({ logs, onSend, onUpdate }: TruckTableProps) {
                         handleEdit(log)
                       }}
                     >
-                      <TableCell>
+                      <TableCell className="!py-0.5 !px-1.5 [&_[role=checkbox]]:scale-75">
                         <Checkbox
                           checked={selectedLogIds.has(log.id)}
                           onCheckedChange={() => handleToggleSelect(log.id)}
                           onClick={(e) => e.stopPropagation()}
                         />
                       </TableCell>
-                      <TableCell className="text-gray-700 font-mono text-xs relative pr-3">
+                      <TableCell className="text-gray-700 font-mono text-xs relative pr-2 !py-0.5 !px-1.5">
                         {uniqueCodes.get(log.id) || "—"}
                         <div className="absolute right-0 top-1/2 -translate-y-1/2 w-px h-3 bg-gray-300"></div>
                       </TableCell>
-                      <TableCell className="font-mono font-semibold text-gray-900 text-xs relative pr-3">
+                      <TableCell className="font-mono font-semibold text-gray-900 text-xs relative pr-2 !py-0.5 !px-1.5">
                         {log.plate}
                         <div className="absolute right-0 top-1/2 -translate-y-1/2 w-px h-3 bg-gray-300"></div>
                       </TableCell>
-                      <TableCell className="text-gray-700 font-mono text-xs relative pr-3">
+                      <TableCell className="text-gray-700 font-mono text-xs relative pr-2 !py-0.5 !px-1.5">
                         {log.trailerPlate || "—"}
                         <div className="absolute right-0 top-1/2 -translate-y-1/2 w-px h-3 bg-gray-300"></div>
                       </TableCell>
-                      <TableCell className="text-gray-700 text-xs relative pr-3">
+                      <TableCell className="text-gray-700 text-xs relative pr-2 !py-0.5 !px-1.5">
                         {log.driverName}
                         <div className="absolute right-0 top-1/2 -translate-y-1/2 w-px h-3 bg-gray-300"></div>
                       </TableCell>
-                      <TableCell className="text-gray-700 text-xs relative pr-3">
+                      <TableCell className="text-gray-700 text-xs relative pr-2 !py-0.5 !px-1.5">
                         {log.cargoType || "—"}
                         <div className="absolute right-0 top-1/2 -translate-y-1/2 w-px h-3 bg-gray-300"></div>
                       </TableCell>
-                      <TableCell className="text-gray-700 text-xs relative pr-3">
+                      <TableCell className="text-gray-700 text-xs relative pr-2 !py-0.5 !px-1.5">
                         {getTransportCompanyName(log.transportCompanyId)}
                         <div className="absolute right-0 top-1/2 -translate-y-1/2 w-px h-3 bg-gray-300"></div>
                       </TableCell>
-                      <TableCell className="relative pr-3">
+                      <TableCell className="relative pr-2 !py-0.5 !px-1.5">
                         <Badge
                           variant="outline"
                           className={
@@ -833,15 +833,15 @@ export function TruckTable({ logs, onSend, onUpdate }: TruckTableProps) {
                             // 1. Direction is explicitly OUT, OR
                             // 2. Direction is IN but has netWeightKg (merged log with OUT data)
                             (log.direction === "OUT") || (log.direction === "IN" && log.netWeightKg !== undefined && log.netWeightKg !== null)
-                              ? "bg-green-50 text-green-700 border-green-200 text-xs"
-                              : "bg-blue-50 text-blue-700 border-blue-200 text-xs"
+                              ? "bg-green-50 text-green-700 border-green-200 text-[10px] !py-0 !px-1"
+                              : "bg-blue-50 text-blue-700 border-blue-200 text-[10px] !py-0 !px-1"
                           }
                         >
                           {(log.direction === "OUT") || (log.direction === "IN" && log.netWeightKg !== undefined && log.netWeightKg !== null) ? "орсон гарсан" : "орсон гараагүй"}
                         </Badge>
                         <div className="absolute right-0 top-1/2 -translate-y-1/2 w-px h-3 bg-gray-300"></div>
                       </TableCell>
-                      <TableCell className="relative pr-3">
+                      <TableCell className="relative pr-2 !py-0.5 !px-1.5">
                         <span className={`text-xs font-medium ${
                           log.sentToCustoms 
                             ? "text-green-600" 
@@ -851,43 +851,36 @@ export function TruckTable({ logs, onSend, onUpdate }: TruckTableProps) {
                         </span>
                         <div className="absolute right-0 top-1/2 -translate-y-1/2 w-px h-3 bg-gray-300"></div>
                       </TableCell>
-                      <TableCell>
-                        <div className="flex items-center gap-1">
+                      <TableCell className="!py-0.5 !px-1.5">
+                        <div className="flex items-center gap-0.5">
                           <Button
-                            size="default"
+                            size="icon"
                             variant="outline"
-                            onClick={() => handleEdit(log)}
-                            title={
-                              log.sentToCustoms
-                                ? "Бүртгэлийг засах"
-                                : "Бүртгэл засах"
-                            }
-                            className="border-gray-300 hover:bg-gray-50 h-8 px-3 text-xs"
+                            onClick={(e) => { e.stopPropagation(); handleEdit(log); }}
+                            title={log.sentToCustoms ? "Бүртгэлийг засах" : "Бүртгэл засах"}
+                            className="h-6 w-6 min-w-6 border-gray-300 hover:bg-gray-50 shrink-0"
                           >
-                            <Edit className="w-3 h-3 mr-1.5" />
-                            Засах
+                            <Edit className="w-3 h-3" />
                           </Button>
                           <Button
-                            size="default"
+                            size="icon"
                             variant="outline"
-                            onClick={() => handleSend(log)}
+                            onClick={(e) => { e.stopPropagation(); handleSend(log); }}
                             disabled={sendingIds.has(log.id)}
-                            className="bg-green-500 text-white border-green-600 hover:bg-green-600 disabled:bg-green-300 disabled:text-white h-8 px-3 text-xs"
                             title="Гаальд илгээх"
+                            className="h-6 w-6 min-w-6 bg-green-500 text-white border-green-600 hover:bg-green-600 disabled:bg-green-300 disabled:text-white shrink-0"
                           >
                             {sendingIds.has(log.id) ? (
-                              "Илгээж байна..."
+                              <span className="text-[10px]">...</span>
                             ) : (
-                              <>
-                                <Send className="w-3 h-3 mr-1.5" />
-                                Илгээх
-                              </>
+                              <Send className="w-3 h-3" />
                             )}
                           </Button>
                           <Button
-                            size="default"
+                            size="icon"
                             variant="outline"
-                            onClick={async () => {
+                            onClick={async (e) => {
+                              e.stopPropagation();
                               try {
                                 await printLog(log);
                               } catch (error) {
@@ -900,23 +893,21 @@ export function TruckTable({ logs, onSend, onUpdate }: TruckTableProps) {
                               }
                             }}
                             title="Хэвлэх"
-                            className="border-gray-300 hover:bg-gray-50 h-8 px-3 text-xs"
+                            className="h-6 w-6 min-w-6 border-gray-300 hover:bg-gray-50 shrink-0"
                           >
-                            <FileDown className="w-3 h-3 mr-1.5" />
-                            Хэвлэх
+                            <FileDown className="w-3 h-3" />
                           </Button>
                           <Button
-                            size="default"
+                            size="icon"
                             variant="outline"
                             onClick={(e) => {
                               e.stopPropagation();
-                              console.log("PDF clicked", log.id);
                               handleExportLogToPDF(log);
                             }}
                             title="PDF татах"
-                            className="border-gray-300 hover:bg-gray-50 h-9 px-4 text-sm"
+                            className="h-6 w-6 min-w-6 border-gray-300 hover:bg-gray-50 shrink-0"
                           >
-                            PDF
+                            <Download className="w-3 h-3" />
                           </Button>
                         </div>
                       </TableCell>

@@ -18,6 +18,9 @@ export interface CompanyMetadata {
   }
   // Company code for unique code generation (4 digits, e.g., "1001", "1002")
   companyCode?: string
+  // First digit of unique code prefix - each company gets different digit (3, 4, 5, 6...)
+  // Full prefix = uniqueCodePrefix + "1" (e.g. "31", "41", "51"). 108oil uses "3", others 4,5,6...
+  uniqueCodePrefix?: string
 }
 
 /**
@@ -49,7 +52,8 @@ export async function getAllCompanies(): Promise<CompanyMetadata[]> {
           logoUrl: companyData.logoUrl,
           logoInitials: companyData.logoInitials,
           cameraSettings: companyData.cameraSettings || undefined, // Include camera settings (without passwords in client)
-          companyCode: companyData.companyCode || undefined, // Company code for unique code generation
+          companyCode: companyData.companyCode || undefined,
+          uniqueCodePrefix: companyData.uniqueCodePrefix || undefined,
           createdAt: companyData.createdAt instanceof Date 
             ? companyData.createdAt.toISOString() 
             : (typeof companyData.createdAt === 'string' 
@@ -95,7 +99,8 @@ export async function getCompany(companyId: string): Promise<CompanyMetadata | n
     logoUrl: companyData.logoUrl,
     logoInitials: companyData.logoInitials,
     cameraSettings: companyData.cameraSettings || undefined, // Include camera settings
-    companyCode: companyData.companyCode || undefined, // Company code for unique code generation
+    companyCode: companyData.companyCode || undefined,
+    uniqueCodePrefix: companyData.uniqueCodePrefix || undefined,
     createdAt: companyData.createdAt instanceof Date 
       ? companyData.createdAt.toISOString() 
       : (typeof companyData.createdAt === 'string' 
