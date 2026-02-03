@@ -2,7 +2,7 @@
 
 import { Sidebar } from "@/components/sidebar";
 import { FullHistoryTable } from "@/components/history/FullHistoryTable";
-import { getTruckLogs } from "@/lib/api";
+import { fetchLogs } from "@/lib/fetchLogs";
 import type { TruckLog } from "@/lib/types";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -41,10 +41,9 @@ export default function SessionsPage() {
     async function loadLogs() {
       try {
         setIsLoading(true);
-        // Load only the current page of logs (30 per page)
-        const result = await getTruckLogs(currentPage, 30);
-        setLogs(result.logs);
-          setTotalPages(result.totalPages);
+        const result = await fetchLogs(currentPage, 30);
+        setLogs(result.logs || []);
+        setTotalPages(result.totalPages);
       } catch (error) {
         console.error("Error loading logs:", error);
         if (error instanceof Error && error.message.includes("redirect")) {
@@ -58,27 +57,23 @@ export default function SessionsPage() {
     loadLogs();
   }, [isCheckingAuth, router, currentPage]);
 
-  const handleSend = async (logId: string) => {
-    // Reload current page after sending
-    const result = await getTruckLogs(currentPage, 30);
-    setLogs(result.logs);
+  const handleSend = async (_logId: string) => {
+    const result = await fetchLogs(currentPage, 30);
+    setLogs(result.logs || []);
     setTotalPages(result.totalPages);
   };
 
   const handleUpdate = async () => {
-    // Reload current page after update
-    // Add a small delay to ensure server has processed the deletion
-    await new Promise(resolve => setTimeout(resolve, 300));
+    await new Promise((r) => setTimeout(r, 300));
     try {
-      const result = await getTruckLogs(currentPage, 30);
-      setLogs(result.logs);
+      const result = await fetchLogs(currentPage, 30);
+      setLogs(result.logs || []);
       setTotalPages(result.totalPages);
     } catch (error) {
       console.error("Error reloading logs after delete:", error);
-      // Even if there's an error, try to reload once more
       try {
-        const result = await getTruckLogs(currentPage, 30);
-        setLogs(result.logs);
+        const result = await fetchLogs(currentPage, 30);
+        setLogs(result.logs || []);
         setTotalPages(result.totalPages);
       } catch (retryError) {
         console.error("Retry also failed:", retryError);

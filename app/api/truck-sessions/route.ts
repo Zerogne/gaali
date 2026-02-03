@@ -472,6 +472,7 @@ export async function POST(request: Request) {
             // Update the existing IN log with OUT data
             const updateData: any = {
               // Keep IN data, add/update OUT data
+              updatedAt: new Date().toISOString(),
               netWeightKg: session.netWeightKg || undefined,
               // Update weight if OUT weight is provided (this might be the final weight)
               weightKg: session.grossWeightKg || existingInLog.weightKg,
@@ -492,6 +493,7 @@ export async function POST(request: Request) {
               hasTrailer: body.hasTrailer !== undefined ? body.hasTrailer : existingInLog.hasTrailer,
               trailerPlate: body.trailerNumber || body.trailerPlate || existingInLog.trailerPlate,
               comments: session.notes || existingInLog.comments,
+              bagQuantity: body.bagQuantity || (existingInLog as any).bagQuantity || undefined,
             }
             
             // Preserve or update carWeight and trailerWeight

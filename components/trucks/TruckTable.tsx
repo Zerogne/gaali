@@ -608,8 +608,8 @@ export function TruckTable({ logs, onSend, onUpdate }: TruckTableProps) {
   };
 
   return (
-    <Card className="border-gray-200 bg-white shadow-sm min-h-[700px] flex flex-col">
-      <CardHeader className="pb-1 flex-shrink-0 px-4 pt-3">
+    <Card className="border-gray-200 bg-white shadow-sm min-h-[600px] flex flex-col">
+      <CardHeader className="pb-1 flex-shrink-0 px-3 pt-2">
         <div className="flex items-center justify-between">
           <CardTitle className="text-lg font-bold text-gray-900">
             Тээврийн хэрэгслийн түүх, хайлт
@@ -625,170 +625,67 @@ export function TruckTable({ logs, onSend, onUpdate }: TruckTableProps) {
         </div>
       </CardHeader>
       <Separator className="flex-shrink-0" />
-      <CardContent className="pt-1.5 flex-1 min-h-[550px] overflow-hidden flex flex-col px-4 pb-3">
-        {/* Filters Section */}
-        <div className="space-y-2 mb-2 p-2.5 bg-gray-50 rounded-lg border border-gray-200 flex-shrink-0">
-          
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2.5">
-            {/* Direction Filter */}
-            <div>
-              <Label htmlFor="direction" className="text-xs font-medium text-gray-700 mb-0.5">
-                Чиглэл
-              </Label>
-              <Select
-                value={directionFilter}
-                onValueChange={(value) => setDirectionFilter(value as Direction | "ALL")}
-              >
-                <SelectTrigger className="w-full bg-white">
-                  <SelectValue />
-                </SelectTrigger>
+      <CardContent className="pt-1 flex-1 min-h-[400px] overflow-hidden flex flex-col px-3 pb-2">
+        {/* Filters Section - Compact, all visible */}
+        <div className="mb-1.5 p-2 bg-gray-50 rounded-lg border border-gray-200 flex-shrink-0">
+          <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-2">
+            <div className="min-w-0">
+              <Label htmlFor="direction" className="text-[10px] font-medium text-gray-600 mb-0.5 block">Чиглэл</Label>
+              <Select value={directionFilter} onValueChange={(v) => setDirectionFilter(v as Direction | "ALL")}>
+                <SelectTrigger className="h-8 text-xs bg-white py-1 w-full min-w-0"> <SelectValue /> </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="ALL">Бүх чиглэл</SelectItem>
+                  <SelectItem value="ALL">Бүх</SelectItem>
                   <SelectItem value="IN">ОРОХ</SelectItem>
                   <SelectItem value="OUT">ГАРАХ</SelectItem>
                 </SelectContent>
               </Select>
             </div>
-
-            {/* Plate Search */}
-            <div>
-              <Label htmlFor="plate" className="text-xs font-medium text-gray-700 mb-0.5">
-                Улсын дугаар
-              </Label>
-              <Input
-                id="plate"
-                placeholder="Хайх..."
-                value={plateSearch}
-                onChange={(e) => setPlateSearch(e.target.value)}
-                className="bg-white"
-              />
+            <div className="min-w-0">
+              <Label htmlFor="plate" className="text-[10px] font-medium text-gray-600 mb-0.5 block">Дугаар</Label>
+              <Input id="plate" placeholder="Хайх..." value={plateSearch} onChange={(e) => setPlateSearch(e.target.value)} className="h-8 text-xs bg-white py-1 w-full" />
             </div>
-
-            {/* Driver Search */}
-            <div>
-              <Label htmlFor="driver" className="text-xs font-medium text-gray-700 mb-0.5">
-                Жолооч
-              </Label>
-              <FilterableSelect
-                options={uniqueDrivers}
-                value={driverSearch}
-                onValueChange={(value) => setDriverSearch(value)}
-                placeholder="Жолооч сонгох..."
-                searchPlaceholder="Жолооч хайх..."
-                className="bg-white"
-              />
+            <div className="min-w-0">
+              <Label htmlFor="dateFrom" className="text-[10px] font-medium text-gray-600 mb-0.5 block">Эхлэх</Label>
+              <Input id="dateFrom" type="date" value={dateFrom} onChange={(e) => setDateFrom(e.target.value)} className="h-8 text-xs bg-white py-1 w-full" />
             </div>
-
-            {/* Company Filter */}
-            <div>
-              <Label htmlFor="company" className="text-xs font-medium text-gray-700 mb-0.5">
-                Тээврийн компани
-              </Label>
-              <Select
-                value={companyFilter}
-                onValueChange={(value) => setCompanyFilter(value)}
-              >
-                <SelectTrigger className="w-full bg-white">
-                  <SelectValue />
-                </SelectTrigger>
+            <div className="min-w-0">
+              <Label htmlFor="dateTo" className="text-[10px] font-medium text-gray-600 mb-0.5 block">Дуусах</Label>
+              <Input id="dateTo" type="date" value={dateTo} onChange={(e) => setDateTo(e.target.value)} className="h-8 text-xs bg-white py-1 w-full" />
+            </div>
+            <div className="min-w-0">
+              <Label className="text-[10px] font-medium text-gray-600 mb-0.5 block">Жолооч</Label>
+              <FilterableSelect options={uniqueDrivers} value={driverSearch} onValueChange={setDriverSearch} placeholder="Сонгох..." searchPlaceholder="Хайх..." className="bg-white h-8 text-xs w-full" />
+            </div>
+            <div className="min-w-0">
+              <Label className="text-[10px] font-medium text-gray-600 mb-0.5 block">Тээврийн компани</Label>
+              <Select value={companyFilter} onValueChange={setCompanyFilter}>
+                <SelectTrigger className="h-8 text-xs bg-white py-1 w-full min-w-0"> <SelectValue /> </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="ALL">Бүх компани</SelectItem>
-                  {transportCompanies.map((company) => (
-                    <SelectItem key={company.id} value={company.id}>
-                      {company.name}
-                    </SelectItem>
-                  ))}
+                  {transportCompanies.map((c) => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
                 </SelectContent>
               </Select>
             </div>
-
-            {/* Product Search */}
-            <div>
-              <Label htmlFor="product" className="text-xs font-medium text-gray-700 mb-0.5">
-                Бүтээгдэхүүн
-              </Label>
-              <FilterableSelect
-                options={uniqueProducts}
-                value={productSearch}
-                onValueChange={(value) => setProductSearch(value)}
-                placeholder="Бүтээгдэхүүн сонгох..."
-                searchPlaceholder="Бүтээгдэхүүн хайх..."
-                className="bg-white"
-              />
+            <div className="min-w-0">
+              <Label className="text-[10px] font-medium text-gray-600 mb-0.5 block">Бүтээгдэхүүн</Label>
+              <FilterableSelect options={uniqueProducts} value={productSearch} onValueChange={setProductSearch} placeholder="Сонгох..." searchPlaceholder="Хайх..." className="bg-white h-8 text-xs w-full" />
             </div>
-
-            {/* Trailer Search */}
-            <div>
-              <Label htmlFor="trailer" className="text-xs font-medium text-gray-700 mb-0.5">
-                Чиргүүл
-              </Label>
-              <FilterableSelect
-                options={uniqueTrailers}
-                value={trailerSearch}
-                onValueChange={(value) => setTrailerSearch(value)}
-                placeholder="Чиргүүл сонгох..."
-                searchPlaceholder="Чиргүүл хайх..."
-                className="bg-white"
-              />
+            <div className="min-w-0">
+              <Label className="text-[10px] font-medium text-gray-600 mb-0.5 block">Чиргүүл</Label>
+              <FilterableSelect options={uniqueTrailers} value={trailerSearch} onValueChange={setTrailerSearch} placeholder="Сонгох..." searchPlaceholder="Хайх..." className="bg-white h-8 text-xs w-full" />
             </div>
-
-            {/* Contract Search */}
-            <div>
-              <Label htmlFor="contract" className="text-xs font-medium text-gray-700 mb-0.5">
-                Гэрээ
-              </Label>
-              <FilterableSelect
-                options={uniqueContracts}
-                value={contractSearch}
-                onValueChange={(value) => setContractSearch(value)}
-                placeholder="Гэрээ сонгох..."
-                searchPlaceholder="Гэрээ хайх..."
-                className="bg-white"
-              />
+            <div className="min-w-0">
+              <Label className="text-[10px] font-medium text-gray-600 mb-0.5 block">Гэрээ</Label>
+              <FilterableSelect options={uniqueContracts} value={contractSearch} onValueChange={setContractSearch} placeholder="Сонгох..." searchPlaceholder="Хайх..." className="bg-white h-8 text-xs w-full" />
             </div>
-
-            {/* Vehicle Registration Search */}
-            <div>
-              <Label htmlFor="vehicle" className="text-xs font-medium text-gray-700 mb-0.5">
-                Тээврийн хэрэгсэл
-              </Label>
-              <FilterableSelect
-                options={uniqueVehicles}
-                value={vehicleSearch}
-                onValueChange={(value) => setVehicleSearch(value)}
-                placeholder="Тээврийн хэрэгсэл сонгох..."
-                searchPlaceholder="Тээврийн хэрэгсэл хайх..."
-                className="bg-white"
-              />
+            <div className="min-w-0">
+              <Label className="text-[10px] font-medium text-gray-600 mb-0.5 block">Тээврийн хэрэгсэл</Label>
+              <FilterableSelect options={uniqueVehicles} value={vehicleSearch} onValueChange={setVehicleSearch} placeholder="Сонгох..." searchPlaceholder="Хайх..." className="bg-white h-8 text-xs w-full" />
             </div>
-
-            {/* Date From */}
-            <div>
-              <Label htmlFor="dateFrom" className="text-xs font-medium text-gray-700 mb-0.5">
-                Эхлэх огноо
-              </Label>
-              <Input
-                id="dateFrom"
-                type="date"
-                value={dateFrom}
-                onChange={(e) => setDateFrom(e.target.value)}
-                className="bg-white"
-              />
-            </div>
-
-            {/* Date To */}
-            <div>
-              <Label htmlFor="dateTo" className="text-xs font-medium text-gray-700 mb-0.5">
-                Дуусах огноо
-              </Label>
-              <Input
-                id="dateTo"
-                type="date"
-                value={dateTo}
-                onChange={(e) => setDateTo(e.target.value)}
-                className="bg-white"
-              />
+            <div className="flex items-end">
+              <Button variant="ghost" size="sm" onClick={clearFilters} className="h-8 px-2 text-xs text-gray-600">
+                <X className="w-3 h-3 mr-1" /> Цэвэрлэх
+              </Button>
             </div>
           </div>
         </div>
@@ -805,7 +702,7 @@ export function TruckTable({ logs, onSend, onUpdate }: TruckTableProps) {
           </div>
         ) : (
           <div className="flex flex-col h-full min-h-0">
-            <div className="flex items-center justify-between flex-shrink-0 mb-1.5">
+            <div className="flex items-center justify-between flex-shrink-0 mb-1">
               <div className="flex items-center gap-4">
                 <span className="text-xs font-medium text-gray-700">
                   Нийт: {filteredLogs.length}

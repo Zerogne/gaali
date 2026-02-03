@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
+import { useRouter } from "next/navigation";
 import { Sidebar } from "@/components/sidebar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
@@ -26,14 +27,16 @@ import { FilterableSelect } from "@/components/ui/filterable-select";
 import { Badge } from "@/components/ui/badge";
 import { FileText, Download, X, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { getTruckLogs } from "@/lib/api";
+import { fetchLogs } from "@/lib/fetchLogs";
 import type { TruckLog, Direction, TransportCompany } from "@/lib/types";
 import * as XLSX from "xlsx";
 
 export default function ReportsPage() {
+  const router = useRouter();
   const { toast } = useToast();
   const [logs, setLogs] = useState<TruckLog[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isCheckingAuth, setIsCheckingAuth] = useState(true);
   const [transportCompanies, setTransportCompanies] = useState<TransportCompany[]>([]);
   const [uniqueCodes, setUniqueCodes] = useState<Map<string, string>>(new Map());
   
@@ -49,13 +52,32 @@ export default function ReportsPage() {
   const [dateTo, setDateTo] = useState("");
   const [companyFilter, setCompanyFilter] = useState<string>("ALL");
 
-  // Load logs
+  // Auth check (same as dashboard)
   useEffect(() => {
+    async function checkAuth() {
+      try {
+        const res = await fetch("/api/user");
+        if (!res.ok) {
+          router.push("/login");
+          return;
+        }
+        setIsCheckingAuth(false);
+      } catch {
+        router.push("/login");
+      }
+    }
+    checkAuth();
+  }, [router]);
+
+  // Load logs (same fetchLogs as dashboard, limit 10000 for reports)
+  useEffect(() => {
+    if (isCheckingAuth) return;
+
     async function loadLogs() {
       try {
         setIsLoading(true);
-        const result = await getTruckLogs(1, 10000); // Get all logs for reports
-        setLogs(result.logs);
+        const result = await fetchLogs(1, 10000);
+        setLogs(result.logs || []);
       } catch (error) {
         console.error("Error loading logs:", error);
         toast({
@@ -67,8 +89,12 @@ export default function ReportsPage() {
         setIsLoading(false);
       }
     }
+
     loadLogs();
-  }, [toast]);
+    const onFocus = () => loadLogs();
+    window.addEventListener("focus", onFocus);
+    return () => window.removeEventListener("focus", onFocus);
+  }, [isCheckingAuth, router, toast]);
 
   // Load transport companies
   useEffect(() => {
@@ -253,7 +279,8 @@ export default function ReportsPage() {
       result = result.filter((log) => new Date(log.createdAt) <= to);
     }
 
-    return result.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+    const sortDate = (log: TruckLog) => (log as { updatedAt?: string }).updatedAt || log.createdAt;
+    return result.sort((a, b) => new Date(sortDate(b)).getTime() - new Date(sortDate(a)).getTime());
   }, [logs, directionFilter, plateSearch, driverSearch, productSearch, trailerSearch, contractSearch, vehicleSearch, companyFilter, dateFrom, dateTo, transportCompanies]);
 
   const clearFilters = () => {
@@ -430,6 +457,17 @@ export default function ReportsPage() {
     const min = String(d.getMinutes()).padStart(2, "0");
     return `${y}-${m}-${day} ${h}:${min}`;
   };
+
+  if (isCheckingAuth) {
+    return (
+      <div className="flex h-screen bg-gray-50 items-center justify-center">
+        <div className="text-center">
+          <Loader2 className="w-12 h-12 animate-spin text-gray-400 mx-auto mb-4" />
+          <p className="text-gray-600">Уншиж байна...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex h-screen bg-gray-50 overflow-hidden">
@@ -718,7 +756,7 @@ export default function ReportsPage() {
                               <div className="absolute right-0 top-1/2 -translate-y-1/2 w-px h-3 bg-gray-300"></div>
                             </TableHead>
                             <TableHead className="text-gray-700 font-semibold text-xs relative pr-3">
-                              Бүтээгдхүүн
+                              Бүтээгдэхүүн
                               <div className="absolute right-0 top-1/2 -translate-y-1/2 w-px h-3 bg-gray-300"></div>
                             </TableHead>
                             <TableHead className="text-gray-700 font-semibold text-xs relative pr-3">

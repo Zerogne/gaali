@@ -153,17 +153,6 @@ export async function sendTruckLogToCustoms(
       }
     }
 
-    // Simulate network delay
-    await new Promise((resolve) => setTimeout(resolve, 1000))
-
-    // Simulate occasional network errors (10% chance)
-    if (Math.random() < 0.1) {
-      return {
-        success: false,
-        error: "Network error: Unable to connect to customs system",
-      }
-    }
-
     // Update log status in company's collection
     await logsCollection.updateOne(
       { id: logId.trim() },
@@ -199,9 +188,9 @@ export async function getTruckLogs(
     
     const logsCollection = await getCompanyCollection<TruckLog>(companyId, collectionName)
 
-    // Validate pagination params
+    // Validate pagination params (cap 100 for dashboard, 10000 for reports)
+    const validLimit = Math.min(10000, Math.max(1, Math.floor(limit)))
     const validPage = Math.max(1, Math.floor(page))
-    const validLimit = Math.min(100, Math.max(1, Math.floor(limit)))
     const skip = (validPage - 1) * validLimit
 
     // Get total count
@@ -219,12 +208,15 @@ export async function getTruckLogs(
       console.warn("⚠️ Could not check truck_sessions collection:", e)
     }
 
-    // Fetch logs with pagination, sorted by creation date (newest first)
+    // Fetch logs with pagination, sorted by last activity (updatedAt if present, else createdAt)
     const logs = await logsCollection
-      .find({})
-      .sort({ createdAt: -1 })
-      .skip(skip)
-      .limit(validLimit)
+      .aggregate([
+        { $addFields: { sortDate: { $ifNull: ["$updatedAt", "$createdAt"] } } },
+        { $sort: { sortDate: -1 } },
+        { $skip: skip },
+        { $limit: validLimit },
+        { $project: { sortDate: 0 } },
+      ])
       .toArray()
     
     console.log("📖 Fetched", logs.length, "logs from database")

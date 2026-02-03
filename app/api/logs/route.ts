@@ -14,7 +14,12 @@ export async function GET(request: Request) {
 
     const result = await getTruckLogs(page, limit)
 
-    return NextResponse.json(result, { status: 200 })
+    return NextResponse.json(result, {
+      status: 200,
+      headers: {
+        "Cache-Control": "no-store, no-cache, must-revalidate",
+      },
+    })
   } catch (error) {
     console.error("Error getting truck logs:", error)
     const errorResponse = errorToResponse(error)

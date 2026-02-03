@@ -1854,41 +1854,45 @@ export const OutSessionForm = forwardRef<
             await new Promise((resolve) => setTimeout(resolve, 50));
             ws = getWebSocket();
             if (!ws || ws.readyState !== WebSocket.OPEN) {
-              console.error(
-                "❌ ERROR: WebSocket connection failed or closed immediately"
-              );
-              console.error(
-                "❌ WebSocket states: CONNECTING=0, OPEN=1, CLOSING=2, CLOSED=3"
-              );
-              console.error(
-                "❌ Current state:",
-                ws ? ws.readyState : "null"
-              );
-              console.error(
-                "❌ This usually means the 3rd party app server is not running"
-              );
-              toast({
-                title: "Алдаа",
-                description:
-                  "3-р талын програмтай холбогдох боломжгүй байна. Програм ажиллаж байгаа эсэхийг шалгана уу.",
-                variant: "destructive",
-              });
-              return false;
+              // Fallback: Data was saved - copy URL to clipboard for use when connection to government app is available
+              console.warn("⚠️ WebSocket not available - data saved, copying URL to clipboard");
+              try {
+                await navigator.clipboard.writeText(dataUrl);
+                toast({
+                  title: "Өгөгдөл хадгалагдлаа",
+                  description:
+                    "Төрийн гаальд илгээх холболт байхгүй байна. Өгөгдлийн холбоос clipboard-д хуулсан. Холболт байхад энэ холбоосыг ашиглана уу.",
+                  duration: 6000,
+                });
+              } catch (clipboardErr) {
+                toast({
+                  title: "Өгөгдөл хадгалагдлаа",
+                  description: `Төрийн гаальд илгээх холболт байхгүй байна. Өгөгдлийн холбоос: ${dataUrl}`,
+                  duration: 8000,
+                });
+              }
+              return true;
             }
             console.log("✅ WebSocket connection verified and open");
           } catch (error) {
-            console.error("❌ ERROR: Failed to connect WebSocket");
-            console.error("❌ Error details:", error);
-            console.error(
-              "❌ This usually means the 3rd party app server is not running at ws://127.0.0.1:9000/service"
-            );
-            toast({
-              title: "Алдаа",
-              description:
-                "3-р талын програмтай холбогдох боломжгүй байна. Програм ажиллаж байгаа эсэхийг шалгана уу.",
-              variant: "destructive",
-            });
-            return false;
+            // Fallback: Data was saved - copy URL to clipboard for use when connection to government app is available
+            console.warn("⚠️ WebSocket connection failed - data saved, copying URL to clipboard");
+            try {
+              await navigator.clipboard.writeText(dataUrl);
+              toast({
+                title: "Өгөгдөл хадгалагдлаа",
+                description:
+                  "Төрийн гаальд илгээх холболт байхгүй байна. Өгөгдлийн холбоос clipboard-д хуулсан. Холболт байхад энэ холбоосыг ашиглана уу.",
+                duration: 6000,
+              });
+            } catch (clipboardErr) {
+              toast({
+                title: "Өгөгдөл хадгалагдлаа",
+                description: `Төрийн гаальд илгээх холболт байхгүй байна. Өгөгдлийн холбоос: ${dataUrl}`,
+                duration: 8000,
+              });
+            }
+            return true;
           }
         } else {
           console.log("✅ WebSocket already connected");
@@ -1940,7 +1944,7 @@ export const OutSessionForm = forwardRef<
           toast({
             title: "Алдаа",
             description:
-              "3-р талын програмтай холболт тасарсан. Програм ажиллаж байгаа эсэхийг шалгана уу.",
+              "Төрийн гаальд илгээх холболт тасарсан байна. Дахин оролдоно уу.",
             variant: "destructive",
           });
           return false;
@@ -1954,7 +1958,7 @@ export const OutSessionForm = forwardRef<
 
         toast({
           title: "Амжилттай",
-          description: "3-р талын програм руу илгээгдлээ",
+          description: "Төрийн гаальд илгээгдлээ",
         });
         return true;
       } catch (sendError) {
@@ -1971,7 +1975,7 @@ export const OutSessionForm = forwardRef<
           description:
             sendError instanceof Error
               ? sendError.message
-              : "3-р талын програм руу илгээхэд алдаа гарлаа",
+              : "Төрийн гаальд илгээхэд алдаа гарлаа",
           variant: "destructive",
         });
         return false;
@@ -2859,7 +2863,10 @@ export const OutSessionForm = forwardRef<
                         await performSendToThirdParty();
                       }}
                       disabled={
-                        !savedUniqueCode ||
+                        !formState.plateNumber.trim() ||
+                        !formState.totalWeight ||
+                        !formState.netWeightKg ||
+                        formState.netWeightKg === 0 ||
                         isSending ||
                         isSaving
                       }

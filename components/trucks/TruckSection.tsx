@@ -11,6 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { FilterableSelect } from "@/components/ui/filterable-select"
 import { Camera, Clock, Zap, Loader2, Plus, ArrowRight, ArrowLeft } from "lucide-react"
 import type { Direction, TruckLog } from "@/lib/types"
+import { fetchLogs } from "@/lib/fetchLogs"
 import { saveTruckLog, sendTruckLogToCustoms } from "@/lib/api"
 import { useToast } from "@/hooks/use-toast"
 import { Checkbox } from "@/components/ui/checkbox"
@@ -220,11 +221,8 @@ export function TruckSection({ direction, onSave, onSend }: TruckSectionProps) {
     if (direction === "OUT" && weight && plate && Number(weight) > 0) {
       async function calculateNetWeight() {
         try {
-          // Fetch logs to find the IN log for this plate
-          const response = await fetch("/api/logs?page=1&limit=100")
-          if (response.ok) {
-            const data = await response.json()
-            const logs = data.logs || []
+          const result = await fetchLogs(1, 100)
+          const logs = result.logs || []
             
             // Find the most recent IN log for the same plate
             const inLog = logs
@@ -242,16 +240,10 @@ export function TruckSection({ direction, onSave, onSend }: TruckSectionProps) {
               const outWeight = Number(weight)
               const inWeight = inLog.weightKg
               const calculatedNetWeight = outWeight - inWeight
-              
-              if (calculatedNetWeight > 0) {
-                setNetWeight(Math.round(calculatedNetWeight).toString())
-              } else {
-                setNetWeight("")
-              }
+              setNetWeight(calculatedNetWeight > 0 ? Math.round(calculatedNetWeight).toString() : "")
             } else {
               setNetWeight("")
             }
-          }
         } catch (error) {
           console.error("Error calculating net weight:", error)
           setNetWeight("")
