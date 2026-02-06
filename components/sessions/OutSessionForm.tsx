@@ -1795,48 +1795,9 @@ export const OutSessionForm = forwardRef<
           },
         ];
 
-        // Step 2: Save data to file-like storage (matching test-websocket.html)
-        console.log("💾 Step 1: Saving data to storage...");
-        const appBaseUrl =
-          typeof window !== "undefined"
-            ? window.location.origin
-            : "https://gaali.vercel.app";
-
-        const saveResponse = await fetch(
-          `${appBaseUrl}/api/third-party/save`,
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              uniqueCode: uniqueCode, // Use AKT as unique code
-              data: thirdPartyData,
-            }),
-          }
-        );
-
-        if (!saveResponse.ok) {
-          const errorData = await saveResponse.json().catch(() => ({}));
-          console.error("❌ ERROR: Failed to save data");
-          console.error("❌ Response status:", saveResponse.status);
-          console.error("❌ Error data:", errorData);
-          throw new Error(
-            errorData.error ||
-              `Failed to save data: ${saveResponse.statusText}`
-          );
-        }
-
-        const saveResult = await saveResponse.json();
-        const dataBaseUrl = `${appBaseUrl}/api/third-party/data`;
-        const dataUrl = `${dataBaseUrl}/${saveResult.code}`;
-
-        console.log("✅ Step 1: Data saved successfully");
-        console.log("🔑 Unique Code (AKT):", uniqueCode);
-        console.log("📁 Data URL:", dataUrl);
-
-        // Step 3: Check WebSocket connection (matching test-websocket.html logic)
-        console.log("🔌 Step 2: Checking WebSocket connection...");
+        // Send data directly via WebSocket (ws://127.0.0.1:9000/service) - no API
+        const dataToSend = JSON.stringify(thirdPartyData);
+        console.log("🔌 Checking WebSocket connection...");
         let ws = getWebSocket();
         console.log(
           "🔌 Current WebSocket state:",
@@ -1856,20 +1817,19 @@ export const OutSessionForm = forwardRef<
             await new Promise((resolve) => setTimeout(resolve, 50));
             ws = getWebSocket();
             if (!ws || ws.readyState !== WebSocket.OPEN) {
-              // Fallback: Data was saved - copy URL to clipboard for use when connection to government app is available
-              console.warn("⚠️ WebSocket not available - data saved, copying URL to clipboard");
+              console.warn("⚠️ WebSocket not available - copying data to clipboard");
               try {
-                await navigator.clipboard.writeText(dataUrl);
+                await navigator.clipboard.writeText(dataToSend);
                 toast({
-                  title: "Өгөгдөл хадгалагдлаа",
+                  title: "Өгөгдөл бэлэн",
                   description:
-                    "Төрийн гаальд илгээх холболт байхгүй байна. Өгөгдлийн холбоос clipboard-д хуулсан. Холболт байхад энэ холбоосыг ашиглана уу.",
+                    "Төрийн гаальд илгээх холболт байхгүй байна. Өгөгдлийг clipboard-д хуулсан. Холболт байхад дахин илгээнэ үү.",
                   duration: 6000,
                 });
               } catch (clipboardErr) {
                 toast({
-                  title: "Өгөгдөл хадгалагдлаа",
-                  description: `Төрийн гаальд илгээх холболт байхгүй байна. Өгөгдлийн холбоос: ${dataUrl}`,
+                  title: "Өгөгдөл бэлэн",
+                  description: "Төрийн гаальд илгээх холболт байхгүй байна. Дахин оролдоно уу.",
                   duration: 8000,
                 });
               }
@@ -1877,20 +1837,19 @@ export const OutSessionForm = forwardRef<
             }
             console.log("✅ WebSocket connection verified and open");
           } catch (error) {
-            // Fallback: Data was saved - copy URL to clipboard for use when connection to government app is available
-            console.warn("⚠️ WebSocket connection failed - data saved, copying URL to clipboard");
+            console.warn("⚠️ WebSocket connection failed - copying data to clipboard");
             try {
-              await navigator.clipboard.writeText(dataUrl);
+              await navigator.clipboard.writeText(dataToSend);
               toast({
-                title: "Өгөгдөл хадгалагдлаа",
+                title: "Өгөгдөл бэлэн",
                 description:
-                  "Төрийн гаальд илгээх холболт байхгүй байна. Өгөгдлийн холбоос clipboard-д хуулсан. Холболт байхад энэ холбоосыг ашиглана уу.",
+                  "Төрийн гаальд илгээх холболт байхгүй байна. Өгөгдлийг clipboard-д хуулсан. Холболт байхад дахин илгээнэ үү.",
                 duration: 6000,
               });
             } catch (clipboardErr) {
               toast({
-                title: "Өгөгдөл хадгалагдлаа",
-                description: `Төрийн гаальд илгээх холболт байхгүй байна. Өгөгдлийн холбоос: ${dataUrl}`,
+                title: "Өгөгдөл бэлэн",
+                description: "Төрийн гаальд илгээх холболт байхгүй байна. Дахин оролдоно уу.",
                 duration: 8000,
               });
             }
@@ -1915,9 +1874,8 @@ export const OutSessionForm = forwardRef<
           return false;
         }
 
-        // Step 5: Send the full URL via WebSocket (matching test-websocket.html)
-        console.log("📤 Step 3: Sending data to 3rd party app...");
-        console.log("📤 URL to send:", dataUrl);
+        // Send JSON directly to 3rd party via WebSocket
+        console.log("📤 Sending data to 3rd party app via WebSocket...");
         console.log("📤 Unique Code (AKT):", uniqueCode);
 
         if (ws.readyState !== WebSocket.OPEN) {
@@ -1931,8 +1889,8 @@ export const OutSessionForm = forwardRef<
           return false;
         }
 
-        ws.send(dataUrl);
-        console.log("✅ ws.send() completed without throwing error");
+        ws.send(dataToSend);
+        console.log("✅ Data sent via WebSocket");
 
         // Step 6: Check connection after a short delay (matching test-websocket.html)
         await new Promise((resolve) => setTimeout(resolve, 100));
@@ -1952,11 +1910,7 @@ export const OutSessionForm = forwardRef<
           return false;
         }
 
-        console.log("=".repeat(50));
-        console.log("✅ SUCCESS: Data sent to 3rd party app");
-        console.log("✅ URL sent:", dataUrl);
-        console.log("✅ Unique Code (AKT):", uniqueCode);
-        console.log("=".repeat(50));
+        console.log("✅ SUCCESS: Data sent to 3rd party app via WebSocket");
 
         toast({
           title: "Амжилттай",

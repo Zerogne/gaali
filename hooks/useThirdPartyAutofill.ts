@@ -235,9 +235,8 @@ export function useThirdPartyAutofill() {
   }, [])
 
   /**
-   * Sends form data to the 3rd party app via WebSocket
-   * First saves data to a file-like storage, then sends the file URL
-   * The 3rd party app will fetch the data from that URL
+   * Sends form data to the 3rd party app via WebSocket (ws://127.0.0.1:9000/service)
+   * Sends JSON directly - no API save. Connector receives data and forwards to government.
    */
   const sendFormData = useCallback(
     async (formData: Record<string, any>): Promise<SendFormDataResult> => {
@@ -277,133 +276,39 @@ export function useThirdPartyAutofill() {
           }
         ]
 
-        console.log("💾 Step 1: Saving data to file-like storage...")
-        console.log("📋 Data to save:", JSON.stringify(thirdPartyData, null, 2))
+        const dataToSend = JSON.stringify(thirdPartyData)
+        const uniqueCode = formData.aktNumber || formData.uniqueCode || ""
 
-        // Step 2: Save data to file-like storage (database)
-        const baseUrl = typeof window !== "undefined" 
-          ? window.location.origin 
-          : process.env.NEXT_PUBLIC_APP_URL || "https://gaali.vercel.app"
-        
-        const saveResponse = await fetch(`${baseUrl}/api/third-party/save`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            uniqueCode: formData.uniqueCode,
-            data: thirdPartyData,
-          }),
-        })
-
-        if (!saveResponse.ok) {
-          const errorData = await saveResponse.json().catch(() => ({}))
-          throw new Error(errorData.error || `Failed to save data: ${saveResponse.statusText}`)
-        }
-
-        const saveResult = await saveResponse.json()
-        const fileUrl = saveResult.url
-        const uniqueCode = saveResult.code
-
-        console.log("✅ Step 2: Data saved successfully")
-        console.log("🔑 Unique Code:", uniqueCode)
-        console.log("📁 File URL:", fileUrl)
-
-        // Step 3: Connect WebSocket
-        console.log("🔌 Step 3: Connecting WebSocket...")
-        console.log("🔌 Current WebSocket state:", ws ? `readyState: ${ws.readyState} (OPEN=${WebSocket.OPEN})` : "null")
-        
+        console.log("🔌 Connecting to WebSocket...")
         let connectedWs: WebSocket
         try {
           connectedWs = await connectWebSocket()
-          console.log("✅ WebSocket connection established")
-          console.log("✅ Connected WebSocket readyState:", connectedWs.readyState)
         } catch (connectionError) {
           console.error("❌ Failed to connect WebSocket:", connectionError)
-          const errorMessage = connectionError instanceof Error 
-            ? connectionError.message 
-            : "Failed to connect to 3rd party app. Please ensure the app is running."
           return {
             success: false,
-            error: errorMessage,
+            error: connectionError instanceof Error ? connectionError.message : "Failed to connect. Ensure the connector is running at ws://127.0.0.1:9000/service",
           }
         }
 
-        // Double-check the connection
         if (!connectedWs || connectedWs.readyState !== WebSocket.OPEN) {
-          console.error("❌ WebSocket is not in OPEN state after connection. readyState:", connectedWs?.readyState)
-          console.error("❌ WebSocket states: CONNECTING=0, OPEN=1, CLOSING=2, CLOSED=3")
           return {
             success: false,
-            error: `WebSocket is not connected. State: ${connectedWs?.readyState}. Please ensure the 3rd party app is running.`,
+            error: "WebSocket not connected. Ensure the connector is running at ws://127.0.0.1:9000/service",
           }
         }
 
-        // Step 4: Send full URL to 3rd party app
-        // The 3rd party app expects a URL string (not just a code)
-        // It will fetch data from that URL and can forward to another site
-        const dataUrl = `${baseUrl}/api/third-party/data/${uniqueCode}`
-        console.log("📤 Step 4: Sending URL to 3rd party app")
-        console.log("📤 WebSocket readyState before send:", connectedWs.readyState)
-        console.log("📤 WebSocket URL:", getWebSocketUrl())
-        console.log("🔑 Unique Code:", uniqueCode)
-        console.log("📁 Full URL to send:", dataUrl)
-        console.log("💡 3rd party app will fetch data from this URL")
-        console.log("💡 3rd party app can forward data to another site")
-
-        // Verify connection is still open right before sending
-        if (connectedWs.readyState !== WebSocket.OPEN) {
-          console.error("❌ WebSocket closed before send! readyState:", connectedWs.readyState)
-          return {
-            success: false,
-            error: "WebSocket connection closed before sending data. Please ensure the 3rd party app is running.",
-          }
-        }
-        
         try {
-          // Send the full URL (3rd party app expects URL string, will fetch and can forward)
-          connectedWs.send(dataUrl)
-          console.log("✅ URL sent via WebSocket.send() successfully")
-          console.log("✅ URL:", dataUrl)
-          
-          // Verify connection is still open immediately after sending
-          // If it closed, the send might have failed
-          if (connectedWs.readyState !== WebSocket.OPEN) {
-            console.error("❌ WebSocket closed immediately after send! readyState:", connectedWs.readyState)
-            return {
-              success: false,
-              error: "WebSocket connection closed immediately after sending. The 3rd party app may not be running.",
-            }
-          }
-          
-          // Log to help verify data was sent
-          console.log("=".repeat(50))
-          console.log("📤 URL SENT TO 3RD PARTY APP:")
-          console.log(dataUrl)
-          console.log("🔑 Unique Code:", uniqueCode)
-          console.log("💡 3rd party app will fetch data from this URL")
-          console.log("💡 3rd party app can forward data to another site")
-          console.log("=".repeat(50))
-          
-          // Verify connection is still open after a short delay
-          await new Promise(resolve => setTimeout(resolve, 100))
-          if (connectedWs.readyState !== WebSocket.OPEN) {
-            console.warn("⚠️ WebSocket closed shortly after send. readyState:", connectedWs.readyState)
-            // This might be okay if the app closes after receiving, but log it
-          }
+          connectedWs.send(dataToSend)
+          console.log("✅ Data sent via WebSocket to 3rd party app")
         } catch (sendError) {
           console.error("❌ Error calling ws.send():", sendError)
-          console.error("❌ Send error details:", {
-            message: sendError instanceof Error ? sendError.message : String(sendError),
-            readyState: connectedWs.readyState,
-          })
           return {
             success: false,
             error: sendError instanceof Error ? sendError.message : "Failed to send data via WebSocket",
           }
         }
 
-        // Store sent data in localStorage for debugging (last 5 entries)
         if (typeof window !== "undefined") {
           try {
             const sentDataHistory = JSON.parse(
@@ -412,29 +317,22 @@ export function useThirdPartyAutofill() {
             sentDataHistory.unshift({
               timestamp: new Date().toISOString(),
               data: formData,
-              fileUrl: fileUrl,
               uniqueCode: uniqueCode,
               savedData: thirdPartyData,
             })
-            // Keep only last 5 entries
-            const trimmedHistory = sentDataHistory.slice(0, 5)
             localStorage.setItem(
               "thirdPartyAutofillHistory",
-              JSON.stringify(trimmedHistory)
+              JSON.stringify(sentDataHistory.slice(0, 5))
             )
           } catch (e) {
             console.warn("Failed to save sent data history:", e)
           }
         }
 
-        console.log("✅ Successfully sent form data to 3rd party app")
-        const dataBaseUrl = `${baseUrl}/api/third-party/data`
+        console.log("✅ Successfully sent form data to 3rd party app via WebSocket")
         return {
           success: true,
-          fileUrl: fileUrl,
           uniqueCode: uniqueCode,
-          baseUrl: dataBaseUrl, // Base URL to configure in 3rd party app
-          dataUrl: dataUrl, // Full URL that was sent
         }
       } catch (error) {
         console.error("❌ Error sending form data to 3rd party app:", error)
