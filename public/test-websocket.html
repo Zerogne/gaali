@@ -314,72 +314,31 @@
         sampleData = generateSampleData();
         updateSampleDataDisplay();
 
+      const dataToSend = JSON.stringify(sampleData);
       const jsonData = JSON.stringify(sampleData, null, 2);
       
       log('═══════════════════════════════════════════════════════', 'info');
         log('📤 3-Р ТАЛЫН АПП РУУ ТЕСТ ӨГӨГДӨЛ ИЛГЭЭЖ БАЙНА', 'info');
       log('═══════════════════════════════════════════════════════', 'info');
         log(`🔑 Пүүний актын дугаар (AKT): ${sampleData[0].AKT}`, 'info');
-        log(`📦 Өгөгдлийн хэмжээ: ${jsonData.length} байт`, 'info');
+        log(`📦 Өгөгдлийн хэмжээ: ${dataToSend.length} байт`, 'info');
         log('📋 JSON өгөгдөл:', 'info');
       log(jsonData, 'info');
 
-        // Step 2: Save data to file-like storage
-        log('💾 Өгөгдөл файлд хадгалж байна...', 'info');
-        const appBaseUrl = window.location.origin;
+        // Send data directly via WebSocket (no API - connector receives JSON)
+        log('📤 Өгөгдлийг WebSocket-оор шууд илгээж байна...', 'info');
         
-        const saveResponse = await fetch(`${appBaseUrl}/api/third-party/save`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            uniqueCode: sampleData[0].AKT, // Use AKT as unique code
-            data: sampleData,
-          }),
-        });
-
-        if (!saveResponse.ok) {
-          const errorData = await saveResponse.json().catch(() => ({}));
-          throw new Error(errorData.error || `Файл хадгалахад алдаа гарлаа: ${saveResponse.statusText}`);
-        }
-
-        const saveResult = await saveResponse.json();
-        const fileUrl = saveResult.url;
-        const uniqueCode = saveResult.code;
-        const dataBaseUrl = `${appBaseUrl}/api/third-party/data`;
-
-        log('✅ Өгөгдөл файлд амжилттай хадгалагдлаа', 'success');
-        log(`🔑 Уникал код: ${uniqueCode}`, 'info');
-        log(`📁 Файлын URL: ${fileUrl}`, 'info');
-        log(`📁 Base URL (3-р талын апп-д тохируулах): ${dataBaseUrl}`, 'info');
-
-        // Step 3: Send full URL via WebSocket (3rd party app expects URL string)
-        // The 3rd party app will fetch data from this URL and can forward to another site
-        const dataUrl = `${dataBaseUrl}/${uniqueCode}`;
-        log('📤 URL-г WebSocket-оор илгээж байна...', 'info');
-        log(`🔑 Уникал код: ${uniqueCode}`, 'info');
-        log(`📁 Бүтэн URL: ${dataUrl}`, 'info');
-        log(`💡 3-р талын апп энэ URL-аас өгөгдөл татна`, 'info');
-        log(`💡 3-р талын апп өгөгдлийг өөр сайт руу дамжуулна`, 'info');
-        
-        // Verify connection one more time
         if (ws.readyState !== WebSocket.OPEN) {
           log('❌ ERROR: WebSocket closed before send! State: ' + ws.readyState, 'error');
           return;
         }
         
-        // Send the full URL (3rd party app expects URL string, will fetch and can forward)
-        ws.send(dataUrl);
+        ws.send(dataToSend);
         
         log('═══════════════════════════════════════════════════════', 'success');
-        log('✅ URL АМЖИЛТТАЙ ИЛГЭЭГДЛЭЭ!', 'success');
+        log('✅ ӨГӨГДӨЛ АМЖИЛТТАЙ ИЛГЭЭГДЛЭЭ!', 'success');
         log('═══════════════════════════════════════════════════════', 'success');
-        log(`✅ Илгээсэн URL: ${dataUrl}`, 'success');
         log(`✅ Пүүний актын дугаар: ${sampleData[0].AKT}`, 'success');
-        log(`🔑 Уникал код: ${uniqueCode}`, 'info');
-        log(`💡 3-р талын апп энэ URL-аас өгөгдөл татна`, 'info');
-        log(`💡 3-р талын апп өгөгдлийг өөр сайт руу дамжуулна`, 'info');
         
         // Check connection after a short delay
         setTimeout(() => {

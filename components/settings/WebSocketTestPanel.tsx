@@ -167,67 +167,25 @@ export function WebSocketTestPanel() {
       const { aktNumber, data } = generateSampleData(true)
       setSampleData({ aktNumber, data })
       
+      const dataToSend = JSON.stringify(data)
       const jsonData = JSON.stringify(data, null, 2)
 
       addLog("═══════════════════════════════════════════════════════", "info")
       addLog("📤 3-Р ТАЛЫН АПП РУУ ТЕСТ ӨГӨГДӨЛ ИЛГЭЭЖ БАЙНА", "info")
       addLog("═══════════════════════════════════════════════════════", "info")
       addLog(`🔑 Пүүний актын дугаар (AKT): ${aktNumber}`, "info")
-      addLog(`📦 Өгөгдлийн хэмжээ: ${jsonData.length} байт`, "info")
+      addLog(`📦 Өгөгдлийн хэмжээ: ${dataToSend.length} байт`, "info")
       addLog("📋 JSON өгөгдөл:", "info")
       addLog(jsonData, "info")
 
-      // Step 2: Save data to file-like storage
-      addLog("💾 Өгөгдөл файлд хадгалж байна...", "info")
-      const appBaseUrl = typeof window !== "undefined" 
-        ? window.location.origin 
-        : "https://gaali.vercel.app"
-      
-      const saveResponse = await fetch(`${appBaseUrl}/api/third-party/save`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          uniqueCode: aktNumber, // Use AKT as unique code
-          data: data,
-        }),
-      })
-
-      if (!saveResponse.ok) {
-        const errorData = await saveResponse.json().catch(() => ({}))
-        throw new Error(errorData.error || `Файл хадгалахад алдаа гарлаа: ${saveResponse.statusText}`)
-      }
-
-      const saveResult = await saveResponse.json()
-      const fileUrl = saveResult.url
-      const uniqueCode = saveResult.code
-      const dataBaseUrl = `${appBaseUrl}/api/third-party/data`
-
-      addLog("✅ Өгөгдөл файлд амжилттай хадгалагдлаа", "success")
-      addLog(`🔑 Уникал код: ${uniqueCode}`, "info")
-      addLog(`📁 Файлын URL: ${fileUrl}`, "info")
-      addLog(`📁 Base URL (3-р талын апп-д тохируулах): ${dataBaseUrl}`, "info")
-
-      // Step 3: Send full URL via WebSocket (3rd party app expects URL string)
-      // The 3rd party app will fetch data from this URL and can forward to another site
-      const dataUrl = `${dataBaseUrl}/${uniqueCode}`
-      addLog("📤 URL-г WebSocket-оор илгээж байна...", "info")
-      addLog(`🔑 Уникал код: ${uniqueCode}`, "info")
-      addLog(`📁 Бүтэн URL: ${dataUrl}`, "info")
-      addLog(`💡 3-р талын апп энэ URL-аас өгөгдөл татна`, "info")
-      addLog(`💡 3-р талын апп өгөгдлийг өөр сайт руу дамжуулна`, "info")
-
-      ws.send(dataUrl)
+      // Send data directly via WebSocket (no API - connector receives JSON)
+      addLog("📤 Өгөгдлийг WebSocket-оор шууд илгээж байна...", "info")
+      ws.send(dataToSend)
       
       addLog("═══════════════════════════════════════════════════════", "success")
-      addLog("✅ URL АМЖИЛТТАЙ ИЛГЭЭГДЛЭЭ!", "success")
+      addLog("✅ ӨГӨГДӨЛ АМЖИЛТТАЙ ИЛГЭЭГДЛЭЭ!", "success")
       addLog("═══════════════════════════════════════════════════════", "success")
-      addLog(`✅ Илгээсэн URL: ${dataUrl}`, "success")
       addLog(`✅ Пүүний актын дугаар: ${aktNumber}`, "success")
-      addLog(`🔑 Уникал код: ${uniqueCode}`, "info")
-      addLog(`💡 3-р талын апп энэ URL-аас өгөгдөл татна`, "info")
-      addLog(`💡 3-р талын апп өгөгдлийг өөр сайт руу дамжуулна`, "info")
     } catch (error: any) {
       addLog(`❌ Алдаа гарлаа: ${error.message}`, "error")
     }
