@@ -442,16 +442,27 @@ export function SettingsPanel() {
                 Test the WebSocket connection to the 3rd party app. This allows you to verify that
                 the integration is working correctly.
               </p>
-              <Button
-                variant="outline"
-                className="gap-2"
-                onClick={() => {
-                  window.open("/test-websocket.html", "_blank")
-                }}
-              >
-                <TestTube className="w-4 h-4" />
-                Open WebSocket Test Page
-              </Button>
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  className="gap-2"
+                  onClick={() => {
+                    window.open("/third-party-diagnose", "_blank")
+                  }}
+                >
+                  <TestTube className="w-4 h-4" />
+                  Run 3rd Party Diagnostics
+                </Button>
+                <Button
+                  variant="outline"
+                  className="gap-2"
+                  onClick={() => {
+                    window.open("/test-websocket.html", "_blank")
+                  }}
+                >
+                  Open WebSocket Test Page
+                </Button>
+              </div>
             </div>
 
             <div className="border-t border-border pt-6">
