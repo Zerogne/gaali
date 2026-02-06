@@ -27,6 +27,35 @@ export function setThirdPartyWsUrl(url: string | null) {
   }
 }
 
+// #region agent log - debug helper for 3rd party WebSocket
+function debugThirdPartyLog(payload: {
+  runId: string
+  hypothesisId: string
+  location: string
+  message: string
+  data?: Record<string, unknown>
+}) {
+  if (typeof window === "undefined") return
+  try {
+    fetch("http://127.0.0.1:7244/ingest/9cbf6a37-a8c6-4e2b-814a-471561e688c9", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        sessionId: "debug-session",
+        runId: payload.runId,
+        hypothesisId: payload.hypothesisId,
+        location: payload.location,
+        message: payload.message,
+        data: payload.data ?? {},
+        timestamp: Date.now(),
+      }),
+    }).catch(() => {})
+  } catch {
+    // ignore
+  }
+}
+// #endregion
+
 // WebSocket URL - priority: API (company settings) > runtime > env > default
 const getWebSocketUrl = () => {
   if (typeof window !== "undefined") {
@@ -69,6 +98,13 @@ export function useThirdPartyAutofill() {
       if (ws && ws.readyState === WebSocket.OPEN) {
         console.log("✅ Reusing existing WebSocket connection")
         setIsConnected(true)
+        debugThirdPartyLog({
+          runId: "initial",
+          hypothesisId: "H1",
+          location: "useThirdPartyAutofill.ts:connectWebSocket",
+          message: "Reusing existing WebSocket connection",
+          data: { wsReadyState: ws.readyState, wsUrl: getWebSocketUrl() },
+        })
         resolve(ws)
         return
       }
@@ -101,6 +137,13 @@ export function useThirdPartyAutofill() {
       connectionAttemptRef.current++
 
       const wsUrl = getWebSocketUrl()
+      debugThirdPartyLog({
+        runId: "initial",
+        hypothesisId: "H1",
+        location: "useThirdPartyAutofill.ts:connectWebSocket",
+        message: "Attempting WebSocket connection",
+        data: { wsUrl, attempt: connectionAttemptRef.current },
+      })
       // Only log connection attempts in development or if explicitly enabled
       if (process.env.NODE_ENV === "development" || process.env.NEXT_PUBLIC_ENABLE_THIRD_PARTY_LOGS === "true") {
         console.log("🔌 Attempting to connect to WebSocket:", wsUrl)
@@ -147,6 +190,13 @@ export function useThirdPartyAutofill() {
             connectionAttemptRef.current = 0
             console.log("✅ Connected to 3rd party app successfully at:", wsUrl)
             console.log("✅ WebSocket readyState:", ws?.readyState)
+            debugThirdPartyLog({
+              runId: "initial",
+              hypothesisId: "H1",
+              location: "useThirdPartyAutofill.ts:ws.onopen",
+              message: "WebSocket connected",
+              data: { wsUrl, readyState: ws?.readyState },
+            })
             resolve(ws!)
           }
         }
@@ -294,12 +344,31 @@ export function useThirdPartyAutofill() {
         const dataToSend = JSON.stringify(thirdPartyData)
         const uniqueCode = formData.aktNumber || formData.uniqueCode || ""
 
+        debugThirdPartyLog({
+          runId: "initial",
+          hypothesisId: "H2",
+          location: "useThirdPartyAutofill.ts:sendFormData",
+          message: "Preparing to send data via WebSocket",
+          data: {
+            uniqueCode,
+            wsUrl: getWebSocketUrl(),
+            hasDriverId: !!thirdPartyData[0]?.driverId,
+          },
+        })
+
         console.log("🔌 Connecting to WebSocket...")
         let connectedWs: WebSocket
         try {
           connectedWs = await connectWebSocket()
         } catch (connectionError) {
           console.error("❌ Failed to connect WebSocket:", connectionError)
+          debugThirdPartyLog({
+            runId: "initial",
+            hypothesisId: "H2",
+            location: "useThirdPartyAutofill.ts:sendFormData",
+            message: "Failed to connect WebSocket",
+            data: { error: connectionError instanceof Error ? connectionError.message : String(connectionError) },
+          })
           return {
             success: false,
             error: connectionError instanceof Error ? connectionError.message : "Failed to connect. Ensure the connector is running at ws://127.0.0.1:9000/service",
@@ -307,6 +376,13 @@ export function useThirdPartyAutofill() {
         }
 
         if (!connectedWs || connectedWs.readyState !== WebSocket.OPEN) {
+          debugThirdPartyLog({
+            runId: "initial",
+            hypothesisId: "H2",
+            location: "useThirdPartyAutofill.ts:sendFormData",
+            message: "WebSocket not open when trying to send",
+            data: { readyState: connectedWs?.readyState ?? null },
+          })
           return {
             success: false,
             error: "WebSocket not connected. Ensure the connector is running at ws://127.0.0.1:9000/service",
@@ -316,6 +392,13 @@ export function useThirdPartyAutofill() {
         try {
           connectedWs.send(dataToSend)
           console.log("✅ Data sent via WebSocket to 3rd party app")
+          debugThirdPartyLog({
+            runId: "initial",
+            hypothesisId: "H2",
+            location: "useThirdPartyAutofill.ts:sendFormData",
+            message: "Data sent via WebSocket",
+            data: { uniqueCode },
+          })
         } catch (sendError) {
           console.error("❌ Error calling ws.send():", sendError)
           return {
