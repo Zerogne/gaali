@@ -34,9 +34,8 @@ const truckSessionSchema = z.object({
  */
 /**
  * Generate unique AKT code for truck session
- * Format: 3110012025122000002 (19 digits)
- * - 31: Company-specific prefix (2 digits)
- * - 1001: Company/branch code (4 digits)
+ * Format: 30012025122000002 (17 digits)
+ * - 3001: Company identifier (4 digits) = uniqueCodePrefix (1) + companyCode last 3 digits (3)
  * - 20251220: Date YYYYMMDD (8 digits)
  * - 00002: Sequential number for that day (5 digits)
  * 
@@ -68,14 +67,15 @@ async function generateUniqueCode(
     companyCode = "1001"
   }
   
-  // Full prefix: first digit from DB (3,4,5,6...) + "1" e.g. "31", "41", "51"
-  const companyPrefix = `${uniqueCodePrefix}1`
+  // Company identifier: 4 digits = uniqueCodePrefix (1) + companyCode last 3 digits (3)
+  // e.g. 31001 from prefix 3 + 1001, or 4001 from prefix 4 + 001
+  const companyId4 = `${uniqueCodePrefix}${companyCode.slice(-3)}`
   const now = new Date()
   const dateStr = now.toISOString().slice(0, 10).replace(/-/g, "") // YYYYMMDD (8 digits)
   
   // Find the highest sequential number for today
-  // Extract date part from uniqueCode: 31 + 1001 + YYYYMMDD + XXXXX
-  const todayPrefix = `${companyPrefix}${companyCode}${dateStr}`
+  // Format: XXXX (4) + YYYYMMDD (8) + XXXXX (5) = 17 digits total
+  const todayPrefix = `${companyId4}${dateStr}`
   const todaySessions = await sessionsCollection
     .find({
       uniqueCode: { $regex: `^${todayPrefix}` }
@@ -95,16 +95,16 @@ async function generateUniqueCode(
     }
   }
   
-  // Format: 31 + 1001 + YYYYMMDD + 00002 (5 digits) = 19 digits total
+  // Format: XXXX (4) + YYYYMMDD (8) + 00002 (5) = 17 digits total
   const seqNumStr = seqNum.toString().padStart(5, '0')
-  const aktNumber = `${companyPrefix}${companyCode}${dateStr}${seqNumStr}`
+  const aktNumber = `${companyId4}${dateStr}${seqNumStr}`
   
   console.log(`🔑 Generated unique code: ${aktNumber}`, {
-    companyPrefix,
+    companyId4,
     companyCode,
     dateStr,
     seqNum,
-    format: `${companyPrefix}${companyCode}${dateStr}${seqNumStr}`,
+    format: `${companyId4}${dateStr}${seqNumStr}`,
   })
   
   return aktNumber
