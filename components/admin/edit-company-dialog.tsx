@@ -161,7 +161,7 @@ export function EditCompanyDialog({ company }: EditCompanyDialogProps) {
                 <Input
                   id="edit-companyCode"
                   value={companyCode}
-                  onChange={(e) => setCompanyCode(e.target.value.replace(/\D/g, "").slice(0, 4))}
+                  onChange={(e) => setCompanyCode(e.target.value.replace(/\D/g, "").slice(0, 6))}
                   placeholder="1001"
                   className="font-mono"
                 />
@@ -179,7 +179,7 @@ export function EditCompanyDialog({ company }: EditCompanyDialogProps) {
                   placeholder="3"
                   className="font-mono w-14"
                 />
-                <p className="text-xs text-muted-foreground">3=108oil, 4,5,6 for others.</p>
+                <p className="text-xs text-muted-foreground">4 digits (1001) or 6 digits (311028 for 108oil).</p>
               </div>
             </div>
             <div className="space-y-2">

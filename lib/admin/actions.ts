@@ -199,8 +199,8 @@ export async function updateCompany(
       };
     }
 
-    if (companyCode && (companyCode.length !== 4 || !/^\d{4}$/.test(companyCode))) {
-      return { success: false, error: "Company code must be 4 digits (e.g. 1001)" };
+    if (companyCode && !/^\d{4}$|^\d{6}$/.test(companyCode)) {
+      return { success: false, error: "Company code must be 4 digits (e.g. 1001) or 6 digits (e.g. 311028)" };
     }
     if (uniqueCodePrefix && !/^[3-9]$/.test(uniqueCodePrefix)) {
       return { success: false, error: "Unique code prefix must be a single digit 3-9" };

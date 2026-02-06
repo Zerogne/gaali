@@ -61,21 +61,23 @@ async function generateUniqueCode(
     console.warn(`⚠️ Could not fetch company metadata for ${companyId}, using defaults`, error)
   }
   
-  // Ensure company code is 4 digits
-  if (companyCode.length !== 4 || !/^\d{4}$/.test(companyCode)) {
+  // Company identifier: 6 digits (311028) or 4 digits (1001)
+  let companyIdPart: string
+  if (companyCode.length === 6 && /^\d{6}$/.test(companyCode)) {
+    companyIdPart = companyCode // e.g. 311028 (108oil customs org code)
+  } else if (companyCode.length === 4 && /^\d{4}$/.test(companyCode)) {
+    companyIdPart = `${uniqueCodePrefix}${companyCode.slice(-3)}` // e.g. 3001
+  } else {
     console.warn(`⚠️ Invalid company code format: ${companyCode}, using default: 1001`)
     companyCode = "1001"
+    companyIdPart = `${uniqueCodePrefix}001`
   }
-  
-  // Company identifier: 4 digits = uniqueCodePrefix (1) + companyCode last 3 digits (3)
-  // e.g. 31001 from prefix 3 + 1001, or 4001 from prefix 4 + 001
-  const companyId4 = `${uniqueCodePrefix}${companyCode.slice(-3)}`
   const now = new Date()
   const dateStr = now.toISOString().slice(0, 10).replace(/-/g, "") // YYYYMMDD (8 digits)
   
   // Find the highest sequential number for today
-  // Format: XXXX (4) + YYYYMMDD (8) + XXXXX (5) = 17 digits total
-  const todayPrefix = `${companyId4}${dateStr}`
+  // Format: companyIdPart (4 or 6) + YYYYMMDD (8) + XXXXX (5)
+  const todayPrefix = `${companyIdPart}${dateStr}`
   const todaySessions = await sessionsCollection
     .find({
       uniqueCode: { $regex: `^${todayPrefix}` }
@@ -95,16 +97,15 @@ async function generateUniqueCode(
     }
   }
   
-  // Format: XXXX (4) + YYYYMMDD (8) + 00002 (5) = 17 digits total
   const seqNumStr = seqNum.toString().padStart(5, '0')
-  const aktNumber = `${companyId4}${dateStr}${seqNumStr}`
+  const aktNumber = `${companyIdPart}${dateStr}${seqNumStr}`
   
   console.log(`🔑 Generated unique code: ${aktNumber}`, {
-    companyId4,
+    companyIdPart,
     companyCode,
     dateStr,
     seqNum,
-    format: `${companyId4}${dateStr}${seqNumStr}`,
+    format: `${companyIdPart}${dateStr}${seqNumStr}`,
   })
   
   return aktNumber

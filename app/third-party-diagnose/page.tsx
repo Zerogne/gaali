@@ -60,7 +60,7 @@ export default function ThirdPartyDiagnosePage() {
         return
       }
       // Step 2: Try to fetch data by code
-      const dataRes = await fetch(`/api/third-party/data?code=${encodeURIComponent(firstCode)}`)
+      const dataRes = await fetch(`/api/third-party/data?number=${encodeURIComponent(firstCode)}`)
       const dataResult = await dataRes.json()
       if (!dataRes.ok) {
         setPullTest({
@@ -235,7 +235,7 @@ export default function ThirdPartyDiagnosePage() {
         <ul className="text-sm space-y-2 text-muted-foreground">
           <li>
             <strong>Pull:</strong> 3rd party fetches from{" "}
-            <code className="bg-muted px-1 rounded">/api/third-party/data?code=X</code> (no auth). Data comes from{" "}
+            <code className="bg-muted px-1 rounded">/api/third-party/data?number=X</code> (no auth). Data comes from{" "}
             <code className="bg-muted px-1 rounded">third_party_data</code> collection, populated when you save an Out
             Session.
           </li>

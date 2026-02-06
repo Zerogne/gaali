@@ -32,7 +32,7 @@ export async function GET(request: Request) {
         total: codes.length,
         codes: codes,
         message: "Use one of these codes to test the pull endpoint",
-        example: "https://gaali.vercel.app/api/third-party/data?code=" + (codes[0]?.code || "YOUR_CODE"),
+        example: "https://gaali.vercel.app/api/third-party/data?number=" + (codes[0]?.code || "YOUR_ACT_NUMBER"),
       },
       {
         status: 200,

@@ -35,18 +35,19 @@ export async function GET(request: Request) {
       console.warn(`⚠️ Could not fetch company metadata for ${companyId}, using defaults`, error)
     }
     
-    if (companyCode.length !== 4 || !/^\d{4}$/.test(companyCode)) {
+    let companyIdPart: string
+    if (companyCode.length === 6 && /^\d{6}$/.test(companyCode)) {
+      companyIdPart = companyCode
+    } else if (companyCode.length === 4 && /^\d{4}$/.test(companyCode)) {
+      companyIdPart = `${uniqueCodePrefix}${companyCode.slice(-3)}`
+    } else {
       console.warn(`⚠️ Invalid company code format: ${companyCode}, using default: 1001`)
       companyCode = "1001"
+      companyIdPart = `${uniqueCodePrefix}001`
     }
-    
-    // Company identifier: 4 digits = uniqueCodePrefix (1) + companyCode last 3 digits (3)
-    const companyId4 = `${uniqueCodePrefix}${companyCode.slice(-3)}`
     const now = new Date()
     const dateStr = now.toISOString().slice(0, 10).replace(/-/g, "") // YYYYMMDD (8 digits)
-    
-    // Format: XXXX (4) + YYYYMMDD (8) + XXXXX (5) = 17 digits total
-    const todayPrefix = `${companyId4}${dateStr}`
+    const todayPrefix = `${companyIdPart}${dateStr}`
     const todaySessions = await sessionsCollection
       .find({
         uniqueCode: { $regex: `^${todayPrefix}` }
@@ -66,9 +67,8 @@ export async function GET(request: Request) {
       }
     }
     
-    // Format: XXXX (4) + YYYYMMDD (8) + 00009 (5) = 17 digits total
     const seqNumStr = seqNum.toString().padStart(5, '0')
-    const uniqueCode = `${companyId4}${dateStr}${seqNumStr}`
+    const uniqueCode = `${companyIdPart}${dateStr}${seqNumStr}`
     
     console.log("✅ Generated unique code for preview:", uniqueCode)
     

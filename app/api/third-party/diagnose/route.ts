@@ -53,6 +53,7 @@ export async function GET() {
       third_party_data_for_company: companyDocs,
       sample_codes: sampleCodes,
       pull_endpoints: [
+        "GET /api/third-party/data?number=YOUR_ACT_NUMBER (spec-required)",
         "GET /api/third-party/data?code=YOUR_CODE",
         "GET /api/third-party/data/YOUR_CODE",
       ],

@@ -3,20 +3,24 @@ import { getDatabase } from "@/lib/db/client"
 import { getActiveCompany } from "@/lib/auth/session"
 
 /**
- * GET /api/third-party/data?code={code}
- * Serves third-party data file by code (query parameter format)
+ * GET /api/third-party/data?number={code} or ?code={code}
+ * Serves third-party data file by act number (query parameter format)
  * This endpoint supports the other site's pull functionality
- * 
+ *
+ * Spec requires parameter name "number" (Актны дугаарын параметрын нэр нь number гэж заавал өгнө)
+ *
  * Usage:
+ *   GET /api/third-party/data?number=311001202401180001  (spec-compliant)
  *   GET /api/third-party/data?code=311001202401180001
- * 
+ *
  * Alternative path format (also supported):
  *   GET /api/third-party/data/311001202401180001
  */
 export async function GET(request: Request) {
   try {
     const { searchParams, pathname } = new URL(request.url)
-    let code = searchParams.get("code")
+    // Spec requires "number" - support both for compatibility
+    let code = searchParams.get("number") || searchParams.get("code")
     
     // If no query param, try to extract from path (for path format: /api/third-party/data/{code})
     if (!code && pathname.startsWith("/api/third-party/data/")) {
@@ -29,16 +33,16 @@ export async function GET(request: Request) {
     
     console.log("📥 Fetching third-party data")
     console.log("📥 Request URL:", request.url)
-    console.log("📥 Code from query param:", searchParams.get("code"))
+    console.log("📥 Act number from query (number/code):", searchParams.get("number") || searchParams.get("code"))
     console.log("📥 Code from path:", pathname)
     console.log("📥 Final code (trimmed & decoded):", code)
 
     if (!code || code === "" || code === "null" || code === "undefined") {
       return NextResponse.json(
         { 
-          error: "Code is required",
-          message: "Please provide a code parameter. Usage: /api/third-party/data?code=YOUR_CODE",
-          example: "https://gaali.vercel.app/api/third-party/data?code=311001202401180001",
+          error: "Act number is required",
+          message: "Please provide number parameter (spec). Usage: /api/third-party/data?number=YOUR_ACT_NUMBER",
+          example: "https://gaali.vercel.app/api/third-party/data?number=311001202401180001",
           receivedCode: code,
           requestUrl: request.url
         },
