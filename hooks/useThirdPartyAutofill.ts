@@ -10,16 +10,31 @@ let reconnectTimeout: NodeJS.Timeout | null = null
 let isConnecting = false
 const RECONNECT_DELAY = 2000 // 2 seconds
 const CONNECTION_TIMEOUT = 5000 // 5 seconds timeout for connection
-// WebSocket URL - can be configured via NEXT_PUBLIC_THIRD_PARTY_WS_URL environment variable
-// Default: ws://127.0.0.1:9000/service
+const DEFAULT_WS_URL = "ws://127.0.0.1:9000/service"
+
+// Fetched from API (company settings) - takes precedence
+let fetchedWsUrl: string | null = null
+export function setThirdPartyWsUrl(url: string | null) {
+  fetchedWsUrl = url
+  // Close existing connection so next connect uses new URL
+  if (ws && ws.readyState === WebSocket.OPEN) {
+    try {
+      ws.close()
+    } catch (e) {
+      /* ignore */
+    }
+    ws = null
+  }
+}
+
+// WebSocket URL - priority: API (company settings) > runtime > env > default
 const getWebSocketUrl = () => {
   if (typeof window !== "undefined") {
-    // Check for runtime configuration
+    if (fetchedWsUrl) return fetchedWsUrl
     const runtimeUrl = (window as any).__THIRD_PARTY_WS_URL__
     if (runtimeUrl) return runtimeUrl
   }
-  // Use environment variable (NEXT_PUBLIC_ prefix makes it available on client)
-  return process.env.NEXT_PUBLIC_THIRD_PARTY_WS_URL || "ws://127.0.0.1:9000/service"
+  return process.env.NEXT_PUBLIC_THIRD_PARTY_WS_URL || DEFAULT_WS_URL
 }
 
 interface SendFormDataResult {
@@ -351,6 +366,24 @@ export function useThirdPartyAutofill() {
     },
     [connectWebSocket]
   )
+
+  // Fetch WebSocket URL from company settings on mount
+  useEffect(() => {
+    let cancelled = false
+    fetch("/api/company/camera-settings")
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (!cancelled && data?.thirdPartyWsUrl) {
+          setThirdPartyWsUrl(data.thirdPartyWsUrl)
+        }
+      })
+      .catch(() => {
+        /* ignore - use default */
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [])
 
   // Try to connect on mount
   useEffect(() => {

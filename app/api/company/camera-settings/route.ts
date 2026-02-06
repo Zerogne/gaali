@@ -17,7 +17,7 @@ export async function GET() {
     const companiesCollection = await getCompaniesCollection()
     const company = await companiesCollection.findOne(
       { companyId },
-      { projection: { cameraSettings: 1 } }
+      { projection: { cameraSettings: 1, thirdPartyWsUrl: 1 } }
     )
 
     if (!company) {
@@ -25,7 +25,10 @@ export async function GET() {
     }
 
     return NextResponse.json(
-      { cameraSettings: (company as any).cameraSettings || null },
+      {
+        cameraSettings: (company as any).cameraSettings || null,
+        thirdPartyWsUrl: (company as any).thirdPartyWsUrl || null,
+      },
       { status: 200 }
     )
   } catch (error) {
@@ -49,7 +52,7 @@ export async function PUT(request: Request) {
     }
 
     const body = await request.json()
-    const { cameraSettings } = body
+    const { cameraSettings, thirdPartyWsUrl } = body
 
     if (!cameraSettings || typeof cameraSettings !== "object") {
       return NextResponse.json(
@@ -98,6 +101,19 @@ export async function PUT(request: Request) {
       unsetFields["cameraSettings.camera2Password"] = ""
     }
 
+    // 3rd party WebSocket URL (for customs connector)
+    if (thirdPartyWsUrl !== undefined) {
+      const url = String(thirdPartyWsUrl).trim()
+      if (url) {
+        // Basic validation: must start with ws:// or wss://
+        if (url.startsWith("ws://") || url.startsWith("wss://")) {
+          validSettings["thirdPartyWsUrl"] = url
+        }
+      } else {
+        unsetFields["thirdPartyWsUrl"] = ""
+      }
+    }
+
     // Add updatedAt
     validSettings["updatedAt"] = new Date()
 
@@ -116,20 +132,22 @@ export async function PUT(request: Request) {
       return NextResponse.json({ error: "Company not found" }, { status: 404 })
     }
 
-    // Return updated camera settings
+    // Return updated settings
     const updatedCompany = await companiesCollection.findOne(
       { companyId },
-      { projection: { cameraSettings: 1 } }
+      { projection: { cameraSettings: 1, thirdPartyWsUrl: 1 } }
     )
 
-    console.log(`✅ Updated camera settings for company: ${companyId}`, {
+    console.log(`✅ Updated settings for company: ${companyId}`, {
       cameraSettings: (updatedCompany as any)?.cameraSettings,
+      thirdPartyWsUrl: (updatedCompany as any)?.thirdPartyWsUrl,
     })
 
     return NextResponse.json(
       {
         success: true,
         cameraSettings: (updatedCompany as any)?.cameraSettings || null,
+        thirdPartyWsUrl: (updatedCompany as any)?.thirdPartyWsUrl || null,
       },
       { status: 200 }
     )

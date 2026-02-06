@@ -20,10 +20,12 @@ export function SettingsPanel() {
     camera1Ip: "",
     camera2Ip: "",
   })
+  const [thirdPartyWsUrl, setThirdPartyWsUrl] = useState("")
+  const [isSavingThirdParty, setIsSavingThirdParty] = useState(false)
 
-  // Load camera settings from API
+  // Load camera settings and 3rd party URL from API
   useEffect(() => {
-    const loadCameraSettings = async () => {
+    const loadSettings = async () => {
       try {
         setIsLoadingCamera(true)
         const response = await fetch("/api/company/camera-settings")
@@ -35,14 +37,19 @@ export function SettingsPanel() {
               camera2Ip: data.cameraSettings.camera2Ip || "",
             })
           }
+          if (data.thirdPartyWsUrl) {
+            setThirdPartyWsUrl(data.thirdPartyWsUrl)
+          } else {
+            setThirdPartyWsUrl("")
+          }
         }
       } catch (error) {
-        console.error("Error loading camera settings:", error)
+        console.error("Error loading settings:", error)
       } finally {
         setIsLoadingCamera(false)
       }
     }
-    loadCameraSettings()
+    loadSettings()
   }, [])
 
   const handleSeedDatabase = async () => {
@@ -130,6 +137,42 @@ export function SettingsPanel() {
     }
   }
 
+  const handleSaveThirdPartyWsUrl = async () => {
+    setIsSavingThirdParty(true)
+    try {
+      const response = await fetch("/api/company/camera-settings", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          cameraSettings: {
+            camera1Ip: cameraSettings.camera1Ip.trim() || undefined,
+            camera2Ip: cameraSettings.camera2Ip.trim() || undefined,
+          },
+          thirdPartyWsUrl: thirdPartyWsUrl.trim() || undefined,
+        }),
+      })
+      if (!response.ok) {
+        const data = await response.json()
+        throw new Error(data.error || "Алдаа гарлаа")
+      }
+      const data = await response.json()
+      const { setThirdPartyWsUrl: applyUrl } = await import("@/hooks/useThirdPartyAutofill")
+      applyUrl(data.thirdPartyWsUrl || null)
+      toast({
+        title: "Амжилттай",
+        description: "3-р талын апп WebSocket URL хадгалагдлаа",
+        variant: "default",
+      })
+    } catch (error) {
+      toast({
+        title: "Алдаа",
+        description: error instanceof Error ? error.message : "Тохиргоо хадгалахад алдаа гарлаа",
+        variant: "destructive",
+      })
+    } finally {
+      setIsSavingThirdParty(false)
+    }
+  }
 
   return (
     <Tabs defaultValue="camera" className="space-y-6">
@@ -350,6 +393,46 @@ export function SettingsPanel() {
                     </div>
                   </div>
                 )}
+              </div>
+            </div>
+
+            <div className="border-t border-border pt-6">
+              <h3 className="font-semibold text-foreground mb-4">3-р талын апп WebSocket URL</h3>
+              <p className="text-sm text-muted-foreground mb-4">
+                Гаалийн апп руу өгөгдөл илгээхэд ашиглах WebSocket хаяг. History хүснэгтээс Send дархад энэ хаяг руу холбогдоно.
+              </p>
+              <div className="flex gap-3 items-end">
+                <div className="flex-1">
+                  <Label htmlFor="third-party-ws-url" className="text-sm font-medium mb-2 block">
+                    WebSocket URL
+                  </Label>
+                  <Input
+                    id="third-party-ws-url"
+                    placeholder="ws://192.168.1.100:9000/service"
+                    value={thirdPartyWsUrl}
+                    onChange={(e) => setThirdPartyWsUrl(e.target.value)}
+                  />
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Жишээ: ws://[IP]:9000/service — 127.0.0.1-ээс өөр IP оруулбал алсын серверт холбогдоно
+                  </p>
+                </div>
+                <Button
+                  onClick={handleSaveThirdPartyWsUrl}
+                  disabled={isSavingThirdParty}
+                  className="gap-2"
+                >
+                  {isSavingThirdParty ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      Хадгалж байна...
+                    </>
+                  ) : (
+                    <>
+                      <Save className="w-4 h-4" />
+                      Хадгалах
+                    </>
+                  )}
+                </Button>
               </div>
             </div>
 
