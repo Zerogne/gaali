@@ -2,6 +2,18 @@ import { NextResponse } from "next/server"
 import { getDatabase } from "@/lib/db/client"
 import { getActiveCompany } from "@/lib/auth/session"
 
+const CORS_HEADERS = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Methods": "GET, OPTIONS",
+  "Access-Control-Allow-Headers": "Content-Type, Authorization",
+  "Access-Control-Max-Age": "86400",
+}
+
+/** OPTIONS - CORS preflight */
+export async function OPTIONS() {
+  return new Response(null, { status: 204, headers: CORS_HEADERS })
+}
+
 /**
  * GET /api/third-party/data/[code]
  * Serves third-party data file by code
@@ -31,7 +43,7 @@ export async function GET(
           example: "https://gaali.vercel.app/api/third-party/data/311001202401180001",
           receivedCode: code
         },
-        { status: 400 }
+        { status: 400, headers: CORS_HEADERS }
       )
     }
 
@@ -90,7 +102,7 @@ export async function GET(
               codeLength: code.length,
               sampleCodes: sampleCodes.length > 0 ? sampleCodes : undefined
             },
-            { status: 404 }
+            { status: 404, headers: CORS_HEADERS }
           )
         }
         
@@ -118,7 +130,7 @@ export async function GET(
           codeLength: code.length,
           sampleCodes: sampleCodes.length > 0 ? sampleCodes : undefined
         },
-        { status: 404 }
+        { status: 404, headers: CORS_HEADERS }
       )
     }
 
@@ -135,10 +147,7 @@ export async function GET(
 
     return NextResponse.json(document.data, {
       status: 200,
-      headers: {
-        "Content-Type": "application/json",
-        "Access-Control-Allow-Origin": "*", // Allow 3rd party app to fetch
-      },
+      headers: { "Content-Type": "application/json", ...CORS_HEADERS },
     })
   } catch (error) {
     console.error("❌ Error fetching third-party data:", error)
@@ -147,7 +156,7 @@ export async function GET(
         error: "Failed to fetch data",
         message: error instanceof Error ? error.message : String(error),
       },
-      { status: 500 }
+      { status: 500, headers: CORS_HEADERS }
     )
   }
 }

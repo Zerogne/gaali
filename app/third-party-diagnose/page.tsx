@@ -245,6 +245,20 @@ export default function ThirdPartyDiagnosePage() {
           </li>
         </ul>
       </Card>
+
+      <Card className="p-6 border-amber-200 bg-amber-50/50">
+        <h2 className="font-semibold mb-2">If other site still can&apos;t pull</h2>
+        <p className="text-sm text-muted-foreground mb-2">Give them this exact URL (replace YOUR_DOMAIN and ACT_NUMBER):</p>
+        <code className="block text-xs bg-white p-3 rounded border mb-3 break-all">
+          https://YOUR_DOMAIN/api/third-party/data?number=ACT_NUMBER
+        </code>
+        <ul className="text-sm space-y-1 text-muted-foreground">
+          <li>• Parameter must be <code className="bg-muted px-1">number</code> (spec requirement)</li>
+          <li>• CORS is enabled (OPTIONS + Access-Control-Allow-Origin: *)</li>
+          <li>• If CORS error in their console: check their server allows outbound HTTPS to your domain</li>
+          <li>• Alternative: <code className="bg-muted px-1">/api/v1/api/service?number=ACT_NUMBER</code></li>
+        </ul>
+      </Card>
     </div>
   )
 }

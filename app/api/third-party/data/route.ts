@@ -2,6 +2,18 @@ import { NextResponse } from "next/server"
 import { getDatabase } from "@/lib/db/client"
 import { getActiveCompany } from "@/lib/auth/session"
 
+const CORS_HEADERS = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Methods": "GET, OPTIONS",
+  "Access-Control-Allow-Headers": "Content-Type, Authorization",
+  "Access-Control-Max-Age": "86400",
+}
+
+/** OPTIONS - CORS preflight (required when other site fetches from their domain) */
+export async function OPTIONS() {
+  return new Response(null, { status: 204, headers: CORS_HEADERS })
+}
+
 /**
  * GET /api/third-party/data?number={code} or ?code={code}
  * Serves third-party data file by act number (query parameter format)
@@ -46,7 +58,7 @@ export async function GET(request: Request) {
           receivedCode: code,
           requestUrl: request.url
         },
-        { status: 400 }
+        { status: 400, headers: CORS_HEADERS }
       )
     }
 
@@ -105,7 +117,7 @@ export async function GET(request: Request) {
               codeLength: code.length,
               sampleCodes: sampleCodes.length > 0 ? sampleCodes : undefined
             },
-            { status: 404 }
+            { status: 404, headers: CORS_HEADERS }
           )
         }
         
@@ -133,7 +145,7 @@ export async function GET(request: Request) {
           codeLength: code.length,
           sampleCodes: sampleCodes.length > 0 ? sampleCodes : undefined
         },
-        { status: 404 }
+        { status: 404, headers: CORS_HEADERS }
       )
     }
 
@@ -196,10 +208,7 @@ export async function GET(request: Request) {
 
     return NextResponse.json(dataToReturn, {
       status: 200,
-      headers: {
-        "Content-Type": "application/json",
-        "Access-Control-Allow-Origin": "*", // Allow 3rd party app to fetch
-      },
+      headers: { "Content-Type": "application/json", ...CORS_HEADERS },
     })
   } catch (error) {
     console.error("❌ Error fetching third-party data:", error)
@@ -208,7 +217,7 @@ export async function GET(request: Request) {
         error: "Failed to fetch data",
         message: error instanceof Error ? error.message : String(error),
       },
-      { status: 500 }
+      { status: 500, headers: CORS_HEADERS }
     )
   }
 }

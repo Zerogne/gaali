@@ -1,6 +1,17 @@
 import { NextResponse } from "next/server"
 import { getDatabase } from "@/lib/db/client"
 
+const CORS_HEADERS = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Methods": "GET, OPTIONS",
+  "Access-Control-Allow-Headers": "Content-Type, Authorization",
+  "Access-Control-Max-Age": "86400",
+}
+
+export async function OPTIONS() {
+  return new Response(null, { status: 204, headers: CORS_HEADERS })
+}
+
 /**
  * GET /api/third-party/debug
  * Debug endpoint to list available codes in the database
@@ -36,10 +47,7 @@ export async function GET(request: Request) {
       },
       {
         status: 200,
-        headers: {
-          "Content-Type": "application/json",
-          "Access-Control-Allow-Origin": "*",
-        },
+        headers: { "Content-Type": "application/json", ...CORS_HEADERS },
       }
     )
   } catch (error) {
@@ -49,7 +57,7 @@ export async function GET(request: Request) {
         error: "Failed to fetch debug info",
         message: error instanceof Error ? error.message : String(error),
       },
-      { status: 500 }
+      { status: 500, headers: CORS_HEADERS }
     )
   }
 }
