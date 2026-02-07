@@ -341,6 +341,25 @@
         log('✅ ӨГӨГДӨЛ АМЖИЛТТАЙ ИЛГЭЭГДЛЭЭ!', 'success');
         log('═══════════════════════════════════════════════════════', 'success');
         log(`✅ Пүүний актын дугаар: ${sampleData[0].AKT}`, 'success');
+
+        // Also save to Gaali DB so the other site can pull (they read from our API, not WebSocket)
+        const aktCode = sampleData[0].AKT;
+        try {
+          const saveRes = await fetch('/api/third-party/save', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'same-origin',
+            body: JSON.stringify({ uniqueCode: aktCode, data: sampleData }),
+          });
+          if (saveRes.ok) {
+            log(`✅ Saved to DB for pull (code: ${aktCode})`, 'success');
+          } else {
+            const errText = await saveRes.text();
+            log(`⚠️ Could not save for pull (login required?): ${errText}`, 'error');
+          }
+        } catch (e) {
+          log(`⚠️ Save for pull failed: ${e.message}`, 'error');
+        }
         
         // Check connection after a short delay
         setTimeout(() => {
