@@ -20,6 +20,7 @@ export default async function proxy(request: Request) {
     pathname.startsWith('/api/debug') || // Allow debug endpoints (protected by auth in route itself)
     pathname.startsWith('/api/third-party/data') || // Allow public access to third-party data (for 3rd party apps) - supports both /data?code= and /data/{code}
     pathname.startsWith('/api/third-party/debug') || // Allow debug endpoint for troubleshooting
+    pathname.startsWith('/api/third-party/url-test') || // Allow URL connectivity test for other site
     pathname.startsWith('/api/v1/api/service') || // Allow v1/api/service endpoint for other sites (etos.ojus compatibility)
     pathname.startsWith('/api/lpr/latest') || // Allow LPR latest endpoint for frontend polling
     pathname.startsWith('/api/lpr/ingest') || // Allow LPR ingest endpoint for bridge service

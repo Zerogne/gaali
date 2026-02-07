@@ -9,34 +9,6 @@ const CORS_HEADERS = {
   "Access-Control-Max-Age": "86400",
 }
 
-// #region agent log - third-party pull diagnostics
-async function debugThirdPartyPullLog(payload: {
-  runId: string
-  hypothesisId: string
-  location: string
-  message: string
-  data?: Record<string, unknown>
-}) {
-  try {
-    await fetch("http://127.0.0.1:7244/ingest/9cbf6a37-a8c6-4e2b-814a-471561e688c9", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        sessionId: "debug-session",
-        runId: payload.runId,
-        hypothesisId: payload.hypothesisId,
-        location: payload.location,
-        message: payload.message,
-        data: payload.data ?? {},
-        timestamp: Date.now(),
-      }),
-    })
-  } catch {
-    // ignore
-  }
-}
-// #endregion
-
 /** OPTIONS - CORS preflight (required when other site fetches from their domain) */
 export async function OPTIONS() {
   return new Response(null, { status: 204, headers: CORS_HEADERS })
@@ -76,20 +48,6 @@ export async function GET(request: Request) {
     console.log("📥 Act number from query (number/code):", searchParams.get("number") || searchParams.get("code"))
     console.log("📥 Code from path:", pathname)
     console.log("📥 Final code (trimmed & decoded):", code)
-
-    await debugThirdPartyPullLog({
-      runId: "initial",
-      hypothesisId: "H3",
-      location: "third-party/data/route.ts:GET:after-parse",
-      message: "Incoming third-party pull request",
-      data: {
-        url: request.url,
-        code,
-        fromQueryNumber: searchParams.get("number"),
-        fromQueryCode: searchParams.get("code"),
-        fromPath: pathname,
-      },
-    })
 
     if (!code || code === "" || code === "null" || code === "undefined") {
       return NextResponse.json(
@@ -190,18 +148,6 @@ export async function GET(request: Request) {
         { status: 404, headers: CORS_HEADERS }
       )
     }
-
-    await debugThirdPartyPullLog({
-      runId: "initial",
-      hypothesisId: "H3",
-      location: "third-party/data/route.ts:GET:before-return",
-      message: "Third-party pull result",
-      data: {
-        code,
-        hasDocument: !!document,
-        companyId,
-      },
-    })
 
     // Update access stats
     await collection.updateOne(

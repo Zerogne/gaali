@@ -4,7 +4,8 @@ import { useState, useEffect, useCallback } from "react"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { Loader2, RefreshCw, CheckCircle2, XCircle, AlertCircle } from "lucide-react"
+import { Loader2, RefreshCw, CheckCircle2, XCircle, AlertCircle, Copy } from "lucide-react"
+import { useToast } from "@/hooks/use-toast"
 
 type TestResult = {
   name: string
@@ -14,9 +15,12 @@ type TestResult = {
 }
 
 export default function ThirdPartyDiagnosePage() {
+  const { toast } = useToast()
   const [serverDiagnostic, setServerDiagnostic] = useState<Record<string, unknown> | null>(null)
   const [pullTest, setPullTest] = useState<TestResult>({ name: "Pull (3rd party fetches from Gaali)", status: "pending" })
   const [sendTest, setSendTest] = useState<TestResult>({ name: "Send (Gaali → 3rd party WebSocket)", status: "pending" })
+  const [urlTestResult, setUrlTestResult] = useState<Record<string, unknown> | null>(null)
+  const [corsTest, setCorsTest] = useState<TestResult>({ name: "CORS preflight (OPTIONS)", status: "pending" })
   const [isRunning, setIsRunning] = useState(false)
 
   const runServerDiagnostic = useCallback(async () => {
@@ -165,17 +169,62 @@ export default function ThirdPartyDiagnosePage() {
     }
   }, [])
 
+  const runUrlTest = useCallback(async () => {
+    try {
+      const base = typeof window !== "undefined" ? window.location.origin : ""
+      const res = await fetch(`${base}/api/third-party/url-test`)
+      const data = await res.json()
+      if (res.ok) setUrlTestResult(data)
+      else setUrlTestResult({ error: data.error || data.message })
+    } catch (e) {
+      setUrlTestResult({ error: e instanceof Error ? e.message : "Network error" })
+    }
+  }, [])
+
+  const runCorsTest = useCallback(async () => {
+    setCorsTest((p) => ({ ...p, status: "running" }))
+    try {
+      const base = typeof window !== "undefined" ? window.location.origin : ""
+      const res = await fetch(`${base}/api/v1/api/service`, { method: "OPTIONS" })
+      const acao = res.headers.get("Access-Control-Allow-Origin")
+      const ok = res.ok && (acao === "*" || acao?.length)
+      setCorsTest({
+        name: "CORS preflight (OPTIONS)",
+        status: ok ? "pass" : "fail",
+        message: ok ? "OPTIONS returns CORS headers" : `OPTIONS returned status ${res.status}, ACAO: ${acao || "missing"}`,
+        details: { status: res.status, acao },
+      })
+    } catch (e) {
+      setCorsTest({
+        name: "CORS preflight (OPTIONS)",
+        status: "fail",
+        message: e instanceof Error ? e.message : "Request failed",
+      })
+    }
+  }, [])
+
+  const copyToClipboard = useCallback(
+    (text: string, label: string) => {
+      navigator.clipboard.writeText(text)
+      toast({ title: "Copied", description: `${label} copied to clipboard` })
+    },
+    [toast]
+  )
+
   const runAll = useCallback(async () => {
     setIsRunning(true)
     await runServerDiagnostic()
+    await runUrlTest()
+    await runCorsTest()
     await runPullTest()
     await runSendTest()
     setIsRunning(false)
-  }, [runServerDiagnostic, runPullTest, runSendTest])
+  }, [runServerDiagnostic, runUrlTest, runCorsTest, runPullTest, runSendTest])
 
   useEffect(() => {
     runServerDiagnostic()
-  }, [runServerDiagnostic])
+    runUrlTest()
+  }, [runServerDiagnostic, runUrlTest])
 
   return (
     <div className="p-6 max-w-3xl mx-auto space-y-6">
@@ -205,7 +254,13 @@ export default function ThirdPartyDiagnosePage() {
         </div>
 
         <div className="space-y-4">
-          <div className="flex items-center gap-3">
+          <div className="flex flex-wrap gap-2">
+            <Button variant="outline" size="sm" onClick={runUrlTest} disabled={isRunning}>
+              Test URL
+            </Button>
+            <Button variant="outline" size="sm" onClick={runCorsTest} disabled={isRunning}>
+              Test CORS
+            </Button>
             <Button variant="outline" size="sm" onClick={runPullTest} disabled={isRunning}>
               Test Pull
             </Button>
@@ -214,9 +269,58 @@ export default function ThirdPartyDiagnosePage() {
             </Button>
           </div>
 
+          <TestResultRow result={corsTest} />
           <TestResultRow result={pullTest} />
           <TestResultRow result={sendTest} />
         </div>
+      </Card>
+
+      <Card className="p-6 border-blue-200 bg-blue-50/30">
+        <h2 className="font-semibold mb-3">Other site: URL to add</h2>
+        <p className="text-sm text-muted-foreground mb-4">
+          Give the other site this <strong>base URL</strong> (no parameters). They add the act number in their input and append <code className="bg-muted px-1">?number=ACT_NUMBER</code> when calling.
+        </p>
+        {urlTestResult && !("error" in urlTestResult) ? (
+          <div className="space-y-3">
+            <div>
+              <span className="text-sm font-medium block mb-1">Base URL (recommended)</span>
+              <div className="flex gap-2 items-center mt-1">
+                <code className="flex-1 text-xs bg-white p-2 rounded border break-all">
+                  {(urlTestResult as any).baseUrl}
+                </code>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => copyToClipboard((urlTestResult as any).baseUrl, "Base URL")}
+                >
+                  <Copy className="w-4 h-4" />
+                </Button>
+              </div>
+            </div>
+            <div>
+              <span className="text-sm font-medium block mb-1">Example full URL (for curl/browser test)</span>
+              <div className="flex gap-2 items-center mt-1">
+                <code className="flex-1 text-xs bg-white p-2 rounded border break-all">
+                  {(urlTestResult as any).fullUrlExample}
+                </code>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => copyToClipboard((urlTestResult as any).fullUrlExample, "Full URL")}
+                >
+                  <Copy className="w-4 h-4" />
+                </Button>
+              </div>
+            </div>
+            <p className="text-xs text-muted-foreground">
+              Their app should call: <code>GET {typeof window !== "undefined" ? window.location.origin : ""}/api/v1/api/service?number=</code> + (act number from input)
+            </p>
+          </div>
+        ) : urlTestResult && "error" in urlTestResult ? (
+          <p className="text-sm text-destructive">URL test failed: {(urlTestResult as any).error}</p>
+        ) : (
+          <p className="text-sm text-muted-foreground">Run diagnostics to load URLs.</p>
+        )}
       </Card>
 
       <Card className="p-6">
