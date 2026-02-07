@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useCallback, useRef, useEffect } from "react"
+import { buildDRN } from "@/lib/thirdPartyFormat"
 
 /**
  * WebSocket connection state
@@ -268,7 +269,13 @@ export function useThirdPartyAutofill() {
             CMN: formData.convoyManifestNumber || formData.cmn || "", // Convoy manifest number
             CON: formData.contractNumber || "", // Гэрээний дугаар
             CT1: formData.container1 || "", // Чингэлэг 1
-            DRN: formData.driverName || "", // Жолоочийн нэр
+            DRN: (formData.driverPhone || formData.driverRegistrationNumber)
+              ? buildDRN(
+                  formData.driverName || "",
+                  formData.driverRegistrationNumber || null,
+                  formData.driverPhone || null
+                )
+              : (formData.driverName || ""), // Жолоочийн нэр ИЮ{reg} {phone}
             LPC: formData.transporterCompany || formData.origin || formData.transportCompanyName || formData.senderOrganization || formData.senderOrganizationName || "", // Ачих газар код (with sender company)
             NET: formData.netWeightKg || formData.netWeight || 0, // Цэвэр жин
             SLN: formData.sealNumber || "", // Гаалийн лац, ломбын дугаар

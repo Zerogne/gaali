@@ -6,6 +6,7 @@ import { getCompanyCollection } from "@/lib/db/companyDb"
 import { getActiveCompany } from "@/lib/auth/session"
 import type { Product } from "@/lib/products/products"
 import type { TransportCompany, Organization, Driver } from "@/lib/types"
+import { buildDRN } from "@/lib/thirdPartyFormat"
 
 /**
  * POST /api/truck-sessions - Create a new truck session (IN or OUT)
@@ -38,18 +39,22 @@ export async function POST(request: Request) {
       throw new Error("Authentication required. Please log in.")
     }
 
-    // Look up driver name if driverId is provided (but driverName is missing)
+    // Look up driver name, phone, registrationNumber if driverId is provided
     let driverNameFromDb: string | undefined = undefined
-    if (body.driverId && (!body.driverName || body.driverName.trim() === "")) {
+    let driverPhoneFromDb: string | undefined = undefined
+    let driverRegNumberFromDb: string | undefined = undefined
+    if (body.driverId) {
       try {
         console.log("🔍 Looking up driver with ID:", body.driverId)
         const driversCollection = await getCompanyCollection(companyId, "drivers")
-        const driver = await driversCollection.findOne({ id: body.driverId })
+        const driver = await driversCollection.findOne({ id: body.driverId }) as Driver | null
         console.log("🔍 Driver lookup result:", driver ? { id: driver.id, name: driver.name } : "NOT FOUND")
         driverNameFromDb = driver?.name || undefined
-        if (!driverNameFromDb) {
+        driverPhoneFromDb = driver?.phone || undefined
+        driverRegNumberFromDb = driver?.registrationNumber || undefined
+        if (!driverNameFromDb && (!body.driverName || body.driverName.trim() === "")) {
           console.warn("⚠️ Driver found but has no name:", driver)
-        } else {
+        } else if (driverNameFromDb) {
           console.log("✅ Driver name from database:", driverNameFromDb)
         }
       } catch (error) {
@@ -334,7 +339,7 @@ export async function POST(request: Request) {
           CMN: "", // Convoy manifest number
           CON: "", // Гэрээний дугаар (can be empty)
           CT1: "", // Чингэлэг 1
-          DRN: session.driverName || "", // Жолоочийн нэр
+          DRN: buildDRN(session.driverName || "", driverRegNumberFromDb, driverPhoneFromDb), // Жолоочийн нэр ИЮ{reg} {phone}
           LPC: session.transporterCompany || body.origin || senderOrgName || "", // Ачих газар код (with sender company)
           NET: session.netWeightKg || 0, // Цэвэр жин
           SLN: body.sealNumber || "", // Гаалийн лац, ломбын дугаар

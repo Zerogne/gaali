@@ -16,7 +16,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useThirdPartyAutofill } from "@/hooks/useThirdPartyAutofill";
 import { sendTruckLogToCustoms } from "@/lib/api";
 import { exportLogToPDF, printLog } from "@/lib/pdf-export";
-import type { Direction, TruckLog, TransportCompany } from "@/lib/types";
+import type { Direction, Driver, TruckLog, TransportCompany } from "@/lib/types";
 import { Edit, FileDown, Search, ArrowRight, X, Send, Trash2, Download } from "lucide-react";
 import * as XLSX from "xlsx";
 import { useState, useEffect, useMemo } from "react";
@@ -45,6 +45,7 @@ export function TruckTable({ logs, onSend, onUpdate }: TruckTableProps) {
   const [sendingIds, setSendingIds] = useState<Set<string>>(new Set());
   const [uniqueCodes, setUniqueCodes] = useState<Map<string, string>>(new Map());
   const [transportCompanies, setTransportCompanies] = useState<TransportCompany[]>([]);
+  const [drivers, setDrivers] = useState<Driver[]>([]);
   const [directionFilter, setDirectionFilter] = useState<Direction | "ALL">("ALL");
   const [plateSearch, setPlateSearch] = useState("");
   const [driverSearch, setDriverSearch] = useState("");
@@ -270,12 +271,16 @@ export function TruckTable({ logs, onSend, onUpdate }: TruckTableProps) {
         return;
       }
 
+      const driver = log.driverId ? drivers.find((d) => d.id === log.driverId) : undefined;
       const formData = {
         aktNumber: uniqueCode,
         uniqueCode,
         plateNumber: log.plate,
         plate: log.plate,
         driverName: log.driverName || "",
+        driverId: log.driverId || "",
+        driverPhone: driver?.phone || "",
+        driverRegistrationNumber: driver?.registrationNumber || "",
         cargoType: log.cargoType || "",
         product: log.cargoType || "",
         weightKg: log.weightKg || 0,
@@ -293,7 +298,6 @@ export function TruckTable({ logs, onSend, onUpdate }: TruckTableProps) {
         sealNumber: log.sealNumber || "",
         trailerPlate: log.trailerPlate || "",
         trailerNumber: log.trailerPlate || "",
-        driverId: log.driverId || "",
       };
 
       const sendResult = await sendFormData(formData);
@@ -550,6 +554,22 @@ export function TruckTable({ logs, onSend, onUpdate }: TruckTableProps) {
       }
     }
     fetchTransportCompanies();
+  }, []);
+
+  // Fetch drivers (for DRN phone/registrationNumber when sending)
+  useEffect(() => {
+    async function fetchDrivers() {
+      try {
+        const response = await fetch("/api/drivers");
+        if (response.ok) {
+          const data = await response.json();
+          setDrivers(Array.isArray(data) ? data : data.drivers || []);
+        }
+      } catch (error) {
+        console.error("Error fetching drivers:", error);
+      }
+    }
+    fetchDrivers();
   }, []);
 
   // Fetch unique codes when logs change

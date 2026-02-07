@@ -11,6 +11,7 @@ import { useThirdPartyAutofill } from "@/hooks/useThirdPartyAutofill";
 import { useWeightStatus } from "@/hooks/useWeightStatus";
 import { useLatestLpr } from "@/hooks/useLatestLpr";
 import { updateTruckLog, sendTruckLogToCustoms } from "@/lib/api";
+import { buildDRN } from "@/lib/thirdPartyFormat";
 import { printLog } from "@/lib/pdf-export";
 import type { Product } from "@/lib/products/products";
 import type {
@@ -1767,7 +1768,11 @@ export const OutSessionForm = forwardRef<
             CMN: "",
             CON: "",
             CT1: "",
-            DRN: formState.driverName.trim(),
+            DRN: buildDRN(
+              formState.driverName,
+              drivers.find((d) => d.id === formState.driverId)?.registrationNumber,
+              drivers.find((d) => d.id === formState.driverId)?.phone
+            ),
             LPC:
               transportCompanyName ||
               formState.origin.trim() ||

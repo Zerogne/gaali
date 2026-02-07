@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
+import { buildDRN } from "@/lib/thirdPartyFormat";
 import { useLprPlateAutofill } from "@/hooks/useLprPlateAutofill";
 import { useConnectorSSE } from "@/hooks/useConnectorSSE";
 import { useThirdPartyAutofill } from "@/hooks/useThirdPartyAutofill";
@@ -1633,7 +1634,11 @@ export const InSessionForm = forwardRef<
                 CMN: "",
                 CON: "",
                 CT1: "",
-                DRN: formState.driverName.trim(),
+                DRN: buildDRN(
+                  formState.driverName,
+                  drivers.find((d) => d.id === formState.driverId)?.registrationNumber,
+                  drivers.find((d) => d.id === formState.driverId)?.phone
+                ),
                 LPC:
                   transportCompanyName ||
                   formState.origin.trim() ||
