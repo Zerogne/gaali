@@ -114,7 +114,7 @@ export default function ThirdPartyDiagnosePage() {
         }, timeout)
         ws.onopen = () => {
           clearTimeout(t)
-          const testData = [{ AKT: "DIAG-TEST-001", CAR: "Test", DRN: "Diagnostic", VNO: "TEST" }]
+          const testData = [{ AKT: "3110042026020685851", CAR: "Test", DRN: "Diagnostic", VNO: "TEST" }]
           try {
             ws.send(JSON.stringify(testData))
             ws.close()
