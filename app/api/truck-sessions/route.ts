@@ -228,9 +228,12 @@ export async function POST(request: Request) {
       grossWeightKg: grossWeightKg,
       netWeightKg: body.netWeightKg === null || body.netWeightKg === undefined 
         ? undefined 
-        : (typeof body.netWeightKg === 'number' 
-            ? body.netWeightKg 
-            : (typeof body.netWeightKg === 'string' ? parseFloat(body.netWeightKg) : undefined)),
+        : (() => {
+            const val = typeof body.netWeightKg === 'number' 
+              ? body.netWeightKg 
+              : (typeof body.netWeightKg === 'string' ? parseFloat(body.netWeightKg) : undefined);
+            return val !== undefined && !isNaN(val) ? Math.abs(val) : undefined;
+          })(),
       carWeight: body.carWeight !== null && body.carWeight !== undefined && body.carWeight > 0
         ? (typeof body.carWeight === 'number' ? body.carWeight : parseFloat(body.carWeight))
         : undefined,
@@ -396,6 +399,7 @@ export async function POST(request: Request) {
     // Also create or update a log entry for history
     // IMPORTANT: This must succeed for data to appear in history
     let logCreated = false
+    let createdOrUpdatedLogId: string | undefined = undefined
     try {
       // Ensure cargoType is not empty (required by schema)
       // Priority: productName (from lookup) > session.product > body.productId > default
@@ -528,6 +532,7 @@ export async function POST(request: Request) {
               { $set: updateData }
             )
 
+            createdOrUpdatedLogId = existingInLog.id
             console.log("✅ Log entry updated successfully:", existingInLog.id)
             logCreated = true
           } else {
@@ -577,6 +582,7 @@ export async function POST(request: Request) {
             })
 
             const log = await saveTruckLog(logData)
+            createdOrUpdatedLogId = log.id
             console.log("✅ Log entry created successfully:", log.id)
             logCreated = true
           }
@@ -626,6 +632,7 @@ export async function POST(request: Request) {
             trailerWeight: logData.trailerWeight,
           })
           const log = await saveTruckLog(logData)
+          createdOrUpdatedLogId = log.id
           console.log("✅ Fallback: Log entry created successfully:", log.id)
           logCreated = true
         }
@@ -698,6 +705,7 @@ export async function POST(request: Request) {
         
         try {
           const log = await saveTruckLog(logData)
+          createdOrUpdatedLogId = log.id
           console.log("✅ Log entry created successfully:", log.id)
           console.log("✅ Log entry details:", {
             id: log.id,
@@ -782,11 +790,12 @@ export async function POST(request: Request) {
       return NextResponse.json({ 
         success: true, 
         session,
+        logId: undefined,
         warning: "Session saved but log entry creation failed - data may not appear in history"
       }, { status: 201 })
     }
 
-    return NextResponse.json({ success: true, session }, { status: 201 })
+    return NextResponse.json({ success: true, session, logId: createdOrUpdatedLogId }, { status: 201 })
   } catch (error) {
     console.error("❌ Error creating truck session:", error)
     console.error("❌ Error stack:", error instanceof Error ? error.stack : "No stack trace")

@@ -180,6 +180,7 @@ export const OutSessionForm = forwardRef<
     const [inWeightKg, setInWeightKg] = useState<number | null>(null);
     const [savedUniqueCode, setSavedUniqueCode] = useState<string | null>(null);
     const [savedSessionId, setSavedSessionId] = useState<string | null>(null);
+    const [savedLogId, setSavedLogId] = useState<string | null>(null);
     const [carWeightLocked, setCarWeightLocked] = useState(false); // Added from IN form
     const [hasInSessionData, setHasInSessionData] = useState(false); // Track if data came from IN session
 
@@ -1629,12 +1630,15 @@ export const OutSessionForm = forwardRef<
 
         const savedSession = await response.json();
 
-        // Store the unique code and session ID from the saved session
+        // Store the unique code, session ID, and log ID from the saved session
         if (savedSession.session?.uniqueCode) {
           setSavedUniqueCode(savedSession.session.uniqueCode);
         }
         if (savedSession.session?.id) {
           setSavedSessionId(savedSession.session.id);
+        }
+        if (savedSession.logId) {
+          setSavedLogId(savedSession.logId);
         }
 
         toast({
@@ -1917,6 +1921,19 @@ export const OutSessionForm = forwardRef<
 
         console.log("✅ SUCCESS: Data sent to 3rd party app via WebSocket");
 
+        // Update sentToCustoms in DB so History table shows correct status
+        const logIdToUpdate = editLogId || savedLogId;
+        if (logIdToUpdate) {
+          try {
+            const dbResult = await sendTruckLogToCustoms(logIdToUpdate);
+            if (dbResult.success) {
+              router.refresh();
+            }
+          } catch (e) {
+            console.warn("Could not update sentToCustoms:", e);
+          }
+        }
+
         toast({
           title: "Амжилттай",
           description: "Төрийн гаальд илгээгдлээ",
@@ -1945,11 +1962,12 @@ export const OutSessionForm = forwardRef<
       }
     };
 
-    // Reset form (only clear savedUniqueCode and savedSessionId when starting a new form)
+    // Reset form (only clear savedUniqueCode, savedSessionId, savedLogId when starting a new form)
     const resetForm = () => {
       setInWeightKg(null);
       setSavedUniqueCode(null);
       setSavedSessionId(null);
+      setSavedLogId(null);
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -2735,6 +2753,8 @@ export const OutSessionForm = forwardRef<
                             sealNumber: formState.sealNumber || undefined,
                             hasTrailer: formState.hasTrailer || undefined,
                             trailerPlate: formState.trailerNumber || undefined,
+                            bagQuantity: editLog?.bagQuantity || undefined,
+                            bagQuantityOut: formState.bagQuantity.trim() || undefined,
                             createdAt: formState.outTime
                               ? new Date(formState.outTime).toISOString()
                               : new Date().toISOString(),
