@@ -16,7 +16,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useThirdPartyAutofill } from "@/hooks/useThirdPartyAutofill";
 import { sendTruckLogToCustoms } from "@/lib/api";
 import { exportLogToPDF, printLog } from "@/lib/pdf-export";
-import type { Direction, Driver, TruckLog, TransportCompany } from "@/lib/types";
+import type { Direction, Driver, TruckLog, TransportCompany, Organization } from "@/lib/types";
 import { Edit, FileDown, Search, ArrowRight, X, Send, Trash2, Download } from "lucide-react";
 import * as XLSX from "xlsx";
 import { useState, useEffect, useMemo } from "react";
@@ -45,6 +45,7 @@ export function TruckTable({ logs, onSend, onUpdate }: TruckTableProps) {
   const [sendingIds, setSendingIds] = useState<Set<string>>(new Set());
   const [uniqueCodes, setUniqueCodes] = useState<Map<string, string>>(new Map());
   const [transportCompanies, setTransportCompanies] = useState<TransportCompany[]>([]);
+  const [organizations, setOrganizations] = useState<Organization[]>([]);
   const [drivers, setDrivers] = useState<Driver[]>([]);
   const [directionFilter, setDirectionFilter] = useState<Direction | "ALL">("ALL");
   const [plateSearch, setPlateSearch] = useState("");
@@ -275,6 +276,9 @@ export function TruckTable({ logs, onSend, onUpdate }: TruckTableProps) {
       const company = log.transportCompanyId
         ? transportCompanies.find((c) => c.id === log.transportCompanyId)
         : undefined;
+      const senderOrg = log.senderOrganization
+        ? organizations.find((o) => o.name === log.senderOrganization)
+        : undefined;
       const formData = {
         aktNumber: uniqueCode,
         uniqueCode,
@@ -301,7 +305,8 @@ export function TruckTable({ logs, onSend, onUpdate }: TruckTableProps) {
         sealNumber: log.sealNumber || "",
         trailerPlate: log.trailerPlate || "",
         trailerNumber: log.trailerPlate || "",
-        contractNumber: company?.contract || "",
+        // Contract number should come from sender company's contract when available
+        contractNumber: senderOrg?.contract || company?.contract || "",
       };
 
       const sendResult = await sendFormData(formData);
@@ -574,6 +579,22 @@ export function TruckTable({ logs, onSend, onUpdate }: TruckTableProps) {
       }
     }
     fetchDrivers();
+  }, []);
+
+  // Fetch sender organizations (to get sender contract when sending)
+  useEffect(() => {
+    async function fetchOrganizations() {
+      try {
+        const response = await fetch("/api/organizations?type=sender");
+        if (response.ok) {
+          const data = await response.json();
+          setOrganizations(Array.isArray(data) ? data : data.organizations || []);
+        }
+      } catch (error) {
+        console.error("Error fetching organizations:", error);
+      }
+    }
+    fetchOrganizations();
   }, []);
 
   // Fetch unique codes when logs change

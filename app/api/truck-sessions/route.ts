@@ -346,7 +346,8 @@ export async function POST(request: Request) {
           AKT: session.uniqueCode, // Актын дугаар (уникаль код)
           CAR: session.product || "", // Тээвэрлэгч байгууллагын нэр / Бүтээгдэхүүн
           CMN: "", // Convoy manifest number
-          CON: body.contractNumber || transportCompanyContract || senderOrgContract || receiverOrgContract || "", // Гэрээний дугаар
+          // Contract number: prefer sender company's contract, then explicit contractNumber, then others
+          CON: senderOrgContract || body.contractNumber || transportCompanyContract || receiverOrgContract || "", // Гэрээний дугаар
           CT1: "", // Чингэлэг 1
           DRN: buildDRN(session.driverName || "", driverRegNumberFromDb, driverPhoneFromDb), // Жолоочийн нэр ИЮ{reg} {phone}
           LPC: session.transporterCompany || body.origin || senderOrgName || "", // Ачих газар код (with sender company)
