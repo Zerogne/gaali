@@ -21,6 +21,7 @@ const truckSessionSchema = z.object({
   inTime: z.string().optional(),
   outTime: z.string().optional(),
   notes: z.string().optional(),
+  sealNumber: z.string().optional(),
 })
 
 /**
@@ -126,6 +127,7 @@ export interface TruckSession {
   netWeightKg?: number // Only for OUT sessions
   inTime?: string // ISO string for IN sessions
   outTime?: string // ISO string for OUT sessions
+  sealNumber?: string
   notes?: string
   createdAt: Date
   updatedAt: Date

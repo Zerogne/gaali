@@ -272,6 +272,9 @@ export function TruckTable({ logs, onSend, onUpdate }: TruckTableProps) {
       }
 
       const driver = log.driverId ? drivers.find((d) => d.id === log.driverId) : undefined;
+      const company = log.transportCompanyId
+        ? transportCompanies.find((c) => c.id === log.transportCompanyId)
+        : undefined;
       const formData = {
         aktNumber: uniqueCode,
         uniqueCode,
@@ -298,6 +301,7 @@ export function TruckTable({ logs, onSend, onUpdate }: TruckTableProps) {
         sealNumber: log.sealNumber || "",
         trailerPlate: log.trailerPlate || "",
         trailerNumber: log.trailerPlate || "",
+        contractNumber: company?.contract || "",
       };
 
       const sendResult = await sendFormData(formData);

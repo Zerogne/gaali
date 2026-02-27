@@ -101,8 +101,9 @@ export async function POST(request: Request) {
       console.log("⚠️ No productId provided in request body")
     }
 
-    // Look up transport company name if transporterCompanyId is provided
+    // Look up transport company name/contract if transporterCompanyId is provided
     let transportCompanyName: string | undefined = undefined
+    let transportCompanyContract: string | undefined = undefined
     if (body.transporterCompanyId) {
       try {
         console.log("🔍 Looking up transport company with ID:", body.transporterCompanyId)
@@ -110,6 +111,7 @@ export async function POST(request: Request) {
         const transportCompany = await transportCompaniesCollection.findOne({ id: body.transporterCompanyId })
         console.log("🔍 Transport company lookup result:", transportCompany ? { id: transportCompany.id, name: transportCompany.name } : "NOT FOUND")
         transportCompanyName = transportCompany?.name || undefined
+        transportCompanyContract = transportCompany?.contract || undefined
         if (!transportCompanyName) {
           console.warn("⚠️ Transport company found but has no name:", transportCompany)
         }
@@ -123,8 +125,9 @@ export async function POST(request: Request) {
       console.log("⚠️ No transporterCompanyId provided in request body")
     }
 
-    // Look up organization names if IDs are provided
+    // Look up organization names/contracts if IDs are provided
     let senderOrgName: string | undefined = undefined
+    let senderOrgContract: string | undefined = undefined
     if (body.senderOrganizationId) {
       try {
         console.log("🔍 Looking up sender organization with ID:", body.senderOrganizationId)
@@ -132,6 +135,7 @@ export async function POST(request: Request) {
         const org = await orgsCollection.findOne({ id: body.senderOrganizationId })
         console.log("🔍 Sender org lookup result:", org ? { id: org.id, name: org.name } : "NOT FOUND")
         senderOrgName = org?.name || undefined
+        senderOrgContract = org?.contract || undefined
         if (!senderOrgName) {
           console.warn("⚠️ Sender organization found but has no name:", org)
         }
@@ -144,6 +148,7 @@ export async function POST(request: Request) {
     }
 
     let receiverOrgName: string | undefined = undefined
+    let receiverOrgContract: string | undefined = undefined
     if (body.receiverOrganizationId) {
       try {
         console.log("🔍 Looking up receiver organization with ID:", body.receiverOrganizationId)
@@ -151,6 +156,7 @@ export async function POST(request: Request) {
         const org = await orgsCollection.findOne({ id: body.receiverOrganizationId })
         console.log("🔍 Receiver org lookup result:", org ? { id: org.id, name: org.name } : "NOT FOUND")
         receiverOrgName = org?.name || undefined
+        receiverOrgContract = org?.contract || undefined
         if (!receiverOrgName) {
           console.warn("⚠️ Receiver organization found but has no name:", org)
         }
@@ -340,7 +346,7 @@ export async function POST(request: Request) {
           AKT: session.uniqueCode, // Актын дугаар (уникаль код)
           CAR: session.product || "", // Тээвэрлэгч байгууллагын нэр / Бүтээгдэхүүн
           CMN: "", // Convoy manifest number
-          CON: "", // Гэрээний дугаар (can be empty)
+          CON: body.contractNumber || transportCompanyContract || senderOrgContract || receiverOrgContract || "", // Гэрээний дугаар
           CT1: "", // Чингэлэг 1
           DRN: buildDRN(session.driverName || "", driverRegNumberFromDb, driverPhoneFromDb), // Жолоочийн нэр ИЮ{reg} {phone}
           LPC: session.transporterCompany || body.origin || senderOrgName || "", // Ачих газар код (with sender company)

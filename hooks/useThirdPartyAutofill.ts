@@ -267,7 +267,7 @@ export function useThirdPartyAutofill() {
             AKT: formData.aktNumber || formData.uniqueCode || "", // Актын дугаар (уникаль код)
             CAR: formData.product || formData.cargoType || formData.productName || "", // Тээвэрлэгч байгууллагын нэр / Бүтээгдэхүүн
             CMN: formData.convoyManifestNumber || formData.cmn || "", // Convoy manifest number
-            CON: formData.contractNumber || "", // Гэрээний дугаар
+            CON: formData.contractNumber || formData.contract || "", // Гэрээний дугаар
             CT1: formData.container1 || "", // Чингэлэг 1
             DRN: (formData.driverPhone || formData.driverRegistrationNumber)
               ? buildDRN(
@@ -282,7 +282,7 @@ export function useThirdPartyAutofill() {
             TRL: formData.trailerNumber || formData.trailerPlate || "", // Чиргүүлийн дугаар
             UPC: formData.destination || formData.receiverOrganization || formData.receiverOrganizationName || "", // Хүлээн авах газар код (with receiver company)
             VNO: formData.plateNumber || formData.plate || "", // Тээврийн хэрэгслийн дугаар
-            WGT: formData.grossWeightKg || formData.weightKg || formData.weight || 0, // Бохир жин
+            WGT: formData.totalWeight || formData.grossWeightKg || formData.weightKg || formData.weight || 0, // Бохир жин (гарах жин)
             
             // New fields (added in updated API format)
             PRM: formData.premium || formData.prm || "", // Premium/Permit number
