@@ -341,12 +341,11 @@ function generateLogHTML(
 
   const createdDate = log.createdAt ? formatDate(new Date(log.createdAt)) : "—";
 
-  // For merged logs (IN with netWeightKg), we have both entry and exit
+  // For logs that have netWeightKg, we treat them as having both entry and exit data
   // For IN-only: entry date is creation date, exit date is empty
   // For OUT-only: entry date is empty, exit date is creation date
-  // For merged (IN with OUT data): entry date is IN creation date, exit date is OUT creation date (if available)
   const hasOutData = log.netWeightKg !== undefined && log.netWeightKg !== null;
-  const isMergedLog = log.direction === "IN" && hasOutData;
+  const isMergedLog = hasOutData;
   
   const entryDate =
     (log.direction === "IN" || isMergedLog) && log.createdAt
@@ -394,22 +393,23 @@ function generateLogHTML(
   const receiptDate = log.createdAt ? formatReceiptDate(new Date(log.createdAt)) : "";
 
   // Get in weight (entry weight) and out weight (exit weight)
-  // In weight: weight when entering (loaded/gross weight)
-  // For IN direction or merged logs: weightKg is the entry weight (loaded)
-  // For OUT-only: we might not have entry weight
-  let inWeight = null;
-  if (log.direction === "IN" || isMergedLog) {
-    inWeight = log.weightKg || null;
-  }
-  
-  // Out weight: weight when exiting (unloaded/tare weight)
-  // For OUT direction: weightKg is the exit weight (unloaded)
-  // For merged logs: calculate unloadedWeight = loaded - net
-  let outWeight = null;
-  if (log.direction === "OUT") {
-    outWeight = log.weightKg || null;
-  } else if (isMergedLog && log.weightKg && log.netWeightKg) {
-    outWeight = log.weightKg - log.netWeightKg;
+  // For logs with netWeightKg (merged IN+OUT data):
+  //   - OUT weight (final) is stored in weightKg
+  //   - IN weight (initial) is calculated as OUT + NET
+  // For IN-only logs (no netWeightKg): weightKg is entry weight
+  // For OUT-only logs (no netWeightKg): weightKg is exit weight
+  let inWeight: number | null = null;
+  let outWeight: number | null = null;
+
+  if (isMergedLog) {
+    if (log.weightKg != null && log.netWeightKg != null) {
+      outWeight = log.weightKg;
+      inWeight = log.weightKg + log.netWeightKg;
+    }
+  } else if (log.direction === "IN") {
+    inWeight = log.weightKg ?? null;
+  } else if (log.direction === "OUT") {
+    outWeight = log.weightKg ?? null;
   }
   
   // Net weight: always use netWeightKg if available (allow 0 or positive values)

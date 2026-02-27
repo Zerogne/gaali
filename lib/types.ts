@@ -38,6 +38,8 @@ export interface TruckLog {
   productId?: string; // Product ID (value) - for form selection
   weightKg?: number;
   netWeightKg?: number; // Цэвэр жин (net weight) - only for OUT direction
+  carWeight?: number; // Машины жин (их бие)
+  trailerWeight?: number; // Чиргүүлийн жин
   comments?: string;
   origin?: string; // Haanaas
   destination?: string; // Haashaa
