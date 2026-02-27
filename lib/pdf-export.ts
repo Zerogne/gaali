@@ -8,6 +8,7 @@ import type { TruckLog } from "./types";
 async function fetchRelatedData(log: TruckLog): Promise<{
   transportCompanyName?: string;
   senderOrganizationName?: string;
+  senderOrganizationContract?: string;
   receiverOrganizationName?: string;
   driverPhone?: string;
   driverRegistrationNumber?: string;
@@ -15,6 +16,7 @@ async function fetchRelatedData(log: TruckLog): Promise<{
   const result: {
     transportCompanyName?: string;
     senderOrganizationName?: string;
+    senderOrganizationContract?: string;
     receiverOrganizationName?: string;
     driverPhone?: string;
     driverRegistrationNumber?: string;
@@ -44,12 +46,16 @@ async function fetchRelatedData(log: TruckLog): Promise<{
       try {
         const response = await fetch("/api/organizations?type=sender");
         if (response.ok) {
-          const organizations = await response.json();
+          const organizationsRes = await response.json();
+          const organizations = Array.isArray(organizationsRes)
+            ? organizationsRes
+            : organizationsRes.organizations || [];
           const org = organizations.find(
             (o: any) => o.id === log.senderOrganizationId
           );
           if (org) {
             result.senderOrganizationName = org.name;
+            result.senderOrganizationContract = org.contract;
           }
         }
       } catch (error) {
@@ -61,7 +67,10 @@ async function fetchRelatedData(log: TruckLog): Promise<{
       try {
         const response = await fetch("/api/organizations?type=receiver");
         if (response.ok) {
-          const organizations = await response.json();
+          const organizationsRes = await response.json();
+          const organizations = Array.isArray(organizationsRes)
+            ? organizationsRes
+            : organizationsRes.organizations || [];
           const org = organizations.find(
             (o: any) => o.id === log.receiverOrganizationId
           );
@@ -127,6 +136,96 @@ async function fetchSessionUniqueCode(log: TruckLog): Promise<string | null> {
 }
 
 /**
+ * Fetch best-match IN/OUT times for printing.
+ * We use truck sessions because TruckLog doesn't reliably store both timestamps
+ * once IN and OUT are merged.
+ */
+async function fetchSessionTimes(log: TruckLog): Promise<{
+  inTime?: string;
+  outTime?: string;
+}> {
+  try {
+    const res = await fetch(
+      `/api/truck-sessions?plateNumber=${encodeURIComponent(log.plate)}&limit=100`
+    );
+    if (!res.ok) return {};
+
+    const data = await res.json();
+    const sessions: any[] = Array.isArray(data?.sessions) ? data.sessions : [];
+    if (sessions.length === 0) return {};
+
+    const logCreatedAtMs = log.createdAt ? new Date(log.createdAt).getTime() : NaN;
+    const toMs = (s: any) => {
+      const d = s?.createdAt ? new Date(s.createdAt) : null;
+      return d ? d.getTime() : NaN;
+    };
+
+    const pickClosest = (candidates: any[]) => {
+      if (!isFinite(logCreatedAtMs)) return candidates[0] || null;
+      let best: any | null = null;
+      let bestDiff = Number.POSITIVE_INFINITY;
+      for (const s of candidates) {
+        const ms = toMs(s);
+        if (!isFinite(ms)) continue;
+        const diff = Math.abs(ms - logCreatedAtMs);
+        if (diff < bestDiff) {
+          bestDiff = diff;
+          best = s;
+        }
+      }
+      return best || candidates[0] || null;
+    };
+
+    const inSessions = sessions.filter((s) => s?.direction === "IN");
+    const outSessions = sessions.filter((s) => s?.direction === "OUT");
+
+    let inSession: any | null = null;
+    let outSession: any | null = null;
+
+    if (log.direction === "OUT") {
+      outSession = pickClosest(outSessions);
+      if (outSession?.inSessionId) {
+        inSession = sessions.find((s) => s?.id === outSession.inSessionId) || null;
+      }
+      if (!inSession && inSessions.length > 0 && outSession) {
+        const outMs = toMs(outSession);
+        const before = inSessions
+          .filter((s) => isFinite(toMs(s)) && toMs(s) <= outMs)
+          .sort((a, b) => toMs(b) - toMs(a));
+        inSession = before[0] || pickClosest(inSessions);
+      }
+    } else {
+      // IN or merged log -> start from IN session closest to log createdAt
+      inSession = pickClosest(inSessions);
+      if (inSession?.id) {
+        const linkedOut = outSessions
+          .filter((s) => s?.inSessionId === inSession!.id)
+          .sort((a, b) => toMs(a) - toMs(b));
+        outSession = linkedOut[0] || null;
+      }
+      if (!outSession && outSessions.length > 0 && inSession) {
+        const inMs = toMs(inSession);
+        const after = outSessions
+          .filter((s) => isFinite(toMs(s)) && toMs(s) >= inMs)
+          .sort((a, b) => toMs(a) - toMs(b));
+        outSession = after[0] || null;
+      }
+    }
+
+    const inTime = inSession?.inTime || inSession?.createdAt;
+    const outTime = outSession?.outTime || outSession?.createdAt;
+
+    return {
+      inTime: typeof inTime === "string" ? inTime : undefined,
+      outTime: typeof outTime === "string" ? outTime : undefined,
+    };
+  } catch (error) {
+    console.warn("Failed to fetch session times:", error);
+    return {};
+  }
+}
+
+/**
  * Open browser print dialog for a truck log
  * @param log - The truck log data
  * @param providedUniqueCode - Optional unique code to use instead of fetching
@@ -134,6 +233,7 @@ async function fetchSessionUniqueCode(log: TruckLog): Promise<string | null> {
 export async function printLog(log: TruckLog, providedUniqueCode?: string | null): Promise<void> {
   // Fetch related data (transport company, organizations)
   const relatedData = await fetchRelatedData(log);
+  const sessionTimes = await fetchSessionTimes(log);
 
   // Fetch current user (loader) information and company name
   let loaderName: string | undefined;
@@ -153,7 +253,7 @@ export async function printLog(log: TruckLog, providedUniqueCode?: string | null
   const uniqueCode = providedUniqueCode !== undefined ? providedUniqueCode : await fetchSessionUniqueCode(log);
 
   // Create HTML content with the log data
-  const htmlContent = generateLogHTML(log, relatedData, loaderName, uniqueCode, companyName);
+  const htmlContent = generateLogHTML(log, relatedData, loaderName, uniqueCode, companyName, sessionTimes);
 
   // Create a new window for printing
   const printWindow = window.open("", "_blank");
@@ -183,6 +283,7 @@ export async function printLog(log: TruckLog, providedUniqueCode?: string | null
 export async function exportLogToPDF(log: TruckLog, providedUniqueCode?: string | null): Promise<void> {
   // Fetch related data (transport company, organizations)
   const relatedData = await fetchRelatedData(log);
+  const sessionTimes = await fetchSessionTimes(log);
 
   // Fetch current user (loader) information
   let loaderName: string | undefined;
@@ -212,7 +313,7 @@ export async function exportLogToPDF(log: TruckLog, providedUniqueCode?: string 
   }
 
   // Create a temporary HTML element with the log data
-  const htmlContent = generateLogHTML(log, relatedData, loaderName, uniqueCode, companyName);
+  const htmlContent = generateLogHTML(log, relatedData, loaderName, uniqueCode, companyName, sessionTimes);
 
   // Create an iframe to completely isolate styles
   const iframe = document.createElement("iframe");
@@ -318,13 +419,15 @@ function generateLogHTML(
   relatedData?: {
     transportCompanyName?: string;
     senderOrganizationName?: string;
+    senderOrganizationContract?: string;
     receiverOrganizationName?: string;
     driverPhone?: string;
     driverRegistrationNumber?: string;
   },
   loaderName?: string,
   uniqueCode?: string | null,
-  companyName?: string
+  companyName?: string,
+  sessionTimes?: { inTime?: string; outTime?: string }
 ): string {
   // Use unique code (AKT) if available, otherwise generate receipt number
   const receiptNumber = uniqueCode || generateReceiptNumber(log);
@@ -371,6 +474,7 @@ function generateLogHTML(
   const receiverOrg =
     log.receiverOrganization || relatedData?.receiverOrganizationName || "—";
   const transportCompany = relatedData?.transportCompanyName || "—";
+  const senderContract = relatedData?.senderOrganizationContract || "—";
 
   // Format driver info
   const driverInfo = log.driverName || "—";
@@ -426,13 +530,8 @@ function generateLogHTML(
   };
   
   
-  const inTime = (log.direction === "IN" || isMergedLog) && log.createdAt
-    ? formatTime(new Date(log.createdAt))
-    : "";
-  
-  const outTime = (log.direction === "OUT" || isMergedLog) && log.createdAt
-    ? formatTime(new Date(log.createdAt))
-    : "";
+  const inTime = sessionTimes?.inTime ? formatTime(new Date(sessionTimes.inTime)) : "";
+  const outTime = sessionTimes?.outTime ? formatTime(new Date(sessionTimes.outTime)) : "";
 
   return `
     <!DOCTYPE html>
@@ -694,6 +793,9 @@ function generateLogHTML(
           <tr class="info-row">
             <td colspan="3">Шуудайны тоо хэмжээ орсон/IN Bag Qty: ${escapeHtml(log.bagQuantity ?? "—")}</td>
             <td colspan="3">Шуудайны тоо хэмжээ гарсан/OUT Bag Qty: ${escapeHtml(log.bagQuantityOut ?? "—")}</td>
+          </tr>
+          <tr class="info-row">
+            <td colspan="6">Гадаад худалдааны гэрээ/Contract: ${escapeHtml(senderContract)}</td>
           </tr>
         </tbody>
       </table>
