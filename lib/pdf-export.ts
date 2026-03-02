@@ -199,17 +199,13 @@ async function fetchSessionTimes(log: TruckLog): Promise<{
     const logTotalOut = (log as any).TotalOutweight ?? (log as any).TotalOutWeight ?? (log as any).totalOutWeight ?? log.weightKg;
     const logNet = typeof log.netWeightKg === "number" ? Math.abs(log.netWeightKg) : (typeof (log as any).netWeight === "number" ? Math.abs((log as any).netWeight) : null);
     const logOutGross = typeof logTotalOut === "number" ? logTotalOut : (typeof log.weightKg === "number" ? log.weightKg : null);
-    if (logNet !== null && logOutGross !== null && outSessions.length > 0) {
+    if (logNet !== null && outSessions.length > 0) {
       const matches = outSessions.filter((s) => {
         const gross = toNumberMaybe(s?.grossWeightKg);
         const net = toNumberMaybe(s?.netWeightKg);
-        if (gross === null) return false;
-        if (Math.abs(gross - logOutGross) > 1) return false;
-        // If we have net on the log, require net match too (within tolerance)
-        if (logNet !== null) {
-          if (net === null) return false;
-          if (Math.abs(Math.abs(net) - logNet) > 1) return false;
-        }
+        if (logNet !== null && net !== null && Math.abs(Math.abs(net) - logNet) > 2) return false;
+        if (logOutGross !== null && gross !== null && Math.abs(gross - logOutGross) > 2) return false;
+        if (logOutGross === null && gross === null) return false;
         return true;
       });
       outSession = pickClosest(matches.length > 0 ? matches : outSessions);
@@ -610,10 +606,12 @@ function generateLogHTML(
 
   const receiptDate = log.createdAt ? formatReceiptDate(new Date(log.createdAt)) : "";
 
-  // Use log weights directly (same as EditLogDialog) - fetched from /api/logs/[id] with correct TotalInWeight/TotalOutweight/netWeightKg
-  const inWeight = totalInWeight != null ? totalInWeight : null;
-  const outWeight = totalOutWeight != null ? totalOutWeight : null;
-  const netWeight = netWeightFromLog != null ? netWeightFromLog : null;
+  // Use log weights; fallback to session-derived when missing (API enriches, but sessionTimes is extra safety)
+  const inWeight =
+    totalInWeight != null ? totalInWeight : (typeof sessionTimes?.inWeightKg === "number" && sessionTimes.inWeightKg > 0 ? sessionTimes.inWeightKg : null);
+  const outWeight =
+    totalOutWeight != null ? totalOutWeight : (typeof sessionTimes?.outWeightKg === "number" && sessionTimes.outWeightKg > 0 ? sessionTimes.outWeightKg : null);
+  const netWeight = netWeightFromLog != null ? netWeightFromLog : (typeof sessionTimes?.netWeightKg === "number" ? sessionTimes.netWeightKg : null);
 
   // Format time for display (HH:MM)
   const formatTime = (date: Date): string => {
