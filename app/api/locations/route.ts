@@ -75,14 +75,16 @@ export async function POST(request: Request) {
       )
     }
 
-    // Check if location with this name and type already exists
-    const existing = await locationsCollection.findOne({ 
+    // Allow multiple companies under the same location name.
+    // Only block exact duplicates (same locationName + companyName + type).
+    const existing = await locationsCollection.findOne({
       locationName: locationName.trim(),
-      type: type
+      companyName: companyName.trim(),
+      type: type,
     })
     if (existing) {
       return NextResponse.json(
-        { error: "Location with this name and type already exists" },
+        { error: "Location with this name, company, and type already exists" },
         { status: 409 }
       )
     }

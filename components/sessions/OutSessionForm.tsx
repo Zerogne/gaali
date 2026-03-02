@@ -563,13 +563,28 @@ export const OutSessionForm = forwardRef<
       [trailers]
     );
 
-    const locationOptions = useMemo(
-      () => locations.map((location) => ({
-        value: location.locationName,
-        label: `${location.locationName} - ${location.companyName}`,
-      })),
-      [locations]
-    );
+    const locationOptions = useMemo(() => {
+      const legacySeen = new Set<string>()
+      const legacy: Array<{ value: string; label: string }> = []
+      const specific: Array<{ value: string; label: string }> = []
+
+      for (const location of locations) {
+        const locationName = (location.locationName || "").trim()
+        const companyName = (location.companyName || "").trim()
+
+        if (locationName && !legacySeen.has(locationName)) {
+          legacySeen.add(locationName)
+          legacy.push({ value: locationName, label: locationName })
+        }
+
+        if (locationName && companyName) {
+          const display = `${locationName} - ${companyName}`
+          specific.push({ value: display, label: display })
+        }
+      }
+
+      return [...legacy, ...specific]
+    }, [locations]);
 
     // Handle creating new items
     const handleCreateProduct = async (label: string) => {
@@ -694,8 +709,8 @@ export const OutSessionForm = forwardRef<
             title: "Амжилттай",
             description: "Байршил амжилттай нэмэгдлээ",
           });
-          // Return locationName because locationOptions uses locationName as value
-          return newLocation.locationName;
+          // Return the most specific option value so it selects correctly
+          return `${newLocation.locationName} - ${newLocation.companyName}`;
         } else {
           const errorData = await response.json().catch(() => ({}));
           const errorMessage = errorData.error || "Байршил нэмэхэд алдаа гарлаа";

@@ -208,13 +208,28 @@ export function TruckSection({ direction, onSave, onSend }: TruckSectionProps) {
   );
 
   // Memoize location options to prevent infinite re-renders
-  const locationOptions = useMemo(() => 
-    locations.map((location) => ({
-      value: location.locationName,
-      label: `${location.locationName} - ${location.companyName}`,
-    })), 
-    [locations]
-  );
+  // NOTE: value must be unique (used as React key inside FilterableSelect).
+  // We keep a "legacy" option by locationName for older logs, and add a more specific option including companyName.
+  const locationOptions = useMemo(() => {
+    const legacySeen = new Set<string>();
+    const legacy: Array<{ value: string; label: string }> = [];
+    const specific: Array<{ value: string; label: string }> = [];
+
+    for (const location of locations) {
+      const locationName = (location.locationName || "").trim();
+      const companyName = (location.companyName || "").trim();
+      if (locationName && !legacySeen.has(locationName)) {
+        legacySeen.add(locationName);
+        legacy.push({ value: locationName, label: locationName });
+      }
+      if (locationName && companyName) {
+        const display = `${locationName} - ${companyName}`;
+        specific.push({ value: display, label: display });
+      }
+    }
+
+    return [...legacy, ...specific];
+  }, [locations]);
 
   // Auto-calculate net weight for OUT direction
   useEffect(() => {

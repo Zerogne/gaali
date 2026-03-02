@@ -29,7 +29,6 @@ import { useToast } from "@/hooks/use-toast";
 import type { Location } from "@/lib/types";
 import { Building2, Edit, Loader2, Plus, Trash2, Search, X, Store } from "lucide-react";
 import { useEffect, useState } from "react";
-import { findSimilarValue } from "@/lib/utils/string-similarity";
 
 export default function LocationsPage() {
   const { toast } = useToast();
@@ -46,8 +45,6 @@ export default function LocationsPage() {
   const [editingSellerLocationName, setEditingSellerLocationName] = useState("");
   const [editingSellerCompanyName, setEditingSellerCompanyName] = useState("");
   const [isUpdatingSeller, setIsUpdatingSeller] = useState(false);
-  const [duplicateSellerDialogOpen, setDuplicateSellerDialogOpen] = useState(false);
-  const [duplicateSellerValue, setDuplicateSellerValue] = useState<string | null>(null);
   const [sellerSearchQuery, setSellerSearchQuery] = useState("");
   const [addSellerDialogOpen, setAddSellerDialogOpen] = useState(false);
   const [infoSellerDialogOpen, setInfoSellerDialogOpen] = useState(false);
@@ -64,8 +61,6 @@ export default function LocationsPage() {
   const [editingBuyerLocationName, setEditingBuyerLocationName] = useState("");
   const [editingBuyerCompanyName, setEditingBuyerCompanyName] = useState("");
   const [isUpdatingBuyer, setIsUpdatingBuyer] = useState(false);
-  const [duplicateBuyerDialogOpen, setDuplicateBuyerDialogOpen] = useState(false);
-  const [duplicateBuyerValue, setDuplicateBuyerValue] = useState<string | null>(null);
   const [buyerSearchQuery, setBuyerSearchQuery] = useState("");
   const [addBuyerDialogOpen, setAddBuyerDialogOpen] = useState(false);
   const [infoBuyerDialogOpen, setInfoBuyerDialogOpen] = useState(false);
@@ -144,14 +139,22 @@ export default function LocationsPage() {
       return;
     }
 
-    // Check for duplicates
-    const existingNames = sellers.map(s => s.locationName);
-    const similarLocation = findSimilarValue(newSellerLocationName.trim(), existingNames);
-    
-    if (similarLocation) {
-      setDuplicateSellerValue(similarLocation);
-      setDuplicateSellerDialogOpen(true);
-      return;
+    // Allow multiple companies under the same location name.
+    // Only block exact duplicates (same locationName + companyName) for this tab.
+    const normalizedLocation = newSellerLocationName.trim().toLowerCase()
+    const normalizedCompany = newSellerCompanyName.trim().toLowerCase()
+    const exactDuplicate = sellers.some(
+      (s) =>
+        s.locationName.trim().toLowerCase() === normalizedLocation &&
+        s.companyName.trim().toLowerCase() === normalizedCompany
+    )
+    if (exactDuplicate) {
+      toast({
+        title: "Алдаа",
+        description: "Ижил байршил + ижил компанийн нэр аль хэдийн бүртгэгдсэн байна",
+        variant: "destructive",
+      })
+      return
     }
 
     setIsAddingSeller(true);
@@ -220,14 +223,23 @@ export default function LocationsPage() {
       return;
     }
 
-    // Check for duplicates (excluding current)
-    const existingNames = sellers.filter(s => s.id !== editingSeller).map(s => s.locationName);
-    const similarLocation = findSimilarValue(editingSellerLocationName.trim(), existingNames);
-    
-    if (similarLocation) {
-      setDuplicateSellerValue(similarLocation);
-      setDuplicateSellerDialogOpen(true);
-      return;
+    // Allow multiple companies under the same location name.
+    // Only block exact duplicates (same locationName + companyName), excluding current.
+    const normalizedLocation = editingSellerLocationName.trim().toLowerCase()
+    const normalizedCompany = editingSellerCompanyName.trim().toLowerCase()
+    const exactDuplicate = sellers.some(
+      (s) =>
+        s.id !== editingSeller &&
+        s.locationName.trim().toLowerCase() === normalizedLocation &&
+        s.companyName.trim().toLowerCase() === normalizedCompany
+    )
+    if (exactDuplicate) {
+      toast({
+        title: "Алдаа",
+        description: "Ижил байршил + ижил компанийн нэр аль хэдийн бүртгэгдсэн байна",
+        variant: "destructive",
+      })
+      return
     }
 
     setIsUpdatingSeller(true);
@@ -349,14 +361,22 @@ export default function LocationsPage() {
       return;
     }
 
-    // Check for duplicates
-    const existingNames = buyers.map(b => b.locationName);
-    const similarLocation = findSimilarValue(newBuyerLocationName.trim(), existingNames);
-    
-    if (similarLocation) {
-      setDuplicateBuyerValue(similarLocation);
-      setDuplicateBuyerDialogOpen(true);
-      return;
+    // Allow multiple companies under the same location name.
+    // Only block exact duplicates (same locationName + companyName) for this tab.
+    const normalizedLocation = newBuyerLocationName.trim().toLowerCase()
+    const normalizedCompany = newBuyerCompanyName.trim().toLowerCase()
+    const exactDuplicate = buyers.some(
+      (b) =>
+        b.locationName.trim().toLowerCase() === normalizedLocation &&
+        b.companyName.trim().toLowerCase() === normalizedCompany
+    )
+    if (exactDuplicate) {
+      toast({
+        title: "Алдаа",
+        description: "Ижил байршил + ижил компанийн нэр аль хэдийн бүртгэгдсэн байна",
+        variant: "destructive",
+      })
+      return
     }
 
     setIsAddingBuyer(true);
@@ -425,14 +445,23 @@ export default function LocationsPage() {
       return;
     }
 
-    // Check for duplicates (excluding current)
-    const existingNames = buyers.filter(b => b.id !== editingBuyer).map(b => b.locationName);
-    const similarLocation = findSimilarValue(editingBuyerLocationName.trim(), existingNames);
-    
-    if (similarLocation) {
-      setDuplicateBuyerValue(similarLocation);
-      setDuplicateBuyerDialogOpen(true);
-      return;
+    // Allow multiple companies under the same location name.
+    // Only block exact duplicates (same locationName + companyName), excluding current.
+    const normalizedLocation = editingBuyerLocationName.trim().toLowerCase()
+    const normalizedCompany = editingBuyerCompanyName.trim().toLowerCase()
+    const exactDuplicate = buyers.some(
+      (b) =>
+        b.id !== editingBuyer &&
+        b.locationName.trim().toLowerCase() === normalizedLocation &&
+        b.companyName.trim().toLowerCase() === normalizedCompany
+    )
+    if (exactDuplicate) {
+      toast({
+        title: "Алдаа",
+        description: "Ижил байршил + ижил компанийн нэр аль хэдийн бүртгэгдсэн байна",
+        variant: "destructive",
+      })
+      return
     }
 
     setIsUpdatingBuyer(true);
@@ -1070,50 +1099,6 @@ export default function LocationsPage() {
             </AlertDialogContent>
           </AlertDialog>
 
-          {/* Duplicate Dialogs */}
-          <AlertDialog open={duplicateSellerDialogOpen} onOpenChange={setDuplicateSellerDialogOpen}>
-            <AlertDialogContent>
-              <AlertDialogHeader>
-                <AlertDialogTitle>Ижил нэртэй борлуулагч байна</AlertDialogTitle>
-                <AlertDialogDescription>
-                  "{duplicateSellerValue}" нэртэй борлуулагч аль хэдийн бүртгэгдсэн байна. Та үргэлжлүүлэх үү?
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-              <AlertDialogFooter>
-                <AlertDialogCancel onClick={() => setDuplicateSellerDialogOpen(false)}>Цуцлах</AlertDialogCancel>
-                <AlertDialogAction
-                  onClick={() => {
-                    setDuplicateSellerDialogOpen(false);
-                    handleAddSeller();
-                  }}
-                >
-                  Үргэлжлүүлэх
-                </AlertDialogAction>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
-
-          <AlertDialog open={duplicateBuyerDialogOpen} onOpenChange={setDuplicateBuyerDialogOpen}>
-            <AlertDialogContent>
-              <AlertDialogHeader>
-                <AlertDialogTitle>Ижил нэртэй худалдан авагч байна</AlertDialogTitle>
-                <AlertDialogDescription>
-                  "{duplicateBuyerValue}" нэртэй худалдан авагч аль хэдийн бүртгэгдсэн байна. Та үргэлжлүүлэх үү?
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-              <AlertDialogFooter>
-                <AlertDialogCancel onClick={() => setDuplicateBuyerDialogOpen(false)}>Цуцлах</AlertDialogCancel>
-                <AlertDialogAction
-                  onClick={() => {
-                    setDuplicateBuyerDialogOpen(false);
-                    handleAddBuyer();
-                  }}
-                >
-                  Үргэлжлүүлэх
-                </AlertDialogAction>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
           </div>
         </main>
       </div>
