@@ -522,13 +522,23 @@ function generateLogHTML(
 
   const createdDate = log.createdAt ? formatDate(new Date(log.createdAt)) : "—";
 
-  // Prefer new DB fields: TotalInWeight, TotalOutweight, netWeightKg
+  // Same as EditLogDialog getWeightsFromLog: use log weights from DB (totalInWeight/totalOutWeight/netWeight)
   const getLogTotalIn = (l: any) =>
-    l?.TotalInWeight ?? l?.totalInWeight ?? l?.totalinweight ?? undefined;
+    l?.totalInWeight ?? l?.TotalInWeight ?? l?.totalinweight ?? undefined;
   const getLogTotalOut = (l: any) =>
-    l?.TotalOutweight ?? l?.TotalOutWeight ?? l?.totalOutWeight ?? l?.totaloutweight ?? undefined;
+    l?.totalOutWeight ?? l?.TotalOutWeight ?? l?.TotalOutweight ?? l?.totaloutweight ?? undefined;
+  const getLogNetWeight = (l: any) => {
+    const v = l?.netWeight ?? l?.NetWeight ?? l?.netWeightKg;
+    return v != null ? Math.abs(v) : undefined;
+  };
   const logTotalIn = getLogTotalIn(log);
   const logTotalOut = getLogTotalOut(log);
+  const logNet = getLogNetWeight(log);
+  const wkg = log.weightKg;
+  const hasOut = (logNet != null || logTotalOut != null) && log.direction === "IN";
+  const totalInWeight = logTotalIn ?? (hasOut && logTotalOut != null && logNet != null ? logTotalOut + logNet : wkg);
+  const totalOutWeight = logTotalOut ?? (hasOut ? wkg : log.direction === "OUT" ? wkg : undefined);
+  const netWeightFromLog = logNet ?? undefined;
 
   const hasOutData =
     log.netWeightKg != null ||
@@ -547,13 +557,10 @@ function generateLogHTML(
       : "—";
 
   // Calculate unloaded weight (tare weight)
-  // For OUT or merged logs: if we have loaded weight and net weight, unloaded = loaded - net
-  // For IN-only: unloaded weight is typically not available at entry
-  const outGross = logTotalOut ?? log.weightKg;
-  const netW = (log as any).netWeight ?? log.netWeightKg ?? (log as any).NetWeightKg;
+  const outGross = totalOutWeight ?? log.weightKg;
   const unloadedWeight =
-    (log.direction === "OUT" || isMergedLog) && outGross != null && netW != null
-      ? outGross - Math.abs(netW)
+    (log.direction === "OUT" || isMergedLog) && outGross != null && netWeightFromLog != null
+      ? outGross - netWeightFromLog
       : null;
 
   // Get organization names
@@ -584,41 +591,10 @@ function generateLogHTML(
 
   const receiptDate = log.createdAt ? formatReceiptDate(new Date(log.createdAt)) : "";
 
-  // Prefer session-derived weights; fallback to TruckLog totalInWeight/totalOutWeight
-  let inWeight: number | null = null;
-  let outWeight: number | null = null;
-
-  if (typeof sessionTimes?.inWeightKg === "number" && sessionTimes.inWeightKg > 0) {
-    inWeight = sessionTimes.inWeightKg;
-  }
-  if (typeof sessionTimes?.outWeightKg === "number" && sessionTimes.outWeightKg > 0) {
-    outWeight = sessionTimes.outWeightKg;
-  }
-
-  if (isMergedLog) {
-    if (outWeight == null) {
-      outWeight = logTotalOut ?? log.weightKg ?? null;
-    }
-    if (inWeight == null) {
-      const tw = (log as any).truckWeight ?? (log as any).carWeight;
-      const trw = (log as any).trailerWeight;
-      inWeight = (tw != null && trw != null && (tw > 0 || trw > 0))
-        ? tw + trw
-        : (logTotalIn ?? log.weightKg ?? null);
-    }
-  } else if (log.direction === "IN") {
-    if (inWeight == null) inWeight = logTotalIn ?? log.weightKg ?? null;
-  } else if (log.direction === "OUT") {
-    if (outWeight == null) outWeight = logTotalOut ?? log.weightKg ?? null;
-  }
-  
-  // Net weight: prefer session-derived, then log.netWeightKg / NetWeightKg / netWeight
-  const netWeight =
-    typeof sessionTimes?.netWeightKg === "number"
-      ? sessionTimes.netWeightKg
-      : (log.netWeightKg ?? (log as any).NetWeightKg ?? (log as any).netWeight) != null
-        ? (log.netWeightKg ?? (log as any).NetWeightKg ?? (log as any).netWeight)
-        : null;
+  // Use log weights directly (same as EditLogDialog) - fetched from /api/logs/[id] with correct TotalInWeight/TotalOutweight/netWeightKg
+  const inWeight = totalInWeight != null ? totalInWeight : null;
+  const outWeight = totalOutWeight != null ? totalOutWeight : null;
+  const netWeight = netWeightFromLog != null ? netWeightFromLog : null;
 
   // Format time for display (HH:MM)
   const formatTime = (date: Date): string => {
