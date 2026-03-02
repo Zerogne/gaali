@@ -307,7 +307,7 @@ export async function getTruckLogs(
       console.warn("⚠️ No logs found in collection - this might indicate a problem")
     }
 
-    const serializedLogs = logs.map((doc) => {
+    const normalizedLogs = logs.map((doc) => {
       const { _id, createdAt, ...log } = doc as any
       const serialized = {
         ...log,
@@ -330,6 +330,10 @@ export async function getTruckLogs(
       return normalizeLogForClient(serialized)
     })
 
+    const serializedLogs = await Promise.all(
+      normalizedLogs.map((n) => enrichLogFromSessions(companyId, n))
+    )
+
     return {
       logs: serializedLogs,
       total,
@@ -343,9 +347,129 @@ export async function getTruckLogs(
   }
 }
 
+/** Enrich log with weights from truck_sessions when missing. Matches by plate + createdAt within 2h to avoid wrong data. */
+async function enrichLogFromSessions(
+  companyId: string,
+  normalized: TruckLog
+): Promise<TruckLog> {
+  const ti = getWeightField(normalized, "totalInWeight", "TotalInWeight")
+  const to = getWeightField(normalized, "totalOutWeight", "TotalOutWeight", "TotalOutweight")
+  if (ti != null && to != null) return normalized
+
+  try {
+    const sessionsCollection = await getCompanyCollection(companyId, "truck_sessions")
+    const plate = normalized.plate?.trim()
+    if (!plate) return normalized
+
+    const logCreated = normalized.createdAt ? new Date(normalized.createdAt) : null
+    if (!logCreated || !isFinite(logCreated.getTime())) return normalized
+
+    const logMs = logCreated.getTime()
+    const windowMs = 4 * 60 * 60 * 1000
+    const from = new Date(logMs - windowMs)
+    const toDate = new Date(logMs + windowMs)
+
+    const netRaw = getWeightField(normalized, "netWeightKg", "netWeight") ?? (normalized as any).netWeightKg
+    const logNet = netRaw != null && Number.isFinite(netRaw) ? Math.abs(Number(netRaw)) : null
+
+    let sessions = await sessionsCollection
+      .find({
+        plateNumber: { $regex: new RegExp(`^${plate.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}$`, "i") },
+        createdAt: { $gte: from, $lte: toDate },
+      })
+      .sort({ createdAt: 1 })
+      .limit(20)
+      .toArray()
+
+    if (sessions.length === 0) {
+      const dayStart = new Date(logCreated)
+      dayStart.setHours(0, 0, 0, 0)
+      const dayEnd = new Date(dayStart)
+      dayEnd.setDate(dayEnd.getDate() + 1)
+      sessions = await sessionsCollection
+        .find({
+          plateNumber: { $regex: new RegExp(`^${plate.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}$`, "i") },
+          createdAt: { $gte: dayStart, $lt: dayEnd },
+        })
+        .sort({ createdAt: 1 })
+        .limit(20)
+        .toArray()
+    }
+
+    const inSessions = sessions.filter((s: any) => s?.direction === "IN")
+    const outSessions = sessions.filter((s: any) => s?.direction === "OUT")
+
+    let inSession: any = null
+    let outSession: any = null
+
+    const toNum = (v: unknown): number | null => {
+      if (typeof v === "number" && Number.isFinite(v)) return v
+      if (typeof v === "string") {
+        const n = Number(v.trim())
+        return Number.isFinite(n) ? n : null
+      }
+      return null
+    }
+    const pickClosest = (arr: any[], getMs: (s: any) => number) => {
+      if (arr.length === 0) return null
+      let best = arr[0]
+      let bestDiff = Math.abs(getMs(best) - logMs)
+      for (const s of arr) {
+        const d = Math.abs(getMs(s) - logMs)
+        if (d < bestDiff) {
+          bestDiff = d
+          best = s
+        }
+      }
+      return best
+    }
+
+    if (outSessions.length > 0) {
+      const candidates = logNet != null
+        ? outSessions.filter((s: any) => {
+            const sn = toNum(s?.netWeightKg)
+            return sn != null && Math.abs(Math.abs(sn) - logNet) <= 2
+          })
+        : outSessions
+      outSession = pickClosest(candidates.length > 0 ? candidates : outSessions, (s) =>
+        s?.createdAt ? new Date(s.createdAt).getTime() : 0
+      )
+      if (outSession?.inSessionId) {
+        inSession = inSessions.find((s: any) => s?.id === outSession.inSessionId) ?? null
+      }
+      if (!inSession && inSessions.length > 0) {
+        const outMs = outSession?.createdAt ? new Date(outSession.createdAt).getTime() : logMs
+        const before = inSessions
+          .filter((s: any) => (s?.createdAt ? new Date(s.createdAt).getTime() : 0) <= outMs)
+          .sort((a: any, b: any) => (b?.createdAt ? new Date(b.createdAt).getTime() : 0) - (a?.createdAt ? new Date(a.createdAt).getTime() : 0))
+        inSession = before[0] ?? pickClosest(inSessions, (s) => (s?.createdAt ? new Date(s.createdAt).getTime() : 0))
+      }
+    }
+    if (!outSession && outSessions.length > 0) outSession = pickClosest(outSessions, (s) => (s?.createdAt ? new Date(s.createdAt).getTime() : 0))
+    if (!inSession && inSessions.length > 0) inSession = pickClosest(inSessions, (s) => (s?.createdAt ? new Date(s.createdAt).getTime() : 0))
+
+    const inGross = inSession ? toNum(inSession.grossWeightKg) : null
+    const outGross = outSession ? toNum(outSession.grossWeightKg) : null
+    const hasIn = inGross != null && inGross > 0
+    const hasOut = outGross != null && outGross > 0
+
+    if (!hasIn && !hasOut) return normalized
+
+    return {
+      ...normalized,
+      totalInWeight: ti ?? (hasIn ? inGross! : undefined),
+      totalOutWeight: to ?? (hasOut ? outGross! : undefined),
+      weightKg: to ?? (hasOut ? outGross! : (normalized as any).weightKg) ?? ti ?? (hasIn ? inGross! : (normalized as any).weightKg),
+    } as TruckLog
+  } catch {
+    return normalized
+  }
+}
+
 /**
  * Get a single truck log by ID (company-scoped)
  * Serializes MongoDB document to plain object for Client Components
+ * Enriches from truck_sessions when totalInWeight/totalOutWeight are missing (matches by plate + createdAt within 2h)
  */
 export async function getTruckLog(logId: string): Promise<TruckLog | null> {
   const companyId = await getActiveCompany()
@@ -365,7 +489,8 @@ export async function getTruckLog(logId: string): Promise<TruckLog | null> {
           ? createdAt.toISOString() 
           : new Date(createdAt).toISOString()),
   }
-  return normalizeLogForClient(serialized)
+  const normalized = normalizeLogForClient(serialized)
+  return enrichLogFromSessions(companyId, normalized)
 }
 
 /**
