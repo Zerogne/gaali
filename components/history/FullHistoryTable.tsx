@@ -972,7 +972,7 @@ export function FullHistoryTable({
                         onCheckedChange={handleSelectAll}
                       />
                     </TableHead>
-                  <TableHead className="text-gray-700 font-semibold relative pr-3">
+                    <TableHead className="text-gray-700 font-semibold relative pr-3">
                       Дугаар
                       <div className="absolute right-0 top-1/2 -translate-y-1/2 w-px h-3 bg-gray-300"></div>
                     </TableHead>
@@ -990,6 +990,18 @@ export function FullHistoryTable({
                     </TableHead>
                     <TableHead className="text-gray-700 font-semibold relative pr-3">
                       Тээврийн компани
+                      <div className="absolute right-0 top-1/2 -translate-y-1/2 w-px h-3 bg-gray-300"></div>
+                    </TableHead>
+                    <TableHead className="text-gray-700 font-semibold relative pr-3">
+                      Оролтын жин (кг)
+                      <div className="absolute right-0 top-1/2 -translate-y-1/2 w-px h-3 bg-gray-300"></div>
+                    </TableHead>
+                    <TableHead className="text-gray-700 font-semibold relative pr-3">
+                      Гаралтын жин (кг)
+                      <div className="absolute right-0 top-1/2 -translate-y-1/2 w-px h-3 bg-gray-300"></div>
+                    </TableHead>
+                    <TableHead className="text-gray-700 font-semibold relative pr-3">
+                      Цэвэр жин (кг)
                       <div className="absolute right-0 top-1/2 -translate-y-1/2 w-px h-3 bg-gray-300"></div>
                     </TableHead>
                     <TableHead className="text-gray-700 font-semibold">
@@ -1046,6 +1058,31 @@ export function FullHistoryTable({
                       </TableCell>
                       <TableCell className="text-gray-700 text-sm relative pr-3">
                         {getTransportCompanyName(log.transportCompanyId)}
+                        <div className="absolute right-0 top-1/2 -translate-y-1/2 w-px h-3 bg-gray-300"></div>
+                      </TableCell>
+                      <TableCell className="text-gray-700 text-sm font-mono relative pr-3">
+                        {log.totalInWeight != null
+                          ? Number(log.totalInWeight).toLocaleString()
+                          : "—"}
+                        <div className="absolute right-0 top-1/2 -translate-y-1/2 w-px h-3 bg-gray-300"></div>
+                      </TableCell>
+                      <TableCell className="text-gray-700 text-sm font-mono relative pr-3">
+                        {log.totalOutWeight != null
+                          ? Number(log.totalOutWeight).toLocaleString()
+                          : "—"}
+                        <div className="absolute right-0 top-1/2 -translate-y-1/2 w-px h-3 bg-gray-300"></div>
+                      </TableCell>
+                      <TableCell className="text-gray-700 text-sm font-mono relative pr-3">
+                        {(() => {
+                          const net =
+                            (log as any).netWeight ??
+                            log.netWeight ??
+                            log.netWeightKg ??
+                            null;
+                          return net != null
+                            ? Number(Math.abs(net)).toLocaleString()
+                            : "—";
+                        })()}
                         <div className="absolute right-0 top-1/2 -translate-y-1/2 w-px h-3 bg-gray-300"></div>
                       </TableCell>
                       <TableCell>
