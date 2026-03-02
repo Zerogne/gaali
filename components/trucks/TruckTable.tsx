@@ -582,7 +582,6 @@ export function TruckTable({ logs, onSend, onUpdate }: TruckTableProps) {
   // Export to Excel - exports only filtered/search results
   const handleExportToExcel = () => {
     try {
-      console.log("📊 Exporting to Excel - filtered logs count:", filteredLogs.length, "total logs:", logs.length);
       
       // Prepare data for Excel using filtered logs (respects all search filters)
       const excelData = filteredLogs.map((log) => ({
@@ -830,7 +829,6 @@ export function TruckTable({ logs, onSend, onUpdate }: TruckTableProps) {
                       onDoubleClick={(e) => {
                         e.preventDefault()
                         e.stopPropagation()
-                        console.log("🖱️ Double-clicked on log:", log.id)
                         handleEdit(log)
                       }}
                     >

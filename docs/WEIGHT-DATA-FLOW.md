@@ -39,7 +39,7 @@ If `INGEST_SECRET` is set, the bridge can send header `x-signature` = HMAC-SHA25
 
 ### B. Scale bridge (real-time in browser)
 
-- **Components:** `InSessionWeightConnector`, `useScaleBridge`.
+- **Components:** `useScaleBridge`.
 - **Flow:** Frontend connects to a scale WebSocket (e.g. Gaali Bridge / Electron scale bridge). The bridge reads from the scale device and sends weight over WebSocket; the UI parses it and calls `onWeightDetected(weight)`.
 - **Company:** This path does **not** go through the ingest API; it’s real-time in the browser. The only “filtering” is that the user is already logged in as a company; the scale value is shown in that company’s IN session form. There is no per-company filtering of the scale stream itself here.
 

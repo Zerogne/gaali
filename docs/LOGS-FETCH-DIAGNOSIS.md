@@ -35,7 +35,7 @@ fetchLogs(page, limit) → GET /api/logs?page=&limit=
 
 - **Dashboard**: `mergeLogsByPlate()` — merges IN+OUT for same plate into one row
 - **Report**: Raw logs — shows all records (IN and OUT separate) for reporting
-- **Sessions**: Paginated (30 per page) with FullHistoryTable
+- **Sessions**: Uses TruckTable (same as dashboard)
 - **Limit**: 50 (dashboard), 30 (sessions), 100 (TruckSection net calc), 10000 (reports)
 
 ## API Backend

@@ -145,26 +145,6 @@ export const OutSessionForm = forwardRef<
       pollInterval: 10000, // Check every 10 seconds
     });
 
-    // Log weight connection status
-    useEffect(() => {
-      if (weightStatus.status.connected) {
-        console.log("⚖️ Weight Device: ✅ CONNECTED", {
-          siteId: weightStatus.status.siteId,
-          latestWeight: weightStatus.status.latestWeight,
-          unit: weightStatus.status.unit,
-          recentActivity: weightStatus.status.recentActivity,
-          totalRecords: weightStatus.status.totalRecords,
-        });
-      } else if (weightStatus.status.totalRecords > 0) {
-        console.log("⚖️ Weight Device: ⚠️ INACTIVE (no recent data)", {
-          siteId: weightStatus.status.siteId,
-          totalRecords: weightStatus.status.totalRecords,
-          lastReceivedAt: weightStatus.status.lastReceivedAt,
-        });
-      } else {
-        console.log("⚖️ Weight Device: ❌ NOT CONNECTED (no data received)");
-      }
-    }, [weightStatus.status.connected, weightStatus.status.totalRecords, weightStatus.status.recentActivity]);
 
     // Data loading states
     const [products, setProducts] = useState<Product[]>([]);
@@ -980,10 +960,6 @@ export const OutSessionForm = forwardRef<
 
     // Auto-fill weight when weight status updates (similar to IN form logic)
     useEffect(() => {
-      // #region agent log - Debug weight auto-fill
-      console.log(`[DEBUG-WEIGHT] useEffect triggered: latestWeight=${weightStatus.status.latestWeight}, connected=${weightStatus.status.connected}, siteId=${weightStatus.status.siteId}`);
-      // #endregion
-      
       if (weightStatus.status.latestWeight !== null && weightStatus.status.latestWeight > 0) {
         setFormState((prev) => {
           let updated;
@@ -1021,10 +997,6 @@ export const OutSessionForm = forwardRef<
           
           return updated;
         });
-      } else {
-        // #region agent log - Debug why not updating
-        console.log(`[DEBUG-WEIGHT] NOT updating: latestWeight=${weightStatus.status.latestWeight}, condition check failed`);
-        // #endregion
       }
     }, [weightStatus.status.latestWeight, carWeightLocked]);
 
@@ -1102,10 +1074,6 @@ export const OutSessionForm = forwardRef<
                     if (matchingDriver) {
                       updates.driverId = matchingDriver.id;
                       updates.driverName = matchingDriver.name;
-                      console.log(
-                        "✅ Auto-fill: Filled driver (from log):",
-                        matchingDriver.name
-                      );
                     }
                   }
                   if (!updates.driverId && inSession.driverName) {
@@ -1116,22 +1084,12 @@ export const OutSessionForm = forwardRef<
                     if (matchingDriver) {
                       updates.driverId = matchingDriver.id;
                       updates.driverName = matchingDriver.name;
-                      console.log(
-                        "✅ Auto-fill: Filled driver (from session):",
-                        matchingDriver.name
-                      );
                     }
                   }
                 }
 
                 // Auto-fill product - try productId first (most reliable), then cargoType label match, then session product
                 if (isEmpty(prev.productId)) {
-                  console.log("🔍 Auto-fill: Attempting to match product...");
-                  console.log("🔍 Auto-fill: inLog.productId:", (inLog as any)?.productId);
-                  console.log("🔍 Auto-fill: inLog.cargoType:", inLog?.cargoType);
-                  console.log("🔍 Auto-fill: inSession.product:", inSession.product);
-                  console.log("🔍 Auto-fill: Available products:", products.map(p => ({ id: p.id, label: p.label, value: p.value })));
-                  
                   // First, try to match by productId if available in log
                   if ((inLog as any)?.productId) {
                     const matchingProduct = products.find(
@@ -1139,12 +1097,6 @@ export const OutSessionForm = forwardRef<
                     );
                     if (matchingProduct) {
                       updates.productId = matchingProduct.id;
-                      console.log(
-                        "✅ Auto-fill: Filled product by productId (from log):",
-                        matchingProduct.label
-                      );
-                    } else {
-                      console.log("⚠️ Auto-fill: ProductId not found in products list:", (inLog as any).productId);
                     }
                   }
                   
@@ -1177,16 +1129,6 @@ export const OutSessionForm = forwardRef<
                     
                     if (matchingProduct) {
                       updates.productId = matchingProduct.id;
-                      console.log(
-                        "✅ Auto-fill: Filled product by cargoType label (from log):",
-                        matchingProduct.label,
-                        "matched with:",
-                        inLog.cargoType
-                      );
-                    } else {
-                      console.log("⚠️ Auto-fill: cargoType not found in products:", inLog.cargoType);
-                      console.log("⚠️ Auto-fill: Tried matching:", cargoTypeTrimmed);
-                      console.log("⚠️ Auto-fill: Available product labels:", products.map(p => p.label));
                     }
                   }
                   
@@ -1202,26 +1144,9 @@ export const OutSessionForm = forwardRef<
                     );
                     if (matchingProduct) {
                       updates.productId = matchingProduct.id;
-                      console.log(
-                        "✅ Auto-fill: Filled product by session product name:",
-                        matchingProduct.label,
-                        "matched with:",
-                        inSession.product
-                      );
-                    } else {
-                      console.log("⚠️ Auto-fill: Session product not found in products:", inSession.product);
-                      console.log("⚠️ Auto-fill: Tried matching:", sessionProductTrimmed);
                     }
                   }
                   
-                  if (!updates.productId) {
-                    console.error("❌ Auto-fill: Failed to match product! inLog:", {
-                      productId: (inLog as any)?.productId,
-                      cargoType: inLog?.cargoType
-                    }, "inSession:", {
-                      product: inSession.product
-                    });
-                  }
                 }
 
                 // Auto-fill transport company - from log
@@ -1230,25 +1155,16 @@ export const OutSessionForm = forwardRef<
                   inLog?.transportCompanyId
                 ) {
                   updates.transporterCompanyId = inLog.transportCompanyId;
-                  console.log(
-                    "✅ Auto-fill: Filled transport company:",
-                    inLog.transportCompanyId
-                  );
                 }
 
                 // Auto-fill origin - from log
                 if (isEmpty(prev.origin) && inLog?.origin) {
                   updates.origin = inLog.origin;
-                  console.log("✅ Auto-fill: Filled origin:", inLog.origin);
                 }
 
                 // Auto-fill destination - from log
                 if (isEmpty(prev.destination) && inLog?.destination) {
                   updates.destination = inLog.destination;
-                  console.log(
-                    "✅ Auto-fill: Filled destination:",
-                    inLog.destination
-                  );
                 }
 
                 // Auto-fill sender organization - from log
@@ -1257,10 +1173,6 @@ export const OutSessionForm = forwardRef<
                   inLog?.senderOrganizationId
                 ) {
                   updates.senderOrganizationId = inLog.senderOrganizationId;
-                  console.log(
-                    "✅ Auto-fill: Filled sender organization:",
-                    inLog.senderOrganizationId
-                  );
                 }
 
                 // Auto-fill receiver organization - from log
@@ -1269,29 +1181,17 @@ export const OutSessionForm = forwardRef<
                   inLog?.receiverOrganizationId
                 ) {
                   updates.receiverOrganizationId = inLog.receiverOrganizationId;
-                  console.log(
-                    "✅ Auto-fill: Filled receiver organization:",
-                    inLog.receiverOrganizationId
-                  );
                 }
 
                 // Auto-fill seal number - from log
                 if (isEmpty(prev.sealNumber) && inLog?.sealNumber) {
                   updates.sealNumber = inLog.sealNumber;
-                  console.log(
-                    "✅ Auto-fill: Filled seal number:",
-                    inLog.sealNumber
-                  );
                 }
 
                 // Auto-fill trailer info - from log
                 if (inLog?.hasTrailer !== undefined) {
                   if (prev.hasTrailer !== inLog.hasTrailer) {
                     updates.hasTrailer = inLog.hasTrailer;
-                    console.log(
-                      "✅ Auto-fill: Filled hasTrailer:",
-                      inLog.hasTrailer
-                    );
                   }
                   if (
                     inLog.hasTrailer &&
@@ -1299,28 +1199,17 @@ export const OutSessionForm = forwardRef<
                     isEmpty(prev.trailerNumber)
                   ) {
                     updates.trailerNumber = inLog.trailerPlate;
-                    console.log(
-                      "✅ Auto-fill: Filled trailer number:",
-                      inLog.trailerPlate
-                    );
                   }
                 }
 
                 // Auto-fill notes - from log
                 if (isEmpty(prev.notes) && inLog?.comments) {
                   updates.notes = inLog.comments;
-                  console.log("✅ Auto-fill: Filled notes:", inLog.comments);
                 }
 
-                console.log("✅ Auto-fill: Updates to apply:", updates);
-                console.log(
-                  "✅ Auto-fill: Total fields to update:",
-                  Object.keys(updates).length
-                );
                 return { ...prev, ...updates };
               });
             } else {
-              console.log("⚠️ Auto-fill: Response OK but no session in data");
               setHasInSessionData(false);
             }
           } else {
@@ -1334,14 +1223,6 @@ export const OutSessionForm = forwardRef<
             }
 
             if (response.status === 404) {
-              console.log(
-                "⚠️ Auto-fill: 404 - No IN session found for plate:",
-                plateNumber
-              );
-              console.log(
-                "⚠️ Auto-fill: Error message:",
-                errorData.error || "Not found"
-              );
               // Clear IN-session-derived fields so we don't show stale data from the previous plate
               if (isMounted) {
                 setFormState((prev) => {
@@ -1740,8 +1621,8 @@ export const OutSessionForm = forwardRef<
                 const sessionData = await sessionResponse.json();
                 uniqueCode = sessionData.session?.uniqueCode;
               }
-            } catch (e) {
-              console.warn("Could not fetch session:", e);
+            } catch {
+              // ignore
             }
           }
           
@@ -1761,8 +1642,8 @@ export const OutSessionForm = forwardRef<
                   setSavedUniqueCode(uniqueCode);
                 }
               }
-            } catch (e) {
-              console.warn("Could not fetch latest session:", e);
+            } catch {
+              // ignore
             }
           }
         }
@@ -1776,7 +1657,6 @@ export const OutSessionForm = forwardRef<
           return false;
         }
 
-        console.log("🚀 Starting send process for OUT session...");
 
         // Step 1: Transform data to 3rd party format (matching test-websocket.html)
         const productName = formState.productId
@@ -1868,27 +1748,15 @@ export const OutSessionForm = forwardRef<
 
         // Send data directly via WebSocket (ws://127.0.0.1:9000/service) - no API
         const dataToSend = JSON.stringify(thirdPartyData);
-        console.log("🔌 Checking WebSocket connection...");
         let ws = getWebSocket();
-        console.log(
-          "🔌 Current WebSocket state:",
-          ws
-            ? `readyState: ${ws.readyState} (OPEN=${WebSocket.OPEN})`
-            : "null"
-        );
 
         if (!ws || ws.readyState !== WebSocket.OPEN) {
-          console.log(
-            "🔌 WebSocket not connected, attempting to connect..."
-          );
           try {
             ws = await connectWebSocket();
-            console.log("✅ WebSocket connection attempt completed");
             ws = getWebSocket();
             await new Promise((resolve) => setTimeout(resolve, 50));
             ws = getWebSocket();
             if (!ws || ws.readyState !== WebSocket.OPEN) {
-              console.warn("⚠️ WebSocket not available - copying data to clipboard");
               try {
                 await navigator.clipboard.writeText(dataToSend);
                 toast({
@@ -1906,9 +1774,7 @@ export const OutSessionForm = forwardRef<
               }
               return true;
             }
-            console.log("✅ WebSocket connection verified and open");
           } catch (error) {
-            console.warn("⚠️ WebSocket connection failed - copying data to clipboard");
             try {
               await navigator.clipboard.writeText(dataToSend);
               toast({
@@ -1926,8 +1792,6 @@ export const OutSessionForm = forwardRef<
             }
             return true;
           }
-        } else {
-          console.log("✅ WebSocket already connected");
         }
 
         // Step 4: Verify connection one more time (matching test-websocket.html)
@@ -1946,9 +1810,6 @@ export const OutSessionForm = forwardRef<
         }
 
         // Send JSON directly to 3rd party via WebSocket
-        console.log("📤 Sending data to 3rd party app via WebSocket...");
-        console.log("📤 Unique Code (AKT):", uniqueCode);
-
         if (ws.readyState !== WebSocket.OPEN) {
           console.error("❌ ERROR: WebSocket closed right before send!");
           toast({
@@ -1961,7 +1822,6 @@ export const OutSessionForm = forwardRef<
         }
 
         ws.send(dataToSend);
-        console.log("✅ Data sent via WebSocket");
 
         // Step 6: Check connection after a short delay (matching test-websocket.html)
         await new Promise((resolve) => setTimeout(resolve, 100));
@@ -1981,8 +1841,6 @@ export const OutSessionForm = forwardRef<
           return false;
         }
 
-        console.log("✅ SUCCESS: Data sent to 3rd party app via WebSocket");
-
         // Update sentToCustoms in DB so History table shows correct status
         const logIdToUpdate = editLogId || savedLogId;
         if (logIdToUpdate) {
@@ -1991,8 +1849,8 @@ export const OutSessionForm = forwardRef<
             if (dbResult.success) {
               router.refresh();
             }
-          } catch (e) {
-            console.warn("Could not update sentToCustoms:", e);
+          } catch {
+            // ignore
           }
         }
 
@@ -2790,11 +2648,8 @@ export const OutSessionForm = forwardRef<
                                   uniqueCode = outSession.uniqueCode;
                                 }
                               }
-                            } catch (e) {
-                              console.warn(
-                                "Could not fetch OUT session unique code:",
-                                e
-                              );
+                            } catch {
+                              // ignore
                             }
                           }
 

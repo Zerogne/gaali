@@ -1,7 +1,7 @@
 "use client";
 
 import { Sidebar } from "@/components/sidebar";
-import { FullHistoryTable } from "@/components/history/FullHistoryTable";
+import { TruckTable } from "@/components/trucks/TruckTable";
 import { fetchLogs } from "@/lib/fetchLogs";
 import type { TruckLog } from "@/lib/types";
 import { useRouter } from "next/navigation";
@@ -12,8 +12,6 @@ export default function SessionsPage() {
   const [logs, setLogs] = useState<TruckLog[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isCheckingAuth, setIsCheckingAuth] = useState(true);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
 
   // Check authentication on mount
   useEffect(() => {
@@ -34,16 +32,15 @@ export default function SessionsPage() {
     checkAuth();
   }, [router]);
 
-  // Load logs for current page
+  // Load logs (same as dashboard)
   useEffect(() => {
     if (isCheckingAuth) return;
 
     async function loadLogs() {
       try {
         setIsLoading(true);
-        const result = await fetchLogs(currentPage, 30);
+        const result = await fetchLogs(1, 10000);
         setLogs(result.logs || []);
-        setTotalPages(result.totalPages);
       } catch (error) {
         console.error("Error loading logs:", error);
         if (error instanceof Error && error.message.includes("redirect")) {
@@ -55,34 +52,27 @@ export default function SessionsPage() {
     }
 
     loadLogs();
-  }, [isCheckingAuth, router, currentPage]);
+  }, [isCheckingAuth, router]);
 
   const handleSend = async (_logId: string) => {
-    const result = await fetchLogs(currentPage, 30);
+    const result = await fetchLogs(1, 10000);
     setLogs(result.logs || []);
-    setTotalPages(result.totalPages);
   };
 
   const handleUpdate = async () => {
     await new Promise((r) => setTimeout(r, 300));
     try {
-      const result = await fetchLogs(currentPage, 30);
+      const result = await fetchLogs(1, 10000);
       setLogs(result.logs || []);
-      setTotalPages(result.totalPages);
     } catch (error) {
       console.error("Error reloading logs after delete:", error);
       try {
-        const result = await fetchLogs(currentPage, 30);
+        const result = await fetchLogs(1, 10000);
         setLogs(result.logs || []);
-        setTotalPages(result.totalPages);
-      } catch (retryError) {
-        console.error("Retry also failed:", retryError);
+      } catch {
+        // ignore retry failure
       }
     }
-  };
-
-  const handlePageChange = (page: number) => {
-    setCurrentPage(page);
   };
 
   if (isCheckingAuth || isLoading) {
@@ -102,13 +92,10 @@ export default function SessionsPage() {
       <div className="flex-1 flex flex-col overflow-hidden">
         <main className="flex-1 overflow-auto">
           <div className="max-w-[1920px] mx-auto p-6 lg:p-8">
-            <FullHistoryTable
+            <TruckTable
               logs={logs}
               onSend={handleSend}
               onUpdate={handleUpdate}
-              currentPage={currentPage}
-              totalPages={totalPages}
-              onPageChange={handlePageChange}
             />
           </div>
         </main>

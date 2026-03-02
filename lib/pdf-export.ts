@@ -775,7 +775,7 @@ function generateLogHTML(
 
       .bottom-left {
         flex: 1;
-        margin-top: 20px;
+        margin-top: 10px;
       }
 
       .bottom-right {

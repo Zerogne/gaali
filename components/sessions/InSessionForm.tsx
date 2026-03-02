@@ -175,26 +175,6 @@ export const InSessionForm = forwardRef<
       pollInterval: 10000, // Check every 10 seconds
     });
 
-    // Log weight connection status
-    useEffect(() => {
-      if (weightStatus.status.connected) {
-        console.log("⚖️ Weight Device: ✅ CONNECTED", {
-          siteId: weightStatus.status.siteId,
-          latestWeight: weightStatus.status.latestWeight,
-          unit: weightStatus.status.unit,
-          recentActivity: weightStatus.status.recentActivity,
-          totalRecords: weightStatus.status.totalRecords,
-        });
-      } else if (weightStatus.status.totalRecords > 0) {
-        console.log("⚖️ Weight Device: ⚠️ INACTIVE (no recent data)", {
-          siteId: weightStatus.status.siteId,
-          totalRecords: weightStatus.status.totalRecords,
-          lastReceivedAt: weightStatus.status.lastReceivedAt,
-        });
-      } else {
-        console.log("⚖️ Weight Device: ❌ NOT CONNECTED (no data received)");
-      }
-    }, [weightStatus.status.connected, weightStatus.status.totalRecords, weightStatus.status.recentActivity]);
 
     // Data loading states
     const [products, setProducts] = useState<Product[]>([]);
@@ -1106,87 +1086,16 @@ export const InSessionForm = forwardRef<
     // Bind camera autofill to plate input
     useEffect(() => {
       if (plateInputRef) {
-        console.log("🔗🔗🔗 ========================================");
-        console.log("🔗🔗🔗 BINDING AUTOFILL TO INPUT");
-        console.log("🔗🔗🔗 ========================================");
-        console.log("🔗 Current plate in hook:", cameraAutofill.plate);
-        console.log("🔗 Current form state plate:", formState.plateNumber);
-        console.log("🔗 Input element:", plateInputRef);
-        console.log("🔗 Input element value:", plateInputRef.value);
-
         const binding = {
-          getValue: () => {
-            const value = formState.plateNumber;
-            console.log("🔗 getValue called, returning:", value);
-            return value;
-          },
+          getValue: () => formState.plateNumber,
           setValue: (value: string) => {
-            console.log("📝📝📝 ========================================");
-            console.log("📝📝📝 AUTOFILL setValue CALLED!");
-            console.log("📝📝📝 Setting plate to:", value);
-            console.log("📝📝📝 ========================================");
-            console.log(
-              "📝 Current formState.plateNumber:",
-              formState.plateNumber
-            );
-            console.log("📝 Input element exists:", !!plateInputRef);
-            console.log("📝 Input element:", plateInputRef);
+            if (!plateInputRef) return;
+            if (manuallyClearedRef.current) return;
 
-            if (!plateInputRef) {
-              console.error(
-                "❌❌❌ CRITICAL: plateInputRef is NULL! Cannot update input!"
-              );
-              return;
-            }
-
-            // Don't auto-fill if user has manually edited in this session
-            if (manuallyClearedRef.current) {
-              console.log("📝 Auto-fill blocked - user manually edited plate");
-              return;
-            }
-
-            // CRITICAL: This is a CONTROLLED component - React controls the value via the `value` prop
-            // We MUST update React state, and React will update the DOM on re-render
-            console.log("📝 Step 1: Setting autofill flag");
             isAutofillingRef.current = true;
-
-            console.log(
-              "📝 Step 2: Updating React state (CONTROLLED COMPONENT)"
-            );
-            console.log(
-              "📝 Current formState.plateNumber:",
-              formState.plateNumber
-            );
-            console.log("📝 New value to set:", value);
-
-            // Update React state - this will trigger a re-render and update the input
-            setFormState((prev) => {
-              console.log(
-                "📝 Inside setFormState - prev.plateNumber:",
-                prev.plateNumber,
-                "new value:",
-                value
-              );
-              if (prev.plateNumber === value) {
-                console.log(
-                  "📝 Value already matches, but updating anyway to trigger re-render"
-                );
-              }
-              const newState = { ...prev, plateNumber: value };
-              console.log(
-                "📝 Returning new state with plateNumber:",
-                newState.plateNumber
-              );
-              return newState;
-            });
-
-            // ALSO update DOM directly as immediate visual feedback
-            console.log(
-              "📝 Step 3: Directly updating DOM for immediate visual feedback"
-            );
+            setFormState((prev) => ({ ...prev, plateNumber: value }));
             plateInputRef.value = value;
 
-            // Use native setter to trigger React's event system
             try {
               const nativeInputValueSetter = Object.getOwnPropertyDescriptor(
                 window.HTMLInputElement.prototype,
@@ -1194,85 +1103,40 @@ export const InSessionForm = forwardRef<
               )?.set;
               if (nativeInputValueSetter) {
                 nativeInputValueSetter.call(plateInputRef, value);
-                const nativeEvent = new Event("input", {
-                  bubbles: true,
-                  cancelable: true,
-                });
-                plateInputRef.dispatchEvent(nativeEvent);
-                console.log("📝 Used native setter and dispatched input event");
+                plateInputRef.dispatchEvent(
+                  new Event("input", { bubbles: true, cancelable: true })
+                );
               }
-            } catch (e) {
-              console.log("📝 Native setter failed:", e);
+            } catch {
+              // ignore
             }
 
-            // Trigger onPlateChange callback
-            if (onPlateChange) {
-              console.log("📝 Step 4: Calling onPlateChange callback");
-              onPlateChange(value);
-            }
-
-            // Clear autofill flag after a delay
+            onPlateChange?.(value);
             setTimeout(() => {
               isAutofillingRef.current = false;
             }, 500);
 
-            // Verify after React has had time to re-render
             setTimeout(() => {
               const currentInputValue = plateInputRef.value;
               const currentStateValue = formState.plateNumber;
-              console.log(
-                "📝 Verification - Input DOM value:",
-                currentInputValue
-              );
-              console.log(
-                "📝 Verification - React state value:",
-                currentStateValue
-              );
-              console.log("📝 Verification - Expected value:", value);
-
-              if (currentInputValue === value || currentStateValue === value) {
-                console.log("✅✅✅ VERIFIED: Input field updated!");
-              } else {
-                console.error(
-                  "❌❌❌ NOT UPDATED! DOM:",
-                  currentInputValue,
-                  "State:",
-                  currentStateValue,
-                  "Expected:",
-                  value
-                );
-                console.error("❌ Attempting emergency update...");
-                // Force update one more time
+              if (currentInputValue !== value && currentStateValue !== value) {
                 setFormState((prev) => ({ ...prev, plateNumber: value }));
                 plateInputRef.value = value;
               }
             }, 200);
-
-            console.log("📝📝📝 setValue COMPLETE for:", value);
           },
-          isFocused: () => {
-            const focused = document.activeElement === plateInputRef;
-            console.log("🔗 isFocused called, returning:", focused);
-            return focused;
-          },
+          isFocused: () => document.activeElement === plateInputRef,
         };
 
         cameraAutofill.bindToInput(binding);
-        console.log("🔗 Binding complete");
 
-        // If we already have a plate, try to autofill immediately
         if (cameraAutofill.plate && !formState.plateNumber) {
-          console.log(
-            "🔗 Plate exists but form is empty, triggering immediate autofill"
-          );
           setTimeout(() => {
             if (cameraAutofill.plate) {
               binding.setValue(cameraAutofill.plate);
             }
           }, 200);
         }
-      } else {
-        console.log("⚠️ plateInputRef is null, cannot bind autofill");
       }
     }, [
       plateInputRef,
@@ -1594,12 +1458,9 @@ export const InSessionForm = forwardRef<
         rfidManuallyEditedRef.current = false;
 
         // Verify log was created by checking server response
-        console.log("✅ Session saved:", savedSession.session?.id);
-        console.log("✅ Session unique code:", savedSession.session?.uniqueCode);
         
         // Check if there's a warning about log creation
         if (savedSession.warning) {
-          console.warn("⚠️ Warning from server:", savedSession.warning);
           toast({
             title: "Анхааруулга",
             description: "Бүртгэл хадгалагдсан боловч түүхэнд харагдахгүй байж магадгүй",
@@ -1615,7 +1476,6 @@ export const InSessionForm = forwardRef<
         // 3rd party sending removed for In Session
         if (false && savedSession.session && savedSession.session.uniqueCode) {
           try {
-            console.log("🚀 Starting send process for IN session...");
 
             // Step 1: Transform data to 3rd party format (matching test-websocket.html)
             const productName = formState.productId
@@ -1706,7 +1566,6 @@ export const InSessionForm = forwardRef<
             ];
 
             // Step 2: Save data to file-like storage (matching test-websocket.html)
-            console.log("💾 Step 1: Saving data to storage...");
             const appBaseUrl =
               typeof window !== "undefined"
                 ? window.location.origin
@@ -1742,27 +1601,17 @@ export const InSessionForm = forwardRef<
             const dataBaseUrl = `${appBaseUrl}/api/third-party/data`;
             const dataUrl = `${dataBaseUrl}/${uniqueCode}`;
 
-            console.log("✅ Step 1: Data saved successfully");
-            console.log("🔑 Unique Code (AKT):", uniqueCode);
-            console.log("📁 Data URL:", dataUrl);
-
             // Step 3: Check WebSocket connection (matching test-websocket.html logic)
-            console.log("🔌 Step 2: Checking WebSocket connection...");
             const getWsState = (socket: WebSocket | null): string => 
               socket !== null ? `readyState: ${socket.readyState} (OPEN=${WebSocket.OPEN})` : "null";
             const isWsConnected = (socket: WebSocket | null): socket is WebSocket => 
               socket !== null && socket.readyState === WebSocket.OPEN;
             
             let ws = getWebSocket();
-            console.log("🔌 Current WebSocket state:", getWsState(ws));
 
             if (!isWsConnected(ws)) {
-              console.log(
-                "🔌 WebSocket not connected, attempting to connect..."
-              );
               try {
                 ws = await connectWebSocket();
-                console.log("✅ WebSocket connection attempt completed");
                 ws = getWebSocket();
                 await new Promise((resolve) => setTimeout(resolve, 50));
                 ws = getWebSocket();
@@ -1785,7 +1634,6 @@ export const InSessionForm = forwardRef<
                   });
                   return false;
                 }
-                console.log("✅ WebSocket connection verified and open");
               } catch (error) {
                 console.error("❌ ERROR: Failed to connect WebSocket");
                 console.error("❌ Error details:", error);
@@ -1800,8 +1648,6 @@ export const InSessionForm = forwardRef<
                 });
                 return false;
               }
-            } else {
-              console.log("✅ WebSocket already connected");
             }
 
             // Step 4: Verify connection one more time (matching test-websocket.html)
@@ -1820,10 +1666,6 @@ export const InSessionForm = forwardRef<
             }
 
             // Step 5: Send the full URL via WebSocket (matching test-websocket.html)
-            console.log("📤 Step 3: Sending data to 3rd party app...");
-            console.log("📤 URL to send:", dataUrl);
-            console.log("📤 Unique Code (AKT):", uniqueCode);
-
             // TypeScript guard: ws is guaranteed to be non-null after the check above
             const wsForSend = ws!;
             if (wsForSend.readyState !== WebSocket.OPEN) {
@@ -1839,7 +1681,6 @@ export const InSessionForm = forwardRef<
 
             // wsForSend is guaranteed to be non-null and open after the checks above
             wsForSend.send(dataUrl);
-            console.log("✅ ws.send() completed without throwing error");
 
             // Step 6: Check connection after a short delay (matching test-websocket.html)
             await new Promise((resolve) => setTimeout(resolve, 100));
@@ -1860,12 +1701,6 @@ export const InSessionForm = forwardRef<
               });
               return false;
             }
-
-            console.log("=".repeat(50));
-            console.log("✅ SUCCESS: Data sent to 3rd party app");
-            console.log("✅ URL sent:", dataUrl);
-            console.log("✅ Unique Code (AKT):", uniqueCode);
-            console.log("=".repeat(50));
 
             toast({
               title: "Амжилттай",

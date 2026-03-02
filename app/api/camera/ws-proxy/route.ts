@@ -30,7 +30,7 @@ export async function GET(request: NextRequest) {
   return new Response(
     JSON.stringify({
       error: "This endpoint requires WebSocket upgrade. Use the WebSocket client component instead.",
-      info: "The WebSocket proxy is handled by the RealtimeVideo component.",
+      info: "Use a WebSocket client component for camera video.",
     }),
     {
       status: 400,

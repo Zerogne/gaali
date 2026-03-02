@@ -70,15 +70,12 @@ function OutSessionContent() {
         const response = await fetch("/api/camera/config");
         if (response.ok) {
           const config = await response.json();
-          console.log("Camera config received:", config);
-          // Don't use MJPEG - use WebSocket instead (RealtimeVideo component)
+          // Don't use MJPEG - use WebSocket instead
           // streamUrl is null to prevent MJPEG loading errors
           // Video will come from direct camera WebSocket connection
           const url = config.streamUrl || undefined; // Will be null, which is correct
-          console.log("Setting streamUrl to:", url, "(null = use WebSocket)");
           setStreamUrl(url);
         } else {
-          console.warn("Camera config API returned non-OK status:", response.status);
           // Don't use fallback MJPEG - use WebSocket instead
           setStreamUrl(undefined);
         }
