@@ -343,92 +343,9 @@ export async function getTruckLogs(
   }
 }
 
-/** Enrich log with weights from truck_sessions when totalInWeight/totalOutWeight are missing */
-async function enrichLogFromSessions(
-  companyId: string,
-  normalized: TruckLog
-): Promise<TruckLog> {
-  const ti = getWeightField(normalized, "totalInWeight", "TotalInWeight")
-  const to = getWeightField(normalized, "totalOutWeight", "TotalOutWeight", "TotalOutweight")
-  if (ti != null && to != null) return normalized
-
-  try {
-    const sessionsCollection = await getCompanyCollection(companyId, "truck_sessions")
-    const plate = normalized.plate?.trim()
-    if (!plate) return normalized
-
-    const logDate = normalized.createdAt ? new Date(normalized.createdAt) : null
-    if (!logDate || !isFinite(logDate.getTime())) return normalized
-
-    const netRaw = getWeightField(normalized, "netWeightKg", "netWeight") ?? (normalized as any).netWeightKg
-    const nVal = netRaw != null ? (typeof netRaw === "number" ? netRaw : Number(netRaw)) : null
-    const logNet = nVal != null && Number.isFinite(nVal) ? Math.abs(nVal) : null
-
-    const dayStart = new Date(logDate)
-    dayStart.setHours(0, 0, 0, 0)
-    const dayEnd = new Date(dayStart)
-    dayEnd.setDate(dayEnd.getDate() + 1)
-
-    const sessions = await sessionsCollection
-      .find({
-        plateNumber: { $regex: new RegExp(`^${plate.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}$`, "i") },
-        createdAt: { $gte: dayStart, $lt: dayEnd },
-      })
-      .sort({ createdAt: 1 })
-      .limit(50)
-      .toArray()
-
-    const inSessions = sessions.filter((s: any) => s?.direction === "IN")
-    const outSessions = sessions.filter((s: any) => s?.direction === "OUT")
-
-    let inSession: any = null
-    let outSession: any = null
-
-    if (logNet != null && outSessions.length > 0) {
-      const matches = outSessions.filter((s: any) => {
-        const sn = s?.netWeightKg
-        const sg = s?.grossWeightKg
-        if (sn == null) return false
-        if (Math.abs(Math.abs(sn) - logNet) > 2) return false
-        return true
-      })
-      outSession = matches[0] ?? outSessions[0]
-      if (outSession?.inSessionId) {
-        inSession = inSessions.find((s: any) => s?.id === outSession.inSessionId) ?? null
-      }
-      if (!inSession && inSessions.length > 0) {
-        const outMs = outSession?.createdAt ? new Date(outSession.createdAt).getTime() : NaN
-        const before = inSessions
-          .filter((s: any) => s?.createdAt && new Date(s.createdAt).getTime() <= outMs)
-          .sort((a: any, b: any) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
-        inSession = before[0] ?? inSessions[0]
-      }
-    }
-    if (!outSession && outSessions.length > 0) outSession = outSessions[0]
-    if (!inSession && inSessions.length > 0) inSession = inSessions[0]
-
-    const inGross = inSession?.grossWeightKg
-    const outGross = outSession?.grossWeightKg
-    const hasIn = typeof inGross === "number" && !isNaN(inGross) && inGross > 0
-    const hasOut = typeof outGross === "number" && !isNaN(outGross) && outGross > 0
-
-    if (!hasIn && !hasOut) return normalized
-
-    return {
-      ...normalized,
-      totalInWeight: ti ?? (hasIn ? inGross : undefined),
-      totalOutWeight: to ?? (hasOut ? outGross : undefined),
-      weightKg: to ?? (hasOut ? outGross : normalized.weightKg) ?? ti ?? (hasIn ? inGross : normalized.weightKg),
-    } as TruckLog
-  } catch {
-    return normalized
-  }
-}
-
 /**
  * Get a single truck log by ID (company-scoped)
  * Serializes MongoDB document to plain object for Client Components
- * Enriches with truck_sessions weights when totalInWeight/totalOutWeight are missing
  */
 export async function getTruckLog(logId: string): Promise<TruckLog | null> {
   const companyId = await getActiveCompany()
@@ -448,8 +365,7 @@ export async function getTruckLog(logId: string): Promise<TruckLog | null> {
           ? createdAt.toISOString() 
           : new Date(createdAt).toISOString()),
   }
-  const normalized = normalizeLogForClient(serialized)
-  return enrichLogFromSessions(companyId, normalized)
+  return normalizeLogForClient(serialized)
 }
 
 /**
