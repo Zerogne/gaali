@@ -5,6 +5,11 @@
   "engines": {
     "node": "22.x"
   },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "sharp"
+    ]
+  },
   "scripts": {
     "build": "next build --webpack",
     "dev": "next dev --webpack",
