@@ -13,6 +13,7 @@ import { useConnectorSSE } from "@/hooks/useConnectorSSE";
 import { useThirdPartyAutofill } from "@/hooks/useThirdPartyAutofill";
 import { useWeightStatus } from "@/hooks/useWeightStatus";
 import { useLatestLpr } from "@/hooks/useLatestLpr";
+import { useLatestRfid } from "@/hooks/useLatestRfid";
 import { updateTruckLog, sendTruckLogToCustoms } from "@/lib/api";
 import type { Product } from "@/lib/products/products";
 import type {
@@ -124,6 +125,8 @@ export const InSessionForm = forwardRef<
     );
     const isAutofillingRef = useRef(false);
     const manuallyClearedRef = useRef(false); // Tracks if user manually edited plate (disables auto-fill for session)
+    const isRfidAutofillingRef = useRef(false);
+    const rfidManuallyEditedRef = useRef(false);
     
     // Get connector URL from localStorage or environment variable
     const [connectorUrl] = useState(() => {
@@ -164,6 +167,7 @@ export const InSessionForm = forwardRef<
 
     // Direct plate number auto-fill (similar to weight) - updates whenever new data arrives
     const { latest: latestLpr } = useLatestLpr(1000); // Poll every 1 second
+    const { latest: latestRfid } = useLatestRfid(1000); // Poll every 1 second
 
     // Check weight device connection status
     const weightStatus = useWeightStatus({
@@ -240,6 +244,22 @@ export const InSessionForm = forwardRef<
       bagQuantity: "",
       notes: "",
     });
+
+    // RFID auto-fill (do not overwrite manual entry)
+    useEffect(() => {
+      const value = latestRfid?.rfid?.trim();
+      if (!value) return;
+      if (rfidManuallyEditedRef.current) return;
+
+      isRfidAutofillingRef.current = true;
+      setFormState((prev) => {
+        if (prev.rfid && prev.rfid.trim()) return prev;
+        return { ...prev, rfid: value };
+      });
+      setTimeout(() => {
+        isRfidAutofillingRef.current = false;
+      }, 0);
+    }, [latestRfid?.rfid]);
 
     // Helper function to get current datetime in datetime-local format (local time)
     const getCurrentDateTime = (): string => {
@@ -1469,6 +1489,7 @@ export const InSessionForm = forwardRef<
 
           // Reset form
           setSavedUniqueCode(null);
+          rfidManuallyEditedRef.current = false;
           setFormState({
             plateNumber: "",
             rfid: "",
@@ -1553,6 +1574,9 @@ export const InSessionForm = forwardRef<
         if (savedSession.session?.uniqueCode) {
           setSavedUniqueCode(savedSession.session.uniqueCode);
         }
+
+        // New session started; allow RFID auto-fill again
+        rfidManuallyEditedRef.current = false;
 
         // Verify log was created by checking server response
         console.log("✅ Session saved:", savedSession.session?.id);
@@ -1978,9 +2002,12 @@ export const InSessionForm = forwardRef<
                       <Input
                         id="rfid"
                         value={formState.rfid}
-                        onChange={(e) =>
-                          setFormState((prev) => ({ ...prev, rfid: e.target.value }))
-                        }
+                        onChange={(e) => {
+                          if (!isRfidAutofillingRef.current) {
+                            rfidManuallyEditedRef.current = true;
+                          }
+                          setFormState((prev) => ({ ...prev, rfid: e.target.value }));
+                        }}
                         className="absolute inset-0 w-full h-full font-mono font-bold bg-transparent text-transparent border-0 focus:ring-0 focus-visible:ring-0 text-center caret-black z-10"
                         placeholder=""
                       />

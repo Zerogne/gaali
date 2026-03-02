@@ -10,6 +10,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useThirdPartyAutofill } from "@/hooks/useThirdPartyAutofill";
 import { useWeightStatus } from "@/hooks/useWeightStatus";
 import { useLatestLpr } from "@/hooks/useLatestLpr";
+import { useLatestRfid } from "@/hooks/useLatestRfid";
 import { updateTruckLog, sendTruckLogToCustoms } from "@/lib/api";
 import { buildDRN } from "@/lib/thirdPartyFormat";
 import { printLog } from "@/lib/pdf-export";
@@ -104,6 +105,8 @@ export const OutSessionForm = forwardRef<
     const { toast } = useToast();
     const router = useRouter();
     const isAutofillingRef = useRef(false);
+    const isRfidAutofillingRef = useRef(false);
+    const rfidManuallyEditedRef = useRef(false);
     const {
       getWebSocket,
       connectWebSocket,
@@ -134,6 +137,7 @@ export const OutSessionForm = forwardRef<
     // Plate number auto-fill for Out Session - filters by camera 2 (exit camera)
     // In Session uses camera 1 (entry camera), Out Session uses camera 2 (exit camera)
     const { latest: latestLpr } = useLatestLpr(1000, 2); // Poll every 1 second, filter by camera 2
+    const { latest: latestRfid } = useLatestRfid(1000); // Poll every 1 second
 
     // Check weight device connection status
     const weightStatus = useWeightStatus({
@@ -226,6 +230,22 @@ export const OutSessionForm = forwardRef<
       notes: "",
       inSessionId: undefined,
     });
+
+    // RFID auto-fill (do not overwrite manual entry)
+    useEffect(() => {
+      const value = latestRfid?.rfid?.trim();
+      if (!value) return;
+      if (rfidManuallyEditedRef.current) return;
+
+      isRfidAutofillingRef.current = true;
+      setFormState((prev) => {
+        if (prev.rfid && prev.rfid.trim()) return prev;
+        return { ...prev, rfid: value };
+      });
+      setTimeout(() => {
+        isRfidAutofillingRef.current = false;
+      }, 0);
+    }, [latestRfid?.rfid]);
 
     // Helper function to get current datetime in datetime-local format (local time)
     const getCurrentDateTime = (): string => {
@@ -1968,6 +1988,7 @@ export const OutSessionForm = forwardRef<
       setSavedUniqueCode(null);
       setSavedSessionId(null);
       setSavedLogId(null);
+      rfidManuallyEditedRef.current = false;
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -2055,9 +2076,12 @@ export const OutSessionForm = forwardRef<
                       <Input
                         id="rfid"
                         value={formState.rfid}
-                        onChange={(e) =>
-                          setFormState((prev) => ({ ...prev, rfid: e.target.value }))
-                        }
+                        onChange={(e) => {
+                          if (!isRfidAutofillingRef.current) {
+                            rfidManuallyEditedRef.current = true;
+                          }
+                          setFormState((prev) => ({ ...prev, rfid: e.target.value }));
+                        }}
                         className="absolute inset-0 w-full h-full font-mono font-bold bg-transparent text-transparent border-0 focus:ring-0 focus-visible:ring-0 text-center caret-black z-10"
                         placeholder=""
                       />

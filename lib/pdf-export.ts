@@ -143,6 +143,9 @@ async function fetchSessionUniqueCode(log: TruckLog): Promise<string | null> {
 async function fetchSessionTimes(log: TruckLog): Promise<{
   inTime?: string;
   outTime?: string;
+  inWeightKg?: number;
+  outWeightKg?: number;
+  netWeightKg?: number;
 }> {
   try {
     const res = await fetch(
@@ -215,9 +218,23 @@ async function fetchSessionTimes(log: TruckLog): Promise<{
     const inTime = inSession?.inTime || inSession?.createdAt;
     const outTime = outSession?.outTime || outSession?.createdAt;
 
+    const inWeightKg =
+      typeof inSession?.grossWeightKg === "number" ? inSession.grossWeightKg : undefined;
+    const outWeightKg =
+      typeof outSession?.grossWeightKg === "number" ? outSession.grossWeightKg : undefined;
+    const netWeightKg =
+      typeof outSession?.netWeightKg === "number"
+        ? outSession.netWeightKg
+        : typeof inSession?.netWeightKg === "number"
+          ? inSession.netWeightKg
+          : undefined;
+
     return {
       inTime: typeof inTime === "string" ? inTime : undefined,
       outTime: typeof outTime === "string" ? outTime : undefined,
+      inWeightKg,
+      outWeightKg,
+      netWeightKg,
     };
   } catch (error) {
     console.warn("Failed to fetch session times:", error);
@@ -427,7 +444,7 @@ function generateLogHTML(
   loaderName?: string,
   uniqueCode?: string | null,
   companyName?: string,
-  sessionTimes?: { inTime?: string; outTime?: string }
+  sessionTimes?: { inTime?: string; outTime?: string; inWeightKg?: number; outWeightKg?: number; netWeightKg?: number }
 ): string {
   // Use unique code (AKT) if available, otherwise generate receipt number
   const receiptNumber = uniqueCode || generateReceiptNumber(log);
@@ -497,27 +514,45 @@ function generateLogHTML(
   const receiptDate = log.createdAt ? formatReceiptDate(new Date(log.createdAt)) : "";
 
   // Get in weight (entry weight) and out weight (exit weight)
-  // For logs with netWeightKg (merged IN+OUT data):
-  //   - OUT weight (final) is stored in weightKg
-  //   - IN weight (initial) is calculated as OUT + NET
-  // For IN-only logs (no netWeightKg): weightKg is entry weight
-  // For OUT-only logs (no netWeightKg): weightKg is exit weight
+  // Prefer session-derived weights:
+  // - inWeightKg: IN session gross weight (totalInWeight)
+  // - outWeightKg: OUT session gross weight (totalOutWeight)
+  // Fallbacks use TruckLog fields when sessions are unavailable.
   let inWeight: number | null = null;
   let outWeight: number | null = null;
 
+  if (typeof sessionTimes?.inWeightKg === "number" && sessionTimes.inWeightKg > 0) {
+    inWeight = sessionTimes.inWeightKg;
+  }
+  if (typeof sessionTimes?.outWeightKg === "number" && sessionTimes.outWeightKg > 0) {
+    outWeight = sessionTimes.outWeightKg;
+  }
+
   if (isMergedLog) {
-    if (log.weightKg != null && log.netWeightKg != null) {
-      outWeight = log.weightKg;
-      inWeight = log.weightKg + log.netWeightKg;
+    // For merged logs, TruckLog.weightKg is often overwritten with OUT gross weight
+    if (outWeight == null) {
+      outWeight = log.weightKg ?? null;
+    }
+    // If session IN weight isn't available, try car+trailer (total IN weight)
+    if (inWeight == null) {
+      const carWeight = typeof (log as any).carWeight === "number" ? (log as any).carWeight : 0;
+      const trailerWeight = typeof (log as any).trailerWeight === "number" ? (log as any).trailerWeight : 0;
+      const sum = (carWeight > 0 ? carWeight : 0) + (trailerWeight > 0 ? trailerWeight : 0);
+      inWeight = sum > 0 ? sum : null;
     }
   } else if (log.direction === "IN") {
-    inWeight = log.weightKg ?? null;
+    if (inWeight == null) inWeight = log.weightKg ?? null;
   } else if (log.direction === "OUT") {
-    outWeight = log.weightKg ?? null;
+    if (outWeight == null) outWeight = log.weightKg ?? null;
   }
   
-  // Net weight: always use netWeightKg if available (allow 0 or positive values)
-  const netWeight = (log.netWeightKg !== undefined && log.netWeightKg !== null) ? log.netWeightKg : null;
+  // Net weight: prefer session-derived netWeightKg, then log.netWeightKg
+  const netWeight =
+    typeof sessionTimes?.netWeightKg === "number"
+      ? sessionTimes.netWeightKg
+      : (log.netWeightKg !== undefined && log.netWeightKg !== null)
+        ? log.netWeightKg
+        : null;
   
   // Format time for display (HH:MM)
   const formatTime = (date: Date): string => {
