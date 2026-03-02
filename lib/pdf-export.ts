@@ -158,10 +158,12 @@ async function fetchSessionTimes(log: TruckLog): Promise<{
     if (sessions.length === 0) return {};
 
     const toNumberMaybe = (value: unknown): number | null => {
-      if (typeof value === "number" && !isNaN(value)) return value;
+      if (typeof value === "number" && Number.isFinite(value)) return value;
       if (typeof value === "string") {
-        const n = Number(value);
-        return !isNaN(n) ? n : null;
+        const trimmed = value.trim();
+        if (!trimmed) return null;
+        const n = Number(trimmed);
+        return Number.isFinite(n) ? n : null;
       }
       return null;
     };
