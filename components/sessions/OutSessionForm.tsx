@@ -407,10 +407,10 @@ export const OutSessionForm = forwardRef<
           inTime: editLog.createdAt ? toLocalDateTime(editLog.createdAt) : getCurrentDateTime(),
           outWeightKg: editLog.weightKg || null,
           netWeightKg: editLog.netWeightKg || null,
-          grossWeightKg: editLog.weightKg || null, // Added from IN form
-          carWeight: (editLog as any).truckWeight ?? (editLog as any).carWeight || 0,
-          trailerWeight: (editLog as any).trailerWeight || 0,
-          totalWeight: editLog.weightKg || 0, // Added from IN form
+          grossWeightKg: (editLog as any).totalOutWeight ?? editLog.weightKg ?? null,
+          carWeight: (editLog as any).truckWeight ?? 0,
+          trailerWeight: (editLog as any).trailerWeight ?? 0,
+          totalWeight: (editLog as any).totalOutWeight ?? 0,
           sealNumber: editLog.sealNumber || "",
           hasTrailer: editLog.hasTrailer || false,
           trailerNumber: editLog.trailerPlate || "",

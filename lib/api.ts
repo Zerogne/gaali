@@ -148,12 +148,12 @@ export async function saveTruckLog(
 
     // Create log document: totalInWeight/out = truckWeight + trailerWeight; persist truckWeight, trailerWeight too
     const { weightKg, netWeightKg, carWeight, ...rest } = validation.data as any
-    const truckWeight = rest.truckWeight ?? carWeight
-    const trailerWeight = rest.trailerWeight
+    const validTruckWeight = rest.truckWeight ?? carWeight
+    const validTrailerWeight = rest.trailerWeight
     const logDoc: TruckLog = {
       ...rest,
-      truckWeight: truckWeight != null && truckWeight > 0 ? truckWeight : undefined,
-      trailerWeight: trailerWeight != null && trailerWeight > 0 ? trailerWeight : undefined,
+      truckWeight: validTruckWeight != null && validTruckWeight > 0 ? validTruckWeight : undefined,
+      trailerWeight: validTrailerWeight != null && validTrailerWeight > 0 ? validTrailerWeight : undefined,
       totalInWeight: rest.totalInWeight,
       totalOutWeight: rest.totalOutWeight,
       netWeight: rest.netWeight,

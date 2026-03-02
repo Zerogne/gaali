@@ -268,34 +268,6 @@ async function fetchSessionTimes(log: TruckLog): Promise<{
       toNumberMaybe(inSession?.netWeightKg) ??
       undefined;
 
-    // #region agent log
-    if (typeof fetch === "function") {
-      fetch("http://127.0.0.1:7646/ingest/a9a723fa-f2d7-4347-bf2f-e88d103a7252", {
-        method: "POST",
-        headers: { "Content-Type": "application/json", "X-Debug-Session-Id": "7a4404" },
-        body: JSON.stringify({
-          sessionId: "7a4404",
-          location: "pdf-export.ts:fetchSessionTimes:result",
-          message: "matched sessions and weights",
-          data: {
-            inSessionId: inSession?.id,
-            outSessionId: outSession?.id,
-            inSessionGrossRaw: inSession?.grossWeightKg,
-            outSessionGrossRaw: outSession?.grossWeightKg,
-            inWeightKg,
-            outWeightKg,
-            netWeightKg,
-            plate: log.plate,
-            logWeightKg: log.weightKg,
-            logNetWeightKg: log.netWeightKg,
-          },
-          timestamp: Date.now(),
-          hypothesisId: "D",
-        }),
-      }).catch(() => {});
-    }
-    // #endregion
-
     return {
       inTime: typeof inTime === "string" ? inTime : undefined,
       outTime: typeof outTime === "string" ? outTime : undefined,
@@ -315,45 +287,9 @@ async function fetchSessionTimes(log: TruckLog): Promise<{
  * @param providedUniqueCode - Optional unique code to use instead of fetching
  */
 export async function printLog(log: TruckLog, providedUniqueCode?: string | null): Promise<void> {
-  // #region agent log
-  fetch("http://127.0.0.1:7646/ingest/a9a723fa-f2d7-4347-bf2f-e88d103a7252", {
-    method: "POST",
-    headers: { "Content-Type": "application/json", "X-Debug-Session-Id": "7a4404" },
-    body: JSON.stringify({
-      sessionId: "7a4404",
-      location: "pdf-export.ts:printLog:entry",
-      message: "printLog called with log",
-      data: {
-        direction: log.direction,
-        totalInWeight: (log as any).totalInWeight,
-        totalOutWeight: (log as any).totalOutWeight,
-        netWeight: (log as any).netWeight,
-        weightKg: log.weightKg,
-        netWeightKg: log.netWeightKg,
-        plate: log.plate,
-      },
-      timestamp: Date.now(),
-      hypothesisId: "A",
-    }),
-  }).catch(() => {});
-  // #endregion
   // Fetch related data (transport company, organizations)
   const relatedData = await fetchRelatedData(log);
   const sessionTimes = await fetchSessionTimes(log);
-  // #region agent log
-  fetch("http://127.0.0.1:7646/ingest/a9a723fa-f2d7-4347-bf2f-e88d103a7252", {
-    method: "POST",
-    headers: { "Content-Type": "application/json", "X-Debug-Session-Id": "7a4404" },
-    body: JSON.stringify({
-      sessionId: "7a4404",
-      location: "pdf-export.ts:printLog:afterFetchSessionTimes",
-      message: "sessionTimes from fetchSessionTimes",
-      data: { sessionTimes },
-      timestamp: Date.now(),
-      hypothesisId: "B",
-    }),
-  }).catch(() => {});
-  // #endregion
 
   // Fetch current user (loader) information and company name
   let loaderName: string | undefined;
@@ -625,28 +561,6 @@ function generateLogHTML(
 
   const receiptDate = log.createdAt ? formatReceiptDate(new Date(log.createdAt)) : "";
 
-  // #region agent log
-  fetch("http://127.0.0.1:7646/ingest/a9a723fa-f2d7-4347-bf2f-e88d103a7252", {
-    method: "POST",
-    headers: { "Content-Type": "application/json", "X-Debug-Session-Id": "7a4404" },
-    body: JSON.stringify({
-      sessionId: "7a4404",
-      location: "pdf-export.ts:generateLogHTML:logWeightFields",
-      message: "log weight fields before fallbacks",
-      data: {
-        totalInWeight: getLogTotalIn(log),
-        totalOutWeight: getLogTotalOut(log),
-        weightKg: log.weightKg,
-        netWeightKg: log.netWeightKg,
-        netWeight: (log as any).netWeight,
-        plate: log.plate,
-      },
-      timestamp: Date.now(),
-      hypothesisId: "H1",
-    }),
-  }).catch(() => {});
-  // #endregion
-
   // Prefer session-derived weights; fallback to TruckLog totalInWeight/totalOutWeight
   let inWeight: number | null = null;
   let outWeight: number | null = null;
@@ -682,31 +596,6 @@ function generateLogHTML(
       : ((log as any).netWeight ?? log.netWeightKg) != null
         ? ((log as any).netWeight ?? log.netWeightKg)
         : null;
-
-  // #region agent log
-  if (typeof fetch === "function") {
-    fetch("http://127.0.0.1:7646/ingest/a9a723fa-f2d7-4347-bf2f-e88d103a7252", {
-      method: "POST",
-      headers: { "Content-Type": "application/json", "X-Debug-Session-Id": "7a4404" },
-      body: JSON.stringify({
-        sessionId: "7a4404",
-        location: "pdf-export.ts:generateLogHTML:weights",
-        message: "final weights for PDF table",
-        data: {
-          inWeight,
-          outWeight,
-          netWeight,
-          hasSessionIn: typeof sessionTimes?.inWeightKg === "number",
-          hasSessionOut: typeof sessionTimes?.outWeightKg === "number",
-          isMergedLog,
-          logDirection: log.direction,
-        },
-        timestamp: Date.now(),
-        hypothesisId: "C",
-      }),
-    }).catch(() => {});
-  }
-  // #endregion
 
   // Format time for display (HH:MM)
   const formatTime = (date: Date): string => {
