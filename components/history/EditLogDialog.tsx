@@ -69,6 +69,7 @@ export function EditLogDialog({
   const [trailerPlate, setTrailerPlate] = useState("");
   const [direction, setDirection] = useState<Direction>("IN");
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [sessionWeightsLoaded, setSessionWeightsLoaded] = useState(false);
 
   // Data loading state
   const [drivers, setDrivers] = useState<Driver[]>([]);
@@ -256,6 +257,7 @@ export function EditLogDialog({
       setTrailerPlate(log.trailerPlate || "");
       setDirection(log.direction);
       setErrors({});
+      setSessionWeightsLoaded(false);
       // For combined logs, calculate IN and OUT weights
       if (log.netWeightKg !== undefined && log.netWeightKg !== null && log.weightKg) {
         const outW = log.weightKg;
@@ -267,6 +269,7 @@ export function EditLogDialog({
         setInWeight("");
         setOutWeight("");
       }
+
     } else {
       // Reset form when log is null
       setPlate("");
@@ -285,8 +288,122 @@ export function EditLogDialog({
       setHasTrailer(false);
       setTrailerPlate("");
       setErrors({});
+      setSessionWeightsLoaded(false);
     }
   }, [log, products]); // Add products to dependencies so it re-runs when products load
+
+  // For combined (merged) logs, load the real IN/OUT weights from truck sessions (same source as PDF)
+  useEffect(() => {
+    if (!open || !log) return;
+    const hasOutData = log.netWeightKg !== undefined && log.netWeightKg !== null;
+    const isCombined = hasOutData && log.direction === "IN";
+    if (!isCombined) return;
+    if (sessionWeightsLoaded) return;
+
+    const controller = new AbortController();
+    (async () => {
+      try {
+        const res = await fetch(
+          `/api/truck-sessions?plateNumber=${encodeURIComponent(log.plate)}&limit=100`,
+          { signal: controller.signal, cache: "no-store" }
+        );
+        if (!res.ok) return;
+        const data = await res.json();
+        const sessions: any[] = Array.isArray(data?.sessions) ? data.sessions : [];
+        if (sessions.length === 0) return;
+
+        const inSessions = sessions.filter((s) => s?.direction === "IN");
+        const outSessions = sessions.filter((s) => s?.direction === "OUT");
+
+        const logCreatedAtMs = log.createdAt ? new Date(log.createdAt).getTime() : NaN;
+        const toMs = (s: any) => {
+          const d = s?.createdAt ? new Date(s.createdAt) : null;
+          return d ? d.getTime() : NaN;
+        };
+        const pickClosest = (candidates: any[]) => {
+          if (!isFinite(logCreatedAtMs)) return candidates[0] || null;
+          let best: any | null = null;
+          let bestDiff = Number.POSITIVE_INFINITY;
+          for (const s of candidates) {
+            const ms = toMs(s);
+            if (!isFinite(ms)) continue;
+            const diff = Math.abs(ms - logCreatedAtMs);
+            if (diff < bestDiff) {
+              bestDiff = diff;
+              best = s;
+            }
+          }
+          return best || candidates[0] || null;
+        };
+
+        // Start from IN session closest to log.createdAt (IN log createdAt)
+        const inSession = pickClosest(inSessions);
+        let outSession: any | null = null;
+        if (inSession?.id) {
+          const linkedOut = outSessions
+            .filter((s) => s?.inSessionId === inSession.id)
+            .sort((a, b) => toMs(a) - toMs(b));
+          outSession = linkedOut[0] || null;
+        }
+
+        const inGross =
+          typeof inSession?.grossWeightKg === "number" ? inSession.grossWeightKg : null;
+        const outGross =
+          typeof outSession?.grossWeightKg === "number" ? outSession.grossWeightKg : null;
+        const net =
+          typeof outSession?.netWeightKg === "number"
+            ? outSession.netWeightKg
+            : typeof log.netWeightKg === "number"
+              ? Math.abs(log.netWeightKg)
+              : null;
+
+        if (inGross && inGross > 0) {
+          setInWeight(String(inGross));
+        }
+        if (outGross && outGross > 0) {
+          setOutWeight(String(outGross));
+          setWeight(String(outGross)); // keep weightKg aligned with OUT for combined logs
+        } else if (typeof log.weightKg === "number" && log.weightKg > 0) {
+          setOutWeight(String(log.weightKg));
+          setWeight(String(log.weightKg));
+        }
+        if (typeof net === "number") {
+          setNetWeight(String(Math.abs(net)));
+        }
+
+        setSessionWeightsLoaded(true);
+      } catch {
+        // ignore
+      }
+    })();
+
+    return () => controller.abort();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, log?.id]);
+
+  // Fetch full log details (some fields like sealNumber may be missing in list view)
+  useEffect(() => {
+    if (!open || !log?.id) return;
+
+    const controller = new AbortController();
+    fetch(`/api/logs/${log.id}`, { signal: controller.signal, cache: "no-store" })
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        const fullLog = data?.log as TruckLog | undefined;
+        if (!fullLog) return;
+
+        // Only fill fields that are currently empty (don't overwrite user edits)
+        if ((!sealNumber || !sealNumber.trim()) && fullLog.sealNumber) {
+          setSealNumber(fullLog.sealNumber);
+        }
+      })
+      .catch(() => {
+        // ignore
+      });
+
+    return () => controller.abort();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, log?.id]);
 
 
   const handleSubmit = async (e: React.FormEvent) => {

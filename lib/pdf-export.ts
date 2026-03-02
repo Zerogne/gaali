@@ -357,7 +357,7 @@ export async function exportLogToPDF(log: TruckLog, providedUniqueCode?: string 
       throw new Error("Failed to access iframe document");
     }
 
-    const body = iframeDoc.body;
+    const {body} = iframeDoc;
 
     // Convert HTML to canvas
     const canvas = await html2canvas(body, {

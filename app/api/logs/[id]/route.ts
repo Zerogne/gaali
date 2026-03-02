@@ -1,6 +1,42 @@
 import { NextResponse } from "next/server"
-import { updateTruckLog, deleteTruckLog } from "@/lib/api"
+import { getTruckLog, updateTruckLog, deleteTruckLog } from "@/lib/api"
 import { errorToResponse } from "@/lib/errors"
+
+/**
+ * GET /api/logs/[id] - Get a single truck log
+ */
+export async function GET(
+  _request: Request,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const { id } = await params
+    if (!id) {
+      return NextResponse.json({ error: "Log ID is required" }, { status: 400 })
+    }
+
+    const log = await getTruckLog(id)
+    if (!log) {
+      return NextResponse.json({ error: "Log not found" }, { status: 404 })
+    }
+
+    return NextResponse.json(
+      { success: true, log },
+      {
+        status: 200,
+        headers: { "Cache-Control": "no-store, no-cache, must-revalidate" },
+      }
+    )
+  } catch (error) {
+    const errorResponse = errorToResponse(error)
+    const statusCode =
+      error instanceof Error && "statusCode" in error
+        ? (error as { statusCode: number }).statusCode
+        : 500
+
+    return NextResponse.json(errorResponse, { status: statusCode })
+  }
+}
 
 /**
  * API route to update a truck log
@@ -45,7 +81,7 @@ export async function PUT(
       ? (error as { statusCode: number }).statusCode
       : 500
     
-    return NextResponse.json(errorResponse, { statusCode })
+    return NextResponse.json(errorResponse, { status: statusCode })
   }
 }
 
@@ -84,6 +120,6 @@ export async function DELETE(
       ? (error as { statusCode: number }).statusCode
       : 500
     
-    return NextResponse.json(errorResponse, { statusCode })
+    return NextResponse.json(errorResponse, { status: statusCode })
   }
 }
