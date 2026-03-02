@@ -70,16 +70,24 @@ export const truckLogSchema = z.object({
     .min(1, 'Cargo type is required')
     .max(100, 'Cargo type is too long'),
   productId: z.string().max(100).optional(),
-  weightKg: z
+  totalInWeight: z
     .number()
-    .positive('Weight must be positive')
+    .positive('Total in weight must be positive')
     .max(1000000, 'Weight is too large')
     .optional(),
-  netWeightKg: z
+  totalOutWeight: z
     .number()
-    .positive('Net weight must be positive')
+    .positive('Total out weight must be positive')
+    .max(1000000, 'Weight is too large')
+    .optional(),
+  netWeight: z
+    .number()
     .max(1000000, 'Net weight is too large')
     .optional(),
+  truckWeight: z.number().positive().max(1000000).optional(),
+  trailerWeight: z.number().positive().max(1000000).optional(),
+  weightKg: z.number().positive().max(1000000).optional(),
+  netWeightKg: z.number().positive().max(1000000).optional(),
   comments: z.string().max(1000, 'Comments are too long').optional(),
   vehicleRegistrationNumber: z.string().max(50).optional(),
   vehicleRegistrationYear: z.string().max(4).optional(),

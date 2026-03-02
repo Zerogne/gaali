@@ -36,10 +36,20 @@ export interface TruckLog {
   driverName: string; // Keep for backward compatibility
   cargoType: string; // Product name (label) - for display
   productId?: string; // Product ID (value) - for form selection
+  /** Total weight when entering (IN) = truckWeight + trailerWeight. Stored in DB. */
+  totalInWeight?: number;
+  /** Total weight when exiting (OUT) = truckWeight + trailerWeight. Stored in DB. */
+  totalOutWeight?: number;
+  /** Net weight (cargo) = totalInWeight - totalOutWeight. Stored in DB. */
+  netWeight?: number;
+  /** Truck/cab weight (машины жин). totalInWeight/out = truckWeight + trailerWeight. */
+  truckWeight?: number;
+  /** Trailer weight (чиргүүлийн жин). totalInWeight/out = truckWeight + trailerWeight. */
+  trailerWeight?: number;
+  /** @deprecated Use totalInWeight/totalOutWeight. Populated when reading for backward compat. */
   weightKg?: number;
-  netWeightKg?: number; // Цэвэр жин (net weight) - only for OUT direction
-  carWeight?: number; // Машины жин (их бие)
-  trailerWeight?: number; // Чиргүүлийн жин
+  /** @deprecated Use netWeight. Populated when reading for backward compat. */
+  netWeightKg?: number;
   comments?: string;
   origin?: string; // Haanaas
   destination?: string; // Haashaa

@@ -408,8 +408,8 @@ export const OutSessionForm = forwardRef<
           outWeightKg: editLog.weightKg || null,
           netWeightKg: editLog.netWeightKg || null,
           grossWeightKg: editLog.weightKg || null, // Added from IN form
-          carWeight: (editLog as any).carWeight || 0, // Added from IN form
-          trailerWeight: (editLog as any).trailerWeight || 0, // Added from IN form
+          carWeight: (editLog as any).truckWeight ?? (editLog as any).carWeight || 0,
+          trailerWeight: (editLog as any).trailerWeight || 0,
           totalWeight: editLog.weightKg || 0, // Added from IN form
           sealNumber: editLog.sealNumber || "",
           hasTrailer: editLog.hasTrailer || false,
@@ -1064,10 +1064,10 @@ export const OutSessionForm = forwardRef<
               const inSession = data.session;
               const inLog = data.log; // Log has all the fields
 
-              // Calculate IN totalWeight: carWeight + trailerWeight, or fallback to weightKg
-              const inTotalWeight = (inLog as any)?.carWeight && (inLog as any)?.trailerWeight
-                ? ((inLog as any).carWeight || 0) + ((inLog as any).trailerWeight || 0)
-                : (inLog?.weightKg || inSession.grossWeightKg || null);
+              // totalInWeight = truckWeight + trailerWeight; fallback to totalInWeight/weightKg
+              const tw = (inLog as any)?.truckWeight ?? (inLog as any)?.carWeight
+              const trw = (inLog as any)?.trailerWeight
+              const inTotalWeight = (tw != null && trw != null) ? tw + trw : (inLog as any)?.totalInWeight ?? inLog?.weightKg ?? inSession.grossWeightKg ?? null;
 
               // Store IN weight for display
               setInWeightKg(inTotalWeight);
@@ -1422,10 +1422,10 @@ export const OutSessionForm = forwardRef<
               }
 
               // Calculate net weight: totalWeight(IN) - totalWeight(OUT)
-              // Use carWeight + trailerWeight from IN log if available, otherwise use weightKg
-              const inTotalWeight = (inLog as any)?.carWeight !== undefined && (inLog as any)?.trailerWeight !== undefined
-                ? ((inLog as any).carWeight || 0) + ((inLog as any).trailerWeight || 0)
-                : (inLog?.weightKg || inSession.grossWeightKg || 0);
+              // totalInWeight = truckWeight + trailerWeight; fallback to totalInWeight/weightKg
+              const tw = (inLog as any)?.truckWeight ?? (inLog as any)?.carWeight
+              const trw = (inLog as any)?.trailerWeight
+              const inTotalWeight = (tw != null && trw != null) ? tw + trw : (inLog as any)?.totalInWeight ?? inLog?.weightKg ?? inSession.grossWeightKg ?? 0;
               const outWeightValue = outWeight || 0;
               const netWeight = inTotalWeight - outWeightValue;
 
@@ -1656,8 +1656,8 @@ export const OutSessionForm = forwardRef<
             formState.netWeightKg !== undefined
               ? formState.netWeightKg
               : undefined,
-          carWeight: formState.carWeight || undefined, // Added from IN form
-          trailerWeight: formState.trailerWeight || undefined, // Added from IN form
+          carWeight: formState.carWeight || undefined,
+          trailerWeight: formState.trailerWeight || undefined,
           inSessionId: formState.inSessionId || undefined,
           outTime: saveTime,
           inTime: formState.inTime || undefined, // Added from IN form

@@ -242,12 +242,8 @@ export async function POST(request: Request) {
               : (typeof body.netWeightKg === 'string' ? parseFloat(body.netWeightKg) : undefined);
             return val !== undefined && !isNaN(val) ? Math.abs(val) : undefined;
           })(),
-      carWeight: body.carWeight !== null && body.carWeight !== undefined && body.carWeight > 0
-        ? (typeof body.carWeight === 'number' ? body.carWeight : parseFloat(body.carWeight))
-        : undefined,
-      trailerWeight: body.trailerWeight !== null && body.trailerWeight !== undefined && body.trailerWeight > 0
-        ? (typeof body.trailerWeight === 'number' ? body.trailerWeight : parseFloat(body.trailerWeight))
-        : undefined,
+      carWeight: body.carWeight != null && body.carWeight > 0 ? (typeof body.carWeight === 'number' ? body.carWeight : parseFloat(body.carWeight)) : undefined,
+      trailerWeight: body.trailerWeight != null && body.trailerWeight > 0 ? (typeof body.trailerWeight === 'number' ? body.trailerWeight : parseFloat(body.trailerWeight)) : undefined,
       inTime: body.inTime === "" ? undefined : body.inTime,
       outTime: body.outTime === "" ? undefined : body.outTime,
       notes: body.notes === "" ? undefined : body.notes,
@@ -487,13 +483,16 @@ export async function POST(request: Request) {
           if (existingInLog) {
             console.log("📝 Found existing IN log, updating with OUT data:", existingInLog.id)
             
-            // Update the existing IN log with OUT data
+            // Update existing IN log with OUT data. totalOutWeight = truckWeight + trailerWeight
+            const truckW = body.carWeight != null && body.carWeight > 0 ? (typeof body.carWeight === 'number' ? body.carWeight : parseFloat(body.carWeight)) : (existingInLog as any).truckWeight
+            const trailerW = body.trailerWeight != null && body.trailerWeight > 0 ? (typeof body.trailerWeight === 'number' ? body.trailerWeight : parseFloat(body.trailerWeight)) : (existingInLog as any).trailerWeight
             const updateData: any = {
-              // Keep IN data, add/update OUT data
               updatedAt: new Date().toISOString(),
-              netWeightKg: session.netWeightKg || undefined,
-              // Update weight if OUT weight is provided (this might be the final weight)
-              weightKg: session.grossWeightKg || existingInLog.weightKg,
+              netWeight: session.netWeightKg != null ? Math.abs(session.netWeightKg) : undefined,
+              totalOutWeight: session.grossWeightKg || (existingInLog as any).totalOutWeight,
+              totalInWeight: (existingInLog as any).totalInWeight ?? existingInLog.weightKg,
+              truckWeight: truckW,
+              trailerWeight: trailerW,
               // Update other fields if provided in OUT session
               driverId: body.driverId || existingInLog.driverId,
               driverName: driverName || existingInLog.driverName, // Use looked-up driver name
@@ -516,19 +515,6 @@ export async function POST(request: Request) {
               rfid: body.rfid || (existingInLog as any).rfid || undefined,
             }
             
-            // Preserve or update carWeight and trailerWeight
-            // If provided in OUT session, use those; otherwise preserve existing values
-            if (body.carWeight !== undefined && body.carWeight !== null && body.carWeight > 0) {
-              updateData.carWeight = typeof body.carWeight === 'number' ? body.carWeight : parseFloat(body.carWeight)
-            } else if (existingInLog.carWeight !== undefined) {
-              updateData.carWeight = existingInLog.carWeight
-            }
-            if (body.trailerWeight !== undefined && body.trailerWeight !== null && body.trailerWeight > 0) {
-              updateData.trailerWeight = typeof body.trailerWeight === 'number' ? body.trailerWeight : parseFloat(body.trailerWeight)
-            } else if (existingInLog.trailerWeight !== undefined) {
-              updateData.trailerWeight = existingInLog.trailerWeight
-            }
-            
             console.log("📋 Update data with lookups:", {
               driverName: updateData.driverName,
               driverId: updateData.driverId,
@@ -538,7 +524,10 @@ export async function POST(request: Request) {
 
             await logsCollection.updateOne(
               { id: existingInLog.id },
-              { $set: updateData }
+              { 
+                $set: updateData,
+                $unset: { weightKg: "", netWeightKg: "", carWeight: "" },
+              }
             )
 
             createdOrUpdatedLogId = existingInLog.id
@@ -547,15 +536,20 @@ export async function POST(request: Request) {
           } else {
             // No IN log found, create a new OUT log
             console.log("📝 No existing IN log found, creating new OUT log")
+            const truckW = body.carWeight != null && body.carWeight > 0 ? (typeof body.carWeight === 'number' ? body.carWeight : parseFloat(body.carWeight)) : undefined
+            const trailerW = body.trailerWeight != null && body.trailerWeight > 0 ? (typeof body.trailerWeight === 'number' ? body.trailerWeight : parseFloat(body.trailerWeight)) : undefined
+            const totalOut = (truckW != null && trailerW != null) ? truckW + trailerW : session.grossWeightKg
             const logData: any = {
               direction: session.direction,
               plate: session.plateNumber,
               driverId: body.driverId || undefined,
-              driverName: driverName, // Should be looked up from driverId
-              cargoType: cargoType, // Should be looked up from productId (product name/label)
-              productId: body.productId || undefined, // Store productId for EditDialog
-              weightKg: session.grossWeightKg,
-              netWeightKg: session.netWeightKg,
+              driverName: driverName,
+              cargoType: cargoType,
+              productId: body.productId || undefined,
+              totalOutWeight: totalOut,
+              netWeight: session.netWeightKg != null ? Math.abs(session.netWeightKg) : undefined,
+              truckWeight: truckW,
+              trailerWeight: trailerW,
               comments: session.notes,
               origin: body.origin || undefined,
               destination: body.destination || undefined,
@@ -572,22 +566,14 @@ export async function POST(request: Request) {
               rfid: body.rfid || undefined,
             }
             
-            // Add carWeight and trailerWeight for OUT sessions if provided
-            if (body.carWeight !== undefined && body.carWeight !== null && body.carWeight > 0) {
-              logData.carWeight = typeof body.carWeight === 'number' ? body.carWeight : parseFloat(body.carWeight)
-            }
-            if (body.trailerWeight !== undefined && body.trailerWeight !== null && body.trailerWeight > 0) {
-              logData.trailerWeight = typeof body.trailerWeight === 'number' ? body.trailerWeight : parseFloat(body.trailerWeight)
-            }
-            
             console.log("📋 OUT log data with lookups:", {
               driverName: logData.driverName,
               driverId: logData.driverId,
               cargoType: logData.cargoType,
               productId: logData.productId,
               transportCompanyId: logData.transportCompanyId,
-              carWeight: logData.carWeight,
-              trailerWeight: logData.trailerWeight,
+              totalOutWeight: logData.totalOutWeight,
+              netWeight: logData.netWeight,
             })
 
             const log = await saveTruckLog(logData)
@@ -598,15 +584,20 @@ export async function POST(request: Request) {
         } catch (updateError) {
           console.error("⚠️ Error updating/finding log entry:", updateError)
           // Fallback: create a new log
+          const truckW = body.carWeight != null && body.carWeight > 0 ? (typeof body.carWeight === 'number' ? body.carWeight : parseFloat(body.carWeight)) : undefined
+          const trailerW = body.trailerWeight != null && body.trailerWeight > 0 ? (typeof body.trailerWeight === 'number' ? body.trailerWeight : parseFloat(body.trailerWeight)) : undefined
+          const totalOut = (truckW != null && trailerW != null) ? truckW + trailerW : session.grossWeightKg
           const logData: any = {
             direction: session.direction,
             plate: session.plateNumber,
             driverId: body.driverId || undefined,
-            driverName: driverName, // Should be looked up from driverId
-            cargoType: cargoType, // Should be looked up from productId (product name/label)
-            productId: body.productId || undefined, // Store productId for EditDialog
-            weightKg: session.grossWeightKg,
-            netWeightKg: session.netWeightKg,
+            driverName: driverName,
+            cargoType: cargoType,
+            productId: body.productId || undefined,
+            totalOutWeight: totalOut,
+            netWeight: session.netWeightKg != null ? Math.abs(session.netWeightKg) : undefined,
+            truckWeight: truckW,
+            trailerWeight: trailerW,
             comments: session.notes,
             origin: body.origin || undefined,
             destination: body.destination || undefined,
@@ -623,22 +614,12 @@ export async function POST(request: Request) {
             rfid: body.rfid || undefined,
           }
           
-          // Add carWeight and trailerWeight if provided
-          if (body.carWeight !== undefined && body.carWeight !== null && body.carWeight > 0) {
-            logData.carWeight = typeof body.carWeight === 'number' ? body.carWeight : parseFloat(body.carWeight)
-          }
-          if (body.trailerWeight !== undefined && body.trailerWeight !== null && body.trailerWeight > 0) {
-            logData.trailerWeight = typeof body.trailerWeight === 'number' ? body.trailerWeight : parseFloat(body.trailerWeight)
-          }
-          
           console.log("📋 Fallback log data with lookups:", {
             driverName: logData.driverName,
             driverId: logData.driverId,
             cargoType: logData.cargoType,
             productId: logData.productId,
             transportCompanyId: logData.transportCompanyId,
-            carWeight: logData.carWeight,
-            trailerWeight: logData.trailerWeight,
           })
           const log = await saveTruckLog(logData)
           createdOrUpdatedLogId = log.id
@@ -646,21 +627,23 @@ export async function POST(request: Request) {
           logCreated = true
         }
       } else {
-        // For IN sessions, create a new log as usual
-        // Ensure weightKg is a valid positive number
-        const weightKg = session.grossWeightKg && session.grossWeightKg > 0 
+        // For IN sessions, create a new log - use totalInWeight only
+        const totalInWeight = session.grossWeightKg && session.grossWeightKg > 0 
           ? session.grossWeightKg 
           : undefined
         
+        const truckW = body.carWeight != null && body.carWeight > 0 ? (typeof body.carWeight === 'number' ? body.carWeight : parseFloat(body.carWeight)) : undefined
+        const trailerW = body.trailerWeight != null && body.trailerWeight > 0 ? (typeof body.trailerWeight === 'number' ? body.trailerWeight : parseFloat(body.trailerWeight)) : undefined
         const logData: any = {
           direction: session.direction,
           plate: session.plateNumber,
           driverId: body.driverId || undefined,
-          driverName: driverName, // Should be looked up from driverId if not provided
-          cargoType: cargoType, // Should be looked up from productId (product name/label)
-          productId: body.productId || undefined, // Store productId for EditDialog
-          weightKg: weightKg,
-          netWeightKg: session.netWeightKg && session.netWeightKg > 0 ? session.netWeightKg : undefined,
+          driverName: driverName,
+          cargoType: cargoType,
+          productId: body.productId || undefined,
+          totalInWeight: (truckW != null && trailerW != null) ? truckW + trailerW : totalInWeight,
+          truckWeight: truckW,
+          trailerWeight: trailerW,
           comments: session.notes || undefined,
           origin: body.origin || undefined,
           destination: body.destination || undefined,
@@ -683,26 +666,11 @@ export async function POST(request: Request) {
           cargoType: logData.cargoType,
           productId: logData.productId,
           transportCompanyId: logData.transportCompanyId,
-          senderOrganization: logData.senderOrganization,
-          receiverOrganization: logData.receiverOrganization,
-        })
-        
-        // Add carWeight and trailerWeight for IN sessions if provided
-        if (body.carWeight !== undefined && body.carWeight !== null && body.carWeight > 0) {
-          logData.carWeight = typeof body.carWeight === 'number' ? body.carWeight : parseFloat(body.carWeight)
-        }
-        if (body.trailerWeight !== undefined && body.trailerWeight !== null && body.trailerWeight > 0) {
-          logData.trailerWeight = typeof body.trailerWeight === 'number' ? body.trailerWeight : parseFloat(body.trailerWeight)
-        }
-        
-        console.log("📋 IN log data with weight fields:", {
-          carWeight: logData.carWeight,
-          trailerWeight: logData.trailerWeight,
-          totalWeight: logData.weightKg,
+          totalInWeight: logData.totalInWeight,
         })
 
         console.log("📝 Creating IN log entry with data:", JSON.stringify(logData, null, 2))
-        console.log("📝 Driver name:", driverName, "| Cargo type:", cargoType, "| Weight:", weightKg)
+        console.log("📝 Driver name:", driverName, "| Cargo type:", cargoType, "| TotalInWeight:", totalInWeight)
         console.log("📝 Required fields check:", {
           direction: logData.direction,
           plate: logData.plate,

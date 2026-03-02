@@ -6,6 +6,46 @@ import { truckLogSchema } from "@/lib/validation"
 import { handleError, ValidationError } from "@/lib/errors"
 import type { TruckLog } from "./types"
 
+/** Normalize log for client: ensure totalInWeight/totalOutWeight/netWeight exist, populate weightKg/netWeightKg for UI compat */
+function normalizeLogForClient(doc: any): TruckLog {
+  const hasNew = doc.totalInWeight != null || doc.totalOutWeight != null || doc.netWeight != null
+  const hasOld = doc.weightKg != null || doc.netWeightKg != null
+
+  let totalInWeight = doc.totalInWeight
+  let totalOutWeight = doc.totalOutWeight
+  let netWeight = doc.netWeight
+
+  if (!hasNew && hasOld) {
+    const w = doc.weightKg
+    const n = doc.netWeightKg
+    if (doc.direction === "IN" && n != null) {
+      totalOutWeight = w
+      netWeight = n
+      totalInWeight = (w ?? 0) + Math.abs(n)
+    } else if (doc.direction === "IN") {
+      totalInWeight = w
+    } else {
+      totalOutWeight = w
+      netWeight = n
+      if (w != null && n != null) totalInWeight = w + Math.abs(n)
+    }
+  }
+
+  const truckWeight = doc.truckWeight ?? doc.carWeight
+  const trailerWeight = doc.trailerWeight
+
+  return {
+    ...doc,
+    totalInWeight: totalInWeight ?? doc.totalInWeight,
+    totalOutWeight: totalOutWeight ?? doc.totalOutWeight,
+    netWeight: netWeight ?? doc.netWeight,
+    truckWeight: truckWeight ?? doc.truckWeight,
+    trailerWeight: trailerWeight ?? doc.trailerWeight,
+    weightKg: totalOutWeight ?? totalInWeight ?? doc.weightKg,
+    netWeightKg: netWeight ?? doc.netWeightKg,
+  } as TruckLog
+}
+
 /**
  * Save truck log to company-scoped collection
  * Uses the active company from session
@@ -17,15 +57,35 @@ export async function saveTruckLog(
   try {
     console.log("💾 saveTruckLog called with:", log)
     
-    // Clean up empty strings - convert to undefined for optional fields only
-    // Don't modify required fields (plate, driverName, cargoType) - let validation handle them
+    // Map weight fields: prefer totalInWeight/totalOutWeight/netWeight; fallback to weightKg/netWeightKg
+    const totalInWeight = (log as any).totalInWeight != null && !isNaN((log as any).totalInWeight) && (log as any).totalInWeight > 0
+      ? (log as any).totalInWeight
+      : undefined
+    const totalOutWeight = (log as any).totalOutWeight != null && !isNaN((log as any).totalOutWeight) && (log as any).totalOutWeight > 0
+      ? (log as any).totalOutWeight
+      : undefined
+    const netWeight = (log as any).netWeight != null && !isNaN((log as any).netWeight)
+      ? (log as any).netWeight
+      : (log as any).netWeightKg != null && !isNaN((log as any).netWeightKg) ? (log as any).netWeightKg : undefined
+
+    const w = (log as any).weightKg
+    const n = (log as any).netWeightKg
+    const dir = (log as any).direction
+    const ti = totalInWeight ?? (dir === "IN" && w > 0 ? w : undefined)
+    const to = totalOutWeight ?? (dir === "OUT" && w > 0 ? w : (n != null && w > 0 ? w : undefined))
+    const nw = netWeight ?? (n != null ? Math.abs(n) : undefined)
+
+    const truckWeight = (log as any).truckWeight ?? (log as any).carWeight
+    const trailerWeight = (log as any).trailerWeight
     const cleanedLog = {
       ...log,
-      // Optional fields - convert empty strings to undefined
       driverId: (log.driverId === "" || log.driverId === null) ? undefined : log.driverId,
       productId: ((log as any).productId === "" || (log as any).productId === null) ? undefined : (log as any).productId,
-      weightKg: (log.weightKg === null || log.weightKg === undefined || isNaN(log.weightKg) || log.weightKg <= 0) ? undefined : log.weightKg,
-      netWeightKg: (log.netWeightKg === null || log.netWeightKg === undefined || isNaN(log.netWeightKg) || log.netWeightKg <= 0) ? undefined : log.netWeightKg,
+      totalInWeight: ti ?? (to != null && nw != null ? to + nw : undefined),
+      totalOutWeight: to,
+      netWeight: nw,
+      truckWeight: truckWeight != null && truckWeight > 0 ? truckWeight : undefined,
+      trailerWeight: trailerWeight != null && trailerWeight > 0 ? trailerWeight : undefined,
       comments: log.comments === "" ? undefined : log.comments,
       origin: log.origin === "" ? undefined : log.origin,
       destination: log.destination === "" ? undefined : log.destination,
@@ -74,9 +134,17 @@ export async function saveTruckLog(
     console.log("💾 Using collection:", fullCollectionName)
     const logsCollection = await getCompanyCollection<TruckLog>(companyId, collectionName)
 
-    // Create log document
+    // Create log document: totalInWeight/out = truckWeight + trailerWeight; persist truckWeight, trailerWeight too
+    const { weightKg, netWeightKg, carWeight, ...rest } = validation.data as any
+    const truckWeight = rest.truckWeight ?? carWeight
+    const trailerWeight = rest.trailerWeight
     const logDoc: TruckLog = {
-      ...validation.data,
+      ...rest,
+      truckWeight: truckWeight != null && truckWeight > 0 ? truckWeight : undefined,
+      trailerWeight: trailerWeight != null && trailerWeight > 0 ? trailerWeight : undefined,
+      totalInWeight: rest.totalInWeight,
+      totalOutWeight: rest.totalOutWeight,
+      netWeight: rest.netWeight,
       id: `truck-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
       createdAt: new Date().toISOString(),
       sentToCustoms: false,
@@ -226,20 +294,17 @@ export async function getTruckLogs(
       console.warn("⚠️ No logs found in collection - this might indicate a problem")
     }
 
-    // Serialize MongoDB documents to plain objects
     const serializedLogs = logs.map((doc) => {
       const { _id, createdAt, ...log } = doc as any
       const serialized = {
         ...log,
-        productId: log.productId, // Include productId if present
+        productId: log.productId,
         createdAt: typeof createdAt === 'string' 
           ? createdAt 
           : (createdAt instanceof Date 
               ? createdAt.toISOString() 
               : new Date(createdAt).toISOString()),
-      } as TruckLog
-      
-      // Debug: Log first few logs to verify they're being serialized correctly
+      }
       if (logs.indexOf(doc) < 3) {
         console.log("📖 Serialized log", logs.indexOf(doc) + 1, ":", {
           id: serialized.id,
@@ -249,8 +314,7 @@ export async function getTruckLogs(
           createdAt: serialized.createdAt,
         })
       }
-      
-      return serialized
+      return normalizeLogForClient(serialized)
     })
 
     return {
@@ -278,17 +342,17 @@ export async function getTruckLog(logId: string): Promise<TruckLog | null> {
   
   if (!log) return null
 
-  // Serialize MongoDB document to plain object
   const { _id, createdAt, ...logData } = log as any
-  return {
+  const serialized = {
     ...logData,
-    productId: logData.productId, // Include productId if present
+    productId: logData.productId,
     createdAt: typeof createdAt === 'string' 
       ? createdAt 
       : (createdAt instanceof Date 
           ? createdAt.toISOString() 
           : new Date(createdAt).toISOString()),
-  } as TruckLog
+  }
+  return normalizeLogForClient(serialized)
 }
 
 /**
@@ -319,9 +383,32 @@ export async function updateTruckLog(
 
     // Allow editing logs even if sent to customs (re-edit feature)
 
-    // Validate updates if provided
-    if (Object.keys(updates).length > 0) {
-      const validation = truckLogSchema.partial().safeParse(updates)
+    // Map weight updates: accept weightKg/netWeightKg/carWeight; truckWeight=carWeight; totalIn/Out = truckWeight+trailerWeight
+    const { weightKg: w, netWeightKg: n, carWeight, ...restUpdates } = updates as any
+    const mapped: any = { ...restUpdates }
+    if (updates.truckWeight != null) mapped.truckWeight = updates.truckWeight
+    else if (carWeight != null && carWeight > 0) mapped.truckWeight = carWeight
+    if (updates.trailerWeight != null) mapped.trailerWeight = updates.trailerWeight
+    const dir = updates.direction ?? existingLog.direction
+    const hasNet = n != null
+    if (updates.totalInWeight != null) mapped.totalInWeight = updates.totalInWeight
+    else if (updates.totalOutWeight != null) mapped.totalOutWeight = updates.totalOutWeight
+    if (updates.netWeight != null) mapped.netWeight = updates.netWeight
+    else if (n != null) mapped.netWeight = Math.abs(n)
+    if (w != null && w > 0) {
+      if (dir === "IN" && hasNet) {
+        mapped.totalOutWeight = w
+        mapped.totalInWeight = updates.totalInWeight ?? (w + Math.abs(n))
+      } else if (dir === "IN") {
+        mapped.totalInWeight = w
+      } else {
+        mapped.totalOutWeight = w
+        if (n != null) mapped.totalInWeight = updates.totalInWeight ?? (w + Math.abs(n))
+      }
+    }
+
+    if (Object.keys(mapped).length > 0) {
+      const validation = truckLogSchema.partial().safeParse(mapped)
       if (!validation.success) {
         throw new ValidationError(
           "Invalid update data",
@@ -334,10 +421,12 @@ export async function updateTruckLog(
       }
     }
 
-    // Update the log (preserve id, createdAt, sentToCustoms)
-    const updatedLog = {
+    const { weightKg: _w, netWeightKg: _n, carWeight: _c, ...safeUpdates } = {
       ...existingLog,
-      ...updates,
+      ...mapped,
+    } as any
+    const updatedLog = {
+      ...safeUpdates,
       id: existingLog.id,
       createdAt: existingLog.createdAt,
       sentToCustoms: existingLog.sentToCustoms,
@@ -346,7 +435,10 @@ export async function updateTruckLog(
 
     await logsCollection.updateOne(
       { id: logId },
-      { $set: updatedLog }
+      { 
+        $set: updatedLog,
+        $unset: { weightKg: "", netWeightKg: "", carWeight: "" },
+      }
     )
 
     // Fetch the updated document to ensure we have the latest version
@@ -359,13 +451,11 @@ export async function updateTruckLog(
       }
     }
 
-    // Serialize MongoDB document to plain object (remove _id, convert Date objects)
-    // Create a plain object copy to avoid any MongoDB-specific properties
     const doc = updatedDoc as any
     const { _id, ...logData } = doc
-    const serializedLog: TruckLog = {
+    const serialized = {
       ...logData,
-      productId: doc.productId, // Include productId if present
+      productId: doc.productId,
       createdAt: typeof doc.createdAt === 'string' 
         ? doc.createdAt 
         : (doc.createdAt instanceof Date 
@@ -375,7 +465,7 @@ export async function updateTruckLog(
 
     return {
       success: true,
-      log: serializedLog,
+      log: normalizeLogForClient(serialized),
     }
   } catch (error) {
     const handled = handleError(error)

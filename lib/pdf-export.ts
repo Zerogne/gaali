@@ -326,10 +326,11 @@ export async function printLog(log: TruckLog, providedUniqueCode?: string | null
       message: "printLog called with log",
       data: {
         direction: log.direction,
+        totalInWeight: (log as any).totalInWeight,
+        totalOutWeight: (log as any).totalOutWeight,
+        netWeight: (log as any).netWeight,
         weightKg: log.weightKg,
         netWeightKg: log.netWeightKg,
-        carWeight: (log as any).carWeight,
-        trailerWeight: (log as any).trailerWeight,
         plate: log.plate,
       },
       timestamp: Date.now(),
@@ -636,12 +637,13 @@ function generateLogHTML(
     if (outWeight == null) {
       outWeight = log.weightKg ?? null;
     }
-    // If session IN weight isn't available, try car+trailer (total IN weight)
+    // totalInWeight = truckWeight + trailerWeight; fallback to totalInWeight/weightKg
     if (inWeight == null) {
-      const carWeight = typeof (log as any).carWeight === "number" ? (log as any).carWeight : 0;
-      const trailerWeight = typeof (log as any).trailerWeight === "number" ? (log as any).trailerWeight : 0;
-      const sum = (carWeight > 0 ? carWeight : 0) + (trailerWeight > 0 ? trailerWeight : 0);
-      inWeight = sum > 0 ? sum : null;
+      const tw = (log as any).truckWeight ?? (log as any).carWeight;
+      const trw = (log as any).trailerWeight;
+      inWeight = (tw != null && trw != null && (tw > 0 || trw > 0))
+        ? tw + trw
+        : ((log as any).totalInWeight ?? log.weightKg ?? null);
     }
   } else if (log.direction === "IN") {
     if (inWeight == null) inWeight = log.weightKg ?? null;
@@ -649,12 +651,12 @@ function generateLogHTML(
     if (outWeight == null) outWeight = log.weightKg ?? null;
   }
   
-  // Net weight: prefer session-derived netWeightKg, then log.netWeightKg
+  // Net weight: prefer session-derived, then log.netWeight or log.netWeightKg
   const netWeight =
     typeof sessionTimes?.netWeightKg === "number"
       ? sessionTimes.netWeightKg
-      : (log.netWeightKg !== undefined && log.netWeightKg !== null)
-        ? log.netWeightKg
+      : ((log as any).netWeight ?? log.netWeightKg) != null
+        ? ((log as any).netWeight ?? log.netWeightKg)
         : null;
 
   // #region agent log
