@@ -65,6 +65,8 @@ export function EditLogDialog({
     useState<string>("");
   const [transportCompanyId, setTransportCompanyId] = useState("");
   const [sealNumber, setSealNumber] = useState("");
+  const [bagQuantity, setBagQuantity] = useState("");
+  const [bagQuantityOut, setBagQuantityOut] = useState("");
   const [hasTrailer, setHasTrailer] = useState(false);
   const [trailerPlate, setTrailerPlate] = useState("");
   const [direction, setDirection] = useState<Direction>("IN");
@@ -212,6 +214,8 @@ export function EditLogDialog({
     setReceiverOrganizationId(l.receiverOrganizationId || "");
     setTransportCompanyId(l.transportCompanyId || "");
     setSealNumber(l.sealNumber || "");
+    setBagQuantity(l.bagQuantity ?? "");
+    setBagQuantityOut(l.bagQuantityOut ?? "");
     setHasTrailer(l.hasTrailer || false);
     setTrailerPlate(l.trailerPlate || "");
     setDirection(l.direction);
@@ -254,6 +258,8 @@ export function EditLogDialog({
       setReceiverOrganizationId("");
       setTransportCompanyId("");
       setSealNumber("");
+      setBagQuantity("");
+      setBagQuantityOut("");
       setHasTrailer(false);
       setTrailerPlate("");
       setErrors({});
@@ -364,6 +370,8 @@ export function EditLogDialog({
           receiverOrganizationId: receiverOrganizationId || undefined,
           transportCompanyId: transportCompanyId || undefined,
           sealNumber: sealNumber.trim() || undefined,
+          bagQuantity: bagQuantity.trim() || undefined,
+          bagQuantityOut: bagQuantityOut.trim() || undefined,
           hasTrailer: hasTrailer || undefined,
           trailerPlate: trailerPlate.trim() || undefined,
         }),
@@ -826,6 +834,45 @@ export function EditLogDialog({
                     />
                   </div>
                 </>
+              )}
+            </div>
+          </div>
+
+          {/* Шуудайны тоо Section */}
+          <div className="space-y-4">
+            <h3 className="text-sm font-semibold text-gray-900 border-b pb-2">
+              Шуудайны тоо хэмжээ
+            </h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {(direction === "IN" || isCombinedLog) && (
+                <div>
+                  <Label htmlFor="edit-bag-quantity" className="text-sm font-medium text-gray-700 mb-1.5 block">
+                    Шуудайны тоо хэмжээ орсон (IN)
+                  </Label>
+                  <Input
+                    id="edit-bag-quantity"
+                    type="text"
+                    value={bagQuantity}
+                    onChange={(e) => setBagQuantity(e.target.value)}
+                    className="h-10 text-sm"
+                    placeholder="Орсон шуудайны тоо"
+                  />
+                </div>
+              )}
+              {(direction === "OUT" || isCombinedLog) && (
+                <div>
+                  <Label htmlFor="edit-bag-quantity-out" className="text-sm font-medium text-gray-700 mb-1.5 block">
+                    Шуудайны тоо хэмжээ гарсан (OUT)
+                  </Label>
+                  <Input
+                    id="edit-bag-quantity-out"
+                    type="text"
+                    value={bagQuantityOut}
+                    onChange={(e) => setBagQuantityOut(e.target.value)}
+                    className="h-10 text-sm"
+                    placeholder="Гарсан шуудайны тоо"
+                  />
+                </div>
               )}
             </div>
           </div>
