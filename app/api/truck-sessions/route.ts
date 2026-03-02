@@ -222,7 +222,9 @@ export async function POST(request: Request) {
     
     const cleanedBody = {
       direction: body.direction,
-      plateNumber: body.plateNumber ? body.plateNumber.trim().toUpperCase() : body.plateNumber,
+      plateNumber: body.plateNumber
+        ? body.plateNumber.trim().toUpperCase().replace(/\s/g, "")
+        : body.plateNumber,
       driverName: finalDriverName, // Use looked-up driver name if form didn't provide it
       product: productName || undefined, // Use looked-up productName, don't fall back to body.product
       transporterCompany: transportCompanyName || undefined, // Use looked-up transportCompanyName

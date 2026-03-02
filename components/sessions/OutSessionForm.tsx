@@ -1342,6 +1342,31 @@ export const OutSessionForm = forwardRef<
                 "⚠️ Auto-fill: Error message:",
                 errorData.error || "Not found"
               );
+              // Clear IN-session-derived fields so we don't show stale data from the previous plate
+              if (isMounted) {
+                setFormState((prev) => {
+                  if (prev.plateNumber.trim() !== currentPlateNumber) return prev;
+                  return {
+                    ...prev,
+                    inSessionId: undefined,
+                    driverId: "",
+                    driverName: "",
+                    productId: "",
+                    transporterCompanyId: "",
+                    origin: "",
+                    destination: "",
+                    senderOrganizationId: "",
+                    receiverOrganizationId: "",
+                    sealNumber: "",
+                    trailerNumber: prev.hasTrailer ? prev.trailerNumber : "",
+                    carWeight: null,
+                    trailerWeight: null,
+                    totalWeight: null,
+                    grossWeightKg: null,
+                  };
+                });
+                setInWeightKg(null);
+              }
               // This is normal - just means there's no IN session for this plate yet
             } else {
               console.error(
@@ -1351,12 +1376,16 @@ export const OutSessionForm = forwardRef<
               );
             }
           }
-        } catch (error) {
+        } catch (error: unknown) {
+          if (error instanceof Error && error.name === "AbortError") return;
           console.error("❌ Auto-fill: Error fetching IN session:", error);
         }
       }, 500); // 500ms debounce
 
-      return () => clearTimeout(timeoutId);
+      return () => {
+        clearTimeout(timeoutId);
+        abortController.abort();
+      };
     }, [formState.plateNumber, drivers, products]);
 
     // Auto-calculate net weight when plate number and out weight are filled
@@ -1629,9 +1658,7 @@ export const OutSessionForm = forwardRef<
               : undefined,
           carWeight: formState.carWeight || undefined, // Added from IN form
           trailerWeight: formState.trailerWeight || undefined, // Added from IN form
-          inSessionId: formState.inSessionId
-            ? formState.inSessionId
-            : undefined,
+          inSessionId: formState.inSessionId || undefined,
           outTime: saveTime,
           inTime: formState.inTime || undefined, // Added from IN form
           sealNumber: formState.sealNumber.trim() || undefined,

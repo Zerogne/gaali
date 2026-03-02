@@ -429,22 +429,29 @@ export async function findLatestInSession(
     )
 
     const normalizedPlate = plateNumber.trim().toUpperCase();
-    console.log("🔍 findLatestInSession: Searching for plate:", normalizedPlate);
+    const normalizedNoSpaces = normalizedPlate.replace(/\s/g, "");
+    console.log("🔍 findLatestInSession: Searching for plate:", normalizedPlate, "(no-spaces:", normalizedNoSpaces, ")");
 
-    // First try exact match with weight > 0
+    // Helper: regex that allows optional spaces between characters (handles "1234 УНА" vs "1234УНА")
+    const regexAllowSpaces = (s: string) =>
+      s
+        .replace(/\s/g, "")
+        .split("")
+        .map((c) => c.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"))
+        .join("\\s*");
+
+    // First try exact match with normalized plate (no internal spaces - matches save format)
     let inSession = await sessionsCollection
       .findOne(
         {
           direction: "IN",
-          plateNumber: normalizedPlate,
-          grossWeightKg: { $gt: 0 },
+          plateNumber: normalizedNoSpaces,
         },
         { sort: { createdAt: -1 } }
-      )
+      );
 
-    // If not found, try without weight restriction (in case weight is 0 or null)
+    // Try exact match with original normalized (in case DB has spaces from older saves)
     if (!inSession) {
-      console.log("🔍 findLatestInSession: Not found with weight > 0, trying without weight restriction");
       inSession = await sessionsCollection
         .findOne(
           {
@@ -452,20 +459,49 @@ export async function findLatestInSession(
             plateNumber: normalizedPlate,
           },
           { sort: { createdAt: -1 } }
-        )
+        );
     }
 
-    // If still not found, try case-insensitive regex search
+    // If not found, try case-insensitive exact match
     if (!inSession) {
-      console.log("🔍 findLatestInSession: Not found with exact match, trying case-insensitive regex");
       inSession = await sessionsCollection
         .findOne(
           {
             direction: "IN",
-            plateNumber: { $regex: normalizedPlate.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), $options: "i" },
+            plateNumber: { $regex: `^${normalizedPlate.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}$`, $options: "i" },
           },
           { sort: { createdAt: -1 } }
-        )
+        );
+    }
+
+    // If still not found, try matching with optional spaces (e.g. "1234 УНА" matches "1234УНА")
+    if (!inSession && normalizedNoSpaces.length >= 2) {
+      const pattern = regexAllowSpaces(normalizedPlate);
+      inSession = await sessionsCollection
+        .findOne(
+          {
+            direction: "IN",
+            plateNumber: { $regex: `^${pattern}$`, $options: "i" },
+          },
+          { sort: { createdAt: -1 } }
+        );
+    }
+
+    // Last resort: fetch latest IN sessions and match by normalized (no-spaces) plate
+    if (!inSession) {
+      const candidates = await sessionsCollection
+        .find({ direction: "IN" })
+        .sort({ createdAt: -1 })
+        .limit(50)
+        .toArray();
+      for (const s of candidates) {
+        const stored = (s.plateNumber || "").trim().toUpperCase().replace(/\s/g, "");
+        if (stored === normalizedNoSpaces) {
+          inSession = s;
+          console.log("🔍 findLatestInSession: Matched via no-spaces fallback");
+          break;
+        }
+      }
     }
 
     if (!inSession) {
