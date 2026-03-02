@@ -181,29 +181,17 @@ export function EditLogDialog({
       // Priority: productId from log > find by cargoType (label) match > find by cargoType (value) match > cargoType as fallback
       let productIdForSelect = "";
       
-      console.log("📋 EditDialog: Initializing product field", {
-        logProductId: (log as any).productId,
-        logCargoType: log.cargoType,
-        productsCount: products.length,
-        availableProducts: products.map((p: Product) => ({ value: p.value, label: p.label })),
-      });
-      
       // First, try to use productId if it exists in the log
       if ((log as any).productId) {
         // Check if this productId exists in the products list
         const productExists = products.find((p: Product) => p.value === (log as any).productId);
         if (productExists) {
           productIdForSelect = productExists.value;
-          console.log("📋 EditDialog: Using productId from log (found in products):", productIdForSelect);
-        } else {
+        } else if (log.cargoType && products.length > 0) {
           // ProductId exists but product not found - might be old format, try to match by cargoType
-          console.warn("⚠️ EditDialog: productId from log not found in products, trying cargoType match");
-          if (log.cargoType && products.length > 0) {
-            const matchedProduct = products.find((p: Product) => p.label === log.cargoType);
-            if (matchedProduct) {
-              productIdForSelect = matchedProduct.value;
-              console.log("📋 EditDialog: Found product by cargoType (label) match:", productIdForSelect);
-            }
+          const matchedProduct = products.find((p: Product) => p.label === log.cargoType);
+          if (matchedProduct) {
+            productIdForSelect = matchedProduct.value;
           }
         }
       } else if (log.cargoType) {
@@ -213,35 +201,22 @@ export function EditLogDialog({
           const labelMatch = products.find((p: Product) => p.label === log.cargoType);
           if (labelMatch) {
             productIdForSelect = labelMatch.value;
-            console.log("📋 EditDialog: Found product by label match:", {
-              cargoType: log.cargoType,
-              productValue: productIdForSelect,
-              productId: labelMatch.value,
-            });
           } else {
             // Second try: match cargoType to product value
             const valueMatch = products.find((p: Product) => p.value === log.cargoType);
             if (valueMatch) {
               productIdForSelect = valueMatch.value;
-              console.log("📋 EditDialog: Found product by value match:", productIdForSelect);
             } else {
               // Last resort: use cargoType as-is (might be a custom value)
               productIdForSelect = log.cargoType;
-              console.warn("⚠️ EditDialog: No product match found for cargoType:", log.cargoType, "- using as-is");
-              console.warn("⚠️ Available products:", products.map((p: Product) => `${p.label} (${p.value})`).join(", "));
             }
           }
         } else {
           // Products not loaded yet, use cargoType temporarily
           // This will be updated when products load (useEffect dependency)
           productIdForSelect = log.cargoType;
-          console.log("📋 EditDialog: Products not loaded yet, using cargoType temporarily:", log.cargoType);
         }
       }
-      
-      console.log("📋 EditDialog: Setting cargoType state to:", productIdForSelect);
-      console.log("📋 EditDialog: Available product values:", products.map((p: Product) => p.value));
-      console.log("📋 EditDialog: Will value be valid?", products.some((p: Product) => p.value === productIdForSelect));
       setCargoType(productIdForSelect);
       
       setWeight(log.weightKg?.toString() || "");
@@ -586,6 +561,7 @@ export function EditLogDialog({
                   placeholder={isLoadingDrivers ? "Уншиж байна..." : "Жолооч сонгох"}
                   searchPlaceholder="Жолооч хайх..."
                   className="h-10"
+                  inDialog
                 />
                 {errors.driverId && (
                   <p className="mt-1 text-xs text-red-600">{errors.driverId}</p>
@@ -610,6 +586,7 @@ export function EditLogDialog({
                   searchPlaceholder="Тээврийн компани хайх..."
                   className="h-10"
                   required
+                  inDialog
                 />
               </div>
 
@@ -626,26 +603,11 @@ export function EditLogDialog({
                     // Only set value if it exists in the options, otherwise undefined
                     (() => {
                       const isValid = cargoType && products.length > 0 && products.some((p: Product) => p.value === cargoType);
-                      if (cargoType) {
-                        console.log("📋 EditDialog: FilterableSelect value check:", {
-                          cargoType,
-                          productsCount: products.length,
-                          isValid,
-                          availableValues: products.map((p: Product) => p.value),
-                          matchingProduct: products.find((p: Product) => p.value === cargoType),
-                        });
-                      }
                       return isValid ? cargoType : undefined;
                     })()
                   }
                   onValueChange={(value) => {
                     setCargoType(value || "");
-                    console.log("📋 EditDialog: Product selected:", value);
-                    // Also update driverName if needed (for consistency)
-                    const selectedProduct = products.find((p: Product) => p.value === value);
-                    if (selectedProduct) {
-                      console.log("📋 EditDialog: Selected product:", selectedProduct.label);
-                    }
                   }}
                   disabled={isLoadingProducts}
                   placeholder={
@@ -657,6 +619,7 @@ export function EditLogDialog({
                   }
                   searchPlaceholder="Бүтээгдэхүүн хайх..."
                   className="h-10"
+                  inDialog
                 />
                 {cargoType && !products.some((p: Product) => p.value === cargoType) && (
                   <p className="mt-1 text-xs text-amber-600">
@@ -706,6 +669,7 @@ export function EditLogDialog({
                   placeholder={isLoadingOrganizations ? "Уншиж байна..." : "Илгээч байгууллага сонгох"}
                   searchPlaceholder="Илгээч байгууллага хайх..."
                   className="h-10"
+                  inDialog
                 />
               </div>
 
@@ -721,6 +685,7 @@ export function EditLogDialog({
                   placeholder={isLoadingOrganizations ? "Уншиж байна..." : "Хүлээн авагч байгууллага сонгох"}
                   searchPlaceholder="Хүлээн авагч байгууллага хайх..."
                   className="h-10"
+                  inDialog
                 />
               </div>
 

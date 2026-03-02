@@ -38,6 +38,7 @@ interface FilterableSelectProps {
   onCreateNewDialog?: (initialValue: string) => Promise<string | null>; // Opens dialog to create new item, returns the new option value or null on error
   createNewLabel?: string; // Label to show when creating new item (e.g., "Create '...'")
   required?: boolean; // Whether the field is required
+  inDialog?: boolean; // When true, Popover uses modal={false} for correct behavior inside Dialog
 }
 
 export function FilterableSelect({
@@ -55,6 +56,7 @@ export function FilterableSelect({
   onCreateNewDialog,
   createNewLabel,
   required = false,
+  inDialog = false,
 }: FilterableSelectProps) {
   const [open, setOpen] = React.useState(false);
   const [searchQuery, setSearchQuery] = React.useState("");
@@ -592,7 +594,7 @@ export function FilterableSelect({
     (className?.includes("bg-") && className !== "bg-white");
 
   return (
-    <Popover open={open} onOpenChange={handleOpenChange}>
+    <Popover open={open} onOpenChange={handleOpenChange} modal={!inDialog}>
       <PopoverTrigger asChild>
         <Button
           variant="outline"
