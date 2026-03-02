@@ -16,7 +16,7 @@ function toNumberMaybe(value: unknown): number | null {
   if (typeof value === "number" && !isNaN(value)) return value
   if (typeof value === "string") {
     const n = Number(value)
-    return !isNaN(n) ? n : null
+    return isNaN(n) ? null : n
   }
   return null
 }
