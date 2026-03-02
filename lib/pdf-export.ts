@@ -157,6 +157,15 @@ async function fetchSessionTimes(log: TruckLog): Promise<{
     const sessions: any[] = Array.isArray(data?.sessions) ? data.sessions : [];
     if (sessions.length === 0) return {};
 
+    const toNumberMaybe = (value: unknown): number | null => {
+      if (typeof value === "number" && !isNaN(value)) return value;
+      if (typeof value === "string") {
+        const n = Number(value);
+        return !isNaN(n) ? n : null;
+      }
+      return null;
+    };
+
     const logCreatedAtMs = log.createdAt ? new Date(log.createdAt).getTime() : NaN;
     const toMs = (s: any) => {
       const d = s?.createdAt ? new Date(s.createdAt) : null;
@@ -185,8 +194,24 @@ async function fetchSessionTimes(log: TruckLog): Promise<{
     let inSession: any | null = null;
     let outSession: any | null = null;
 
-    if (log.direction === "OUT") {
-      outSession = pickClosest(outSessions);
+    // First: if log has netWeightKg, try to match the exact OUT session by gross+net.
+    // This prevents picking the wrong IN session when the same plate has multiple sessions.
+    const logOutGross = typeof log.weightKg === "number" ? log.weightKg : null;
+    const logNet = typeof log.netWeightKg === "number" ? Math.abs(log.netWeightKg) : null;
+    if (logNet !== null && logOutGross !== null && outSessions.length > 0) {
+      const matches = outSessions.filter((s) => {
+        const gross = toNumberMaybe(s?.grossWeightKg);
+        const net = toNumberMaybe(s?.netWeightKg);
+        if (gross === null) return false;
+        if (Math.abs(gross - logOutGross) > 1) return false;
+        // If we have net on the log, require net match too (within tolerance)
+        if (logNet !== null) {
+          if (net === null) return false;
+          if (Math.abs(Math.abs(net) - logNet) > 1) return false;
+        }
+        return true;
+      });
+      outSession = pickClosest(matches.length > 0 ? matches : outSessions);
       if (outSession?.inSessionId) {
         inSession = sessions.find((s) => s?.id === outSession.inSessionId) || null;
       }
@@ -197,37 +222,50 @@ async function fetchSessionTimes(log: TruckLog): Promise<{
           .sort((a, b) => toMs(b) - toMs(a));
         inSession = before[0] || pickClosest(inSessions);
       }
-    } else {
-      // IN or merged log -> start from IN session closest to log createdAt
-      inSession = pickClosest(inSessions);
-      if (inSession?.id) {
-        const linkedOut = outSessions
-          .filter((s) => s?.inSessionId === inSession!.id)
-          .sort((a, b) => toMs(a) - toMs(b));
-        outSession = linkedOut[0] || null;
-      }
-      if (!outSession && outSessions.length > 0 && inSession) {
-        const inMs = toMs(inSession);
-        const after = outSessions
-          .filter((s) => isFinite(toMs(s)) && toMs(s) >= inMs)
-          .sort((a, b) => toMs(a) - toMs(b));
-        outSession = after[0] || null;
+    }
+
+    // Fallback: original direction-based linking
+    if (!inSession || !outSession) {
+      if (log.direction === "OUT") {
+        outSession = outSession || pickClosest(outSessions);
+        if (!inSession && outSession?.inSessionId) {
+          inSession = sessions.find((s) => s?.id === outSession.inSessionId) || null;
+        }
+        if (!inSession && inSessions.length > 0 && outSession) {
+          const outMs = toMs(outSession);
+          const before = inSessions
+            .filter((s) => isFinite(toMs(s)) && toMs(s) <= outMs)
+            .sort((a, b) => toMs(b) - toMs(a));
+          inSession = before[0] || pickClosest(inSessions);
+        }
+      } else {
+        // IN log -> start from IN session closest to log createdAt
+        inSession = inSession || pickClosest(inSessions);
+        if (!outSession && inSession?.id) {
+          const linkedOut = outSessions
+            .filter((s) => s?.inSessionId === inSession!.id)
+            .sort((a, b) => toMs(a) - toMs(b));
+          outSession = linkedOut[0] || null;
+        }
+        if (!outSession && outSessions.length > 0 && inSession) {
+          const inMs = toMs(inSession);
+          const after = outSessions
+            .filter((s) => isFinite(toMs(s)) && toMs(s) >= inMs)
+            .sort((a, b) => toMs(a) - toMs(b));
+          outSession = after[0] || null;
+        }
       }
     }
 
     const inTime = inSession?.inTime || inSession?.createdAt;
     const outTime = outSession?.outTime || outSession?.createdAt;
 
-    const inWeightKg =
-      typeof inSession?.grossWeightKg === "number" ? inSession.grossWeightKg : undefined;
-    const outWeightKg =
-      typeof outSession?.grossWeightKg === "number" ? outSession.grossWeightKg : undefined;
+    const inWeightKg = toNumberMaybe(inSession?.grossWeightKg) ?? undefined;
+    const outWeightKg = toNumberMaybe(outSession?.grossWeightKg) ?? undefined;
     const netWeightKg =
-      typeof outSession?.netWeightKg === "number"
-        ? outSession.netWeightKg
-        : typeof inSession?.netWeightKg === "number"
-          ? inSession.netWeightKg
-          : undefined;
+      toNumberMaybe(outSession?.netWeightKg) ??
+      toNumberMaybe(inSession?.netWeightKg) ??
+      undefined;
 
     return {
       inTime: typeof inTime === "string" ? inTime : undefined,

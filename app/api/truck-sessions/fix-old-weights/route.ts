@@ -33,7 +33,7 @@ async function scanAndFix(params: {
   const cursor = sessions
     .find({
       direction: "OUT",
-      inSessionId: { $exists: true, $ne: null, $ne: "" },
+      inSessionId: { $exists: true, $nin: [null, ""] },
     })
     .sort({ createdAt: -1 } as any)
     .limit(limit)
