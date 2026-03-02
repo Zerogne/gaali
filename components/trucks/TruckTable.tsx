@@ -867,6 +867,18 @@ export function TruckTable({ logs, onSend, onUpdate }: TruckTableProps) {
                       Төлөв
                       <div className="absolute right-0 top-1/2 -translate-y-1/2 w-px h-3 bg-gray-300"></div>
                     </TableHead>
+                    <TableHead className="text-gray-700 font-semibold text-xs relative pr-2 !py-1 !px-1.5">
+                      Оролтын жин (кг)
+                      <div className="absolute right-0 top-1/2 -translate-y-1/2 w-px h-3 bg-gray-300"></div>
+                    </TableHead>
+                    <TableHead className="text-gray-700 font-semibold text-xs relative pr-2 !py-1 !px-1.5">
+                      Гаралтын жин (кг)
+                      <div className="absolute right-0 top-1/2 -translate-y-1/2 w-px h-3 bg-gray-300"></div>
+                    </TableHead>
+                    <TableHead className="text-gray-700 font-semibold text-xs relative pr-2 !py-1 !px-1.5">
+                      Цэвэр жин (кг)
+                      <div className="absolute right-0 top-1/2 -translate-y-1/2 w-px h-3 bg-gray-300"></div>
+                    </TableHead>
                     <TableHead className="text-gray-700 font-semibold text-xs !py-1 !px-1.5">
                       Үйлдэл
                     </TableHead>
@@ -939,6 +951,30 @@ export function TruckTable({ logs, onSend, onUpdate }: TruckTableProps) {
                         }`}>
                           {log.sentToCustoms ? "илгээгдсэн" : "илгээгдээгүй"}
                         </span>
+                        <div className="absolute right-0 top-1/2 -translate-y-1/2 w-px h-3 bg-gray-300"></div>
+                      </TableCell>
+                      <TableCell className="text-gray-700 font-mono text-xs relative pr-2 !py-0.5 !px-1.5">
+                        {log.totalInWeight != null
+                          ? Number(log.totalInWeight).toLocaleString()
+                          : "—"}
+                        <div className="absolute right-0 top-1/2 -translate-y-1/2 w-px h-3 bg-gray-300"></div>
+                      </TableCell>
+                      <TableCell className="text-gray-700 font-mono text-xs relative pr-2 !py-0.5 !px-1.5">
+                        {log.totalOutWeight != null
+                          ? Number(log.totalOutWeight).toLocaleString()
+                          : "—"}
+                        <div className="absolute right-0 top-1/2 -translate-y-1/2 w-px h-3 bg-gray-300"></div>
+                      </TableCell>
+                      <TableCell className="text-gray-700 font-mono text-xs relative pr-2 !py-0.5 !px-1.5">
+                        {(() => {
+                          const net =
+                            (log as any).netWeight ??
+                            log.netWeightKg ??
+                            null;
+                          return net != null
+                            ? Number(Math.abs(net)).toLocaleString()
+                            : "—";
+                        })()}
                         <div className="absolute right-0 top-1/2 -translate-y-1/2 w-px h-3 bg-gray-300"></div>
                       </TableCell>
                       <TableCell className="!py-0.5 !px-1.5">
