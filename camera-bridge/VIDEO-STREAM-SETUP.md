@@ -17,12 +17,9 @@ A Node.js server that:
 - Captures real-time video frames
 - Streams frames to web clients via WebSocket
 
-### 2. RealtimeVideo Component (`components/camera/RealtimeVideo.tsx`)
+### 2. WebSocket Client (e.g. Gaali Bridge)
 
-A React component that:
-- Connects to the video stream server via WebSocket
-- Displays real-time video feed
-- Provides IN/OUT action buttons
+A client that connects to the video stream server via WebSocket and displays the video feed. Video is handled by external apps (Gaali Bridge, Electron, etc.), not by the web app.
 
 ## Setup Instructions
 

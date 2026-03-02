@@ -144,7 +144,7 @@ setInterval(() => {
 
 ## Step 5: Add Frontend Logging
 
-Add this to `RealtimeVideo.tsx` to see if frames are received:
+Add this to your WebSocket client to see if frames are received:
 
 ```typescript
 ws.onmessage = (event) => {

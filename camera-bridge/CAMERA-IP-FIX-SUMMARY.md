@@ -21,7 +21,7 @@
 
 **After:**
 - `streamUrl` is now `null` (no MJPEG loading)
-- Use WebSocket for video instead (RealtimeVideo component)
+- Use WebSocket for video instead (Gaali Bridge)
 - No more MJPEG errors
 
 ### 3. ✅ Updated Camera Config API
@@ -117,7 +117,7 @@ CAMERA_2_IP=192.168.1.49
    - streamUrl should be null/undefined
 
 3. **Video Should Use WebSocket:**
-   - Use RealtimeVideo component
+   - Use Gaali Bridge for video
    - Connects to `ws://localhost:3004/video/camera-1`
 
 ## Next Steps

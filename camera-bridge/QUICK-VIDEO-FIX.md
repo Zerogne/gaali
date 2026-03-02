@@ -45,7 +45,7 @@ function onVideoFrame(cameraId, dataType, dataInfo) {
 - If NO → Frames not reaching frontend
 
 **Fix:**
-Add logging to RealtimeVideo.tsx:
+Add logging to your WebSocket client:
 ```typescript
 ws.onmessage = (event) => {
   console.log('📨 Message received!', event.data.length); // ADD THIS

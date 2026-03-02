@@ -109,26 +109,12 @@ Update components to not load MJPEG if streamUrl is null:
     />
   ) : // ... other formats
 ) : (
-  // No streamUrl = use WebSocket (RealtimeVideo component)
+  // No streamUrl = use WebSocket (Gaali Bridge or external app)
   <div className="flex flex-col items-center justify-center text-gray-400">
     <Camera className="h-8 w-8 mb-1 opacity-50" />
-    <p className="text-[10px]">Use WebSocket video stream</p>
+    <p className="text-[10px]">Use WebSocket video stream (Gaali Bridge)</p>
   </div>
 )}
-```
-
-**Or better: Use RealtimeVideo component instead:**
-
-```typescript
-// In InSessionForm.tsx or OutSessionForm.tsx
-import { RealtimeVideo } from "@/components/camera/RealtimeVideo";
-
-// Replace MJPEG loading with:
-<RealtimeVideo 
-  cameraId="camera-1" 
-  direction="IN"
-  onActionClick={handleAction}
-/>
 ```
 
 ### Step 4: Update Electron App to Use Company Camera IPs
@@ -177,7 +163,7 @@ This will prevent the error because components check `if (streamUrl)` before try
 
 1. **Update CompanyMetadata interface** - Add cameraSettings field
 2. **Update camera config API** - Get IPs from company settings
-3. **Disable MJPEG in components** - Set streamUrl to null or use RealtimeVideo
+3. **Disable MJPEG in components** - Set streamUrl to null
 4. **Update Electron app** - Get camera IPs from company settings or env vars
 5. **Add company settings UI** - Allow companies to configure their camera IPs
 

@@ -161,7 +161,7 @@ The error `Failed to load 192.168.1.100/video.mjpeg` happens because:
 
 - ❌ No more MJPEG errors (streamUrl is null)
 - ✅ Camera IPs are per-company (not hardcoded)
-- ✅ Use WebSocket for video (RealtimeVideo component)
+- ✅ Use WebSocket for video (Gaali Bridge)
 
 ## Migration Steps
 
@@ -199,7 +199,7 @@ The error `Failed to load 192.168.1.100/video.mjpeg` happens because:
    - streamUrl should be null
 
 3. **Test WebSocket video:**
-   - Use RealtimeVideo component
+   - Use Gaali Bridge for video
    - Should connect to ws://localhost:3004/video/camera-1
 
 ## Summary

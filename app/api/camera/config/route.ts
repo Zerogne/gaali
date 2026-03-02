@@ -5,7 +5,7 @@ import { getCompany } from "@/lib/companies/metadata";
 /**
  * Get camera configuration for current company
  * Returns camera IPs from company settings (not hardcoded)
- * Returns null for streamUrl to use WebSocket instead of MJPEG
+ * Returns null for streamUrl (video via Gaali Bridge)
  */
 export async function GET() {
   try {
@@ -34,8 +34,7 @@ export async function GET() {
     const eventPath = process.env.CAMERA_EVENT_PATH;
     const streamPath = process.env.CAMERA_STREAM_PATH || "/video.mjpeg";
     
-    // Don't build MJPEG URL - use WebSocket instead
-    // Setting streamUrl to null prevents MJPEG loading errors
+    // streamUrl is null - video handled by Gaali Bridge
     const streamUrl = null;
     
     return NextResponse.json({
@@ -47,9 +46,8 @@ export async function GET() {
       baseUrl: baseUrl || "not set",
       eventPath: eventPath || "not set",
       streamPath: streamPath || "not set",
-      // streamUrl is null to use WebSocket instead of MJPEG
       streamUrl: streamUrl,
-          message: "Use WebSocket for video streaming (direct camera WebSocket or /api/camera/proxy for HTTP)",
+      message: "Video via Gaali Bridge or /api/camera/proxy",
     });
   } catch (error) {
     console.error("Error getting camera config:", error);

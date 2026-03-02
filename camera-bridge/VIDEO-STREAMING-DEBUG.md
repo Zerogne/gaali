@@ -96,7 +96,7 @@ Connected to camera camera-1
 Add logging to see if frames are received:
 
 ```javascript
-// In RealtimeVideo.tsx, modify ws.onmessage:
+// In your WebSocket client, add logging to ws.onmessage:
 ws.onmessage = (event) => {
   console.log(`📨 Received message for ${cameraId}:`, {
     isBlob: event.data instanceof Blob,

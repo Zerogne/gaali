@@ -60,23 +60,7 @@ These components have code like:
 
 Since you're using WebSocket now, you don't need direct MJPEG. Update the components to use WebSocket instead:
 
-**Option A: Use RealtimeVideo Component**
-
-Replace the MJPEG loading with your `RealtimeVideo` component:
-
-```typescript
-// Instead of:
-<img src={streamUrl} />
-
-// Use:
-<RealtimeVideo 
-  cameraId="camera-1" 
-  direction="IN"
-  onActionClick={handleAction}
-/>
-```
-
-**Option B: Disable MJPEG Loading**
+**Option A: Disable MJPEG Loading**
 
 If `streamUrl` is undefined or empty, the components won't try to load it:
 
@@ -88,7 +72,7 @@ If `streamUrl` is undefined or empty, the components won't try to load it:
 />
 ```
 
-### Solution 2: Fix MJPEG URL (If You Want Both)
+### Solution 2: Fix MJPEG URL (If You Want MJPEG)
 
 If you want to keep MJPEG as fallback:
 
@@ -124,16 +108,14 @@ onError={(e) => {
 
 ## Recommended Approach
 
-Since you're using **WebSocket for real-time video**, you should:
+Since you're using **WebSocket for video** (via Gaali Bridge or similar), you should:
 
 1. **Remove or disable MJPEG loading** in session forms
-2. **Use RealtimeVideo component** instead
-3. **Remove streamUrl prop** or set it to `undefined`
+2. **Remove streamUrl prop** or set it to `undefined`
 
 This way:
 - ✅ No MJPEG errors
-- ✅ Uses WebSocket (faster, more reliable)
-- ✅ Works even if camera not directly accessible
+- ✅ Video handled by external app (Gaali Bridge)
 
 ## Where streamUrl Comes From
 
@@ -174,5 +156,5 @@ onError={(e) => {
 
 - **Error happens because:** Components try to load `http://192.168.1.100/video.mjpeg` directly
 - **Why it fails:** Camera not accessible from browser or endpoint doesn't exist
-- **Solution:** Use WebSocket (RealtimeVideo) instead, or disable MJPEG loading
+- **Solution:** Use WebSocket (Gaali Bridge) instead, or disable MJPEG loading
 - **Quick fix:** Set `streamUrl={undefined}` in components
