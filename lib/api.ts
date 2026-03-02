@@ -6,14 +6,26 @@ import { truckLogSchema } from "@/lib/validation"
 import { handleError, ValidationError } from "@/lib/errors"
 import type { TruckLog } from "./types"
 
+/** Get numeric value from doc allowing alternate DB field spellings (e.g. TotalOutweight) */
+function getWeightField(doc: any, ...keys: string[]): number | undefined {
+  for (const k of keys) {
+    const v = doc?.[k]
+    if (v != null && typeof v === "number" && !isNaN(v)) return v
+  }
+  return undefined
+}
+
 /** Normalize log for client: ensure totalInWeight/totalOutWeight/netWeight exist, populate weightKg/netWeightKg for UI compat */
 function normalizeLogForClient(doc: any): TruckLog {
-  const hasNew = doc.totalInWeight != null || doc.totalOutWeight != null || doc.netWeight != null
+  const totalIn = getWeightField(doc, "totalInWeight", "TotalInWeight", "totalinweight")
+  const totalOut = getWeightField(doc, "totalOutWeight", "TotalOutWeight", "TotalOutweight", "totaloutweight")
+  const net = getWeightField(doc, "netWeight", "NetWeight", "netweight") ?? doc?.netWeightKg
+  const hasNew = totalIn != null || totalOut != null || net != null
   const hasOld = doc.weightKg != null || doc.netWeightKg != null
 
-  let totalInWeight = doc.totalInWeight
-  let totalOutWeight = doc.totalOutWeight
-  let netWeight = doc.netWeight
+  let totalInWeight = totalIn ?? doc.totalInWeight
+  let totalOutWeight = totalOut ?? doc.totalOutWeight
+  let netWeight = net != null ? net : doc.netWeight
 
   if (!hasNew && hasOld) {
     const w = doc.weightKg
@@ -36,9 +48,9 @@ function normalizeLogForClient(doc: any): TruckLog {
 
   return {
     ...doc,
-    totalInWeight: totalInWeight ?? doc.totalInWeight,
-    totalOutWeight: totalOutWeight ?? doc.totalOutWeight,
-    netWeight: netWeight ?? doc.netWeight,
+    totalInWeight: totalInWeight ?? totalIn ?? doc.totalInWeight,
+    totalOutWeight: totalOutWeight ?? totalOut ?? doc.totalOutWeight,
+    netWeight: netWeight ?? net ?? doc.netWeight,
     truckWeight: truckWeight ?? doc.truckWeight,
     trailerWeight: trailerWeight ?? doc.trailerWeight,
     weightKg: totalOutWeight ?? totalInWeight ?? doc.weightKg,

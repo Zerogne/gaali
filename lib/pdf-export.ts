@@ -196,10 +196,9 @@ async function fetchSessionTimes(log: TruckLog): Promise<{
     let inSession: any | null = null;
     let outSession: any | null = null;
 
-    // First: if log has netWeightKg, try to match the exact OUT session by gross+net.
-    // This prevents picking the wrong IN session when the same plate has multiple sessions.
-    const logOutGross = typeof log.weightKg === "number" ? log.weightKg : null;
-    const logNet = typeof log.netWeightKg === "number" ? Math.abs(log.netWeightKg) : null;
+    const logTotalOut = (log as any).totalOutWeight ?? (log as any).TotalOutweight ?? (log as any).TotalOutWeight ?? log.weightKg;
+    const logNet = typeof (log as any).netWeight === "number" ? Math.abs((log as any).netWeight) : (typeof log.netWeightKg === "number" ? Math.abs(log.netWeightKg) : null);
+    const logOutGross = typeof logTotalOut === "number" ? logTotalOut : (typeof log.weightKg === "number" ? log.weightKg : null);
     if (logNet !== null && logOutGross !== null && outSessions.length > 0) {
       const matches = outSessions.filter((s) => {
         const gross = toNumberMaybe(s?.grossWeightKg);
@@ -565,10 +564,17 @@ function generateLogHTML(
 
   const createdDate = log.createdAt ? formatDate(new Date(log.createdAt)) : "—";
 
-  // For logs that have netWeightKg, we treat them as having both entry and exit data
-  // For IN-only: entry date is creation date, exit date is empty
-  // For OUT-only: entry date is empty, exit date is creation date
-  const hasOutData = log.netWeightKg !== undefined && log.netWeightKg !== null;
+  const getLogTotalIn = (l: any) =>
+    l?.totalInWeight ?? l?.TotalInWeight ?? l?.totalinweight ?? undefined;
+  const getLogTotalOut = (l: any) =>
+    l?.totalOutWeight ?? l?.TotalOutWeight ?? l?.TotalOutweight ?? l?.totaloutweight ?? undefined;
+  const logTotalIn = getLogTotalIn(log);
+  const logTotalOut = getLogTotalOut(log);
+
+  const hasOutData =
+    log.netWeightKg != null ||
+    (log as any).netWeight != null ||
+    (logTotalIn != null && logTotalOut != null);
   const isMergedLog = hasOutData;
   
   const entryDate =
@@ -584,9 +590,11 @@ function generateLogHTML(
   // Calculate unloaded weight (tare weight)
   // For OUT or merged logs: if we have loaded weight and net weight, unloaded = loaded - net
   // For IN-only: unloaded weight is typically not available at entry
+  const outGross = logTotalOut ?? log.weightKg;
+  const netW = (log as any).netWeight ?? log.netWeightKg;
   const unloadedWeight =
-    (log.direction === "OUT" || isMergedLog) && log.weightKg && log.netWeightKg
-      ? log.weightKg - log.netWeightKg
+    (log.direction === "OUT" || isMergedLog) && outGross != null && netW != null
+      ? outGross - Math.abs(netW)
       : null;
 
   // Get organization names
@@ -617,11 +625,29 @@ function generateLogHTML(
 
   const receiptDate = log.createdAt ? formatReceiptDate(new Date(log.createdAt)) : "";
 
-  // Get in weight (entry weight) and out weight (exit weight)
-  // Prefer session-derived weights:
-  // - inWeightKg: IN session gross weight (totalInWeight)
-  // - outWeightKg: OUT session gross weight (totalOutWeight)
-  // Fallbacks use TruckLog fields when sessions are unavailable.
+  // #region agent log
+  fetch("http://127.0.0.1:7646/ingest/a9a723fa-f2d7-4347-bf2f-e88d103a7252", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", "X-Debug-Session-Id": "7a4404" },
+    body: JSON.stringify({
+      sessionId: "7a4404",
+      location: "pdf-export.ts:generateLogHTML:logWeightFields",
+      message: "log weight fields before fallbacks",
+      data: {
+        totalInWeight: getLogTotalIn(log),
+        totalOutWeight: getLogTotalOut(log),
+        weightKg: log.weightKg,
+        netWeightKg: log.netWeightKg,
+        netWeight: (log as any).netWeight,
+        plate: log.plate,
+      },
+      timestamp: Date.now(),
+      hypothesisId: "H1",
+    }),
+  }).catch(() => {});
+  // #endregion
+
+  // Prefer session-derived weights; fallback to TruckLog totalInWeight/totalOutWeight
   let inWeight: number | null = null;
   let outWeight: number | null = null;
 
@@ -633,22 +659,20 @@ function generateLogHTML(
   }
 
   if (isMergedLog) {
-    // For merged logs, TruckLog.weightKg is often overwritten with OUT gross weight
     if (outWeight == null) {
-      outWeight = log.weightKg ?? null;
+      outWeight = logTotalOut ?? log.weightKg ?? null;
     }
-    // totalInWeight = truckWeight + trailerWeight; fallback to totalInWeight/weightKg
     if (inWeight == null) {
       const tw = (log as any).truckWeight ?? (log as any).carWeight;
       const trw = (log as any).trailerWeight;
       inWeight = (tw != null && trw != null && (tw > 0 || trw > 0))
         ? tw + trw
-        : ((log as any).totalInWeight ?? log.weightKg ?? null);
+        : (logTotalIn ?? log.weightKg ?? null);
     }
   } else if (log.direction === "IN") {
-    if (inWeight == null) inWeight = log.weightKg ?? null;
+    if (inWeight == null) inWeight = logTotalIn ?? log.weightKg ?? null;
   } else if (log.direction === "OUT") {
-    if (outWeight == null) outWeight = log.weightKg ?? null;
+    if (outWeight == null) outWeight = logTotalOut ?? log.weightKg ?? null;
   }
   
   // Net weight: prefer session-derived, then log.netWeight or log.netWeightKg

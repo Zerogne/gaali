@@ -69,7 +69,8 @@ export function EditLogDialog({
   const [trailerPlate, setTrailerPlate] = useState("");
   const [direction, setDirection] = useState<Direction>("IN");
   const [errors, setErrors] = useState<Record<string, string>>({});
-  const [sessionWeightsLoaded, setSessionWeightsLoaded] = useState(false);
+  const [fullLog, setFullLog] = useState<TruckLog | null>(null);
+  const [isLoadingLog, setIsLoadingLog] = useState(false);
 
   // Data loading state
   const [drivers, setDrivers] = useState<Driver[]>([]);
@@ -170,88 +171,81 @@ export function EditLogDialog({
     }));
   }, [organizations]);
 
-  // Initialize form data when log changes
-  useEffect(() => {
-    if (log) {
-      setPlate(log.plate || "");
-      setDriverId(log.driverId || "");
-      setDriverName(log.driverName || "");
-      
-      // Map cargoType (product name/label) to productId (product value) for FilterableSelect
-      // Priority: productId from log > find by cargoType (label) match > find by cargoType (value) match > cargoType as fallback
-      let productIdForSelect = "";
-      
-      // First, try to use productId if it exists in the log
-      if ((log as any).productId) {
-        // Check if this productId exists in the products list
-        const productExists = products.find((p: Product) => p.value === (log as any).productId);
-        if (productExists) {
-          productIdForSelect = productExists.value;
-        } else if (log.cargoType && products.length > 0) {
-          // ProductId exists but product not found - might be old format, try to match by cargoType
-          const matchedProduct = products.find((p: Product) => p.label === log.cargoType);
-          if (matchedProduct) {
-            productIdForSelect = matchedProduct.value;
-          }
-        }
-      } else if (log.cargoType) {
-        // If no productId, try to find product by matching cargoType to product label
-        if (products.length > 0) {
-          // First try: match cargoType to product label (most common case)
-          const labelMatch = products.find((p: Product) => p.label === log.cargoType);
-          if (labelMatch) {
-            productIdForSelect = labelMatch.value;
-          } else {
-            // Second try: match cargoType to product value
-            const valueMatch = products.find((p: Product) => p.value === log.cargoType);
-            if (valueMatch) {
-              productIdForSelect = valueMatch.value;
-            } else {
-              // Last resort: use cargoType as-is (might be a custom value)
-              productIdForSelect = log.cargoType;
-            }
-          }
-        } else {
-          // Products not loaded yet, use cargoType temporarily
-          // This will be updated when products load (useEffect dependency)
-          productIdForSelect = log.cargoType;
-        }
-      }
-      setCargoType(productIdForSelect);
-      
-      setWeight(log.weightKg?.toString() || "");
-      setNetWeight(log.netWeightKg?.toString() || "");
-      setComments(log.comments || "");
-      setOrigin(log.origin || "");
-      setDestination(log.destination || "");
-      setSenderOrganizationId(log.senderOrganizationId || "");
-      setReceiverOrganizationId(log.receiverOrganizationId || "");
-      setTransportCompanyId(log.transportCompanyId || "");
-      setSealNumber(log.sealNumber || "");
-      setHasTrailer(log.hasTrailer || false);
-      setTrailerPlate(log.trailerPlate || "");
-      setDirection(log.direction);
-      setErrors({});
-      setSessionWeightsLoaded(false);
-      // For combined logs, calculate IN and OUT weights
-      if (log.netWeightKg !== undefined && log.netWeightKg !== null && log.weightKg) {
-        const outW = log.weightKg;
-        const netW = Math.abs(log.netWeightKg);
-        const inW = outW + netW;
-        setOutWeight(outW.toString());
-        setInWeight(inW.toString());
-      } else {
-        setInWeight("");
-        setOutWeight("");
-      }
+  /** Extract weights from log - supports totalInWeight/totalOutWeight/netWeight and alternate DB spellings (e.g. TotalOutweight) */
+  const getWeightsFromLog = (l: TruckLog) => {
+    const raw = l as any;
+    const ti = raw.totalInWeight ?? raw.TotalInWeight ?? raw.totalinweight ?? undefined;
+    const to = raw.totalOutWeight ?? raw.TotalOutWeight ?? raw.TotalOutweight ?? raw.totaloutweight ?? undefined;
+    const nw = raw.netWeight ?? raw.NetWeight ?? l.netWeightKg;
+    const wkg = l.weightKg;
+    const hasOut = (nw != null || to != null) && l.direction === "IN";
+    return {
+      totalInWeight: ti ?? (hasOut && to != null && nw != null ? to + Math.abs(nw) : wkg),
+      totalOutWeight: to ?? (hasOut ? wkg : l.direction === "OUT" ? wkg : undefined),
+      netWeight: nw != null ? Math.abs(nw) : undefined,
+    };
+  };
 
+  /** Populate entire form from a log (used after fetching full log from API) */
+  const populateFormFromLog = (l: TruckLog) => {
+    setPlate(l.plate || "");
+    setDriverId(l.driverId || "");
+    setDriverName(l.driverName || "");
+    let productIdForSelect = "";
+    if ((l as any).productId) {
+      const productExists = products.find((p: Product) => p.value === (l as any).productId);
+      productIdForSelect = productExists ? productExists.value : "";
+      if (!productIdForSelect && l.cargoType && products.length > 0) {
+        const matched = products.find((p: Product) => p.label === l.cargoType);
+        if (matched) productIdForSelect = matched.value;
+      }
+    } else if (l.cargoType) {
+      const labelMatch = products.find((p: Product) => p.label === l.cargoType);
+      const valueMatch = products.find((p: Product) => p.value === l.cargoType);
+      productIdForSelect = labelMatch?.value ?? valueMatch?.value ?? l.cargoType;
+    }
+    setCargoType(productIdForSelect);
+    setComments(l.comments || "");
+    setOrigin(l.origin || "");
+    setDestination(l.destination || "");
+    setSenderOrganizationId(l.senderOrganizationId || "");
+    setReceiverOrganizationId(l.receiverOrganizationId || "");
+    setTransportCompanyId(l.transportCompanyId || "");
+    setSealNumber(l.sealNumber || "");
+    setHasTrailer(l.hasTrailer || false);
+    setTrailerPlate(l.trailerPlate || "");
+    setDirection(l.direction);
+
+    const { totalInWeight, totalOutWeight, netWeight } = getWeightsFromLog(l);
+    const hasOutData = (l as any).netWeight != null || l.netWeightKg != null;
+    const isCombined = hasOutData && l.direction === "IN";
+
+    if (isCombined) {
+      setInWeight(totalInWeight != null ? String(totalInWeight) : "");
+      setOutWeight(totalOutWeight != null ? String(totalOutWeight) : "");
+      setWeight(totalOutWeight != null ? String(totalOutWeight) : "");
+      setNetWeight(netWeight != null ? String(netWeight) : "");
     } else {
-      // Reset form when log is null
+      const singleWeight = l.direction === "IN" ? totalInWeight : totalOutWeight;
+      setWeight(singleWeight != null ? String(singleWeight) : (l.weightKg != null ? String(l.weightKg) : ""));
+      setNetWeight(netWeight != null ? String(netWeight) : "");
+      setInWeight("");
+      setOutWeight("");
+    }
+    setErrors({});
+  };
+
+  // Reset form when dialog closes
+  useEffect(() => {
+    if (!open) {
+      setFullLog(null);
       setPlate("");
       setDriverId("");
       setDriverName("");
       setCargoType("");
       setWeight("");
+      setInWeight("");
+      setOutWeight("");
       setNetWeight("");
       setComments("");
       setOrigin("");
@@ -263,122 +257,53 @@ export function EditLogDialog({
       setHasTrailer(false);
       setTrailerPlate("");
       setErrors({});
-      setSessionWeightsLoaded(false);
     }
-  }, [log, products]); // Add products to dependencies so it re-runs when products load
+  }, [open]);
 
-  // For combined (merged) logs, load the real IN/OUT weights from truck sessions (same source as PDF)
-  useEffect(() => {
-    if (!open || !log) return;
-    const hasOutData = log.netWeightKg !== undefined && log.netWeightKg !== null;
-    const isCombined = hasOutData && log.direction === "IN";
-    if (!isCombined) return;
-    if (sessionWeightsLoaded) return;
-
-    const controller = new AbortController();
-    (async () => {
-      try {
-        const res = await fetch(
-          `/api/truck-sessions?plateNumber=${encodeURIComponent(log.plate)}&limit=100`,
-          { signal: controller.signal, cache: "no-store" }
-        );
-        if (!res.ok) return;
-        const data = await res.json();
-        const sessions: any[] = Array.isArray(data?.sessions) ? data.sessions : [];
-        if (sessions.length === 0) return;
-
-        const inSessions = sessions.filter((s) => s?.direction === "IN");
-        const outSessions = sessions.filter((s) => s?.direction === "OUT");
-
-        const logCreatedAtMs = log.createdAt ? new Date(log.createdAt).getTime() : NaN;
-        const toMs = (s: any) => {
-          const d = s?.createdAt ? new Date(s.createdAt) : null;
-          return d ? d.getTime() : NaN;
-        };
-        const pickClosest = (candidates: any[]) => {
-          if (!isFinite(logCreatedAtMs)) return candidates[0] || null;
-          let best: any | null = null;
-          let bestDiff = Number.POSITIVE_INFINITY;
-          for (const s of candidates) {
-            const ms = toMs(s);
-            if (!isFinite(ms)) continue;
-            const diff = Math.abs(ms - logCreatedAtMs);
-            if (diff < bestDiff) {
-              bestDiff = diff;
-              best = s;
-            }
-          }
-          return best || candidates[0] || null;
-        };
-
-        // Start from IN session closest to log.createdAt (IN log createdAt)
-        const inSession = pickClosest(inSessions);
-        let outSession: any | null = null;
-        if (inSession?.id) {
-          const linkedOut = outSessions
-            .filter((s) => s?.inSessionId === inSession.id)
-            .sort((a, b) => toMs(a) - toMs(b));
-          outSession = linkedOut[0] || null;
-        }
-
-        const inGross =
-          typeof inSession?.grossWeightKg === "number" ? inSession.grossWeightKg : null;
-        const outGross =
-          typeof outSession?.grossWeightKg === "number" ? outSession.grossWeightKg : null;
-        const net =
-          typeof outSession?.netWeightKg === "number"
-            ? outSession.netWeightKg
-            : typeof log.netWeightKg === "number"
-              ? Math.abs(log.netWeightKg)
-              : null;
-
-        if (inGross && inGross > 0) {
-          setInWeight(String(inGross));
-        }
-        if (outGross && outGross > 0) {
-          setOutWeight(String(outGross));
-          setWeight(String(outGross)); // keep weightKg aligned with OUT for combined logs
-        } else if (typeof log.weightKg === "number" && log.weightKg > 0) {
-          setOutWeight(String(log.weightKg));
-          setWeight(String(log.weightKg));
-        }
-        if (typeof net === "number") {
-          setNetWeight(String(Math.abs(net)));
-        }
-
-        setSessionWeightsLoaded(true);
-      } catch {
-        // ignore
-      }
-    })();
-
-    return () => controller.abort();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [open, log?.id]);
-
-  // Fetch full log details (some fields like sealNumber may be missing in list view)
+  // Fetch full log from API when dialog opens - single source of truth (reflects DB changes)
   useEffect(() => {
     if (!open || !log?.id) return;
 
     const controller = new AbortController();
+    setIsLoadingLog(true);
+    setFullLog(null);
+
     fetch(`/api/logs/${log.id}`, { signal: controller.signal, cache: "no-store" })
       .then((res) => (res.ok ? res.json() : null))
       .then((data) => {
-        const fullLog = data?.log as TruckLog | undefined;
-        if (!fullLog) return;
-
-        // Only fill fields that are currently empty (don't overwrite user edits)
-        if ((!sealNumber || !sealNumber.trim()) && fullLog.sealNumber) {
-          setSealNumber(fullLog.sealNumber);
-        }
+        const fetched = data?.log as TruckLog | undefined;
+        if (!fetched) return;
+        setFullLog(fetched);
+        populateFormFromLog(fetched);
       })
       .catch(() => {
-        // ignore
-      });
+        // Fallback: use prop log if fetch fails
+        if (log) populateFormFromLog(log);
+      })
+      .finally(() => setIsLoadingLog(false));
 
     return () => controller.abort();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, log?.id]);
+
+  // Re-populate product/cargoType when products load (fullLog may have been set before products arrived)
+  useEffect(() => {
+    if (fullLog && products.length > 0) {
+      let productIdForSelect = "";
+      if ((fullLog as any).productId) {
+        const productExists = products.find((p: Product) => p.value === (fullLog as any).productId);
+        productIdForSelect = productExists ? productExists.value : "";
+        if (!productIdForSelect && fullLog.cargoType) {
+          const matched = products.find((p: Product) => p.label === fullLog.cargoType);
+          if (matched) productIdForSelect = matched.value;
+        }
+      } else if (fullLog.cargoType) {
+        const labelMatch = products.find((p: Product) => p.label === fullLog.cargoType);
+        const valueMatch = products.find((p: Product) => p.value === fullLog.cargoType);
+        productIdForSelect = labelMatch?.value ?? valueMatch?.value ?? fullLog.cargoType;
+      }
+      setCargoType(productIdForSelect);
+    }
+  }, [fullLog, products]);
 
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -389,7 +314,8 @@ export function EditLogDialog({
     setErrors({});
 
     try {
-      const hasOutData = log.netWeightKg !== undefined && log.netWeightKg !== null;
+      const hasOutData = (fullLog ?? log).netWeightKg !== undefined && (fullLog ?? log).netWeightKg !== null ||
+        ((fullLog ?? log) as any).netWeight != null;
       const isCombinedLog = hasOutData && direction === "IN";
 
       // Find product label from productId (cargoType contains productId)
@@ -413,6 +339,10 @@ export function EditLogDialog({
         finalDriverName = "Тодорхойгүй";
       }
       
+      const outW = isCombinedLog && outWeight ? Number(outWeight) : (direction === "OUT" ? Number(weight) : undefined);
+      const inW = isCombinedLog && inWeight ? Number(inWeight) : (direction === "IN" ? Number(weight) : undefined);
+      const netW = (direction === "OUT" || isCombinedLog) && netWeight ? Number(netWeight) : undefined;
+
       const response = await fetch(`/api/logs/${log.id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
@@ -421,10 +351,12 @@ export function EditLogDialog({
           driverId: driverId || undefined,
           driverName: finalDriverName,
           cargoType: cargoTypeLabel,
-          productId: cargoType || undefined, // Store productId for future use
-          weightKg: isCombinedLog && outWeight ? Number(outWeight) : Number(weight),
-          netWeightKg:
-            (direction === "OUT" || isCombinedLog) && netWeight ? Number(netWeight) : undefined,
+          productId: cargoType || undefined,
+          totalInWeight: inW,
+          totalOutWeight: outW,
+          netWeight: netW,
+          weightKg: outW ?? inW,
+          netWeightKg: netW,
           comments: comments.trim() || undefined,
           origin: origin.trim() || undefined,
           destination: destination.trim() || undefined,
@@ -492,8 +424,9 @@ export function EditLogDialog({
 
   if (!log) return null;
 
-  const isSentToCustoms = log.sentToCustoms;
-  const hasOutData = log.netWeightKg !== undefined && log.netWeightKg !== null;
+  const displayLog = fullLog ?? log;
+  const isSentToCustoms = displayLog.sentToCustoms;
+  const hasOutData = displayLog.netWeightKg != null || (displayLog as any).netWeight != null;
   const isCombinedLog = hasOutData && direction === "IN";
 
   return (
@@ -518,6 +451,12 @@ export function EditLogDialog({
           </div>
         )}
 
+        {isLoadingLog ? (
+          <div className="flex items-center justify-center py-12">
+            <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
+            <span className="ml-2 text-gray-600">Бүртгэл уншиж байна...</span>
+          </div>
+        ) : (
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Basic Information Section */}
           <div className="space-y-4">
@@ -816,7 +755,7 @@ export function EditLogDialog({
                     <Input
                       id="edit-in-time"
                       type="datetime-local"
-                      value={log.createdAt ? new Date(log.createdAt).toISOString().slice(0, 16) : new Date().toISOString().slice(0, 16)}
+                      value={displayLog.createdAt ? new Date(displayLog.createdAt).toISOString().slice(0, 16) : new Date().toISOString().slice(0, 16)}
                       onChange={() => {}}
                       className="h-10 text-sm"
                       required
@@ -829,7 +768,7 @@ export function EditLogDialog({
                     <Input
                       id="edit-out-time"
                       type="datetime-local"
-                      value={log.createdAt ? new Date(log.createdAt).toISOString().slice(0, 16) : new Date().toISOString().slice(0, 16)}
+                      value={displayLog.createdAt ? new Date(displayLog.createdAt).toISOString().slice(0, 16) : new Date().toISOString().slice(0, 16)}
                       onChange={() => {}}
                       className="h-10 text-sm"
                       required
@@ -880,7 +819,7 @@ export function EditLogDialog({
                     <Input
                       id="edit-time"
                       type="datetime-local"
-                      value={log.createdAt ? new Date(log.createdAt).toISOString().slice(0, 16) : new Date().toISOString().slice(0, 16)}
+                      value={displayLog.createdAt ? new Date(displayLog.createdAt).toISOString().slice(0, 16) : new Date().toISOString().slice(0, 16)}
                       onChange={() => {}}
                       className="h-10 text-sm"
                       required
@@ -956,6 +895,7 @@ export function EditLogDialog({
             </Button>
           </div>
         </form>
+        )}
       </DialogContent>
     </Dialog>
   );
