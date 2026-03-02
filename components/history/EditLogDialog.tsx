@@ -214,8 +214,9 @@ export function EditLogDialog({
     setReceiverOrganizationId(l.receiverOrganizationId || "");
     setTransportCompanyId(l.transportCompanyId || "");
     setSealNumber(l.sealNumber || "");
-    setBagQuantity(l.bagQuantity ?? "");
-    setBagQuantityOut(l.bagQuantityOut ?? "");
+    const raw = l as any;
+    setBagQuantity(raw.bagQuantity ?? raw.BagQuantity ?? raw.bag_quantity ?? "");
+    setBagQuantityOut(raw.bagQuantityOut ?? raw.BagQuantityOut ?? raw.bag_quantity_out ?? "");
     setHasTrailer(l.hasTrailer || false);
     setTrailerPlate(l.trailerPlate || "");
     setDirection(l.direction);

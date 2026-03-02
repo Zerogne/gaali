@@ -46,6 +46,8 @@ function normalizeLogForClient(doc: any): TruckLog {
   const { truckWeight, carWeight, trailerWeight } = doc
   const resolvedTruckWeight = truckWeight ?? carWeight
 
+  const bagQ = doc.bagQuantity ?? doc.BagQuantity ?? doc.bag_quantity
+  const bagQOut = doc.bagQuantityOut ?? doc.BagQuantityOut ?? doc.bag_quantity_out
   return {
     ...doc,
     totalInWeight: totalInWeight ?? totalIn ?? doc.totalInWeight,
@@ -55,6 +57,8 @@ function normalizeLogForClient(doc: any): TruckLog {
     trailerWeight: trailerWeight ?? doc.trailerWeight,
     weightKg: totalOutWeight ?? totalInWeight ?? doc.weightKg,
     netWeightKg: netWeight ?? doc.netWeightKg,
+    bagQuantity: bagQ ?? doc.bagQuantity,
+    bagQuantityOut: bagQOut ?? doc.bagQuantityOut,
   } as TruckLog
 }
 
