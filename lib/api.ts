@@ -17,9 +17,9 @@ function getWeightField(doc: any, ...keys: string[]): number | undefined {
 
 /** Normalize log for client: ensure totalInWeight/totalOutWeight/netWeight exist, populate weightKg/netWeightKg for UI compat */
 function normalizeLogForClient(doc: any): TruckLog {
-  const totalIn = getWeightField(doc, "totalInWeight", "TotalInWeight", "totalinweight")
-  const totalOut = getWeightField(doc, "totalOutWeight", "TotalOutWeight", "TotalOutweight", "totaloutweight")
-  const net = getWeightField(doc, "netWeight", "NetWeight", "netweight") ?? doc?.netWeightKg
+  const totalIn = getWeightField(doc, "TotalInWeight", "totalInWeight", "totalinweight")
+  const totalOut = getWeightField(doc, "TotalOutweight", "TotalOutWeight", "totalOutWeight", "totaloutweight")
+  const net = getWeightField(doc, "netWeightKg", "NetWeightKg", "netWeight", "NetWeight", "netweight") ?? doc?.netWeightKg
   const hasNew = totalIn != null || totalOut != null || net != null
   const hasOld = doc.weightKg != null || doc.netWeightKg != null
 

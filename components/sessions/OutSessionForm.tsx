@@ -2798,15 +2798,23 @@ export const OutSessionForm = forwardRef<
                             }
                           }
 
+                          const totalOut = formState.totalWeight ?? formState.grossWeightKg;
                           const logData: TruckLog = {
-                            id: formState.inSessionId || `temp-${Date.now()}`,
+                            id: editLog?.id ?? formState.inSessionId ?? `temp-${Date.now()}`,
                             direction: "OUT",
                             plate: formState.plateNumber.trim().toUpperCase(),
                             driverId: formState.driverId || undefined,
                             driverName: formState.driverName || "",
                             cargoType: productName || "",
-                            weightKg: formState.totalWeight || formState.grossWeightKg || undefined,
-                            netWeightKg: formState.netWeightKg || undefined,
+                            totalOutWeight: totalOut ?? undefined,
+                            weightKg: totalOut ?? undefined,
+                            netWeight: formState.netWeightKg ?? undefined,
+                            netWeightKg: formState.netWeightKg ?? undefined,
+                            truckWeight: formState.carWeight ?? undefined,
+                            trailerWeight: formState.trailerWeight ?? undefined,
+                            totalInWeight: formState.carWeight != null && formState.trailerWeight != null
+                              ? (formState.carWeight || 0) + (formState.trailerWeight || 0)
+                              : undefined,
                             comments: formState.notes || undefined,
                             origin: formState.origin || undefined,
                             destination: formState.destination || undefined,

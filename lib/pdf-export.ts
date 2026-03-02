@@ -196,8 +196,8 @@ async function fetchSessionTimes(log: TruckLog): Promise<{
     let inSession: any | null = null;
     let outSession: any | null = null;
 
-    const logTotalOut = (log as any).totalOutWeight ?? (log as any).TotalOutweight ?? (log as any).TotalOutWeight ?? log.weightKg;
-    const logNet = typeof (log as any).netWeight === "number" ? Math.abs((log as any).netWeight) : (typeof log.netWeightKg === "number" ? Math.abs(log.netWeightKg) : null);
+    const logTotalOut = (log as any).TotalOutweight ?? (log as any).TotalOutWeight ?? (log as any).totalOutWeight ?? log.weightKg;
+    const logNet = typeof log.netWeightKg === "number" ? Math.abs(log.netWeightKg) : (typeof (log as any).netWeight === "number" ? Math.abs((log as any).netWeight) : null);
     const logOutGross = typeof logTotalOut === "number" ? logTotalOut : (typeof log.weightKg === "number" ? log.weightKg : null);
     if (logNet !== null && logOutGross !== null && outSessions.length > 0) {
       const matches = outSessions.filter((s) => {
@@ -282,14 +282,35 @@ async function fetchSessionTimes(log: TruckLog): Promise<{
 }
 
 /**
+ * Fetch log from company-scoped collection when we have a real log ID.
+ * Ensures we use TotalInWeight, TotalOutweight, netWeightKg from the correct collection.
+ */
+async function fetchLogFromApi(log: TruckLog): Promise<TruckLog> {
+  if (!log?.id || typeof log.id !== "string" || log.id.startsWith("temp-")) {
+    return log;
+  }
+  try {
+    const res = await fetch(`/api/logs/${log.id}`, { cache: "no-store" });
+    if (res.ok) {
+      const { log: fetched } = await res.json();
+      if (fetched) return fetched;
+    }
+  } catch {
+    // ignore; use passed-in log
+  }
+  return log;
+}
+
+/**
  * Open browser print dialog for a truck log
  * @param log - The truck log data
  * @param providedUniqueCode - Optional unique code to use instead of fetching
  */
 export async function printLog(log: TruckLog, providedUniqueCode?: string | null): Promise<void> {
+  const resolvedLog = await fetchLogFromApi(log);
   // Fetch related data (transport company, organizations)
-  const relatedData = await fetchRelatedData(log);
-  const sessionTimes = await fetchSessionTimes(log);
+  const relatedData = await fetchRelatedData(resolvedLog);
+  const sessionTimes = await fetchSessionTimes(resolvedLog);
 
   // Fetch current user (loader) information and company name
   let loaderName: string | undefined;
@@ -306,10 +327,10 @@ export async function printLog(log: TruckLog, providedUniqueCode?: string | null
   }
 
   // Use provided unique code, or fetch session's unique code (AKT)
-  const uniqueCode = providedUniqueCode !== undefined ? providedUniqueCode : await fetchSessionUniqueCode(log);
+  const uniqueCode = providedUniqueCode !== undefined ? providedUniqueCode : await fetchSessionUniqueCode(resolvedLog);
 
   // Create HTML content with the log data
-  const htmlContent = generateLogHTML(log, relatedData, loaderName, uniqueCode, companyName, sessionTimes);
+  const htmlContent = generateLogHTML(resolvedLog, relatedData, loaderName, uniqueCode, companyName, sessionTimes);
 
   // Create a new window for printing
   const printWindow = window.open("", "_blank");
@@ -337,9 +358,10 @@ export async function printLog(log: TruckLog, providedUniqueCode?: string | null
  * @param providedUniqueCode - Optional unique code to use instead of fetching
  */
 export async function exportLogToPDF(log: TruckLog, providedUniqueCode?: string | null): Promise<void> {
+  const resolvedLog = await fetchLogFromApi(log);
   // Fetch related data (transport company, organizations)
-  const relatedData = await fetchRelatedData(log);
-  const sessionTimes = await fetchSessionTimes(log);
+  const relatedData = await fetchRelatedData(resolvedLog);
+  const sessionTimes = await fetchSessionTimes(resolvedLog);
 
   // Fetch current user (loader) information
   let loaderName: string | undefined;
@@ -354,7 +376,7 @@ export async function exportLogToPDF(log: TruckLog, providedUniqueCode?: string 
   }
 
   // Use provided unique code, or fetch session's unique code (AKT)
-  const uniqueCode = providedUniqueCode !== undefined ? providedUniqueCode : await fetchSessionUniqueCode(log);
+  const uniqueCode = providedUniqueCode !== undefined ? providedUniqueCode : await fetchSessionUniqueCode(resolvedLog);
 
   // Fetch company name
   let companyName: string = "ТЭЭВРИЙН КОМПАНИ";
@@ -369,7 +391,7 @@ export async function exportLogToPDF(log: TruckLog, providedUniqueCode?: string 
   }
 
   // Create a temporary HTML element with the log data
-  const htmlContent = generateLogHTML(log, relatedData, loaderName, uniqueCode, companyName, sessionTimes);
+  const htmlContent = generateLogHTML(resolvedLog, relatedData, loaderName, uniqueCode, companyName, sessionTimes);
 
   // Create an iframe to completely isolate styles
   const iframe = document.createElement("iframe");
@@ -500,10 +522,11 @@ function generateLogHTML(
 
   const createdDate = log.createdAt ? formatDate(new Date(log.createdAt)) : "—";
 
+  // Prefer new DB fields: TotalInWeight, TotalOutweight, netWeightKg
   const getLogTotalIn = (l: any) =>
-    l?.totalInWeight ?? l?.TotalInWeight ?? l?.totalinweight ?? undefined;
+    l?.TotalInWeight ?? l?.totalInWeight ?? l?.totalinweight ?? undefined;
   const getLogTotalOut = (l: any) =>
-    l?.totalOutWeight ?? l?.TotalOutWeight ?? l?.TotalOutweight ?? l?.totaloutweight ?? undefined;
+    l?.TotalOutweight ?? l?.TotalOutWeight ?? l?.totalOutWeight ?? l?.totaloutweight ?? undefined;
   const logTotalIn = getLogTotalIn(log);
   const logTotalOut = getLogTotalOut(log);
 
@@ -527,7 +550,7 @@ function generateLogHTML(
   // For OUT or merged logs: if we have loaded weight and net weight, unloaded = loaded - net
   // For IN-only: unloaded weight is typically not available at entry
   const outGross = logTotalOut ?? log.weightKg;
-  const netW = (log as any).netWeight ?? log.netWeightKg;
+  const netW = (log as any).netWeight ?? log.netWeightKg ?? (log as any).NetWeightKg;
   const unloadedWeight =
     (log.direction === "OUT" || isMergedLog) && outGross != null && netW != null
       ? outGross - Math.abs(netW)
@@ -589,12 +612,12 @@ function generateLogHTML(
     if (outWeight == null) outWeight = logTotalOut ?? log.weightKg ?? null;
   }
   
-  // Net weight: prefer session-derived, then log.netWeight or log.netWeightKg
+  // Net weight: prefer session-derived, then log.netWeightKg / NetWeightKg / netWeight
   const netWeight =
     typeof sessionTimes?.netWeightKg === "number"
       ? sessionTimes.netWeightKg
-      : ((log as any).netWeight ?? log.netWeightKg) != null
-        ? ((log as any).netWeight ?? log.netWeightKg)
+      : (log.netWeightKg ?? (log as any).NetWeightKg ?? (log as any).netWeight) != null
+        ? (log.netWeightKg ?? (log as any).NetWeightKg ?? (log as any).netWeight)
         : null;
 
   // Format time for display (HH:MM)
