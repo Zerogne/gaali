@@ -770,7 +770,7 @@ function generateLogHTML(
         display: flex;
         justify-content: space-between;
         align-items: flex-end;
-        margin-top: 6px;
+        margin-top: 4px;
       }
 
       .bottom-left {

@@ -15,6 +15,7 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { useThirdPartyAutofill } from "@/hooks/useThirdPartyAutofill";
 import { sendTruckLogToCustoms } from "@/lib/api";
+import { fetchUniqueCodesForLogs } from "@/lib/uniqueCodes";
 import { exportLogToPDF, printLog } from "@/lib/pdf-export";
 import type { Direction, Driver, TruckLog, TransportCompany, Organization } from "@/lib/types";
 import { Edit, FileDown, Search, ArrowRight, X, Send, Trash2, Download } from "lucide-react";
@@ -480,74 +481,11 @@ export function TruckTable({ logs, onSend, onUpdate }: TruckTableProps) {
     }
   };
 
-  // Fetch unique codes for logs
-  const fetchUniqueCodesForLogs = async (logsToFetch: TruckLog[]) => {
-    const codesMap = new Map<string, string>()
-    
-    await Promise.all(
-      logsToFetch.map(async (log) => {
-        try {
-          const controller = new AbortController();
-          const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
-
-          const sessionsResponse = await fetch(
-            `/api/truck-sessions?direction=${log.direction}&plateNumber=${encodeURIComponent(log.plate)}&limit=100`,
-            {
-              signal: controller.signal,
-              headers: {
-                'Content-Type': 'application/json',
-              },
-            }
-          );
-
-          clearTimeout(timeoutId);
-
-          if (sessionsResponse.ok) {
-            const sessionsData = await sessionsResponse.json()
-            
-            if (sessionsData.sessions && sessionsData.sessions.length > 0) {
-              const logDate = new Date(log.createdAt)
-              
-              const sortedSessions = sessionsData.sessions
-                .map((s: any) => ({
-                  ...s,
-                  timeDiff: Math.abs(new Date(s.createdAt).getTime() - logDate.getTime())
-                }))
-                .sort((a: any, b: any) => a.timeDiff - b.timeDiff)
-              
-              const session = sortedSessions.find((s: any) => s.timeDiff < 24 * 60 * 60 * 1000) 
-                || sortedSessions[0]
-
-              if (session?.uniqueCode) {
-                codesMap.set(log.id, session.uniqueCode)
-              }
-            }
-          } else {
-            // Only log if it's not a 404 (session might not exist, which is fine)
-            if (sessionsResponse.status !== 404) {
-              console.warn(`⚠️ Failed to fetch unique code for log ${log.id}: HTTP ${sessionsResponse.status}`);
-            }
-          }
-        } catch (error) {
-          // Only log if it's not an abort error (timeout) or network error
-          if (error instanceof Error) {
-            if (error.name === 'AbortError') {
-              // Timeout - silently skip
-              return;
-            }
-            if (error.message.includes('Failed to fetch')) {
-              // Network error - silently skip (might be offline or CORS issue)
-              return;
-            }
-          }
-          // Only log unexpected errors
-          console.warn(`⚠️ Error fetching unique code for log ${log.id}:`, error instanceof Error ? error.message : String(error));
-        }
-      })
-    )
-    
-    setUniqueCodes(codesMap)
-  }
+  // Fetch unique codes for logs (shared lib)
+  const loadUniqueCodes = async (logsToFetch: TruckLog[]) => {
+    const codesMap = await fetchUniqueCodesForLogs(logsToFetch);
+    setUniqueCodes(codesMap);
+  };
 
   // Fetch transport companies
   useEffect(() => {
@@ -600,7 +538,7 @@ export function TruckTable({ logs, onSend, onUpdate }: TruckTableProps) {
   // Fetch unique codes when logs change
   useEffect(() => {
     if (logs.length > 0) {
-      fetchUniqueCodesForLogs(logs).catch(console.error);
+      loadUniqueCodes(logs).catch(console.error);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [logs]);
