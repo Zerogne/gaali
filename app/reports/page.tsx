@@ -30,7 +30,8 @@ import { useToast } from "@/hooks/use-toast";
 import { fetchLogs } from "@/lib/fetchLogs";
 import { fetchUniqueCodesForLogs } from "@/lib/uniqueCodes";
 import type { TruckLog, Direction, TransportCompany } from "@/lib/types";
-import * as XLSX from "xlsx";
+
+const REPORTS_LOG_LIMIT = 1000;
 
 export default function ReportsPage() {
   const router = useRouter();
@@ -70,15 +71,22 @@ export default function ReportsPage() {
     checkAuth();
   }, [router]);
 
-  // Load logs (same fetchLogs as dashboard, limit 10000 for reports)
+  // Load logs and transport companies in parallel
   useEffect(() => {
     if (isCheckingAuth) return;
 
     async function loadLogs() {
       try {
         setIsLoading(true);
-        const result = await fetchLogs(1, 10000);
-        setLogs(result.logs || []);
+        const [logsResult, companiesRes] = await Promise.all([
+          fetchLogs(1, REPORTS_LOG_LIMIT),
+          fetch("/api/transport-companies"),
+        ]);
+        setLogs(logsResult.logs || []);
+        if (companiesRes.ok) {
+          const companies = await companiesRes.json();
+          setTransportCompanies(companies);
+        }
       } catch (error) {
         console.error("Error loading logs:", error);
         toast({
@@ -96,22 +104,6 @@ export default function ReportsPage() {
     window.addEventListener("focus", onFocus);
     return () => window.removeEventListener("focus", onFocus);
   }, [isCheckingAuth, router, toast]);
-
-  // Load transport companies
-  useEffect(() => {
-    async function fetchTransportCompanies() {
-      try {
-        const response = await fetch("/api/transport-companies");
-        if (response.ok) {
-          const companies = await response.json();
-          setTransportCompanies(companies);
-        }
-      } catch (error) {
-        console.error("Error fetching transport companies:", error);
-      }
-    }
-    fetchTransportCompanies();
-  }, []);
 
   // Fetch unique codes for logs (shared lib)
   useEffect(() => {
@@ -279,8 +271,9 @@ export default function ReportsPage() {
   }, [filteredLogs, dateFrom, dateTo]);
 
   // Export to Excel — government/official report with header (when-to-when, totals)
-  const handleExportToExcel = () => {
+  const handleExportToExcel = async () => {
     try {
+      const XLSX = await import("xlsx");
       const { periodLabel, totalWeightIn, totalWeightOut, totalRecords } = reportSummary;
 
       // Ensure "when to when" is explicit in Excel: use filter dates or derive from data (never empty)

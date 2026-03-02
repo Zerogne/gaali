@@ -1,10 +1,13 @@
 "use client";
 
 import { Sidebar } from "@/components/sidebar";
-import {
-  OutSessionForm,
-  type OutSessionFormHandle,
-} from "@/components/sessions/OutSessionForm";
+import dynamic from "next/dynamic";
+import type { OutSessionFormHandle } from "@/components/sessions/OutSessionForm";
+
+const OutSessionForm = dynamic(
+  () => import("@/components/sessions/OutSessionForm").then((m) => ({ default: m.OutSessionForm })),
+  { ssr: false, loading: () => <div className="p-8 text-gray-500">Уншиж байна...</div> }
+);
 import {
   AlertDialog,
   AlertDialogAction,

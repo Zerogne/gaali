@@ -15,10 +15,8 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { sendTruckLogToCustoms } from "@/lib/api";
 import { fetchUniqueCodesForLogs } from "@/lib/uniqueCodes";
-import { exportLogToPDF, printLog } from "@/lib/pdf-export";
 import type { Direction, Driver, TruckLog, TransportCompany, Organization } from "@/lib/types";
 import { Edit, FileDown, Search, ArrowRight, X, Send, Trash2, Download } from "lucide-react";
-import * as XLSX from "xlsx";
 import { useState, useEffect, useMemo } from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -489,6 +487,7 @@ export function TruckTable({ logs, onSend, onUpdate }: TruckTableProps) {
 
   const handleExportLogToPDF = async (log: TruckLog) => {
     try {
+      const { exportLogToPDF } = await import("@/lib/pdf-export");
       await exportLogToPDF(log);
     } catch (error) {
       console.error("Error exporting log PDF:", error);
@@ -520,9 +519,10 @@ export function TruckTable({ logs, onSend, onUpdate }: TruckTableProps) {
     });
   };
 
-  // Export to Excel - exports only filtered/search results
-  const handleExportToExcel = () => {
+  // Export to Excel - exports only filtered/search results (xlsx loaded on demand)
+  const handleExportToExcel = async () => {
     try {
+      const XLSX = await import("xlsx");
       
       // Prepare data for Excel using filtered logs (respects all search filters)
       const excelData = filteredLogs.map((log) => ({
@@ -885,6 +885,7 @@ export function TruckTable({ logs, onSend, onUpdate }: TruckTableProps) {
                             onClick={async (e) => {
                               e.stopPropagation();
                               try {
+                                const { printLog } = await import("@/lib/pdf-export");
                                 await printLog(log);
                               } catch (error) {
                                 console.error("Error printing:", error);

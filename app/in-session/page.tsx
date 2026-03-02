@@ -1,10 +1,13 @@
 "use client";
 
 import { Sidebar } from "@/components/sidebar";
-import {
-  InSessionForm,
-  type InSessionFormHandle,
-} from "@/components/sessions/InSessionForm";
+import dynamic from "next/dynamic";
+import type { InSessionFormHandle } from "@/components/sessions/InSessionForm";
+
+const InSessionForm = dynamic(
+  () => import("@/components/sessions/InSessionForm").then((m) => ({ default: m.InSessionForm })),
+  { ssr: false, loading: () => <div className="p-8 text-gray-500">Уншиж байна...</div> }
+);
 import {
   AlertDialog,
   AlertDialogAction,

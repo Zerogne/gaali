@@ -1,14 +1,22 @@
 "use client";
 
 import { Sidebar } from "@/components/sidebar";
-import { TruckTable } from "@/components/trucks/TruckTable";
+import dynamic from "next/dynamic";
 import { fetchLogs } from "@/lib/fetchLogs";
 import type { TruckLog } from "@/lib/types";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ArrowRight, ArrowLeft, Plus } from "lucide-react";
+
+const DASHBOARD_LOG_LIMIT = 200;
+const REFRESH_INTERVAL_MS = 15000;
+
+const TruckTable = dynamic(
+  () => import("@/components/trucks/TruckTable").then((m) => ({ default: m.TruckTable })),
+  { ssr: false, loading: () => <div className="p-4 text-gray-500 text-sm">Уншиж байна...</div> }
+);
 
 export default function DashboardPage() {
   const router = useRouter();
@@ -16,75 +24,79 @@ export default function DashboardPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isCheckingAuth, setIsCheckingAuth] = useState(true);
 
-  // Check authentication on mount
+  const loadLogs = useCallback(async () => {
+    try {
+      const result = await fetchLogs(1, DASHBOARD_LOG_LIMIT);
+      setLogs(result.logs || []);
+    } catch (error) {
+      if (error instanceof Error && error.message.includes("redirect")) {
+        router.push("/login");
+      }
+    } finally {
+      setIsLoading(false);
+    }
+  }, [router]);
+
+  // Auth check and load logs in parallel
   useEffect(() => {
-    async function checkAuth() {
+    let cancelled = false;
+    async function init() {
       try {
-        const response = await fetch("/api/user");
-        if (!response.ok) {
-          // Not authenticated, redirect to login
+        const [authRes, logsResult] = await Promise.all([
+          fetch("/api/user"),
+          fetchLogs(1, DASHBOARD_LOG_LIMIT),
+        ]);
+        if (cancelled) return;
+        if (!authRes.ok) {
           router.push("/login");
           return;
         }
         setIsCheckingAuth(false);
+        setLogs(logsResult.logs || []);
       } catch (error) {
-        console.error("Auth check error:", error);
-        router.push("/login");
+        if (!cancelled) router.push("/login");
+      } finally {
+        if (!cancelled) setIsLoading(false);
       }
     }
-
-    checkAuth();
+    init();
+    return () => { cancelled = true; };
   }, [router]);
 
-  // Load logs (same pulling function as report page: fetchLogs(1, 10000), raw logs)
+  // Refresh logs periodically and on focus
   useEffect(() => {
-    if (isCheckingAuth) return; // Wait for auth check
-
-    async function loadLogs() {
-      try {
-        setIsLoading(true);
-        const result = await fetchLogs(1, 10000);
-        setLogs(result.logs || []);
-      } catch (error) {
-        console.error("❌ Error loading logs:", error);
-        if (error instanceof Error && error.message.includes("redirect")) {
-          router.push("/login");
-        }
-      } finally {
-        setIsLoading(false);
-      }
-    }
-
-    loadLogs();
-    
-    // Refresh logs every 3 seconds and when tab gains focus (to show latest drafts)
-    const refreshInterval = setInterval(() => loadLogs(), 3000);
-    const onFocus = () => loadLogs();
-    window.addEventListener("focus", onFocus);
-    
+    if (isCheckingAuth) return;
+    const refreshInterval = setInterval(loadLogs, REFRESH_INTERVAL_MS);
+    window.addEventListener("focus", loadLogs);
     return () => {
       clearInterval(refreshInterval);
-      window.removeEventListener("focus", onFocus);
+      window.removeEventListener("focus", loadLogs);
     };
-  }, [isCheckingAuth, router]);
+  }, [isCheckingAuth, loadLogs]);
 
-  const handleSave = async (_log?: TruckLog) => {
+  const handleUpdate = useCallback(async () => {
+    await new Promise((r) => setTimeout(r, 300));
     try {
-      const result = await fetchLogs(1, 10000);
+      const result = await fetchLogs(1, DASHBOARD_LOG_LIMIT);
       setLogs(result.logs || []);
     } catch (error) {
-      console.error("Error reloading logs:", error);
+      try {
+        const result = await fetchLogs(1, DASHBOARD_LOG_LIMIT);
+        setLogs(result.logs || []);
+      } catch {
+        // ignore retry
+      }
     }
-  };
+  }, []);
 
-  const handleSend = async (_logId?: string) => {
+  const handleSend = useCallback(async (_logId?: string) => {
     try {
-      const result = await fetchLogs(1, 10000);
+      const result = await fetchLogs(1, DASHBOARD_LOG_LIMIT);
       setLogs(result.logs || []);
-    } catch (error) {
-      console.error("Error reloading logs:", error);
+    } catch {
+      // ignore
     }
-  };
+  }, []);
 
 
   // Show loading state while checking authentication
@@ -169,21 +181,7 @@ export default function DashboardPage() {
             <TruckTable
               logs={logs}
               onSend={handleSend}
-              onUpdate={async () => {
-                  await new Promise((r) => setTimeout(r, 300));
-                  try {
-                    const result = await fetchLogs(1, 10000);
-                    setLogs(result.logs || []);
-                  } catch (error) {
-                    console.error("Error reloading logs after delete:", error);
-                    try {
-                      const result = await fetchLogs(1, 10000);
-                      setLogs(result.logs || []);
-                    } catch (retryError) {
-                      console.error("Retry also failed:", retryError);
-                    }
-                  }
-              }}
+              onUpdate={handleUpdate}
             />
             </div>
           </div>

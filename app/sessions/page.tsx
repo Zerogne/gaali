@@ -1,11 +1,18 @@
 "use client";
 
 import { Sidebar } from "@/components/sidebar";
-import { TruckTable } from "@/components/trucks/TruckTable";
+import dynamic from "next/dynamic";
 import { fetchLogs } from "@/lib/fetchLogs";
 import type { TruckLog } from "@/lib/types";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
+
+const SESSIONS_LOG_LIMIT = 200;
+
+const TruckTable = dynamic(
+  () => import("@/components/trucks/TruckTable").then((m) => ({ default: m.TruckTable })),
+  { ssr: false, loading: () => <div className="p-4 text-gray-500 text-sm">Уншиж байна...</div> }
+);
 
 export default function SessionsPage() {
   const router = useRouter();
@@ -13,67 +20,68 @@ export default function SessionsPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isCheckingAuth, setIsCheckingAuth] = useState(true);
 
-  // Check authentication on mount
+  const loadLogs = useCallback(async () => {
+    try {
+      const result = await fetchLogs(1, SESSIONS_LOG_LIMIT);
+      setLogs(result.logs || []);
+    } catch (error) {
+      if (error instanceof Error && error.message.includes("redirect")) {
+        router.push("/login");
+      }
+    } finally {
+      setIsLoading(false);
+    }
+  }, [router]);
+
+  // Auth and logs in parallel
   useEffect(() => {
-    async function checkAuth() {
+    let cancelled = false;
+    async function init() {
       try {
-        const response = await fetch("/api/user");
-        if (!response.ok) {
+        const [authRes, logsResult] = await Promise.all([
+          fetch("/api/user"),
+          fetchLogs(1, SESSIONS_LOG_LIMIT),
+        ]);
+        if (cancelled) return;
+        if (!authRes.ok) {
           router.push("/login");
           return;
         }
         setIsCheckingAuth(false);
-      } catch (error) {
-        console.error("Auth check error:", error);
-        router.push("/login");
+        setLogs(logsResult.logs || []);
+      } catch {
+        if (!cancelled) router.push("/login");
+      } finally {
+        if (!cancelled) setIsLoading(false);
       }
     }
-
-    checkAuth();
+    init();
+    return () => { cancelled = true; };
   }, [router]);
 
-  // Load logs (same as dashboard)
-  useEffect(() => {
-    if (isCheckingAuth) return;
-
-    async function loadLogs() {
-      try {
-        setIsLoading(true);
-        const result = await fetchLogs(1, 10000);
-        setLogs(result.logs || []);
-      } catch (error) {
-        console.error("Error loading logs:", error);
-        if (error instanceof Error && error.message.includes("redirect")) {
-          router.push("/login");
-        }
-      } finally {
-        setIsLoading(false);
-      }
+  const handleSend = useCallback(async () => {
+    try {
+      const result = await fetchLogs(1, SESSIONS_LOG_LIMIT);
+      setLogs(result.logs || []);
+    } catch {
+      // ignore
     }
+  }, []);
 
-    loadLogs();
-  }, [isCheckingAuth, router]);
-
-  const handleSend = async (_logId: string) => {
-    const result = await fetchLogs(1, 10000);
-    setLogs(result.logs || []);
-  };
-
-  const handleUpdate = async () => {
+  const handleUpdate = useCallback(async () => {
     await new Promise((r) => setTimeout(r, 300));
     try {
-      const result = await fetchLogs(1, 10000);
+      const result = await fetchLogs(1, SESSIONS_LOG_LIMIT);
       setLogs(result.logs || []);
-    } catch (error) {
-      console.error("Error reloading logs after delete:", error);
+    } catch {
       try {
-        const result = await fetchLogs(1, 10000);
+        const result = await fetchLogs(1, SESSIONS_LOG_LIMIT);
         setLogs(result.logs || []);
       } catch {
-        // ignore retry failure
+        // ignore
       }
     }
-  };
+  }, []);
 
   if (isCheckingAuth || isLoading) {
     return (
