@@ -266,7 +266,7 @@ export function TruckTable({ logs, onSend, onUpdate }: TruckTableProps) {
         onSend(log.id);
         toast({
           title: "Амжилттай",
-          description: "Гаальд илгээсэн гэж тэмдэглэгдлээ",
+          description: "Гаальд илгээсэн",
         });
         if (onUpdate) onUpdate();
       } else {
