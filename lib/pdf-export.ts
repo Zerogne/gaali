@@ -522,22 +522,41 @@ function generateLogHTML(
 
   const createdDate = log.createdAt ? formatDate(new Date(log.createdAt)) : "—";
 
-  // Same as EditLogDialog getWeightsFromLog: use log weights from DB (totalInWeight/totalOutWeight/netWeight)
-  const getLogTotalIn = (l: any) =>
-    l?.totalInWeight ?? l?.TotalInWeight ?? l?.totalinweight ?? undefined;
-  const getLogTotalOut = (l: any) =>
-    l?.totalOutWeight ?? l?.TotalOutWeight ?? l?.TotalOutweight ?? l?.totaloutweight ?? undefined;
-  const getLogNetWeight = (l: any) => {
-    const v = l?.netWeight ?? l?.NetWeight ?? l?.netWeightKg;
-    return v != null ? Math.abs(v) : undefined;
+  const toNum = (v: unknown): number | undefined => {
+    if (typeof v === "number" && Number.isFinite(v)) return v;
+    if (typeof v === "string") {
+      const n = Number(v.trim());
+      return Number.isFinite(n) ? n : undefined;
+    }
+    return undefined;
   };
-  const logTotalIn = getLogTotalIn(log);
-  const logTotalOut = getLogTotalOut(log);
-  const logNet = getLogNetWeight(log);
-  const wkg = log.weightKg;
-  const hasOut = (logNet != null || logTotalOut != null) && log.direction === "IN";
-  const totalInWeight = logTotalIn ?? (hasOut && logTotalOut != null && logNet != null ? logTotalOut + logNet : wkg);
-  const totalOutWeight = logTotalOut ?? (hasOut ? wkg : log.direction === "OUT" ? wkg : undefined);
+  const getVal = (l: any, ...keys: string[]): number | undefined => {
+    for (const k of keys) {
+      const v = l?.[k];
+      const n = toNum(v);
+      if (n != null && Number.isFinite(n)) return n;
+    }
+    return undefined;
+  };
+  const raw = log as any;
+  const logTotalIn = getVal(raw, "totalInWeight", "TotalInWeight", "totalinweight");
+  const logTotalOut = getVal(raw, "totalOutWeight", "TotalOutWeight", "TotalOutweight", "totaloutweight");
+  const logNetRaw = getVal(raw, "netWeight", "NetWeight", "netWeightKg", "NetWeightKg");
+  const logNet = logNetRaw != null ? Math.abs(logNetRaw) : undefined;
+  const wkg = toNum(raw.weightKg) ?? toNum(raw.WeightKg);
+  const tw = toNum(raw.truckWeight) ?? toNum(raw.carWeight);
+  const trw = toNum(raw.trailerWeight);
+  const hasOut = (logNet != null || logTotalOut != null || wkg != null) && log.direction === "IN";
+  const totalInWeight =
+    logTotalIn ??
+    (hasOut && logTotalOut != null && logNet != null ? logTotalOut + logNet : null) ??
+    (hasOut && wkg != null && logNet != null ? wkg + logNet : null) ??
+    (tw != null && trw != null && (tw > 0 || trw > 0) ? tw + trw : null) ??
+    (log.direction === "IN" ? wkg : undefined);
+  const totalOutWeight =
+    logTotalOut ??
+    (hasOut ? wkg : null) ??
+    (log.direction === "OUT" ? wkg : undefined);
   const netWeightFromLog = logNet ?? undefined;
 
   const hasOutData =
@@ -851,8 +870,8 @@ function generateLogHTML(
           <tr>
             <td>${escapeHtml(log.plate || "")}</td>
             <td>${escapeHtml(log.trailerPlate || "")}</td>
-            <td>${inWeight !== null && inWeight > 0 ? inWeight.toLocaleString() : ""}</td>
-            <td>${outWeight !== null && outWeight > 0 ? outWeight.toLocaleString() : ""}</td>
+            <td>${inWeight != null ? inWeight.toLocaleString() : ""}</td>
+            <td>${outWeight != null ? outWeight.toLocaleString() : ""}</td>
             <td>${netWeight !== null ? Math.abs(netWeight).toLocaleString() : ""}</td>
             <td>${escapeHtml(log.sealNumber || "")}</td>
           </tr>
