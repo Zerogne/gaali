@@ -1932,16 +1932,21 @@ export const OutSessionForm = forwardRef<
                         value={formState.plateNumber}
                         onChange={(e) => {
                           const newValue = e.target.value;
-                          
-                          // Any manual edit disables auto-fill for the rest of this session
+
+                          // Any manual edit disables camera/LPR autofill for the rest of this session
                           if (!isAutofillingRef.current) {
                             manuallyClearedRef.current = true;
                           }
-                          
+
+                          // Update plate number and clear any previous IN-session-derived data
                           setFormState((prev) => ({
                             ...prev,
                             plateNumber: newValue,
+                            inSessionId: undefined,
                           }));
+                          setHasInSessionData(false);
+                          setInWeightKg(null);
+
                           onPlateChange?.(newValue);
                         }}
                         className="absolute inset-0 w-full h-full font-mono font-bold bg-transparent text-transparent border-0 focus:ring-0 focus-visible:ring-0 text-center caret-black z-10"

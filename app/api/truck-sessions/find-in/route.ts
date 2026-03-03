@@ -23,7 +23,8 @@ export async function GET(request: Request) {
     const normalizedPlate = plateNumber.trim().toUpperCase();
     console.log("🔍 find-in API: Normalized plate number:", normalizedPlate);
 
-    const inSession = await findLatestInSession(plateNumber)
+    // Always use normalized plate when searching sessions to avoid mismatches
+    const inSession = await findLatestInSession(normalizedPlate)
     console.log("🔍 find-in API: Found session:", inSession ? "Yes" : "No");
     if (inSession) {
       console.log("🔍 find-in API: Session ID:", inSession.id);
