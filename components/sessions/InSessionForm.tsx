@@ -1983,7 +1983,7 @@ export const InSessionForm = forwardRef<
                       Орох үеийн нийт жин (кг) <span className="text-red-500">*</span>
                     </Label>
                   </div>
-                  <div className="h-14">
+                  <div className="h-14 flex gap-2">
                     <Input
                       id="totalWeight"
                       type="number"
@@ -2002,9 +2002,23 @@ export const InSessionForm = forwardRef<
                           grossWeightKg: value,
                         }));
                       }}
-                      className="h-14 !text-5xl !md:text-5xl font-mono font-bold !text-green-600 w-full bg-white [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none [-moz-appearance:textfield]"
+                      className="h-14 !text-5xl !md:text-5xl font-mono font-bold !text-green-600 flex-1 bg-white [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none [-moz-appearance:textfield]"
                       required
                     />
+                    <Button
+                      type="button"
+                      onClick={() => {
+                        setFormState((prev) => ({
+                          ...prev,
+                          totalWeight: prev.grossWeightKg ?? prev.totalWeight ?? 0,
+                          grossWeightKg: prev.grossWeightKg ?? prev.totalWeight ?? 0,
+                        }));
+                      }}
+                      className="h-14 px-4 whitespace-nowrap"
+                      disabled={false}
+                    >
+                      OK
+                    </Button>
                   </div>
                 </div>
               </div>
