@@ -456,7 +456,7 @@ export function EditLogDialog({
 
         {uniqueCode && (
           <div className="mb-4 inline-flex items-center gap-2 rounded-md border border-dashed border-gray-300 bg-gray-50 px-3 py-2">
-            <span className="text-xs font-medium text-gray-500">Дугаар:</span>
+            <span className="text-xs font-medium text-gray-500">Пүүний дугаар:</span>
             <button
               type="button"
               onClick={() => navigator.clipboard?.writeText(uniqueCode)}
