@@ -1251,83 +1251,31 @@ export const OutSessionForm = forwardRef<
       };
     }, [formState.plateNumber, drivers, products]);
 
-    // Auto-calculate net weight when plate number and out weight are filled
+    // Auto-calculate net weight when IN weight and OUT weight are both known
     useEffect(() => {
-      // Only calculate if we have plate number and out weight is set (can be 0)
-      const plateNumber = formState.plateNumber.trim();
-      const outWeight = formState.totalWeight || formState.grossWeightKg;
-      
-      if (!plateNumber || outWeight === null || outWeight === undefined) {
+      const plate = formState.plateNumber.trim();
+      const outWeight = formState.totalWeight ?? formState.grossWeightKg ?? null;
+
+      if (!plate || outWeight === null || outWeight === undefined) {
+        return;
+      }
+      if (inWeightKg === null || inWeightKg === undefined) {
         return;
       }
 
-      let isMounted = true;
-      const abortController = new AbortController();
+      const netWeight = inWeightKg - outWeight;
 
-      const calculateNetWeight = async () => {
-        try {
-          // Find the latest IN session for this plate number
-          const response = await fetch(
-            `/api/truck-sessions/find-in?plateNumber=${encodeURIComponent(plateNumber)}`,
-            { signal: abortController.signal }
-          );
-
-          if (response.ok && isMounted) {
-            const data = await response.json();
-            if (data.success && data.session && isMounted) {
-              const inSession = data.session;
-              const inLog = data.log; // Log has all the fields including weightKg (totalWeight)
-
-              // Verify plate number and weight haven't changed
-              const currentOutWeight = formState.totalWeight || formState.grossWeightKg;
-              if (!isMounted || formState.plateNumber.trim() !== plateNumber || currentOutWeight !== outWeight) {
-                return;
-              }
-
-              // Calculate net weight: totalWeight(IN) - totalWeight(OUT)
-              // totalInWeight = truckWeight + trailerWeight; fallback to totalInWeight/weightKg
-              const tw = (inLog as any)?.truckWeight ?? (inLog as any)?.carWeight
-              const trw = (inLog as any)?.trailerWeight
-              const inTotalWeight = (tw != null && trw != null) ? tw + trw : (inLog as any)?.totalInWeight ?? inLog?.weightKg ?? inSession.grossWeightKg ?? 0;
-              const outWeightValue = outWeight || 0;
-              const netWeight = inTotalWeight - outWeightValue;
-
-              // Update form state with calculated net weight (can be negative, but display will hide minus)
-              setFormState((prev) => {
-                // Double-check values haven't changed
-                const prevOutWeight = prev.totalWeight || prev.grossWeightKg;
-                if (!isMounted || prev.plateNumber.trim() !== plateNumber || prevOutWeight !== outWeight) {
-                  return prev;
-                }
-                return {
-                  ...prev,
-                  inSessionId: inSession.id,
-                  // Store the actual calculated value (can be negative)
-                  netWeightKg: netWeight,
-                };
-              });
-
-              // Store IN weight for display
-              if (isMounted) {
-                setInWeightKg(inTotalWeight);
-              }
-            }
-          }
-        } catch (error) {
-          // Only log errors if not aborted and in development
-          if (!abortController.signal.aborted && isMounted && process.env.NODE_ENV === "development") {
-            console.error("Error calculating net weight:", error);
-          }
+      setFormState((prev) => {
+        const currentOutWeight = prev.totalWeight ?? prev.grossWeightKg ?? null;
+        if (prev.plateNumber.trim() !== plate || currentOutWeight !== outWeight) {
+          return prev;
         }
-      };
-
-      calculateNetWeight();
-
-      return () => {
-        isMounted = false;
-        abortController.abort();
-      };
-    }, [formState.plateNumber, formState.totalWeight, formState.grossWeightKg]);
+        return {
+          ...prev,
+          netWeightKg: netWeight,
+        };
+      });
+    }, [formState.plateNumber, formState.totalWeight, formState.grossWeightKg, inWeightKg]);
 
     // Check if form has unsaved data
     const hasUnsavedData = (): boolean => {
