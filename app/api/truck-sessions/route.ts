@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server"
-import { saveTruckSession, getTruckSessions } from "@/lib/truckSessions"
+import { saveTruckSession, getTruckSessions, attachOutToInSession } from "@/lib/truckSessions"
 import { saveTruckLog } from "@/lib/api"
 import { errorToResponse } from "@/lib/errors"
 import { getCompanyCollection } from "@/lib/db/companyDb"
@@ -307,6 +307,16 @@ export async function POST(request: Request) {
     console.log("✅ Session plate number:", session.plateNumber)
     console.log("✅ Session direction:", session.direction)
     console.log("✅ Session weight:", session.grossWeightKg)
+
+    // If this is an OUT session, also attach its OUT data to the corresponding IN session
+    if (session.direction === "OUT") {
+      try {
+        await attachOutToInSession(session)
+        console.log("✅ Attached OUT data to matching IN session")
+      } catch (attachError) {
+        console.error("⚠️ Failed to attach OUT data to IN session:", attachError)
+      }
+    }
     
     // Verify session exists in database
     try {

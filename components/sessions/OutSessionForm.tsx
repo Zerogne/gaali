@@ -1002,218 +1002,33 @@ export const OutSessionForm = forwardRef<
 
     // Auto-fill all data from IN session when plate number is entered
     useEffect(() => {
+      const rawPlate = formState.plateNumber.trim();
+      const plateNumber = rawPlate.toUpperCase().replace(/\s/g, "");
+
       // Only fetch if we have a plate number (at least 2 characters to avoid too many requests)
-      const plateNumber = formState.plateNumber.trim();
       if (!plateNumber || plateNumber.length < 2) {
         setHasInSessionData(false);
+        setInWeightKg(null);
         return;
       }
 
-      // Don't auto-fill if user is currently typing (debounce)
-      let isMounted = true;
+      let cancelled = false;
       const abortController = new AbortController();
-      
-      const timeoutId = setTimeout(async () => {
-        try {
-          const currentPlateNumber = formState.plateNumber.trim();
-          // Double-check plate number hasn't changed during debounce
-          if (!isMounted || currentPlateNumber !== plateNumber) {
-            return;
-          }
 
+      const timeoutId = setTimeout(async () => {
+        if (cancelled) return;
+        try {
           // Find the latest IN session and log for this plate number
           const response = await fetch(
             `/api/truck-sessions/find-in?plateNumber=${encodeURIComponent(
-              currentPlateNumber
+              plateNumber
             )}`,
             { signal: abortController.signal }
           );
 
-          if (response.ok) {
-            const data = await response.json();
-
-            if (data.success && data.session && isMounted) {
-              const inSession = data.session;
-              const inLog = data.log; // Log has all the fields
-
-              // totalInWeight = truckWeight + trailerWeight; fallback to totalInWeight/weightKg
-              const tw = (inLog as any)?.truckWeight ?? (inLog as any)?.carWeight
-              const trw = (inLog as any)?.trailerWeight
-              const inTotalWeight = (tw != null && trw != null) ? tw + trw : (inLog as any)?.totalInWeight ?? inLog?.weightKg ?? inSession.grossWeightKg ?? null;
-
-              // Store IN weight for display
-              setInWeightKg(inTotalWeight);
-
-              // Mark that we have IN session data
-              setHasInSessionData(true);
-
-              // Auto-fill all available data (only if fields are empty or not set)
-              setFormState((prev) => {
-                // Verify we're still processing the same plate number
-                if (prev.plateNumber.trim() !== currentPlateNumber) {
-                  return prev;
-                }
-
-                const updates: Partial<OutSessionFormState> = {
-                  inSessionId: inSession.id,
-                };
-
-                // Helper to check if field is empty
-                const isEmpty = (value: unknown): boolean => {
-                  if (value === null || value === undefined) return true;
-                  if (typeof value === "string") return value.trim() === "";
-                  return false;
-                };
-
-                // Auto-fill driver - try log first, then session
-                if (isEmpty(prev.driverId)) {
-                  if (inLog?.driverId) {
-                    const matchingDriver = drivers.find(
-                      (d) => d.id === inLog.driverId
-                    );
-                    if (matchingDriver) {
-                      updates.driverId = matchingDriver.id;
-                      updates.driverName = matchingDriver.name;
-                    }
-                  }
-                  if (!updates.driverId && inSession.driverName) {
-                    // Fallback to driver name matching from session
-                    const matchingDriver = drivers.find(
-                      (d) => d.name === inSession.driverName
-                    );
-                    if (matchingDriver) {
-                      updates.driverId = matchingDriver.id;
-                      updates.driverName = matchingDriver.name;
-                    }
-                  }
-                }
-
-                // Auto-fill product - try productId first (most reliable), then cargoType label match, then session product
-                if (isEmpty(prev.productId)) {
-                  // First, try to match by productId if available in log
-                  if ((inLog as any)?.productId) {
-                    const matchingProduct = products.find(
-                      (p) => p.id === (inLog as any).productId
-                    );
-                    if (matchingProduct) {
-                      updates.productId = matchingProduct.id;
-                    }
-                  }
-                  
-                  // If productId didn't match, try matching by cargoType label (case-insensitive, trimmed)
-                  if (!updates.productId && inLog?.cargoType) {
-                    const cargoTypeTrimmed = inLog.cargoType.trim();
-                    // First try exact match (case-insensitive)
-                    let matchingProduct = products.find(
-                      (p) => {
-                        const labelMatch = p.label?.trim().toLowerCase() === cargoTypeTrimmed.toLowerCase();
-                        const valueMatch = p.value?.trim().toLowerCase() === cargoTypeTrimmed.toLowerCase();
-                        return labelMatch || valueMatch;
-                      }
-                    );
-                    
-                    // If no exact match, try partial match (contains)
-                    if (!matchingProduct) {
-                      matchingProduct = products.find(
-                        (p) => {
-                          const labelLower = p.label?.trim().toLowerCase() || "";
-                          const valueLower = p.value?.trim().toLowerCase() || "";
-                          const cargoTypeLower = cargoTypeTrimmed.toLowerCase();
-                          return labelLower.includes(cargoTypeLower) || 
-                                 cargoTypeLower.includes(labelLower) ||
-                                 valueLower.includes(cargoTypeLower) ||
-                                 cargoTypeLower.includes(valueLower);
-                        }
-                      );
-                    }
-                    
-                    if (matchingProduct) {
-                      updates.productId = matchingProduct.id;
-                    }
-                  }
-                  
-                  // Last resort: try matching by session product name (case-insensitive, trimmed)
-                  if (!updates.productId && inSession.product) {
-                    const sessionProductTrimmed = inSession.product.trim();
-                    const matchingProduct = products.find(
-                      (p) => {
-                        const labelMatch = p.label?.trim().toLowerCase() === sessionProductTrimmed.toLowerCase();
-                        const valueMatch = p.value?.trim().toLowerCase() === sessionProductTrimmed.toLowerCase();
-                        return labelMatch || valueMatch;
-                      }
-                    );
-                    if (matchingProduct) {
-                      updates.productId = matchingProduct.id;
-                    }
-                  }
-                  
-                }
-
-                // Auto-fill transport company - from log
-                if (
-                  isEmpty(prev.transporterCompanyId) &&
-                  inLog?.transportCompanyId
-                ) {
-                  updates.transporterCompanyId = inLog.transportCompanyId;
-                }
-
-                // Auto-fill origin - from log
-                if (isEmpty(prev.origin) && inLog?.origin) {
-                  updates.origin = inLog.origin;
-                }
-
-                // Auto-fill destination - from log
-                if (isEmpty(prev.destination) && inLog?.destination) {
-                  updates.destination = inLog.destination;
-                }
-
-                // Auto-fill sender organization - from log
-                if (
-                  isEmpty(prev.senderOrganizationId) &&
-                  inLog?.senderOrganizationId
-                ) {
-                  updates.senderOrganizationId = inLog.senderOrganizationId;
-                }
-
-                // Auto-fill receiver organization - from log
-                if (
-                  isEmpty(prev.receiverOrganizationId) &&
-                  inLog?.receiverOrganizationId
-                ) {
-                  updates.receiverOrganizationId = inLog.receiverOrganizationId;
-                }
-
-                // Auto-fill seal number - from log
-                if (isEmpty(prev.sealNumber) && inLog?.sealNumber) {
-                  updates.sealNumber = inLog.sealNumber;
-                }
-
-                // Auto-fill trailer info - from log
-                if (inLog?.hasTrailer !== undefined) {
-                  if (prev.hasTrailer !== inLog.hasTrailer) {
-                    updates.hasTrailer = inLog.hasTrailer;
-                  }
-                  if (
-                    inLog.hasTrailer &&
-                    inLog.trailerPlate &&
-                    isEmpty(prev.trailerNumber)
-                  ) {
-                    updates.trailerNumber = inLog.trailerPlate;
-                  }
-                }
-
-                // Auto-fill notes - from log
-                if (isEmpty(prev.notes) && inLog?.comments) {
-                  updates.notes = inLog.comments;
-                }
-
-                return { ...prev, ...updates };
-              });
-            } else {
-              setHasInSessionData(false);
-            }
-          } else {
+          if (!response.ok) {
             setHasInSessionData(false);
+
             // Handle error responses
             let errorData;
             try {
@@ -1222,41 +1037,207 @@ export const OutSessionForm = forwardRef<
               errorData = { error: `HTTP ${response.status}` };
             }
 
-            if (response.status === 404) {
-              // Clear IN-session-derived fields so we don't show stale data from the previous plate
-              if (isMounted) {
-                setFormState((prev) => {
-                  if (prev.plateNumber.trim() !== currentPlateNumber) return prev;
-                  return {
-                    ...prev,
-                    inSessionId: undefined,
-                    driverId: "",
-                    driverName: "",
-                    productId: "",
-                    transporterCompanyId: "",
-                    origin: "",
-                    destination: "",
-                    senderOrganizationId: "",
-                    receiverOrganizationId: "",
-                    sealNumber: "",
-                    trailerNumber: prev.hasTrailer ? prev.trailerNumber : "",
-                    carWeight: null,
-                    trailerWeight: null,
-                    totalWeight: null,
-                    grossWeightKg: null,
-                  };
-                });
-                setInWeightKg(null);
-              }
-              // This is normal - just means there's no IN session for this plate yet
-            } else {
+            // 404 just means there's no IN session for this plate yet; clear derived state if still same plate
+            if (response.status === 404 && !cancelled) {
+              setFormState((prev) => {
+                const current = prev.plateNumber.trim().toUpperCase().replace(/\s/g, "");
+                if (current !== plateNumber) return prev;
+                return {
+                  ...prev,
+                  inSessionId: undefined,
+                  driverId: "",
+                  driverName: "",
+                  productId: "",
+                  transporterCompanyId: "",
+                  origin: "",
+                  destination: "",
+                  senderOrganizationId: "",
+                  receiverOrganizationId: "",
+                  sealNumber: "",
+                  trailerNumber: prev.hasTrailer ? prev.trailerNumber : "",
+                  carWeight: null,
+                  trailerWeight: null,
+                  totalWeight: null,
+                  grossWeightKg: null,
+                };
+              });
+              setInWeightKg(null);
+            } else if (response.status !== 404) {
               console.error(
                 "❌ Auto-fill: API error:",
                 response.status,
                 errorData
               );
             }
+            return;
           }
+
+          const data = await response.json();
+          if (!data.success || !data.session || cancelled) {
+            setHasInSessionData(false);
+            return;
+          }
+
+          const inSession = data.session;
+          const inLog = data.log; // Log has all the fields
+
+          // totalInWeight = truckWeight + trailerWeight; fallback to totalInWeight/weightKg
+          const tw = (inLog as any)?.truckWeight ?? (inLog as any)?.carWeight;
+          const trw = (inLog as any)?.trailerWeight;
+          const inTotalWeight =
+            tw != null && trw != null
+              ? tw + trw
+              : (inLog as any)?.totalInWeight ??
+                inLog?.weightKg ??
+                inSession.grossWeightKg ??
+                null;
+
+          // Store IN weight for display
+          setInWeightKg(inTotalWeight);
+          setHasInSessionData(true);
+
+          // Auto-fill all available data (only if fields are empty or not set)
+          setFormState((prev) => {
+            const current = prev.plateNumber.trim().toUpperCase().replace(/\s/g, "");
+            if (current !== plateNumber) return prev;
+
+            const updates: Partial<OutSessionFormState> = {
+              inSessionId: inSession.id,
+            };
+
+            const isEmpty = (value: unknown): boolean => {
+              if (value === null || value === undefined) return true;
+              if (typeof value === "string") return value.trim() === "";
+              return false;
+            };
+
+            // Auto-fill driver - try log first, then session
+            if (isEmpty(prev.driverId)) {
+              if (inLog?.driverId) {
+                const matchingDriver = drivers.find(
+                  (d) => d.id === inLog.driverId
+                );
+                if (matchingDriver) {
+                  updates.driverId = matchingDriver.id;
+                  updates.driverName = matchingDriver.name;
+                }
+              }
+              if (!updates.driverId && inSession.driverName) {
+                const matchingDriver = drivers.find(
+                  (d) => d.name === inSession.driverName
+                );
+                if (matchingDriver) {
+                  updates.driverId = matchingDriver.id;
+                  updates.driverName = matchingDriver.name;
+                }
+              }
+            }
+
+            // Auto-fill product - try productId first (most reliable), then cargoType label match, then session product
+            if (isEmpty(prev.productId)) {
+              if ((inLog as any)?.productId) {
+                const matchingProduct = products.find(
+                  (p) => p.id === (inLog as any).productId
+                );
+                if (matchingProduct) {
+                  updates.productId = matchingProduct.id;
+                }
+              }
+
+              if (!updates.productId && inLog?.cargoType) {
+                const cargoTypeTrimmed = inLog.cargoType.trim().toLowerCase();
+                let matchingProduct = products.find((p) => {
+                  const label = p.label?.trim().toLowerCase() || "";
+                  const value = p.value?.trim().toLowerCase() || "";
+                  return label === cargoTypeTrimmed || value === cargoTypeTrimmed;
+                });
+
+                if (!matchingProduct) {
+                  matchingProduct = products.find((p) => {
+                    const label = p.label?.trim().toLowerCase() || "";
+                    const value = p.value?.trim().toLowerCase() || "";
+                    return (
+                      label.includes(cargoTypeTrimmed) ||
+                      cargoTypeTrimmed.includes(label) ||
+                      value.includes(cargoTypeTrimmed) ||
+                      cargoTypeTrimmed.includes(value)
+                    );
+                  });
+                }
+
+                if (matchingProduct) {
+                  updates.productId = matchingProduct.id;
+                }
+              }
+
+              if (!updates.productId && inSession.product) {
+                const sessionProductTrimmed = inSession.product.trim().toLowerCase();
+                const matchingProduct = products.find((p) => {
+                  const label = p.label?.trim().toLowerCase() || "";
+                  const value = p.value?.trim().toLowerCase() || "";
+                  return (
+                    label === sessionProductTrimmed || value === sessionProductTrimmed
+                  );
+                });
+                if (matchingProduct) {
+                  updates.productId = matchingProduct.id;
+                }
+              }
+            }
+
+            // Auto-fill transport company - from log
+            if (
+              isEmpty(prev.transporterCompanyId) &&
+              inLog?.transportCompanyId
+            ) {
+              updates.transporterCompanyId = inLog.transportCompanyId;
+            }
+
+            if (isEmpty(prev.origin) && inLog?.origin) {
+              updates.origin = inLog.origin;
+            }
+
+            if (isEmpty(prev.destination) && inLog?.destination) {
+              updates.destination = inLog.destination;
+            }
+
+            if (
+              isEmpty(prev.senderOrganizationId) &&
+              inLog?.senderOrganizationId
+            ) {
+              updates.senderOrganizationId = inLog.senderOrganizationId;
+            }
+
+            if (
+              isEmpty(prev.receiverOrganizationId) &&
+              inLog?.receiverOrganizationId
+            ) {
+              updates.receiverOrganizationId = inLog.receiverOrganizationId;
+            }
+
+            if (isEmpty(prev.sealNumber) && inLog?.sealNumber) {
+              updates.sealNumber = inLog.sealNumber;
+            }
+
+            if (inLog?.hasTrailer !== undefined) {
+              if (prev.hasTrailer !== inLog.hasTrailer) {
+                updates.hasTrailer = inLog.hasTrailer;
+              }
+              if (
+                inLog.hasTrailer &&
+                inLog.trailerPlate &&
+                isEmpty(prev.trailerNumber)
+              ) {
+                updates.trailerNumber = inLog.trailerPlate;
+              }
+            }
+
+            if (isEmpty(prev.notes) && inLog?.comments) {
+              updates.notes = inLog.comments;
+            }
+
+            return { ...prev, ...updates };
+          });
         } catch (error: unknown) {
           if (error instanceof Error && error.name === "AbortError") return;
           console.error("❌ Auto-fill: Error fetching IN session:", error);
@@ -1264,6 +1245,7 @@ export const OutSessionForm = forwardRef<
       }, 500); // 500ms debounce
 
       return () => {
+        cancelled = true;
         clearTimeout(timeoutId);
         abortController.abort();
       };

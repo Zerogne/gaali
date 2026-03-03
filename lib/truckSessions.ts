@@ -526,6 +526,52 @@ export async function findLatestInSession(
 }
 
 /**
+ * When an OUT session is saved, attach its OUT data (outTime, netWeightKg, etc.)
+ * to the corresponding IN session so that the IN session represents the full trip.
+ *
+ * This keeps compatibility with existing code that expects a single, enriched IN session,
+ * while still allowing separate OUT documents for auditing/history.
+ */
+export async function attachOutToInSession(
+  outSession: TruckSession
+): Promise<void> {
+  try {
+    if (outSession.direction !== "OUT") return
+
+    // Find matching IN session using the same matching logic as findLatestInSession
+    const inSession = await findLatestInSession(outSession.plateNumber)
+    if (!inSession) {
+      console.warn(
+        "attachOutToInSession: No matching IN session found for plate",
+        outSession.plateNumber
+      )
+      return
+    }
+
+    const companyId = await getActiveCompany()
+    const sessionsCollection = await getCompanyCollection<TruckSession>(
+      companyId,
+      "truck_sessions"
+    )
+
+    const now = new Date()
+    const update: Partial<TruckSession> = {
+      outTime: outSession.outTime || outSession.createdAt.toISOString(),
+      netWeightKg:
+        outSession.netWeightKg != null ? outSession.netWeightKg : undefined,
+      updatedAt: now,
+    }
+
+    await sessionsCollection.updateOne(
+      { id: inSession.id },
+      { $set: update }
+    )
+  } catch (error) {
+    console.error("attachOutToInSession failed:", error)
+  }
+}
+
+/**
  * Update an existing truck session
  */
 export async function updateTruckSession(

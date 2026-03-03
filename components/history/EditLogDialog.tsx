@@ -34,6 +34,7 @@ interface EditLogDialogProps {
   onOpenChange: (open: boolean) => void;
   log: TruckLog | null;
   onSave: () => void;
+  uniqueCode?: string | null;
 }
 
 type Direction = "IN" | "OUT";
@@ -43,6 +44,7 @@ export function EditLogDialog({
   onOpenChange,
   log,
   onSave,
+  uniqueCode,
 }: EditLogDialogProps) {
   const { toast } = useToast();
   const [isSaving, setIsSaving] = useState(false);
@@ -451,6 +453,20 @@ export function EditLogDialog({
             ? "ОРОХ бүртгэл"
             : "ГАРАХ бүртгэл"}
         </DialogDescription>
+
+        {uniqueCode && (
+          <div className="mb-4 inline-flex items-center gap-2 rounded-md border border-dashed border-gray-300 bg-gray-50 px-3 py-2">
+            <span className="text-xs font-medium text-gray-500">Дугаар:</span>
+            <button
+              type="button"
+              onClick={() => navigator.clipboard?.writeText(uniqueCode)}
+              className="text-xs font-mono font-semibold text-gray-900 bg-white border border-gray-300 rounded px-2 py-0.5 hover:bg-gray-100 active:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-blue-500"
+              title="Хуулах"
+            >
+              {uniqueCode}
+            </button>
+          </div>
+        )}
 
         {isSentToCustoms && (
           <div className="mb-4 p-3 bg-orange-50 border border-orange-200 rounded-lg">

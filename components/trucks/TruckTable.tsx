@@ -928,6 +928,7 @@ export function TruckTable({ logs, onSend, onUpdate }: TruckTableProps) {
         onOpenChange={setIsEditDialogOpen}
         log={editingLog}
         onSave={handleEditSave}
+        uniqueCode={editingLog ? uniqueCodes.get(editingLog.id) || null : null}
       />
     </Card>
   );
