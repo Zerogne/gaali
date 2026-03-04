@@ -10,7 +10,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useThirdPartyAutofill } from "@/hooks/useThirdPartyAutofill";
 import { useWeightStatus } from "@/hooks/useWeightStatus";
 import { useLatestLpr } from "@/hooks/useLatestLpr";
-import { useLatestRfid } from "@/hooks/useLatestRfid";
+import { useRfidStatus } from "@/hooks/useRfidStatus";
 import { updateTruckLog, sendTruckLogToCustoms } from "@/lib/api";
 import { buildDRN } from "@/lib/thirdPartyFormat";
 import { printLog } from "@/lib/pdf-export";
@@ -137,7 +137,7 @@ export const OutSessionForm = forwardRef<
     // Plate number auto-fill for Out Session - filters by camera 2 (exit camera)
     // In Session uses camera 1 (entry camera), Out Session uses camera 2 (exit camera)
     const { latest: latestLpr } = useLatestLpr(1000, 2); // Poll every 1 second, filter by camera 2
-    const { latest: latestRfid } = useLatestRfid(1000); // Poll every 1 second
+    const rfidStatus = useRfidStatus({ pollInterval: 1000, enabled: true });
 
     // Check weight device connection status
     const weightStatus = useWeightStatus({
@@ -211,9 +211,9 @@ export const OutSessionForm = forwardRef<
       inSessionId: undefined,
     });
 
-    // RFID auto-fill (do not overwrite manual entry)
+    // RFID auto-fill (same pattern as weight: use status latest, do not overwrite manual entry)
     useEffect(() => {
-      const value = latestRfid?.rfid?.trim();
+      const value = rfidStatus.status.latestRfid?.trim();
       if (!value) return;
       if (rfidManuallyEditedRef.current) return;
 
@@ -225,7 +225,7 @@ export const OutSessionForm = forwardRef<
       setTimeout(() => {
         isRfidAutofillingRef.current = false;
       }, 0);
-    }, [latestRfid?.rfid]);
+    }, [rfidStatus.status.latestRfid]);
 
     // Helper function to get current datetime in datetime-local format (local time)
     const getCurrentDateTime = (): string => {

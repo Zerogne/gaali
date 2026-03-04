@@ -30,6 +30,7 @@ export default async function proxy(request: Request) {
     pathname.startsWith('/api/weight/ingest') || // Allow weight ingest endpoint for weight bridge
     pathname.startsWith('/api/weight/status') || // Allow weight status endpoint
     pathname.startsWith('/api/weight/latest') || // Allow weight latest endpoint
+    pathname.startsWith('/api/rfid/ingest') || // Allow RFID ingest for Gaali Bridge (plate, weight, rfid)
     pathname.match(/\.(ico|png|jpg|jpeg|svg|gif|webp|css|js|woff|woff2|ttf|eot)$/)
   ) {
     return NextResponse.next()

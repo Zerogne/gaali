@@ -13,7 +13,7 @@ import { useConnectorSSE } from "@/hooks/useConnectorSSE";
 import { useThirdPartyAutofill } from "@/hooks/useThirdPartyAutofill";
 import { useWeightStatus } from "@/hooks/useWeightStatus";
 import { useLatestLpr } from "@/hooks/useLatestLpr";
-import { useLatestRfid } from "@/hooks/useLatestRfid";
+import { useRfidStatus } from "@/hooks/useRfidStatus";
 import { updateTruckLog, sendTruckLogToCustoms } from "@/lib/api";
 import type { Product } from "@/lib/products/products";
 import type {
@@ -167,7 +167,7 @@ export const InSessionForm = forwardRef<
 
     // Direct plate number auto-fill (similar to weight) - updates whenever new data arrives
     const { latest: latestLpr } = useLatestLpr(1000); // Poll every 1 second
-    const { latest: latestRfid } = useLatestRfid(1000); // Poll every 1 second
+    const rfidStatus = useRfidStatus({ pollInterval: 1000, enabled: true });
 
     // Check weight device connection status
     const weightStatus = useWeightStatus({
@@ -225,9 +225,9 @@ export const InSessionForm = forwardRef<
       notes: "",
     });
 
-    // RFID auto-fill (do not overwrite manual entry)
+    // RFID auto-fill (same pattern as weight: use status latest, do not overwrite manual entry)
     useEffect(() => {
-      const value = latestRfid?.rfid?.trim();
+      const value = rfidStatus.status.latestRfid?.trim();
       if (!value) return;
       if (rfidManuallyEditedRef.current) return;
 
@@ -239,7 +239,7 @@ export const InSessionForm = forwardRef<
       setTimeout(() => {
         isRfidAutofillingRef.current = false;
       }, 0);
-    }, [latestRfid?.rfid]);
+    }, [rfidStatus.status.latestRfid]);
 
     // Helper function to get current datetime in datetime-local format (local time)
     const getCurrentDateTime = (): string => {

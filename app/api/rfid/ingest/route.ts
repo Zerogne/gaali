@@ -5,7 +5,7 @@ import { getRfidCollection } from "@/lib/db/rfid";
 import { getCompaniesCollection } from "@/lib/db/companyDb";
 
 const ingestSchema = z.object({
-  siteId: z.string().min(1),
+  siteId: z.string().optional(), // Optional: Gaali Bridge may send only rfid (+ optional cameraIp)
   rfid: z.string().min(1),
   raw: z.string().optional(),
   ts: z.string().optional(),
@@ -49,8 +49,12 @@ export async function POST(request: NextRequest) {
       body.card ??
       "";
 
+    const defaultSiteId =
+      process.env.RFID_DEFAULT_SITE_ID ||
+      process.env.NEXT_PUBLIC_RFID_SITE_ID ||
+      "default";
     const validated = ingestSchema.parse({
-      siteId: body.siteId,
+      siteId: body.siteId ?? defaultSiteId,
       rfid: typeof rfidValue === "string" ? rfidValue : String(rfidValue),
       raw: body.raw || "",
       ts: body.ts || new Date().toISOString(),
@@ -58,6 +62,7 @@ export async function POST(request: NextRequest) {
       devicePort: body.devicePort || 0,
       cameraIp: body.cameraIp || null,
     });
+    const siteId = validated.siteId || defaultSiteId;
 
     // Map company by camera IP (optional)
     let companyId: string | null = null;
@@ -80,7 +85,7 @@ export async function POST(request: NextRequest) {
 
     const receivedAt = new Date().toISOString();
     const rfidData = {
-      siteId: validated.siteId,
+      siteId,
       rfid: validated.rfid,
       raw: validated.raw,
       ts: validated.ts,
@@ -107,7 +112,7 @@ export async function POST(request: NextRequest) {
     // Upsert latest for quick access
     const { _id, ...rfidDataWithoutId } = rfidData as any;
     await collection.updateOne(
-      { siteId: validated.siteId, companyId: companyId || null, isLatest: true },
+      { siteId, companyId: companyId || null, isLatest: true },
       {
         $set: {
           ...rfidDataWithoutId,
