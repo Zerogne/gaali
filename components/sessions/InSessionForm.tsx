@@ -36,6 +36,30 @@ import {
   useState,
 } from "react";
 
+// Helper function to get current datetime in datetime-local format (local time)
+const getCurrentDateTime = (): string => {
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, "0");
+  const day = String(now.getDate()).padStart(2, "0");
+  const hours = String(now.getHours()).padStart(2, "0");
+  const minutes = String(now.getMinutes()).padStart(2, "0");
+  return `${year}-${month}-${day}T${hours}:${minutes}`;
+};
+
+// Helper function to convert Date/ISO string to local datetime-local format (without timezone conversion)
+const toLocalDateTime = (date: Date | string | null | undefined): string => {
+  if (!date) return getCurrentDateTime();
+  const d = typeof date === "string" ? new Date(date) : date;
+  // Use local time components, not UTC
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  const hours = String(d.getHours()).padStart(2, "0");
+  const minutes = String(d.getMinutes()).padStart(2, "0");
+  return `${year}-${month}-${day}T${hours}:${minutes}`;
+};
+
 interface InSessionFormState {
   plateNumber: string;
   rfid: string;
@@ -206,15 +230,7 @@ export const InSessionForm = forwardRef<
       destination: "",
       senderOrganizationId: "",
       receiverOrganizationId: "",
-      inTime: externalInTime || (() => {
-        const now = new Date();
-        const year = now.getFullYear();
-        const month = String(now.getMonth() + 1).padStart(2, "0");
-        const day = String(now.getDate()).padStart(2, "0");
-        const hours = String(now.getHours()).padStart(2, "0");
-        const minutes = String(now.getMinutes()).padStart(2, "0");
-        return `${year}-${month}-${day}T${hours}:${minutes}`;
-      })(),
+      inTime: externalInTime || getCurrentDateTime(),
       grossWeightKg: null,
       carWeight: 0,
       trailerWeight: 0,
@@ -240,30 +256,6 @@ export const InSessionForm = forwardRef<
         isRfidAutofillingRef.current = false;
       }, 0);
     }, [rfidStatus.status.latestRfid]);
-
-    // Helper function to get current datetime in datetime-local format (local time)
-    const getCurrentDateTime = (): string => {
-      const now = new Date();
-      const year = now.getFullYear();
-      const month = String(now.getMonth() + 1).padStart(2, "0");
-      const day = String(now.getDate()).padStart(2, "0");
-      const hours = String(now.getHours()).padStart(2, "0");
-      const minutes = String(now.getMinutes()).padStart(2, "0");
-      return `${year}-${month}-${day}T${hours}:${minutes}`;
-    };
-
-    // Helper function to convert Date/ISO string to local datetime-local format (without timezone conversion)
-    const toLocalDateTime = (date: Date | string | null | undefined): string => {
-      if (!date) return getCurrentDateTime();
-      const d = typeof date === 'string' ? new Date(date) : date;
-      // Use local time components, not UTC
-      const year = d.getFullYear();
-      const month = String(d.getMonth() + 1).padStart(2, "0");
-      const day = String(d.getDate()).padStart(2, "0");
-      const hours = String(d.getHours()).padStart(2, "0");
-      const minutes = String(d.getMinutes()).padStart(2, "0");
-      return `${year}-${month}-${day}T${hours}:${minutes}`;
-    };
 
     // Sync external inTime with form state
     useEffect(() => {

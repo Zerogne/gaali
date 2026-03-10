@@ -480,7 +480,7 @@ export default function ContractsPage() {
               </Button>
             </div>
 
-            {/* Table - only show contract number and company name */}
+            {/* Table - show contract number, company and actions */}
             {isLoading ? (
               <div className="flex items-center justify-center py-12 gap-2 text-muted-foreground">
                 <Loader2 className="w-5 h-5 animate-spin" />
@@ -495,6 +495,7 @@ export default function ContractsPage() {
                     <TableRow>
                       <TableHead>Гэрээний дугаар</TableHead>
                       <TableHead>Компани</TableHead>
+                      <TableHead className="w-[120px]"></TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -509,6 +510,32 @@ export default function ContractsPage() {
                         </TableCell>
                         <TableCell>
                           {contract.company}
+                        </TableCell>
+                        <TableCell onClick={(e) => e.stopPropagation()}>
+                          <div className="flex items-center gap-1">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleEditContractClick(contract)}
+                              disabled={isDeleting === contract.id}
+                              className="h-8 w-8 p-0"
+                            >
+                              <Edit className="w-4 h-4" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleDeleteClick(contract.id)}
+                              disabled={isDeleting === contract.id}
+                              className="h-8 w-8 p-0 text-red-600 hover:text-red-700 hover:bg-red-50"
+                            >
+                              {isDeleting === contract.id ? (
+                                <Loader2 className="w-4 h-4 animate-spin" />
+                              ) : (
+                                <Trash2 className="w-4 h-4" />
+                              )}
+                            </Button>
+                          </div>
                         </TableCell>
                       </TableRow>
                     ))}
@@ -609,81 +636,55 @@ export default function ContractsPage() {
                     placeholder="Компанийн нэр оруулах"
                   />
                 </div>
-                <div>
-                  <Label htmlFor="dialog-company-id">Компанийн регистер *</Label>
-                  <Input
-                    id="dialog-company-id"
-                    value={editingContract ? editingCompanyId : newCompanyId}
-                    onChange={(e) => {
-                      if (editingContract) {
-                        setEditingCompanyId(e.target.value);
-                      } else {
-                        setNewCompanyId(e.target.value);
-                      }
-                    }}
-                    placeholder="Компанийн регистрийн дугаар оруулах"
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="dialog-company-phone">Компанийн утасны дугаар *</Label>
-                  <Input
-                    id="dialog-company-phone"
-                    value={editingContract ? editingCompanyPhone : newCompanyPhone}
-                    onChange={(e) => {
-                      if (editingContract) {
-                        setEditingCompanyPhone(e.target.value);
-                      } else {
-                        setNewCompanyPhone(e.target.value);
-                      }
-                    }}
-                    placeholder="Компанийн утасны дугаар оруулах"
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="dialog-description">Тайлбар</Label>
-                  <Input
-                    id="dialog-description"
-                    value={editingContract ? editingDescription : newDescription}
-                    onChange={(e) => {
-                      if (editingContract) {
-                        setEditingDescription(e.target.value);
-                      } else {
-                        setNewDescription(e.target.value);
-                      }
-                    }}
-                    placeholder="Тайлбар оруулах (сонголттой)"
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="dialog-start-date">Эхлэх огноо</Label>
-                  <Input
-                    id="dialog-start-date"
-                    type="date"
-                    value={editingContract ? editingStartDate : newStartDate}
-                    onChange={(e) => {
-                      if (editingContract) {
-                        setEditingStartDate(e.target.value);
-                      } else {
-                        setNewStartDate(e.target.value);
-                      }
-                    }}
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="dialog-end-date">Дуусах огноо</Label>
-                  <Input
-                    id="dialog-end-date"
-                    type="date"
-                    value={editingContract ? editingEndDate : newEndDate}
-                    onChange={(e) => {
-                      if (editingContract) {
-                        setEditingEndDate(e.target.value);
-                      } else {
-                        setNewEndDate(e.target.value);
-                      }
-                    }}
-                  />
-                </div>
+                {!editingContract && (
+                  <>
+                    <div>
+                      <Label htmlFor="dialog-company-id">Компанийн регистер *</Label>
+                      <Input
+                        id="dialog-company-id"
+                        value={newCompanyId}
+                        onChange={(e) => setNewCompanyId(e.target.value)}
+                        placeholder="Компанийн регистрийн дугаар оруулах"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="dialog-company-phone">Компанийн утасны дугаар *</Label>
+                      <Input
+                        id="dialog-company-phone"
+                        value={newCompanyPhone}
+                        onChange={(e) => setNewCompanyPhone(e.target.value)}
+                        placeholder="Компанийн утасны дугаар оруулах"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="dialog-description">Тайлбар</Label>
+                      <Input
+                        id="dialog-description"
+                        value={newDescription}
+                        onChange={(e) => setNewDescription(e.target.value)}
+                        placeholder="Тайлбар оруулах (сонголттой)"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="dialog-start-date">Эхлэх огноо</Label>
+                      <Input
+                        id="dialog-start-date"
+                        type="date"
+                        value={newStartDate}
+                        onChange={(e) => setNewStartDate(e.target.value)}
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="dialog-end-date">Дуусах огноо</Label>
+                      <Input
+                        id="dialog-end-date"
+                        type="date"
+                        value={newEndDate}
+                        onChange={(e) => setNewEndDate(e.target.value)}
+                      />
+                    </div>
+                  </>
+                )}
               </div>
               <DialogFooter>
                 <Button
