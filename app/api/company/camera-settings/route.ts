@@ -125,10 +125,11 @@ export async function PUT(request: Request) {
 
     const result = await companiesCollection.updateOne(
       { companyId },
-      updateOp
+      updateOp,
+      { upsert: true }
     )
 
-    if (result.matchedCount === 0) {
+    if (result.matchedCount === 0 && !result.upsertedCount) {
       return NextResponse.json({ error: "Company not found" }, { status: 404 })
     }
 
