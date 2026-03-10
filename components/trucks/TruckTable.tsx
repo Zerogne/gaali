@@ -13,6 +13,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { useToast } from "@/hooks/use-toast";
+import { useThirdPartyAutofill } from "@/hooks/useThirdPartyAutofill";
 import { sendTruckLogToCustoms } from "@/lib/api";
 import { fetchUniqueCodesForLogs } from "@/lib/uniqueCodes";
 import type { Direction, Driver, TruckLog, TransportCompany, Organization } from "@/lib/types";
@@ -39,6 +40,7 @@ interface TruckTableProps {
 
 export function TruckTable({ logs, onSend, onUpdate }: TruckTableProps) {
   const { toast } = useToast();
+  const { sendFormData } = useThirdPartyAutofill();
   const [sendingIds, setSendingIds] = useState<Set<string>>(new Set());
   const [uniqueCodes, setUniqueCodes] = useState<Map<string, string>>(new Map());
   const [transportCompanies, setTransportCompanies] = useState<TransportCompany[]>([]);
@@ -256,28 +258,78 @@ export function TruckTable({ logs, onSend, onUpdate }: TruckTableProps) {
   const inCount = filteredLogs.filter((log) => log.direction === "IN").length;
   const outCount = filteredLogs.filter((log) => log.direction === "OUT").length;
 
+  const performSendToThirdParty = async (log: TruckLog): Promise<boolean> => {
+    const uniqueCode = uniqueCodes.get(log.id);
+    if (!uniqueCode) {
+      toast({
+        title: "Алдаа",
+        description: "Актын дугаар олдсонгүй. Бүртгэл хадгалагдаагүй байж магадгүй.",
+        variant: "destructive",
+      });
+      return false;
+    }
+    const driver = log.driverId ? drivers.find((d) => d.id === log.driverId) : undefined;
+    const formData = {
+      aktNumber: uniqueCode,
+      uniqueCode,
+      plateNumber: log.plate,
+      plate: log.plate,
+      driverName: log.driverName || "",
+      driverId: log.driverId || "",
+      driverPhone: driver?.phone || "",
+      driverRegistrationNumber: driver?.registrationNumber || "",
+      cargoType: log.cargoType || "",
+      product: log.cargoType || "",
+      weightKg: log.weightKg || 0,
+      grossWeightKg: log.weightKg || 0,
+      netWeightKg: log.netWeightKg ?? 0,
+      netWeight: log.netWeightKg ?? 0,
+      origin: log.origin || "",
+      destination: log.destination || "",
+      transportCompanyName: transportCompanies.find((c) => c.id === log.transportCompanyId)?.name || "—",
+      transporterCompany: transportCompanies.find((c) => c.id === log.transportCompanyId)?.name || "—",
+      senderOrganization: log.senderOrganization || "",
+      senderOrganizationName: log.senderOrganization || "",
+      receiverOrganization: log.receiverOrganization || "",
+      receiverOrganizationName: log.receiverOrganization || "",
+      sealNumber: log.sealNumber || "",
+      trailerPlate: log.trailerPlate || "",
+      trailerNumber: log.trailerPlate || "",
+    };
+    const sendResult = await sendFormData(formData);
+    if (!sendResult.success) {
+      toast({
+        title: "Алдаа",
+        description: sendResult.error || "Гаальд илгээхэд алдаа гарлаа. Холболтыг шалгана уу.",
+        variant: "destructive",
+      });
+      return false;
+    }
+    const dbResult = await sendTruckLogToCustoms(log.id);
+    if (dbResult.success) {
+      toast({
+        title: "Амжилттай",
+        description: "Мэдээлэл Монголын гаальд амжилттай илгээгдлээ",
+      });
+      if (onUpdate) onUpdate();
+    } else {
+      toast({
+        title: "Анхааруулга",
+        description: "Өгөгдөл илгээгдсэн боловч төлөв шинэчлэгдээгүй.",
+        variant: "destructive",
+      });
+    }
+    return true;
+  };
+
   const handleSend = async (log: TruckLog) => {
     setSendingIds((prev) => new Set(prev).add(log.id));
     try {
-      const dbResult = await sendTruckLogToCustoms(log.id);
-      if (dbResult.success) {
-        onSend(log.id);
-        toast({
-          title: "Амжилттай",
-          description: "Гаальд илгээсэн",
-        });
-        if (onUpdate) onUpdate();
-      } else {
-        toast({
-          title: "Алдаа",
-          description: dbResult.error || "Гаальд илгээсэн төлөв хадгалахад алдаа гарлаа",
-          variant: "destructive",
-        });
-      }
+      await performSendToThirdParty(log);
     } catch (error) {
       toast({
         title: "Алдаа",
-        description: error instanceof Error ? error.message : "Гаальд илгээсэн төлөв хадгалахад алдаа гарлаа",
+        description: error instanceof Error ? error.message : "Гаальд илгээхэд алдаа гарлаа",
         variant: "destructive",
       });
     } finally {
@@ -286,27 +338,14 @@ export function TruckTable({ logs, onSend, onUpdate }: TruckTableProps) {
         next.delete(log.id);
         return next;
       });
+      onSend(log.id);
     }
   };
 
   const handleResend = async (log: TruckLog) => {
     setSendingIds((prev) => new Set(prev).add(log.id));
     try {
-      const result = await sendTruckLogToCustoms(log.id);
-
-      if (result.success) {
-        onSend(log.id);
-        toast({
-          title: "Амжилттай",
-          description: "Мэдээлэл Монголын гаальд амжилттай илгээгдлээ",
-        });
-      } else {
-        toast({
-          title: "Алдаа",
-          description: result.error || "Гаальд илгээхэд алдаа гарлаа",
-          variant: "destructive",
-        });
-      }
+      await performSendToThirdParty(log);
     } catch (error) {
       toast({
         title: "Алдаа",
@@ -319,6 +358,7 @@ export function TruckTable({ logs, onSend, onUpdate }: TruckTableProps) {
         next.delete(log.id);
         return next;
       });
+      onSend(log.id);
     }
   };
 

@@ -91,12 +91,14 @@ export default function DashboardPage() {
 
   const handleSend = useCallback(async (_logId?: string) => {
     try {
+      await new Promise((r) => setTimeout(r, 300));
       const result = await fetchLogs(1, DASHBOARD_LOG_LIMIT);
       setLogs(result.logs || []);
+      router.refresh();
     } catch {
       // ignore
     }
-  }, []);
+  }, [router]);
 
 
   // Show loading state while checking authentication
