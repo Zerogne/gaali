@@ -69,7 +69,7 @@ export async function POST(request: NextRequest) {
       cameraIp: body.cameraIp || null,
     });
 
-    // Find which company owns this camera IP (same logic as LPR)
+    // Find which company owns this camera IP (same logic as LPR). Required for per-company autofill.
     let companyId: string | null = null;
     if (validated.cameraIp) {
       try {
@@ -87,13 +87,17 @@ export async function POST(request: NextRequest) {
           );
         } else {
           console.warn(
-            `[Weight Ingest] Camera IP ${validated.cameraIp} not found in any company's camera settings`
+            `[Weight Ingest] Camera IP ${validated.cameraIp} not found in any company's camera settings - weight will not appear in any company's autofill`
           );
         }
       } catch (error) {
         console.error("[Weight Ingest] Error looking up company by camera IP:", error);
-        // Continue without companyId - better than failing the entire request
+        // Continue without companyId - data will be stored but not shown to any company
       }
+    } else {
+      console.warn(
+        "[Weight Ingest] No cameraIp in request - cannot map to company. Send cameraIp (same as LPR) so weight autofill is scoped per company."
+      );
     }
 
     // Store weight data in MongoDB

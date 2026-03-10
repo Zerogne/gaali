@@ -30,10 +30,23 @@ export async function GET(request: NextRequest) {
       });
     }
 
+    // Never query without a valid companyId (prevents cross-company data leak)
+    if (!companyId || typeof companyId !== "string" || companyId.trim() === "") {
+      return NextResponse.json({
+        connected: false,
+        siteId: siteId || "all",
+        allSites: [],
+        totalRecords: 0,
+        recentActivity: { count: 0, timeWindow: "last 5 minutes" },
+        latestWeight: null,
+        message: "❌ No data: Invalid company context",
+      });
+    }
+
     const collection = await getWeightCollection();
     
     // Build query - filter by companyId and optionally siteId
-    const query: any = { companyId }; // Always filter by company
+    const query: Record<string, unknown> = { companyId };
     if (siteId) {
       query.siteId = siteId;
     }
@@ -55,10 +68,10 @@ export async function GET(request: NextRequest) {
       receivedAt: { $gte: fiveMinutesAgo },
     });
 
-    // Get all unique siteIds (if no specific siteId requested)
+    // Get all unique siteIds for this company only (if no specific siteId requested)
     let allSites: string[] = [];
     if (!siteId) {
-      const sites = await collection.distinct("siteId");
+      const sites = await collection.distinct("siteId", query);
       allSites = sites as string[];
     }
 

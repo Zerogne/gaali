@@ -32,6 +32,15 @@ export async function GET(request: NextRequest) {
       });
     }
 
+    // Never query without a valid companyId (prevents cross-company data leak)
+    if (!companyId || typeof companyId !== "string" || companyId.trim() === "") {
+      return NextResponse.json({
+        siteId,
+        weight: null,
+        message: "Invalid company context",
+      });
+    }
+
     const collection = await getWeightCollection();
     
     // Get the latest weight for this siteId, filtered by companyId

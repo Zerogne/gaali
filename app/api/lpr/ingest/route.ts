@@ -167,7 +167,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Find which company owns this camera IP
+    // Find which company owns this camera IP. Required for per-company plate autofill.
     let companyId: string | null = null;
     if (validated.cameraIp) {
       try {
@@ -185,13 +185,17 @@ export async function POST(request: NextRequest) {
           );
         } else {
           console.warn(
-            `[LPR Ingest] Camera IP ${validated.cameraIp} not found in any company's camera settings`
+            `[LPR Ingest] Camera IP ${validated.cameraIp} not found in any company's camera settings - plate will not appear in any company's autofill`
           );
         }
       } catch (error) {
         console.error("[LPR Ingest] Error looking up company by camera IP:", error);
-        // Continue without companyId - better than failing the entire request
+        // Continue without companyId - data stored but not shown to any company
       }
+    } else {
+      console.warn(
+        "[LPR Ingest] No cameraIp in request - cannot map to company. Plate autofill will not work for any company until cameraIp is sent."
+      );
     }
 
     // Store in MongoDB

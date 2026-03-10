@@ -22,6 +22,18 @@ export async function GET(request: Request) {
       });
     }
 
+    // Never query without companyId (prevents cross-company plate leak)
+    if (!companyId || typeof companyId !== "string" || companyId.trim() === "") {
+      return NextResponse.json({
+        plateNumber: null,
+        recognizedAt: null,
+        imageUrl: null,
+        imagePath: null,
+        cameraIp: null,
+        receivedAt: null,
+      });
+    }
+
     // Parse query parameters to check if we need to filter by specific camera
     const { searchParams } = new URL(request.url);
     const cameraParam = searchParams.get("camera"); // "1" or "2"
@@ -52,8 +64,8 @@ export async function GET(request: Request) {
 
     const collection = await getLprCollection();
 
-    // Build query: filter by companyId, and optionally by camera IP
-    let query: any = companyId ? { companyId } : {};
+    // Build query: always filter by companyId; optionally by camera IP
+    let query: { companyId: string; cameraIp?: string } = { companyId };
     if (targetCameraIp) {
       query.cameraIp = targetCameraIp;
     }
