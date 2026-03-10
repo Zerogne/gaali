@@ -29,6 +29,7 @@ import type { Contract } from "@/lib/types";
 import { FileText, Edit, Loader2, Plus, Trash2, Search, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { findSimilarValue } from "@/lib/utils/string-similarity";
+import { ContractForm } from "@/components/contracts/ContractForm";
 
 export default function ContractsPage() {
   const { toast } = useToast();
@@ -281,6 +282,8 @@ export default function ContractsPage() {
   };
 
   const handleSaveEdit = async (contractId: string) => {
+    const isDerived = contractId.startsWith("tc_") || contractId.startsWith("org_");
+
     if (!editingContractNumber.trim()) {
       toast({
         title: "Алдаа",
@@ -299,7 +302,7 @@ export default function ContractsPage() {
       return;
     }
 
-    if (!editingCompanyId.trim()) {
+    if (!editingCompanyId.trim() && !isDerived) {
       toast({
         title: "Алдаа",
         description: "Компанийн регистер шаардлагатай",
@@ -308,7 +311,7 @@ export default function ContractsPage() {
       return;
     }
 
-    if (!editingCompanyPhone.trim()) {
+    if (!editingCompanyPhone.trim() && !isDerived) {
       toast({
         title: "Алдаа",
         description: "Компанийн утасны дугаар шаардлагатай",
@@ -331,31 +334,67 @@ export default function ContractsPage() {
 
     setIsUpdating(true);
     try {
-      const response = await fetch(`/api/contracts/${contractId}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          number: editingContractNumber.trim(),
-          company: editingCompany.trim(),
-          companyId: editingCompanyId.trim(),
-          companyPhone: editingCompanyPhone.trim(),
-          description: editingDescription.trim() || undefined,
-          startDate: editingStartDate.trim() || undefined,
-          endDate: editingEndDate.trim() || undefined,
-        }),
-      });
+      if (isDerived) {
+        // Derived from transport company or organization – create a real contract entry
+        const original = contracts.find((c) => c.id === contractId);
+        const response = await fetch("/api/contracts", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            number: editingContractNumber.trim(),
+            company: editingCompany.trim(),
+            companyId:
+              editingCompanyId.trim() ||
+              original?.companyId ||
+              "",
+            companyPhone:
+              editingCompanyPhone.trim() ||
+              original?.companyPhone ||
+              "",
+            description: original?.description || undefined,
+            startDate: original?.startDate || undefined,
+            endDate: original?.endDate || undefined,
+          }),
+        });
 
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.error || "Гэрээ засахад алдаа гарлаа");
+        if (!response.ok) {
+          const error = await response.json();
+          throw new Error(error.error || "Гэрээ шинээр үүсгэхэд алдаа гарлаа");
+        }
+
+        toast({
+          title: "Амжилттай",
+          description: "Гэрээ амжилттай үүсгэлээ",
+        });
+      } else {
+        const response = await fetch(`/api/contracts/${contractId}`, {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            number: editingContractNumber.trim(),
+            company: editingCompany.trim(),
+            companyId: editingCompanyId.trim(),
+            companyPhone: editingCompanyPhone.trim(),
+            description: editingDescription.trim() || undefined,
+            startDate: editingStartDate.trim() || undefined,
+            endDate: editingEndDate.trim() || undefined,
+          }),
+        });
+
+        if (!response.ok) {
+          const error = await response.json();
+          throw new Error(error.error || "Гэрээ засахад алдаа гарлаа");
+        }
+
+        toast({
+          title: "Амжилттай",
+          description: "Гэрээ амжилттай шинэчлэгдлээ",
+        });
       }
-
-      toast({
-        title: "Амжилттай",
-        description: "Гэрээ амжилттай шинэчлэгдлээ",
-      });
 
       setEditingContract(null);
       setEditingContractNumber("");
@@ -385,6 +424,21 @@ export default function ContractsPage() {
 
   const handleDeleteConfirm = async () => {
     if (!contractToDelete) return;
+
+    const isDerived =
+      contractToDelete.startsWith("tc_") ||
+      contractToDelete.startsWith("org_");
+
+    if (isDerived) {
+      toast({
+        title: "Устгах боломжгүй",
+        description:
+          "Энэ мөр нь байгууллага эсвэл тээврийн компанийн мэдээллээс автоматаар үүссэн. Жинхэнэ гэрээг устгах бол баруун талд шинээр үүссэн гэрээний мөрийг устгана уу.",
+        variant: "destructive",
+      });
+      setContractToDelete(null);
+      return;
+    }
 
     setIsDeleting(contractToDelete);
     try {
@@ -480,7 +534,7 @@ export default function ContractsPage() {
               </Button>
             </div>
 
-            {/* Table - show contract number, company and actions (only for real contracts) */}
+            {/* Table - show contract number, company and actions */}
             {isLoading ? (
               <div className="flex items-center justify-center py-12 gap-2 text-muted-foreground">
                 <Loader2 className="w-5 h-5 animate-spin" />
@@ -500,14 +554,14 @@ export default function ContractsPage() {
                   </TableHeader>
                   <TableBody>
                     {filteredContracts.map((contract) => {
-                      const isRealContract =
-                        !contract.id.startsWith("tc_") &&
-                        !contract.id.startsWith("org_");
+                      const isDerived =
+                        contract.id.startsWith("tc_") ||
+                        contract.id.startsWith("org_");
 
                       return (
                         <TableRow
                           key={contract.id}
-                          onDoubleClick={() => isRealContract && handleDoubleClick(contract)}
+                          onDoubleClick={() => handleDoubleClick(contract)}
                           className="cursor-pointer hover:bg-muted/50"
                         >
                           <TableCell className="font-medium">
@@ -517,36 +571,40 @@ export default function ContractsPage() {
                             {contract.company}
                           </TableCell>
                           <TableCell onClick={(e) => e.stopPropagation()}>
-                            {isRealContract ? (
-                              <div className="flex items-center gap-1">
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  onClick={() => handleEditContractClick(contract)}
-                                  disabled={isDeleting === contract.id}
-                                  className="h-8 w-8 p-0"
-                                >
-                                  <Edit className="w-4 h-4" />
-                                </Button>
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  onClick={() => handleDeleteClick(contract.id)}
-                                  disabled={isDeleting === contract.id}
-                                  className="h-8 w-8 p-0 text-red-600 hover:text-red-700 hover:bg-red-50"
-                                >
-                                  {isDeleting === contract.id ? (
-                                    <Loader2 className="w-4 h-4 animate-spin" />
-                                  ) : (
-                                    <Trash2 className="w-4 h-4" />
-                                  )}
-                                </Button>
-                              </div>
-                            ) : (
-                              <span className="text-xs text-muted-foreground">
-                                Зөвхөн харуулах
-                              </span>
-                            )}
+                            <div className="flex items-center gap-1">
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => handleEditContractClick(contract)}
+                                disabled={isDeleting === contract.id}
+                                className="h-8 w-8 p-0"
+                                title={
+                                  isDerived
+                                    ? "Энэ мөрөөс шинэ гэрээ үүсгэх"
+                                    : "Гэрээ засах"
+                                }
+                              >
+                                <Edit className="w-4 h-4" />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => handleDeleteClick(contract.id)}
+                                disabled={isDeleting === contract.id}
+                                className="h-8 w-8 p-0 text-red-600 hover:text-red-700 hover:bg-red-50"
+                                title={
+                                  isDerived
+                                    ? "Энэ мөрийг эндээс устгах боломжгүй (зөвхөн тайлангаас харагдана)"
+                                    : "Гэрээ устгах"
+                                }
+                              >
+                                {isDeleting === contract.id ? (
+                                  <Loader2 className="w-4 h-4 animate-spin" />
+                                ) : (
+                                  <Trash2 className="w-4 h-4" />
+                                )}
+                              </Button>
+                            </div>
                           </TableCell>
                         </TableRow>
                       );
@@ -617,87 +675,27 @@ export default function ContractsPage() {
                   {editingContract ? "Гэрээний мэдээллийг засах" : "Шинэ гэрээний мэдээлэл оруулах"}
                 </DialogDescription>
               </DialogHeader>
-              <div className="space-y-4 py-4">
-                <div>
-                  <Label htmlFor="dialog-contract-number">Гэрээний дугаар *</Label>
-                  <Input
-                    id="dialog-contract-number"
-                    value={editingContract ? editingContractNumber : newContractNumber}
-                    onChange={(e) => {
-                      if (editingContract) {
-                        setEditingContractNumber(e.target.value);
-                      } else {
-                        setNewContractNumber(e.target.value);
-                      }
-                    }}
-                    placeholder="Гэрээний дугаар оруулах"
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="dialog-company">Компани *</Label>
-                  <Input
-                    id="dialog-company"
-                    value={editingContract ? editingCompany : newCompany}
-                    onChange={(e) => {
-                      if (editingContract) {
-                        setEditingCompany(e.target.value);
-                      } else {
-                        setNewCompany(e.target.value);
-                      }
-                    }}
-                    placeholder="Компанийн нэр оруулах"
-                  />
-                </div>
-                {!editingContract && (
-                  <>
-                    <div>
-                      <Label htmlFor="dialog-company-id">Компанийн регистер *</Label>
-                      <Input
-                        id="dialog-company-id"
-                        value={newCompanyId}
-                        onChange={(e) => setNewCompanyId(e.target.value)}
-                        placeholder="Компанийн регистрийн дугаар оруулах"
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="dialog-company-phone">Компанийн утасны дугаар *</Label>
-                      <Input
-                        id="dialog-company-phone"
-                        value={newCompanyPhone}
-                        onChange={(e) => setNewCompanyPhone(e.target.value)}
-                        placeholder="Компанийн утасны дугаар оруулах"
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="dialog-description">Тайлбар</Label>
-                      <Input
-                        id="dialog-description"
-                        value={newDescription}
-                        onChange={(e) => setNewDescription(e.target.value)}
-                        placeholder="Тайлбар оруулах (сонголттой)"
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="dialog-start-date">Эхлэх огноо</Label>
-                      <Input
-                        id="dialog-start-date"
-                        type="date"
-                        value={newStartDate}
-                        onChange={(e) => setNewStartDate(e.target.value)}
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="dialog-end-date">Дуусах огноо</Label>
-                      <Input
-                        id="dialog-end-date"
-                        type="date"
-                        value={newEndDate}
-                        onChange={(e) => setNewEndDate(e.target.value)}
-                      />
-                    </div>
-                  </>
-                )}
-              </div>
+              <ContractForm
+                isEdit={!!editingContract}
+                contractNumber={editingContract ? editingContractNumber : newContractNumber}
+                company={editingContract ? editingCompany : newCompany}
+                companyId={newCompanyId}
+                companyPhone={newCompanyPhone}
+                description={newDescription}
+                startDate={newStartDate}
+                endDate={newEndDate}
+                onContractNumberChange={(value) =>
+                  editingContract ? setEditingContractNumber(value) : setNewContractNumber(value)
+                }
+                onCompanyChange={(value) =>
+                  editingContract ? setEditingCompany(value) : setNewCompany(value)
+                }
+                onCompanyIdChange={setNewCompanyId}
+                onCompanyPhoneChange={setNewCompanyPhone}
+                onDescriptionChange={setNewDescription}
+                onStartDateChange={setNewStartDate}
+                onEndDateChange={setNewEndDate}
+              />
               <DialogFooter>
                 <Button
                   variant="outline"

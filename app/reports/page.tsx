@@ -41,6 +41,11 @@ export default function ReportsPage() {
   const [isCheckingAuth, setIsCheckingAuth] = useState(true);
   const [transportCompanies, setTransportCompanies] = useState<TransportCompany[]>([]);
   const [uniqueCodes, setUniqueCodes] = useState<Map<string, string>>(new Map());
+  const [serverSummary, setServerSummary] = useState<{
+    totalWeightIn: number;
+    totalWeightOut: number;
+    totalSessions: number;
+  } | null>(null);
   
   // Filters (match dashboard / TruckTable)
   const [directionFilter, setDirectionFilter] = useState<Direction | "ALL">("ALL");
@@ -104,6 +109,37 @@ export default function ReportsPage() {
     window.addEventListener("focus", onFocus);
     return () => window.removeEventListener("focus", onFocus);
   }, [isCheckingAuth, router, toast]);
+
+  // Load summary from truck_sessions whenever date filter changes
+  useEffect(() => {
+    if (isCheckingAuth) return;
+    const fetchSummary = async () => {
+      try {
+        const params = new URLSearchParams();
+        if (dateFrom) params.set("dateFrom", dateFrom);
+        if (dateTo) params.set("dateTo", dateTo);
+        const res = await fetch(`/api/reports/summary?${params.toString()}`, {
+          cache: "no-store",
+          credentials: "include",
+        });
+        if (!res.ok) return;
+        const data = await res.json();
+        if (
+          typeof data.totalWeightIn === "number" &&
+          typeof data.totalWeightOut === "number"
+        ) {
+          setServerSummary({
+            totalWeightIn: data.totalWeightIn,
+            totalWeightOut: data.totalWeightOut,
+            totalSessions: data.totalSessions ?? 0,
+          });
+        }
+      } catch {
+        // ignore server summary errors; fallback to local calculation
+      }
+    };
+    fetchSummary();
+  }, [isCheckingAuth, dateFrom, dateTo]);
 
   // Fetch unique codes for logs (shared lib)
   useEffect(() => {
@@ -246,14 +282,38 @@ export default function ReportsPage() {
   // OUT sessions usually merge into the IN log (direction stays "IN", netWeightKg set, weightKg = exit weight).
   // So "total out" must include: direction===OUT (standalone) + direction===IN with netWeightKg (merged/completed).
   const reportSummary = useMemo(() => {
-    const totalWeightIn = filteredLogs
-      .filter((log) => log.direction === "IN")
-      .reduce((sum, log) => sum + (typeof log.weightKg === "number" && !isNaN(log.weightKg) ? log.weightKg : 0), 0);
+    // Prefer server-side summary based on truck_sessions; fall back to logs if unavailable
+    let totalWeightIn =
+      serverSummary?.totalWeightIn ??
+      filteredLogs
+        .filter((log) => log.direction === "IN")
+        .reduce(
+          (sum, log) =>
+            sum +
+            (typeof log.weightKg === "number" && !isNaN(log.weightKg)
+              ? log.weightKg
+              : 0),
+          0
+        );
+
     const isMergedOrOut = (log: TruckLog) =>
-      log.direction === "OUT" || (log.direction === "IN" && log.netWeightKg != null && log.netWeightKg !== undefined);
-    const totalWeightOut = filteredLogs
-      .filter(isMergedOrOut)
-      .reduce((sum, log) => sum + (typeof log.weightKg === "number" && !isNaN(log.weightKg) ? log.weightKg : 0), 0);
+      log.direction === "OUT" ||
+      (log.direction === "IN" &&
+        log.netWeightKg != null &&
+        log.netWeightKg !== undefined);
+
+    let totalWeightOut =
+      serverSummary?.totalWeightOut ??
+      filteredLogs
+        .filter(isMergedOrOut)
+        .reduce(
+          (sum, log) =>
+            sum +
+            (typeof log.weightKg === "number" && !isNaN(log.weightKg)
+              ? log.weightKg
+              : 0),
+          0
+        );
     const periodLabel =
       dateFrom && dateTo
         ? `${dateFrom} - ${dateTo}`
@@ -268,7 +328,7 @@ export default function ReportsPage() {
       totalWeightOut,
       totalRecords: filteredLogs.length,
     };
-  }, [filteredLogs, dateFrom, dateTo]);
+  }, [filteredLogs, dateFrom, dateTo, serverSummary]);
 
   // Export to Excel — government/official report with header (when-to-when, totals)
   const handleExportToExcel = async () => {
