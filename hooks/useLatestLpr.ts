@@ -11,9 +11,19 @@ export interface LprLatest {
   receivedAt: string | null;
 }
 
+/** Data older than this is considered stale - don't autofill with it when Gaali Bridge isn't sending */
+const STALE_THRESHOLD_MS = 3 * 60 * 1000; // 3 minutes
+
+function isDataFresh(data: LprLatest): boolean {
+  if (!data.receivedAt || !data.plateNumber) return false;
+  const receivedAt = new Date(data.receivedAt).getTime();
+  return Date.now() - receivedAt < STALE_THRESHOLD_MS;
+}
+
 /**
  * Hook to poll the latest LPR event from the API
  * Deduplicates events and stores the latest in localStorage
+ * Only uses data received within STALE_THRESHOLD_MS - ignores old plate when Gaali Bridge isn't sending
  * @param pollInterval - Polling interval in milliseconds (default: 1000)
  * @param camera - Optional camera number (1 or 2) to filter by specific camera IP
  */
@@ -44,6 +54,31 @@ export function useLatestLpr(pollInterval: number = 1000, camera?: 1 | 2) {
       }
 
       const data: LprLatest = await response.json();
+
+      // Only use data if it's fresh (received within last 3 min from Gaali Bridge)
+      // When Gaali Bridge isn't sending, API returns old lpr_events - don't autofill with stale plate
+      if (!isDataFresh(data)) {
+        if (data.plateNumber) {
+          console.log(`[DEBUG-LPR-LATEST] Ignoring stale data (Gaali Bridge not sending):`, {
+            plateNumber: data.plateNumber,
+            receivedAt: data.receivedAt,
+            ageMinutes: data.receivedAt
+              ? Math.round((Date.now() - new Date(data.receivedAt).getTime()) / 60000)
+              : null,
+          });
+        }
+        setLatest(null);
+        lastKeyRef.current = null;
+        if (typeof window !== "undefined") {
+          try {
+            localStorage.removeItem("lpr:last");
+          } catch (e) {
+            /* ignore */
+          }
+        }
+        return;
+      }
+
       const key = getDedupKey(data);
 
       // Update if key changed (new data received, even if same plate number)
@@ -63,7 +98,7 @@ export function useLatestLpr(pollInterval: number = 1000, camera?: 1 | 2) {
         });
         // #endregion
 
-        // Store in localStorage
+        // Store in localStorage (only fresh data)
         if (typeof window !== "undefined") {
           try {
             localStorage.setItem("lpr:last", JSON.stringify(data));
@@ -90,15 +125,19 @@ export function useLatestLpr(pollInterval: number = 1000, camera?: 1 | 2) {
 
   // Polling effect
   useEffect(() => {
-    // Load from localStorage on mount
+    // Load from localStorage on mount - only if data is still fresh
     if (typeof window !== "undefined") {
       try {
         const stored = localStorage.getItem("lpr:last");
         if (stored) {
           const parsed = JSON.parse(stored) as LprLatest;
-          const key = getDedupKey(parsed);
-          lastKeyRef.current = key;
-          setLatest(parsed);
+          if (isDataFresh(parsed)) {
+            const key = getDedupKey(parsed);
+            lastKeyRef.current = key;
+            setLatest(parsed);
+          } else {
+            localStorage.removeItem("lpr:last");
+          }
         }
       } catch (e) {
         // Ignore localStorage errors

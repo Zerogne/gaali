@@ -60,6 +60,7 @@ This document describes the IN/OUT session flow, plate search, and third-party i
 - **IN session:** Use camera 1 (entry). `useLatestLpr(1000, 1)` and `useLprPlateAutofill({ camera: 1 })`.
 - **OUT session:** Use camera 2 (exit). `useLatestLpr(1000, 2)`.
 - **LPR API fallbacks:** When camera+company filter returns nothing: try without camera, then without company. Ensures single-camera or single-company setups still work.
+- **Staleness:** Data older than 3 minutes is ignored. When Gaali Bridge is not sending, the API returns the last lpr_events document—do not autofill with that old plate. `useLatestLpr` treats data as stale when `receivedAt` is older than 3 minutes and returns `null`.
 
 ## 5. Data Flow Summary
 

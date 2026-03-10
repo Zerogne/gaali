@@ -59,20 +59,89 @@ export default function ContractsPage() {
   const [addDialogOpen, setAddDialogOpen] = useState(false);
   const [infoDialogOpen, setInfoDialogOpen] = useState(false);
   const [selectedContract, setSelectedContract] = useState<Contract | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
 
-  // Load Contracts
-  useEffect(() => {
-    async function loadContracts() {
+  const loadContracts = async () => {
+      setIsLoading(true);
+      setLoadError(null);
       try {
-        const response = await fetch("/api/contracts");
-        if (response.ok) {
-          const data = await response.json();
-          setContracts(data);
+        const [contractsRes, transportRes, orgsRes] = await Promise.all([
+          fetch("/api/contracts", { credentials: "include" }),
+          fetch("/api/transport-companies", { credentials: "include" }),
+          fetch("/api/organizations", { credentials: "include" }),
+        ]);
+
+        const all: Contract[] = [];
+
+        if (contractsRes.ok) {
+          const data = await contractsRes.json();
+          if (Array.isArray(data)) {
+            all.push(...data.map((c: any) => ({
+              id: c.id,
+              number: c.number || "",
+              company: c.company || "",
+              companyId: c.companyId || "",
+              companyPhone: c.companyPhone || "",
+              description: c.description,
+              startDate: c.startDate,
+              endDate: c.endDate,
+              createdAt: c.createdAt || "",
+            })));
+          }
         }
+
+        if (transportRes.ok) {
+          const data = await transportRes.json();
+          if (Array.isArray(data)) {
+            data.forEach((tc: any) => {
+              if (tc.contract?.trim() && tc.name?.trim()) {
+                all.push({
+                  id: `tc_${tc.id}`,
+                  number: tc.contract.trim(),
+                  company: tc.name.trim(),
+                  companyId: tc.companyId || "",
+                  companyPhone: tc.phone || "",
+                  createdAt: tc.createdAt || "",
+                });
+              }
+            });
+          }
+        }
+
+        if (orgsRes.ok) {
+          const data = await orgsRes.json();
+          if (Array.isArray(data)) {
+            data.forEach((org: any) => {
+              if (org.contract?.trim() && org.name?.trim()) {
+                all.push({
+                  id: `org_${org.id}`,
+                  number: org.contract.trim(),
+                  company: org.name.trim(),
+                  companyId: org.companyId || "",
+                  companyPhone: org.phone || "",
+                  createdAt: org.createdAt || "",
+                });
+              }
+            });
+          }
+        }
+
+        setContracts(all);
       } catch (error) {
         console.error("Error loading contracts:", error);
+        setLoadError(error instanceof Error ? error.message : "Өгөгдөл ачаалахад алдаа гарлаа");
+        toast({
+          title: "Алдаа",
+          description: "Гэрээний өгөгдөл ачаалахад алдаа гарлаа.",
+          variant: "destructive",
+        });
+      } finally {
+        setIsLoading(false);
       }
-    }
+  };
+
+  useEffect(() => {
     loadContracts();
   }, []);
 
@@ -175,11 +244,7 @@ export default function ContractsPage() {
       setNewEndDate("");
       setAddDialogOpen(false);
 
-      const reloadResponse = await fetch("/api/contracts");
-      if (reloadResponse.ok) {
-        const data = await reloadResponse.json();
-        setContracts(data);
-      }
+      await loadContracts();
     } catch (error) {
       toast({
         title: "Алдаа",
@@ -302,11 +367,7 @@ export default function ContractsPage() {
       setEditingEndDate("");
       setAddDialogOpen(false);
 
-      const reloadResponse = await fetch("/api/contracts");
-      if (reloadResponse.ok) {
-        const data = await response.json();
-        setContracts(data);
-      }
+      await loadContracts();
     } catch (error) {
       toast({
         title: "Алдаа",
@@ -343,11 +404,7 @@ export default function ContractsPage() {
 
       setContractToDelete(null);
 
-      const reloadResponse = await fetch("/api/contracts");
-      if (reloadResponse.ok) {
-        const data = await response.json();
-        setContracts(data);
-      }
+      await loadContracts();
     } catch (error) {
       toast({
         title: "Алдаа",
@@ -423,23 +480,26 @@ export default function ContractsPage() {
               </Button>
             </div>
 
-            {/* Table */}
-            {filteredContracts.length > 0 ? (
+            {/* Table - only show contract number and company name */}
+            {isLoading ? (
+              <div className="flex items-center justify-center py-12 gap-2 text-muted-foreground">
+                <Loader2 className="w-5 h-5 animate-spin" />
+                <span>Өгөгдөл ачаалж байна...</span>
+              </div>
+            ) : loadError ? (
+              <p className="text-sm text-destructive text-center py-8">{loadError}</p>
+            ) : filteredContracts.length > 0 ? (
               <div className="border rounded-lg overflow-x-auto">
                 <Table>
                   <TableHeader>
                     <TableRow>
                       <TableHead>Гэрээний дугаар</TableHead>
                       <TableHead>Компани</TableHead>
-                      <TableHead>Регистер</TableHead>
-                      <TableHead>Утасны дугаар</TableHead>
-                      <TableHead>Тайлбар</TableHead>
-                      <TableHead className="w-[120px]"></TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {filteredContracts.map((contract) => (
-                      <TableRow 
+                      <TableRow
                         key={contract.id}
                         onDoubleClick={() => handleDoubleClick(contract)}
                         className="cursor-pointer hover:bg-muted/50"
@@ -449,47 +509,6 @@ export default function ContractsPage() {
                         </TableCell>
                         <TableCell>
                           {contract.company}
-                        </TableCell>
-                        <TableCell>
-                          {contract.companyId}
-                        </TableCell>
-                        <TableCell>
-                          {contract.companyPhone}
-                        </TableCell>
-                        <TableCell>
-                          {contract.description || "-"}
-                        </TableCell>
-                        <TableCell>
-                          {contract.startDate ? new Date(contract.startDate).toLocaleDateString('mn-MN') : "-"}
-                        </TableCell>
-                        <TableCell>
-                          {contract.endDate ? new Date(contract.endDate).toLocaleDateString('mn-MN') : "-"}
-                        </TableCell>
-                        <TableCell onClick={(e) => e.stopPropagation()}>
-                          <div className="flex items-center gap-1">
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => handleEditContractClick(contract)}
-                              disabled={isDeleting === contract.id}
-                              className="h-8 w-8 p-0"
-                            >
-                              <Edit className="w-4 h-4" />
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => handleDeleteClick(contract.id)}
-                              disabled={isDeleting === contract.id}
-                              className="h-8 w-8 p-0 text-red-600 hover:text-red-700 hover:bg-red-50"
-                            >
-                              {isDeleting === contract.id ? (
-                                <Loader2 className="w-4 h-4 animate-spin" />
-                              ) : (
-                                <Trash2 className="w-4 h-4" />
-                              )}
-                            </Button>
-                          </div>
                         </TableCell>
                       </TableRow>
                     ))}
@@ -717,36 +736,6 @@ export default function ContractsPage() {
                   <div>
                     <Label className="text-muted-foreground">Компани</Label>
                     <p className="font-medium">{selectedContract.company}</p>
-                  </div>
-                  <div>
-                    <Label className="text-muted-foreground">Компанийн регистер</Label>
-                    <p className="font-medium">{selectedContract.companyId}</p>
-                  </div>
-                  <div>
-                    <Label className="text-muted-foreground">Компанийн утасны дугаар</Label>
-                    <p className="font-medium">{selectedContract.companyPhone}</p>
-                  </div>
-                  {selectedContract.description && (
-                    <div>
-                      <Label className="text-muted-foreground">Тайлбар</Label>
-                      <p>{selectedContract.description}</p>
-                    </div>
-                  )}
-                  {selectedContract.startDate && (
-                    <div>
-                      <Label className="text-muted-foreground">Эхлэх огноо</Label>
-                      <p>{new Date(selectedContract.startDate).toLocaleDateString('mn-MN')}</p>
-                    </div>
-                  )}
-                  {selectedContract.endDate && (
-                    <div>
-                      <Label className="text-muted-foreground">Дуусах огноо</Label>
-                      <p>{new Date(selectedContract.endDate).toLocaleDateString('mn-MN')}</p>
-                    </div>
-                  )}
-                  <div>
-                    <Label className="text-muted-foreground">Үүсгэсэн огноо</Label>
-                    <p>{new Date(selectedContract.createdAt).toLocaleDateString('mn-MN')}</p>
                   </div>
                 </div>
               )}
