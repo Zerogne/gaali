@@ -462,7 +462,7 @@ export function EditLogDialog({
       await sendTruckLogToCustoms(log.id);
       toast({
         title: "Амжилттай",
-        description: "Бүртгэл гаальд амжилттай илгээгдлээ",
+        description: "Гаальд илгээсэн.",
       });
       onSave();
       onOpenChange(false);

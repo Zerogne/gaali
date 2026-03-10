@@ -342,7 +342,7 @@ export function FullHistoryTable({
       onSend(log.id);
       toast({
         title: "Амжилттай",
-        description: "Мэдээлэл Монголын гаальд амжилттай илгээгдлээ",
+        description: "Гаальд илгээсэн.",
       });
       if (onUpdate) onUpdate();
     } else {

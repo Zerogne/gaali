@@ -2379,7 +2379,7 @@ export const InSessionForm = forwardRef<
                         if (result.success) {
                           toast({
                             title: "Амжилттай",
-                            description: "Мэдээлэл Монголын гаальд амжилттай илгээгдлээ",
+                            description: "Гаальд илгээсэн.",
                           });
                           router.refresh();
                         } else {
