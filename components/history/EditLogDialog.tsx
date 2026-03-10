@@ -14,7 +14,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
+import { useThirdPartyAutofill } from "@/hooks/useThirdPartyAutofill";
 import { sendTruckLogToCustoms } from "@/lib/api";
+import { buildDRN } from "@/lib/thirdPartyFormat";
 import type {
   Driver,
   Organization,
@@ -47,6 +49,7 @@ export function EditLogDialog({
   uniqueCode,
 }: EditLogDialogProps) {
   const { toast } = useToast();
+  const { sendFormData } = useThirdPartyAutofill();
   const [isSaving, setIsSaving] = useState(false);
   const [isSending, setIsSending] = useState(false);
 
@@ -412,8 +415,54 @@ export function EditLogDialog({
   const handleSend = async () => {
     if (!log) return;
 
+    if (!uniqueCode || uniqueCode.trim() === "") {
+      toast({
+        title: "Алдаа",
+        description: "Актын дугаар олдсонгүй. Дахин илгээх бол эхлээд бүртгэлийг хадгална уу.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setIsSending(true);
     try {
+      const driver = driverId ? drivers.find((d) => d.id === driverId) : undefined;
+      const formData = {
+        aktNumber: uniqueCode,
+        uniqueCode,
+        plateNumber: plate,
+        plate,
+        driverName: driverName || "",
+        driverId: driverId || "",
+        driverPhone: driver?.phone || "",
+        driverRegistrationNumber: driver?.registrationNumber || "",
+        cargoType: cargoType || "",
+        product: cargoType || "",
+        weightKg: parseFloat(weight) || 0,
+        grossWeightKg: parseFloat(weight) || 0,
+        netWeightKg: parseFloat(netWeight) || 0,
+        netWeight: parseFloat(netWeight) || 0,
+        origin: origin || "",
+        destination: destination || "",
+        transportCompanyName: transportCompanies.find((c) => c.id === transportCompanyId)?.name || "—",
+        transporterCompany: transportCompanies.find((c) => c.id === transportCompanyId)?.name || "—",
+        senderOrganization: organizations.find((o) => o.id === senderOrganizationId)?.name || "",
+        senderOrganizationName: organizations.find((o) => o.id === senderOrganizationId)?.name || "",
+        receiverOrganization: organizations.find((o) => o.id === receiverOrganizationId)?.name || "",
+        receiverOrganizationName: organizations.find((o) => o.id === receiverOrganizationId)?.name || "",
+        sealNumber: sealNumber || "",
+        trailerPlate: trailerPlate || "",
+        trailerNumber: trailerPlate || "",
+      };
+      const sendResult = await sendFormData(formData);
+      if (!sendResult.success) {
+        toast({
+          title: "Алдаа",
+          description: sendResult.error || "Гаальд илгээхэд алдаа гарлаа. Холболтыг шалгана уу.",
+          variant: "destructive",
+        });
+        return;
+      }
       await sendTruckLogToCustoms(log.id);
       toast({
         title: "Амжилттай",

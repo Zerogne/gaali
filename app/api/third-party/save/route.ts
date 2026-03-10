@@ -30,8 +30,14 @@ export async function POST(request: Request) {
       )
     }
 
-    // Extract unique code or generate one
-    const uniqueCode = body.uniqueCode || body.code || generateUniqueCode()
+    // Extract unique code - required for update. Never generate new code on save (avoids duplicate blocks when resending)
+    const uniqueCode = body.uniqueCode || body.code
+    if (!uniqueCode || typeof uniqueCode !== "string" || uniqueCode.trim() === "") {
+      return NextResponse.json(
+        { error: "uniqueCode or code is required", message: "Cannot save without an existing act number" },
+        { status: 400 }
+      )
+    }
     const data = body.data || body
 
     // Get database
