@@ -2352,13 +2352,13 @@ export const InSessionForm = forwardRef<
 
                 {/* Warning message under receiver organization - full width row */}
                 <div className="md:col-span-2 lg:col-span-3 flex flex-col gap-2">
-                  <div className="bg-red-50 border border-red-300 rounded p-2 w-full">
-                    <p className="text-red-600 text-sm leading-tight">
+                  <div className="bg-green-50 border border-green-300 rounded p-2 w-full">
+                    <p className="text-green-600 text-sm leading-tight">
                       <span className="text-lg font-bold">*</span> Улаан одоор тэмдэглэгдсэн нүдний мэдээлэл Гаалын мэдээллийн санд өгөгдөл болон дамжуулагдах тул анхааралтай бөглөнө үү.
                     </p>
                   </div>
-                  <div className="bg-red-50 border border-red-300 rounded p-2 w-full">
-                      <p className="text-red-600 text-sm leading-tight">
+                  <div className="bg-green-50 border border-green-300 rounded p-2 w-full">
+                      <p className="text-green-600 text-sm leading-tight">
                         Гараас өгөгдөл оруулах дохиололд Гаалийн газраас зөвшөөрөгдөөгүй тул анхаарна уу!
                       </p>
                     </div>
