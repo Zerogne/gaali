@@ -70,15 +70,9 @@ export async function GET(request: Request) {
       latest = await collection.find(query).sort({ receivedAt: -1 }).limit(1).toArray();
     }
 
-    // Fallback 2: If company filter returned nothing, try without company (single-company or ingest stored null)
-    if (latest.length === 0 && companyId) {
-      query = targetCameraIp ? { cameraIp: targetCameraIp } : {};
-      latest = await collection.find(query).sort({ receivedAt: -1 }).limit(1).toArray();
-    }
-    if (latest.length === 0 && companyId) {
-      latest = await collection.find({}).sort({ receivedAt: -1 }).limit(1).toArray();
-    }
-
+    // IMPORTANT: Do NOT drop companyId filter here.
+    // If there is no data for this company, return nulls instead of leaking
+    // another company's plates.
     if (latest.length === 0) {
       return NextResponse.json({
         plateNumber: null,
