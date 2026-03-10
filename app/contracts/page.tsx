@@ -480,7 +480,7 @@ export default function ContractsPage() {
               </Button>
             </div>
 
-            {/* Table - show contract number, company and actions */}
+            {/* Table - show contract number, company and actions (only for real contracts) */}
             {isLoading ? (
               <div className="flex items-center justify-center py-12 gap-2 text-muted-foreground">
                 <Loader2 className="w-5 h-5 animate-spin" />
@@ -499,46 +499,58 @@ export default function ContractsPage() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {filteredContracts.map((contract) => (
-                      <TableRow
-                        key={contract.id}
-                        onDoubleClick={() => handleDoubleClick(contract)}
-                        className="cursor-pointer hover:bg-muted/50"
-                      >
-                        <TableCell className="font-medium">
-                          {contract.number}
-                        </TableCell>
-                        <TableCell>
-                          {contract.company}
-                        </TableCell>
-                        <TableCell onClick={(e) => e.stopPropagation()}>
-                          <div className="flex items-center gap-1">
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => handleEditContractClick(contract)}
-                              disabled={isDeleting === contract.id}
-                              className="h-8 w-8 p-0"
-                            >
-                              <Edit className="w-4 h-4" />
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => handleDeleteClick(contract.id)}
-                              disabled={isDeleting === contract.id}
-                              className="h-8 w-8 p-0 text-red-600 hover:text-red-700 hover:bg-red-50"
-                            >
-                              {isDeleting === contract.id ? (
-                                <Loader2 className="w-4 h-4 animate-spin" />
-                              ) : (
-                                <Trash2 className="w-4 h-4" />
-                              )}
-                            </Button>
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                    ))}
+                    {filteredContracts.map((contract) => {
+                      const isRealContract =
+                        !contract.id.startsWith("tc_") &&
+                        !contract.id.startsWith("org_");
+
+                      return (
+                        <TableRow
+                          key={contract.id}
+                          onDoubleClick={() => isRealContract && handleDoubleClick(contract)}
+                          className="cursor-pointer hover:bg-muted/50"
+                        >
+                          <TableCell className="font-medium">
+                            {contract.number}
+                          </TableCell>
+                          <TableCell>
+                            {contract.company}
+                          </TableCell>
+                          <TableCell onClick={(e) => e.stopPropagation()}>
+                            {isRealContract ? (
+                              <div className="flex items-center gap-1">
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => handleEditContractClick(contract)}
+                                  disabled={isDeleting === contract.id}
+                                  className="h-8 w-8 p-0"
+                                >
+                                  <Edit className="w-4 h-4" />
+                                </Button>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => handleDeleteClick(contract.id)}
+                                  disabled={isDeleting === contract.id}
+                                  className="h-8 w-8 p-0 text-red-600 hover:text-red-700 hover:bg-red-50"
+                                >
+                                  {isDeleting === contract.id ? (
+                                    <Loader2 className="w-4 h-4 animate-spin" />
+                                  ) : (
+                                    <Trash2 className="w-4 h-4" />
+                                  )}
+                                </Button>
+                              </div>
+                            ) : (
+                              <span className="text-xs text-muted-foreground">
+                                Зөвхөн харуулах
+                              </span>
+                            )}
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })}
                   </TableBody>
                 </Table>
               </div>
