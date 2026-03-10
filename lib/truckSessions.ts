@@ -415,8 +415,10 @@ export async function getTruckSession(sessionId: string): Promise<TruckSession |
 }
 
 /**
- * Find the most recent IN session for a given plate number
- * Used by OUT sessions to calculate net weight
+ * Find the most recent IN session for a given plate number that does NOT yet have an OUT session.
+ * Used by OUT sessions to calculate net weight and auto-fill form data.
+ * Excludes IN sessions that already have a linked OUT session (inSessionId) to avoid returning
+ * completed trips when the same plate re-enters.
  */
 export async function findLatestInSession(
   plateNumber: string
@@ -440,51 +442,54 @@ export async function findLatestInSession(
         .map((c) => c.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"))
         .join("\\s*");
 
+    // Helper: check if an IN session already has a linked OUT session (trip completed)
+    const hasLinkedOut = async (inSessionId: string): Promise<boolean> => {
+      const outSession = await sessionsCollection.findOne({
+        direction: "OUT",
+        inSessionId,
+      });
+      return !!outSession;
+    };
+
+    // Helper: find matching IN sessions and return the first (most recent) that has no OUT yet
+    const findPendingInSession = async (
+      plateFilter: Record<string, unknown>
+    ): Promise<(TruckSession & { _id?: ObjectId }) | null> => {
+      const candidates = await sessionsCollection
+        .find({ direction: "IN", ...plateFilter })
+        .sort({ createdAt: -1 })
+        .limit(20)
+        .toArray();
+      for (const s of candidates) {
+        const linked = await hasLinkedOut(s.id);
+        if (!linked) {
+          return s;
+        }
+      }
+      return null;
+    };
+
     // First try exact match with normalized plate (no internal spaces - matches save format)
-    let inSession = await sessionsCollection
-      .findOne(
-        {
-          direction: "IN",
-          plateNumber: normalizedNoSpaces,
-        },
-        { sort: { createdAt: -1 } }
-      );
+    let inSession = await findPendingInSession({ plateNumber: normalizedNoSpaces });
 
     // Try exact match with original normalized (in case DB has spaces from older saves)
     if (!inSession) {
-      inSession = await sessionsCollection
-        .findOne(
-          {
-            direction: "IN",
-            plateNumber: normalizedPlate,
-          },
-          { sort: { createdAt: -1 } }
-        );
+      inSession = await findPendingInSession({ plateNumber: normalizedPlate });
     }
 
     // If not found, try case-insensitive exact match
     if (!inSession) {
-      inSession = await sessionsCollection
-        .findOne(
-          {
-            direction: "IN",
-            plateNumber: { $regex: `^${normalizedPlate.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}$`, $options: "i" },
-          },
-          { sort: { createdAt: -1 } }
-        );
+      inSession = await findPendingInSession({
+        plateNumber: { $regex: `^${normalizedPlate.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}$`, $options: "i" },
+      });
     }
 
     // If still not found, try matching with optional spaces (e.g. "1234 УНА" matches "1234УНА")
     if (!inSession && normalizedNoSpaces.length >= 2) {
       const pattern = regexAllowSpaces(normalizedPlate);
-      inSession = await sessionsCollection
-        .findOne(
-          {
-            direction: "IN",
-            plateNumber: { $regex: `^${pattern}$`, $options: "i" },
-          },
-          { sort: { createdAt: -1 } }
-        );
+      inSession = await findPendingInSession({
+        plateNumber: { $regex: `^${pattern}$`, $options: "i" },
+      });
     }
 
     // Last resort: fetch latest IN sessions and match by normalized (no-spaces) plate
@@ -497,19 +502,22 @@ export async function findLatestInSession(
       for (const s of candidates) {
         const stored = (s.plateNumber || "").trim().toUpperCase().replace(/\s/g, "");
         if (stored === normalizedNoSpaces) {
-          inSession = s;
-          console.log("🔍 findLatestInSession: Matched via no-spaces fallback");
-          break;
+          const linked = await hasLinkedOut(s.id);
+          if (!linked) {
+            inSession = s;
+            console.log("🔍 findLatestInSession: Matched via no-spaces fallback (pending IN)");
+            break;
+          }
         }
       }
     }
 
     if (!inSession) {
-      console.log("🔍 findLatestInSession: No session found");
+      console.log("🔍 findLatestInSession: No pending IN session found (all may have OUT already)");
       return null;
     }
 
-    console.log("✅ findLatestInSession: Found session:", inSession.id);
+    console.log("✅ findLatestInSession: Found pending IN session:", inSession.id);
 
     // Serialize MongoDB document to plain object
     const { _id, ...sessionData } = inSession
@@ -538,8 +546,27 @@ export async function attachOutToInSession(
   try {
     if (outSession.direction !== "OUT") return
 
-    // Find matching IN session using the same matching logic as findLatestInSession
-    const inSession = await findLatestInSession(outSession.plateNumber)
+    const companyId = await getActiveCompany()
+    const sessionsCollection = await getCompanyCollection<TruckSession>(
+      companyId,
+      "truck_sessions"
+    )
+
+    // Prefer explicit inSessionId from form (avoids wrong match when same plate has multiple INs)
+    let inSession: TruckSession | null = null
+    if (outSession.inSessionId) {
+      const found = await sessionsCollection.findOne({
+        id: outSession.inSessionId,
+        direction: "IN",
+      })
+      if (found) {
+        const { _id, ...sessionData } = found
+        inSession = sessionData as TruckSession
+      }
+    }
+    if (!inSession) {
+      inSession = await findLatestInSession(outSession.plateNumber)
+    }
     if (!inSession) {
       console.warn(
         "attachOutToInSession: No matching IN session found for plate",
@@ -547,12 +574,6 @@ export async function attachOutToInSession(
       )
       return
     }
-
-    const companyId = await getActiveCompany()
-    const sessionsCollection = await getCompanyCollection<TruckSession>(
-      companyId,
-      "truck_sessions"
-    )
 
     const now = new Date()
     const update: Partial<TruckSession> = {

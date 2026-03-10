@@ -21,7 +21,8 @@ export async function GET(request: Request) {
     }
 
     const normalizedPlate = plateNumber.trim().toUpperCase();
-    console.log("🔍 find-in API: Normalized plate number:", normalizedPlate);
+    const normalizedNoSpaces = normalizedPlate.replace(/\s/g, "");
+    console.log("🔍 find-in API: Normalized plate number:", normalizedPlate, "(no-spaces:", normalizedNoSpaces, ")");
 
     // Always use normalized plate when searching sessions to avoid mismatches
     const inSession = await findLatestInSession(normalizedPlate)
@@ -33,13 +34,16 @@ export async function GET(request: Request) {
       console.log("🔍 find-in API: Session created at:", inSession.createdAt);
       console.log("🔍 find-in API: Session unique code:", inSession.uniqueCode);
       
-      // Verify this is the latest session by checking if there are newer ones
+      // Verify this is the latest pending session (no newer IN without OUT)
       try {
         const companyId = await getActiveCompany();
         const sessionsCollection = await getCompanyCollection(companyId, "truck_sessions");
         const newerSessions = await sessionsCollection.find({
           direction: "IN",
-          plateNumber: normalizedPlate,
+          $or: [
+            { plateNumber: normalizedPlate },
+            { plateNumber: normalizedNoSpaces },
+          ],
           createdAt: { $gt: inSession.createdAt instanceof Date ? inSession.createdAt : new Date(inSession.createdAt) }
         }).limit(1).toArray();
         
@@ -84,11 +88,15 @@ export async function GET(request: Request) {
         ? inSession.createdAt 
         : new Date(inSession.createdAt);
       
-      // Find log entries for this plate, sorted by creation date (latest first)
+      // Find log entries for this plate - match both formats (with/without spaces) for legacy data
       const logEntries = await logsCollection
         .find({
           direction: "IN",
-          plate: normalizedPlate,
+          $or: [
+            { plate: normalizedPlate },
+            { plate: normalizedNoSpaces },
+            { plate: { $regex: `^${normalizedNoSpaces.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}$`, $options: "i" } },
+          ],
         })
         .sort({ createdAt: -1 })
         .limit(5)
