@@ -301,50 +301,42 @@ export function useThirdPartyAutofill() {
         const dataToSend = JSON.stringify(thirdPartyData)
         const uniqueCode = formData.aktNumber || formData.uniqueCode || ""
 
-        console.log("🔌 Connecting to WebSocket...")
-        let connectedWs: WebSocket
-        try {
-          connectedWs = await connectWebSocket()
-        } catch (connectionError) {
-          console.error("❌ Failed to connect WebSocket:", connectionError)
-          return {
-            success: false,
-            error: connectionError instanceof Error ? connectionError.message : "Failed to connect. Ensure the connector is running at ws://127.0.0.1:9000/service",
-          }
-        }
-
-        if (!connectedWs || connectedWs.readyState !== WebSocket.OPEN) {
-          return {
-            success: false,
-            error: "WebSocket not connected. Ensure the connector is running at ws://127.0.0.1:9000/service",
-          }
-        }
-
-        try {
-          connectedWs.send(dataToSend)
-          console.log("✅ Data sent via WebSocket to 3rd party app")
-        } catch (sendError) {
-          console.error("❌ Error calling ws.send():", sendError)
-          return {
-            success: false,
-            error: sendError instanceof Error ? sendError.message : "Failed to send data via WebSocket",
-          }
-        }
-
-        // Also upsert to third_party_data so the other site can pull (they read from our API, not WebSocket)
+        // Always save to third_party_data first (for other site to pull) - regardless of WebSocket
         try {
           const saveRes = await fetch("/api/third-party/save", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
+            credentials: "include",
             body: JSON.stringify({ uniqueCode, data: thirdPartyData }),
           })
           if (!saveRes.ok) {
-            console.warn("⚠️ Failed to save to third_party_data for pull:", await saveRes.text())
-          } else {
-            console.log("✅ Data upserted to third_party_data (other site can now pull)")
+            const errText = await saveRes.text()
+            console.error("⚠️ Failed to save to third_party_data:", saveRes.status, errText)
+            return {
+              success: false,
+              error: `Failed to save: ${errText || saveRes.statusText}`,
+            }
           }
+          console.log("✅ Data upserted to third_party_data")
         } catch (saveErr) {
-          console.warn("⚠️ Failed to upsert third_party_data:", saveErr)
+          console.error("⚠️ Failed to upsert third_party_data:", saveErr)
+          return {
+            success: false,
+            error: saveErr instanceof Error ? saveErr.message : "Failed to save to third_party_data",
+          }
+        }
+
+        // Try WebSocket (optional - for real-time push to connector app)
+        let wsOk = false
+        try {
+          const connectedWs = await connectWebSocket()
+          if (connectedWs?.readyState === WebSocket.OPEN) {
+            connectedWs.send(dataToSend)
+            console.log("✅ Data sent via WebSocket to 3rd party app")
+            wsOk = true
+          }
+        } catch (connectionError) {
+          console.warn("⚠️ WebSocket not available (data still saved to third_party_data):", connectionError)
         }
 
         if (typeof window !== "undefined") {
@@ -367,7 +359,7 @@ export function useThirdPartyAutofill() {
           }
         }
 
-        console.log("✅ Successfully sent form data to 3rd party app via WebSocket")
+        console.log("✅ Form data saved to third_party_data" + (wsOk ? " and sent via WebSocket" : ""))
         return {
           success: true,
           uniqueCode: uniqueCode,

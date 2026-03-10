@@ -457,7 +457,12 @@ export function EditLogDialog({
       };
       const sendResult = await sendFormData(formData);
       if (!sendResult.success) {
-        console.warn("Third-party autofill send failed (non-blocking):", sendResult.error);
+        toast({
+          title: "Алдаа",
+          description: sendResult.error || "Гаальд илгээхэд алдаа гарлаа. third_party_data хадгалахад амжилтгүй.",
+          variant: "destructive",
+        });
+        return;
       }
       await sendTruckLogToCustoms(log.id);
       toast({
