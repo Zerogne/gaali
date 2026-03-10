@@ -282,7 +282,7 @@ export function useThirdPartyAutofill() {
             TRL: formData.trailerNumber || formData.trailerPlate || "", // Чиргүүлийн дугаар
             UPC: formData.destination || formData.receiverOrganization || formData.receiverOrganizationName || "", // Хүлээн авах газар код (with receiver company)
             VNO: formData.plateNumber || formData.plate || "", // Тээврийн хэрэгслийн дугаар
-            WGT: formData.totalWeight || formData.grossWeightKg || formData.weightKg || formData.weight || 0, // Бохир жин (гарах жин)
+            WGT: formData.totalOutWeight ?? formData.totalWeight ?? formData.grossWeightKg ?? formData.weightKg ?? formData.weight ?? 0, // Бохир жин (totalOutWeight / гарах жин)
             
             // New fields (added in updated API format)
             PRM: formData.premium || formData.prm || "", // Premium/Permit number

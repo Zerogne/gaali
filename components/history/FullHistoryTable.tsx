@@ -316,6 +316,7 @@ export function FullHistoryTable({
       driverRegistrationNumber: driver?.registrationNumber || "",
       cargoType: log.cargoType || "",
       product: log.cargoType || "",
+      totalOutWeight: log.totalOutWeight ?? log.weightKg ?? 0,
       weightKg: log.weightKg || 0,
       grossWeightKg: log.weightKg || 0,
       netWeightKg: log.netWeightKg ?? 0,
@@ -334,12 +335,7 @@ export function FullHistoryTable({
     };
     const sendResult = await sendFormData(formData);
     if (!sendResult.success) {
-      toast({
-        title: "Алдаа",
-        description: sendResult.error || "Гаальд илгээхэд алдаа гарлаа. Холболтыг шалгана уу.",
-        variant: "destructive",
-      });
-      return false;
+      console.warn("Third-party autofill send failed (non-blocking):", sendResult.error);
     }
     const dbResult = await sendTruckLogToCustoms(log.id);
     if (dbResult.success) {

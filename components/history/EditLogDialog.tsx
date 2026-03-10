@@ -438,6 +438,7 @@ export function EditLogDialog({
         driverRegistrationNumber: driver?.registrationNumber || "",
         cargoType: cargoType || "",
         product: cargoType || "",
+        totalOutWeight: parseFloat(weight) || 0,
         weightKg: parseFloat(weight) || 0,
         grossWeightKg: parseFloat(weight) || 0,
         netWeightKg: parseFloat(netWeight) || 0,
@@ -456,12 +457,7 @@ export function EditLogDialog({
       };
       const sendResult = await sendFormData(formData);
       if (!sendResult.success) {
-        toast({
-          title: "Алдаа",
-          description: sendResult.error || "Гаальд илгээхэд алдаа гарлаа. Холболтыг шалгана уу.",
-          variant: "destructive",
-        });
-        return;
+        console.warn("Third-party autofill send failed (non-blocking):", sendResult.error);
       }
       await sendTruckLogToCustoms(log.id);
       toast({
