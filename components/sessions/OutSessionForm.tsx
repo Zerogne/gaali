@@ -1539,25 +1539,27 @@ export const OutSessionForm = forwardRef<
     const performSendToThirdParty = async (): Promise<boolean> => {
       setIsSending(true);
       try {
-        // Get unique code - use saved one or fetch from latest session
+        // Get AKT/unique code: prefer linked IN session so IN+OUT share one AKT
         let uniqueCode = savedUniqueCode;
-        
+
         if (!uniqueCode) {
-          // Try to fetch from the saved session
+          // Try to fetch the saved OUT session
+          let outSession: any | null = null;
+
           if (savedSessionId) {
             try {
               const sessionResponse = await fetch(`/api/truck-sessions/${savedSessionId}`);
               if (sessionResponse.ok) {
                 const sessionData = await sessionResponse.json();
-                uniqueCode = sessionData.session?.uniqueCode;
+                outSession = sessionData.session || null;
               }
             } catch {
               // ignore
             }
           }
-          
-          // If still no unique code, try to fetch from latest session with this plate
-          if (!uniqueCode) {
+
+          // If we still don't have the OUT session, fall back to latest OUT by plate
+          if (!outSession) {
             try {
               const sessionsResponse = await fetch(
                 `/api/truck-sessions?direction=OUT&plateNumber=${encodeURIComponent(
@@ -1566,15 +1568,36 @@ export const OutSessionForm = forwardRef<
               );
               if (sessionsResponse.ok) {
                 const sessionsData = await sessionsResponse.json();
-                const outSession = sessionsData.sessions?.[0];
-                if (outSession?.uniqueCode) {
-                  uniqueCode = outSession.uniqueCode;
-                  setSavedUniqueCode(uniqueCode);
-                }
+                outSession = sessionsData.sessions?.[0] || null;
               }
             } catch {
               // ignore
             }
+          }
+
+          // If OUT session is found and linked to an IN session, fetch that IN and use its uniqueCode as AKT
+          if (outSession?.inSessionId) {
+            try {
+              const inResponse = await fetch(`/api/truck-sessions/${outSession.inSessionId}`);
+              if (inResponse.ok) {
+                const inData = await inResponse.json();
+                const inSession = inData.session;
+                if (inSession?.uniqueCode) {
+                  uniqueCode = inSession.uniqueCode;
+                }
+              }
+            } catch {
+              // ignore and fall back to OUT uniqueCode
+            }
+          }
+
+          // Final fallback: use OUT session's own uniqueCode
+          if (!uniqueCode && outSession?.uniqueCode) {
+            uniqueCode = outSession.uniqueCode;
+          }
+
+          if (uniqueCode) {
+            setSavedUniqueCode(uniqueCode);
           }
         }
 

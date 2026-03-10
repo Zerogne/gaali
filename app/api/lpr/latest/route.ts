@@ -53,16 +53,31 @@ export async function GET(request: Request) {
     const collection = await getLprCollection();
 
     // Build query: filter by companyId, and optionally by camera IP
-    const query: any = companyId ? { companyId } : {};
+    let query: any = companyId ? { companyId } : {};
     if (targetCameraIp) {
       query.cameraIp = targetCameraIp;
     }
     
-    const latest = await collection
+    let latest = await collection
       .find(query)
       .sort({ receivedAt: -1 })
       .limit(1)
       .toArray();
+
+    // Fallback 1: If camera filter returned nothing but we have targetCameraIp, try without camera (single-camera or IP mismatch)
+    if (latest.length === 0 && targetCameraIp && companyId) {
+      query = { companyId };
+      latest = await collection.find(query).sort({ receivedAt: -1 }).limit(1).toArray();
+    }
+
+    // Fallback 2: If company filter returned nothing, try without company (single-company or ingest stored null)
+    if (latest.length === 0 && companyId) {
+      query = targetCameraIp ? { cameraIp: targetCameraIp } : {};
+      latest = await collection.find(query).sort({ receivedAt: -1 }).limit(1).toArray();
+    }
+    if (latest.length === 0 && companyId) {
+      latest = await collection.find({}).sort({ receivedAt: -1 }).limit(1).toArray();
+    }
 
     if (latest.length === 0) {
       return NextResponse.json({

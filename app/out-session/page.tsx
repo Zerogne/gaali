@@ -34,7 +34,7 @@ function OutSessionContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { toast } = useToast();
-  const cameraAutofill = useLprPlateAutofill();
+  const cameraAutofill = useLprPlateAutofill({ camera: 2 }); // Exit camera (Out form also uses useLatestLpr(2) directly)
   const [currentPlate, setCurrentPlate] = useState<string>("");
   const [streamUrl, setStreamUrl] = useState<string | undefined>(undefined);
   const [autoFillOrigin, setAutoFillOrigin] = useState<string | null>(null);

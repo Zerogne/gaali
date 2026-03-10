@@ -166,7 +166,7 @@ export const InSessionForm = forwardRef<
       : externalCameraAutofill || internalCameraAutofill;
 
     // Direct plate number auto-fill (similar to weight) - updates whenever new data arrives
-    const { latest: latestLpr } = useLatestLpr(1000); // Poll every 1 second
+    const { latest: latestLpr } = useLatestLpr(1000, 1); // Poll every 1 second, camera 1 (entry)
     const rfidStatus = useRfidStatus({ pollInterval: 1000, enabled: true });
 
     // Check weight device connection status

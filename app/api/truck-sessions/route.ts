@@ -346,25 +346,80 @@ export async function POST(request: Request) {
       console.log("🔍 Driver ID from request body:", driverId)
       console.log("🔍 Full body.driverId value:", body.driverId)
       console.log("🔍 body.driverId type:", typeof body.driverId)
+
+      // Determine AKT/code and base data source for 3rd party payload.
+      // For OUT sessions, prefer the linked IN session so IN+OUT are combined
+      // under a single AKT/code that 3rd party systems use.
+      let aktCode = session.uniqueCode
+      let baseProduct = session.product || productName || ""
+      let baseTransporterCompany = session.transporterCompany || transportCompanyName || ""
+      let baseOrigin = body.origin || senderOrgName || ""
+      let baseDestination = body.destination || receiverOrgName || ""
+      let baseSeal = body.sealNumber || session.sealNumber || ""
+      let baseTrailer = body.trailerNumber || body.trailerPlate || ""
+      let baseDriverName = session.driverName || finalDriverName || ""
+
+      if (session.direction === "OUT") {
+        try {
+          const sessionsCollection = await getCompanyCollection(companyId, "truck_sessions")
+
+          let inSession: any | null = null
+
+          // Best: explicit link from OUT to IN
+          if (session.inSessionId) {
+            inSession = await sessionsCollection.findOne({
+              id: session.inSessionId,
+              direction: "IN",
+            })
+          }
+
+          // Fallback: latest IN for same plate
+          if (!inSession) {
+            inSession = await sessionsCollection.findOne(
+              {
+                direction: "IN",
+                plateNumber: session.plateNumber,
+              },
+              { sort: { createdAt: -1 } }
+            )
+          }
+
+          if (inSession) {
+            console.log("🔗 3rd party payload: linking OUT to IN session for AKT/code", inSession.id, inSession.uniqueCode)
+            aktCode = inSession.uniqueCode || aktCode
+
+            // Prefer IN session metadata when available; keep OUT weights
+            baseProduct = inSession.product || baseProduct
+            baseTransporterCompany = inSession.transporterCompany || baseTransporterCompany
+            baseOrigin = inSession.origin || baseOrigin
+            baseDestination = inSession.destination || baseDestination
+            baseSeal = inSession.sealNumber || baseSeal
+            baseTrailer = body.trailerNumber || body.trailerPlate || inSession.trailerPlate || ""
+            baseDriverName = inSession.driverName || baseDriverName
+          }
+        } catch (linkError) {
+          console.error("⚠️ Could not resolve IN session for 3rd party payload:", linkError)
+        }
+      }
       
-      // Transform session data to 3rd party format (supports both old and new API formats)
+      // Transform combined session data to 3rd party format (supports both old and new API formats)
       const thirdPartyData = [
         {
           // Core fields (original format)
-          AKT: session.uniqueCode, // Актын дугаар (уникаль код)
-          CAR: session.product || "", // Тээвэрлэгч байгууллагын нэр / Бүтээгдэхүүн
+          AKT: aktCode, // Актын дугаар (уникаль код) - stable per IN/OUT pair
+          CAR: baseProduct, // Бүтээгдэхүүн / Тээвэрлэгч байгууллага
           CMN: "", // Convoy manifest number
           // Contract number: prefer sender company's contract, then explicit contractNumber, then others
           CON: senderOrgContract || body.contractNumber || transportCompanyContract || receiverOrgContract || "", // Гэрээний дугаар
           CT1: "", // Чингэлэг 1
-          DRN: buildDRN(session.driverName || "", driverRegNumberFromDb, driverPhoneFromDb), // Жолоочийн нэр ИЮ{reg} {phone}
-          LPC: session.transporterCompany || body.origin || senderOrgName || "", // Ачих газар код (with sender company)
-          NET: session.netWeightKg || 0, // Цэвэр жин
-          SLN: body.sealNumber || "", // Гаалийн лац, ломбын дугаар
-          TRL: body.trailerNumber || body.trailerPlate || "", // Чиргүүлийн дугаар
-          UPC: body.destination || receiverOrgName || "", // Хүлээн авах газар код (with receiver company)
+          DRN: buildDRN(baseDriverName || "", driverRegNumberFromDb, driverPhoneFromDb), // Жолоочийн нэр ИЮ{reg} {phone}
+          LPC: baseTransporterCompany || baseOrigin || senderOrgName || "", // Ачих газар код (with sender company)
+          NET: session.netWeightKg || 0, // Цэвэр жин (comes from OUT session when available)
+          SLN: baseSeal, // Гаалийн лац, ломбын дугаар
+          TRL: baseTrailer, // Чиргүүлийн дугаар
+          UPC: baseDestination || receiverOrgName || "", // Хүлээн авах газар код (with receiver company)
           VNO: session.plateNumber || "", // Тээврийн хэрэгслийн дугаар
-          WGT: session.grossWeightKg || 0, // Бохир жин
+          WGT: session.grossWeightKg || 0, // Бохир жин (IN = орж ирэх жин, OUT = гарах жин)
           
           // New fields (updated API format)
           PRM: "", // Premium/Permit number
@@ -389,7 +444,7 @@ export async function POST(request: Request) {
       const collection = db.collection("third_party_data")
       
       const document = {
-        code: session.uniqueCode,
+        code: aktCode,
         companyId: companyId,
         data: thirdPartyData,
         createdAt: new Date(),
@@ -398,12 +453,12 @@ export async function POST(request: Request) {
       }
       
       await collection.updateOne(
-        { code: session.uniqueCode, companyId: companyId },
+        { code: aktCode, companyId: companyId },
         { $set: document },
         { upsert: true }
       )
       
-      console.log("✅ Data saved to 3rd party storage with code:", session.uniqueCode)
+      console.log("✅ Data saved to 3rd party storage with code:", aktCode)
       
       // Note: WebSocket sending is handled by client-side hook (useThirdPartyAutofill)
     } catch (thirdPartyError) {

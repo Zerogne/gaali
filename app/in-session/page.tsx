@@ -34,7 +34,7 @@ function InSessionContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { toast } = useToast();
-  const cameraAutofill = useLprPlateAutofill();
+  const cameraAutofill = useLprPlateAutofill({ camera: 1 }); // Entry camera
   const [currentPlate, setCurrentPlate] = useState<string>("");
   const [streamUrl, setStreamUrl] = useState<string | undefined>(undefined);
   const gaaliBridgeDownloadUrl =

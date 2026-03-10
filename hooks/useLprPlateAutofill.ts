@@ -41,6 +41,12 @@ export interface UseLprPlateAutofillOptions {
    * Defaults to true
    */
   enabled?: boolean;
+
+  /**
+   * Camera filter: 1 = entry camera, 2 = exit camera.
+   * When set, only events from that camera are used.
+   */
+  camera?: 1 | 2;
 }
 
 /**
@@ -58,7 +64,7 @@ export interface UseLprPlateAutofillOptions {
 export function useLprPlateAutofill(
   options: UseLprPlateAutofillOptions = {}
 ) {
-  const { pollInterval = 1000, enabled = true } = options;
+  const { pollInterval = 1000, enabled = true, camera } = options;
 
   const [isEnabled, setIsEnabled] = useState(() => {
     if (typeof window === "undefined") return enabled;
@@ -67,7 +73,8 @@ export function useLprPlateAutofill(
   });
 
   const { latest, error: lprError } = useLatestLpr(
-    isEnabled ? pollInterval : 0 // Don't poll if disabled
+    isEnabled ? pollInterval : 0, // Don't poll if disabled
+    camera
   );
 
   const [data, setData] = useState<LprPlateAutofillData>({
