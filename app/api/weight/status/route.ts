@@ -44,19 +44,34 @@ export async function GET(request: NextRequest) {
     }
 
     const collection = await getWeightCollection();
-    
+
     // Build query - filter by companyId and optionally siteId
     const query: Record<string, unknown> = { companyId };
     if (siteId) {
       query.siteId = siteId;
     }
 
-    // Get the most recent weight record(s)
+    // Log so you can verify each request is scoped to the correct company
+    console.log("[Weight Status] Request scoped to companyId:", companyId);
+
+    // Get the most recent weight record(s) for this company only
     const recent = await collection
       .find(query)
       .sort({ receivedAt: -1 })
       .limit(1)
       .toArray();
+
+    // Defensive: only expose weight if document's companyId matches session (no cross-company leak)
+    const doc = recent.length > 0 ? recent[0] : null;
+    const safeLatestWeight =
+      doc && (doc as any).companyId === companyId
+        ? { siteId: doc.siteId, weight: doc.weight, unit: doc.unit, receivedAt: doc.receivedAt }
+        : null;
+    if (doc && (doc as any).companyId !== companyId) {
+      console.warn(
+        `[Weight Status] Discarded document companyId ${(doc as any).companyId} (session: ${companyId})`
+      );
+    }
 
     // Get count of total records
     const totalCount = await collection.countDocuments(query);
@@ -84,12 +99,7 @@ export async function GET(request: NextRequest) {
         count: recentCount,
         timeWindow: "last 5 minutes",
       },
-      latestWeight: recent.length > 0 ? {
-        siteId: recent[0].siteId,
-        weight: recent[0].weight,
-        unit: recent[0].unit,
-        receivedAt: recent[0].receivedAt,
-      } : null,
+      latestWeight: safeLatestWeight,
       message: recentCount > 0
         ? `✅ Active: Received ${recentCount} weight record(s) in the last 5 minutes`
         : totalCount > 0

@@ -66,6 +66,7 @@ export function useWeightStatus(
       
       const response = await fetch(url, {
         cache: "no-store",
+        credentials: "include", // send session cookie so API can filter by current company
       });
 
       if (!response.ok) {

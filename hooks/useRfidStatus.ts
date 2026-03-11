@@ -60,7 +60,10 @@ export function useRfidStatus(options: UseRfidStatusOptions = {}) {
         ? `/api/rfid/status?siteId=${encodeURIComponent(siteId)}`
         : `/api/rfid/status`;
 
-      const response = await fetch(url, { cache: "no-store" });
+      const response = await fetch(url, {
+        cache: "no-store",
+        credentials: "include",
+      });
 
       if (!response.ok) {
         throw new Error(`API returned ${response.status}`);

@@ -47,6 +47,7 @@ export function useLatestLpr(pollInterval: number = 1000, camera?: 1 | 2) {
       const url = camera ? `/api/lpr/latest?camera=${camera}` : "/api/lpr/latest";
       const response = await fetch(url, {
         cache: "no-store",
+        credentials: "include", // send session cookie so API returns only current company's plate
       });
 
       if (!response.ok) {
