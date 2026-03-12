@@ -12,7 +12,6 @@ import { useWeightStatus } from "@/hooks/useWeightStatus";
 import { useLatestLpr } from "@/hooks/useLatestLpr";
 import { useRfidStatus } from "@/hooks/useRfidStatus";
 import { updateTruckLog, sendTruckLogToCustoms } from "@/lib/api";
-import { buildDRN } from "@/lib/thirdPartyFormat";
 import { printLog } from "@/lib/pdf-export";
 import type { Product } from "@/lib/products/products";
 import type {
@@ -131,12 +130,7 @@ export const OutSessionForm = forwardRef<
     const isAutofillingRef = useRef(false);
     const isRfidAutofillingRef = useRef(false);
     const rfidManuallyEditedRef = useRef(false);
-    const {
-      getWebSocket,
-      connectWebSocket,
-      isSending: isSendingToThirdParty,
-      isConnected,
-    } = useThirdPartyAutofill();
+    const { sendFormData } = useThirdPartyAutofill();
     const [isSaving, setIsSaving] = useState(false);
     const [isSending, setIsSending] = useState(false);
     const [createDialogOpen, setCreateDialogOpen] = useState(false);
@@ -1595,195 +1589,53 @@ export const OutSessionForm = forwardRef<
         }
 
 
-        // Step 1: Transform data to 3rd party format (matching test-websocket.html)
         const productName = formState.productId
           ? products.find((p) => p.id === formState.productId)?.label || ""
           : "";
-        const transportCompanyName = formState.transporterCompanyId
-          ? transportCompanies.find(
-              (t) => t.id === formState.transporterCompanyId
-            )?.name || ""
-          : "";
+        const transportCompany = formState.transporterCompanyId
+          ? transportCompanies.find((t) => t.id === formState.transporterCompanyId)
+          : undefined;
+        const contractNumber = transportCompany?.contract || "";
 
-        // Get sender and receiver organization names
-        let senderOrgName = "";
-        let receiverOrgName = "";
-        let contractNumber = "";
+        const sendResult = await sendFormData({
+          aktNumber: uniqueCode,
+          uniqueCode,
+          plateNumber: formState.plateNumber.trim().toUpperCase(),
+          plate: formState.plateNumber.trim().toUpperCase(),
+          driverName: formState.driverName,
+          driverId: formState.driverId || "",
+          driverPhone: drivers.find((d) => d.id === formState.driverId)?.phone || "",
+          driverRegistrationNumber:
+            drivers.find((d) => d.id === formState.driverId)?.registrationNumber || "",
+          product: productName,
+          cargoType: productName,
+          contractNumber,
+          contract: contractNumber,
+          con: contractNumber,
+          transportCompanyName: transportCompany?.name || "",
+          transporterCompany: transportCompany?.name || "",
+          transportCompanyId: formState.transporterCompanyId || "",
+          senderOrganizationId: formState.senderOrganizationId || "",
+          receiverOrganizationId: formState.receiverOrganizationId || "",
+          origin: formState.origin.trim(),
+          destination: formState.destination.trim(),
+          netWeightKg: formState.netWeightKg || 0,
+          totalOutWeight: formState.totalWeight || formState.grossWeightKg || 0,
+          totalWeight: formState.totalWeight || formState.grossWeightKg || 0,
+          grossWeightKg: formState.grossWeightKg || 0,
+          sealNumber: formState.sealNumber.trim(),
+          trailerNumber: formState.hasTrailer
+            ? formState.trailerNumber.trim().toUpperCase()
+            : "",
+          trailerPlate: formState.hasTrailer
+            ? formState.trailerNumber.trim().toUpperCase()
+            : "",
+        });
 
-        if (formState.senderOrganizationId) {
-          try {
-            const orgsResponse = await fetch(
-              "/api/organizations?type=sender"
-            );
-            if (orgsResponse.ok) {
-              const orgs = await orgsResponse.json();
-              const org = orgs.find(
-                (o: any) => o.id === formState.senderOrganizationId
-              );
-              if (org) senderOrgName = org.name;
-            }
-          } catch (e) {
-            // Ignore error
-          }
-        }
-
-        if (formState.receiverOrganizationId) {
-          try {
-            const orgsResponse = await fetch(
-              "/api/organizations?type=receiver"
-            );
-            if (orgsResponse.ok) {
-              const orgs = await orgsResponse.json();
-              const org = orgs.find(
-                (o: any) => o.id === formState.receiverOrganizationId
-              );
-              if (org) receiverOrgName = org.name;
-            }
-          } catch (e) {
-            // Ignore error
-          }
-        }
-
-        // Try to resolve contract number from selected transport company (primary contract source)
-        if (formState.transporterCompanyId) {
-          const selectedTransportCompany = transportCompanies.find(
-            (c) => c.id === formState.transporterCompanyId
-          );
-          if (selectedTransportCompany?.contract) {
-            contractNumber = selectedTransportCompany.contract;
-          }
-        }
-
-        const thirdPartyData = [
-          {
-            // Core fields (original format)
-            AKT: uniqueCode,
-            CAR: productName,
-            CMN: "",
-            CON: contractNumber || "",
-            CT1: "",
-            DRN: buildDRN(
-              formState.driverName,
-              drivers.find((d) => d.id === formState.driverId)?.registrationNumber,
-              drivers.find((d) => d.id === formState.driverId)?.phone
-            ),
-            LPC:
-              transportCompanyName ||
-              formState.origin.trim() ||
-              senderOrgName,
-            NET: formState.netWeightKg || 0,
-            SLN: formState.sealNumber.trim(),
-            TRL: formState.hasTrailer
-              ? formState.trailerNumber.trim().toUpperCase()
-              : "",
-            UPC: formState.destination.trim() || receiverOrgName,
-            VNO: formState.plateNumber.trim().toUpperCase(),
-            WGT: formState.totalWeight || formState.grossWeightKg || 0,
-            
-            // New fields (updated API format)
-            PRM: "", // Premium/Permit number
-            CT2: "", // Container 2
-            CT3: "", // Container 3
-            CT4: "", // Container 4
-            TID: "", // Transaction ID
-            
-            // Additional fields for sender/receiver company and driver ID
-            senderCompany: senderOrgName,
-            receiverCompany: receiverOrgName,
-            driverId: formState.driverId || "",
-          },
-        ];
-
-        // Send data directly via WebSocket (ws://127.0.0.1:9000/service) - no API
-        const dataToSend = JSON.stringify(thirdPartyData);
-        let ws = getWebSocket();
-
-        if (!ws || ws.readyState !== WebSocket.OPEN) {
-          try {
-            ws = await connectWebSocket();
-            ws = getWebSocket();
-            await new Promise((resolve) => setTimeout(resolve, 50));
-            ws = getWebSocket();
-            if (!ws || ws.readyState !== WebSocket.OPEN) {
-              try {
-                await navigator.clipboard.writeText(dataToSend);
-                toast({
-                  title: "Өгөгдөл бэлэн",
-                  description:
-                    "Төрийн гаальд илгээх холболт байхгүй байна. Өгөгдлийг clipboard-д хуулсан. Холболт байхад дахин илгээнэ үү.",
-                  duration: 6000,
-                });
-              } catch (clipboardErr) {
-                toast({
-                  title: "Өгөгдөл бэлэн",
-                  description: "Төрийн гаальд илгээх холболт байхгүй байна. Дахин оролдоно уу.",
-                  duration: 8000,
-                });
-              }
-              return true;
-            }
-          } catch (error) {
-            try {
-              await navigator.clipboard.writeText(dataToSend);
-              toast({
-                title: "Өгөгдөл бэлэн",
-                description:
-                  "Төрийн гаальд илгээх холболт байхгүй байна. Өгөгдлийг clipboard-д хуулсан. Холболт байхад дахин илгээнэ үү.",
-                duration: 6000,
-              });
-            } catch (clipboardErr) {
-              toast({
-                title: "Өгөгдөл бэлэн",
-                description: "Төрийн гаальд илгээх холболт байхгүй байна. Дахин оролдоно уу.",
-                duration: 8000,
-              });
-            }
-            return true;
-          }
-        }
-
-        // Step 4: Verify connection one more time (matching test-websocket.html)
-        ws = getWebSocket();
-        if (!ws || ws.readyState !== WebSocket.OPEN) {
-          console.error(
-            "❌ ERROR: WebSocket connection is not open before sending"
-          );
+        if (!sendResult.success) {
           toast({
             title: "Алдаа",
-            description:
-              "WebSocket холболт тасарсан байна. Дахин оролдоно уу.",
-            variant: "destructive",
-          });
-          return false;
-        }
-
-        // Send JSON directly to 3rd party via WebSocket
-        if (ws.readyState !== WebSocket.OPEN) {
-          console.error("❌ ERROR: WebSocket closed right before send!");
-          toast({
-            title: "Алдаа",
-            description:
-              "WebSocket холболт тасарсан байна. Дахин оролдоно уу.",
-            variant: "destructive",
-          });
-          return false;
-        }
-
-        ws.send(dataToSend);
-
-        // Step 6: Check connection after a short delay (matching test-websocket.html)
-        await new Promise((resolve) => setTimeout(resolve, 100));
-        ws = getWebSocket();
-
-        if (!ws || ws.readyState !== WebSocket.OPEN) {
-          console.error("❌ ERROR: WebSocket closed after sending!");
-          console.error(
-            "❌ This usually means the 3rd party app server is not running"
-          );
-          toast({
-            title: "Алдаа",
-            description:
-              "Төрийн гаальд илгээх холболт тасарсан байна. Дахин оролдоно уу.",
+            description: sendResult.error || "Төрийн гаальд илгээхэд алдаа гарлаа.",
             variant: "destructive",
           });
           return false;

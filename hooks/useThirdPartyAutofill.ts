@@ -48,8 +48,9 @@ interface SendFormDataResult {
 }
 
 /**
- * React hook for sending form data to 3rd party app via WebSocket
- * The 3rd party app will save the data as autofill
+ * React hook for third-party send flow:
+ * 1) Save payload to /api/third-party/save (third_party_data)
+ * 2) Push JSON via WebSocket for real-time connector delivery
  */
 export function useThirdPartyAutofill() {
   const [isConnected, setIsConnected] = useState(false)
@@ -251,8 +252,9 @@ export function useThirdPartyAutofill() {
   }, [])
 
   /**
-   * Sends form data to the 3rd party app via WebSocket (ws://127.0.0.1:9000/service)
-   * Sends JSON directly - no API save. Connector receives data and forwards to government.
+   * Sends form data to third-party:
+   * - Persist first in third_party_data via API
+   * - Then attempt WebSocket push to connector
    */
   const sendFormData = useCallback(
     async (formData: Record<string, any>): Promise<SendFormDataResult> => {
