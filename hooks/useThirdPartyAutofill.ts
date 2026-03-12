@@ -259,47 +259,112 @@ export function useThirdPartyAutofill() {
       console.log("🚀 sendFormData called with:", formData)
       setIsSending(true)
       try {
-        // Step 1: Transform formData to 3rd party app format
-        // Format: Array with single object - supports both old and new API formats
-        const thirdPartyData = [
-          {
-            // Core fields (always present)
-            AKT: formData.aktNumber || formData.uniqueCode || "", // Актын дугаар (уникаль код)
-            CAR: formData.product || formData.cargoType || formData.productName || "", // Тээвэрлэгч байгууллагын нэр / Бүтээгдэхүүн
-            CMN: formData.convoyManifestNumber || formData.cmn || "", // Convoy manifest number
-            CON: formData.contractNumber || formData.contract || "", // Гэрээний дугаар
-            CT1: formData.container1 || "", // Чингэлэг 1
-            DRN: (formData.driverPhone || formData.driverRegistrationNumber)
-              ? buildDRN(
-                  formData.driverName || "",
-                  formData.driverRegistrationNumber || null,
-                  formData.driverPhone || null
-                )
-              : (formData.driverName || ""), // Жолоочийн нэр ИЮ{reg} {phone}
-            LPC: formData.transporterCompany || formData.origin || formData.transportCompanyName || formData.senderOrganization || formData.senderOrganizationName || "", // Ачих газар код (with sender company)
-            NET: formData.netWeightKg || formData.netWeight || 0, // Цэвэр жин
-            SLN: formData.sealNumber || "", // Гаалийн лац, ломбын дугаар
-            TRL: formData.trailerNumber || formData.trailerPlate || "", // Чиргүүлийн дугаар
-            UPC: formData.destination || formData.receiverOrganization || formData.receiverOrganizationName || "", // Хүлээн авах газар код (with receiver company)
-            VNO: formData.plateNumber || formData.plate || "", // Тээврийн хэрэгслийн дугаар
-            WGT: formData.totalOutWeight ?? formData.totalWeight ?? formData.grossWeightKg ?? formData.weightKg ?? formData.weight ?? 0, // Бохир жин (totalOutWeight / гарах жин)
-            
-            // New fields (added in updated API format)
-            PRM: formData.premium || formData.prm || "", // Premium/Permit number
-            CT2: formData.container2 || "", // Чингэлэг 2
-            CT3: formData.container3 || "", // Чингэлэг 3
-            CT4: formData.container4 || "", // Чингэлэг 4
-            TID: formData.transactionId || formData.tid || "", // Transaction ID
-            
-            // Additional fields for sender/receiver company and driver ID
-            senderCompany: formData.senderOrganization || formData.senderOrganizationName || "", // Илгээгч байгууллага
-            receiverCompany: formData.receiverOrganization || formData.receiverOrganizationName || "", // Хүлээн авагч байгууллага
-            driverId: formData.driverId || "", // Жолоочийн ID
+        const uniqueCode = formData.aktNumber || formData.uniqueCode || ""
+
+        // Step 1: Prefer canonical 3rd party payload from server (ensures CON/contract is correct)
+        let thirdPartyData: any[] | null = null
+        if (uniqueCode) {
+          try {
+            const appBaseUrl =
+              typeof window !== "undefined"
+                ? window.location.origin
+                : process.env.NEXT_PUBLIC_APP_URL || "https://gaali.vercel.app"
+
+            const canonicalRes = await fetch(
+              `${appBaseUrl}/api/truck-sessions/by-code/${encodeURIComponent(
+                uniqueCode
+              )}?format=thirdparty`,
+              { credentials: "include" }
+            )
+
+            if (canonicalRes.ok) {
+              const canonical = await canonicalRes.json()
+              console.log(
+                "[ThirdParty] Using canonical 3rd-party payload from server:",
+                canonical
+              )
+              thirdPartyData = [canonical]
+            } else {
+              console.warn(
+                "[ThirdParty] Failed to fetch canonical payload, status:",
+                canonicalRes.status
+              )
+            }
+          } catch (e) {
+            console.warn(
+              "[ThirdParty] Error fetching canonical payload, falling back to local mapping:",
+              e
+            )
           }
-        ]
+        }
+
+        // Fallback: build payload from formData (kept for backward compatibility)
+        if (!thirdPartyData) {
+          thirdPartyData = [
+            {
+              // Core fields (always present)
+              AKT: uniqueCode || "", // Актын дугаар (уникаль код)
+              CAR:
+                formData.product ||
+                formData.cargoType ||
+                formData.productName ||
+                "", // Тээвэрлэгч байгууллагын нэр / Бүтээгдэхүүн
+              CMN: formData.convoyManifestNumber || formData.cmn || "", // Convoy manifest number
+              CON: formData.contractNumber || formData.contract || "", // Гэрээний дугаар
+              CT1: formData.container1 || "", // Чингэлэг 1
+              DRN: formData.driverPhone || formData.driverRegistrationNumber
+                ? buildDRN(
+                    formData.driverName || "",
+                    formData.driverRegistrationNumber || null,
+                    formData.driverPhone || null
+                  )
+                : formData.driverName || "", // Жолоочийн нэр ИЮ{reg} {phone}
+              LPC:
+                formData.transporterCompany ||
+                formData.origin ||
+                formData.transportCompanyName ||
+                formData.senderOrganization ||
+                formData.senderOrganizationName ||
+                "", // Ачих газар код (with sender company)
+              NET: formData.netWeightKg || formData.netWeight || 0, // Цэвэр жин
+              SLN: formData.sealNumber || "", // Гаалийн лац, ломбын дугаар
+              TRL: formData.trailerNumber || formData.trailerPlate || "", // Чиргүүлийн дугаар
+              UPC:
+                formData.destination ||
+                formData.receiverOrganization ||
+                formData.receiverOrganizationName ||
+                "", // Хүлээн авах газар код (with receiver company)
+              VNO: formData.plateNumber || formData.plate || "", // Тээврийн хэрэгслийн дугаар
+              WGT:
+                formData.totalOutWeight ??
+                formData.totalWeight ??
+                formData.grossWeightKg ??
+                formData.weightKg ??
+                formData.weight ??
+                0, // Бохир жин (totalOutWeight / гарах жин)
+
+              // New fields (added in updated API format)
+              PRM: formData.premium || formData.prm || "", // Premium/Permit number
+              CT2: formData.container2 || "", // Чингэлэг 2
+              CT3: formData.container3 || "", // Чингэлэг 3
+              CT4: formData.container4 || "", // Чингэлэг 4
+              TID: formData.transactionId || formData.tid || "", // Transaction ID
+
+              // Additional fields for sender/receiver company and driver ID
+              senderCompany:
+                formData.senderOrganization ||
+                formData.senderOrganizationName ||
+                "", // Илгээгч байгууллага
+              receiverCompany:
+                formData.receiverOrganization ||
+                formData.receiverOrganizationName ||
+                "", // Хүлээн авагч байгууллага
+              driverId: formData.driverId || "", // Жолоочийн ID
+            },
+          ]
+        }
 
         const dataToSend = JSON.stringify(thirdPartyData)
-        const uniqueCode = formData.aktNumber || formData.uniqueCode || ""
 
         // Always save to third_party_data first (for other site to pull) - regardless of WebSocket
         try {
