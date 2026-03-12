@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server"
 import { getTruckSessionByUniqueCode } from "@/lib/truckSessions"
 import { errorToResponse } from "@/lib/errors"
+import { getDatabase } from "@/lib/db/client"
 
 /**
  * GET /api/truck-sessions/by-code/[code] - Get a truck session by unique code
@@ -38,29 +39,46 @@ export async function GET(
     const format = url.searchParams.get("format")
     
     if (format === "thirdparty") {
-      // Transform to 3rd party app format (supports both old and new API formats)
+      // Prefer canonical 3rd-party payload already saved in third_party_data (includes resolved CON/contract)
+      try {
+        const db = await getDatabase()
+        const collection = db.collection("third_party_data")
+        const doc = await collection.findOne({ code: session.uniqueCode })
+
+        if (doc && Array.isArray(doc.data) && doc.data.length > 0) {
+          // Data is stored as an array; return the first item (single-trip payload)
+          return NextResponse.json(doc.data[0], { status: 200 })
+        }
+      } catch (err) {
+        console.warn(
+          "[truck-sessions/by-code] Failed to read canonical third_party_data, falling back to session fields:",
+          err
+        )
+      }
+
+      // Fallback: derive 3rd party format from session fields (may have limited contract info)
       const thirdPartyData = {
         // Core fields (original format)
         AKT: session.uniqueCode || "", // Актын дугаар (unique code)
-        CAR: session.product || session.productName || "", // Cargo/Product
+        CAR: session.product || (session as any).productName || "", // Cargo/Product
         CMN: session.notes || "", // Comments/Notes
-        CON: session.contractNumber || "", // Contract number
-        CT1: session.container1 || "", // Container 1
+        CON: (session as any).contractNumber || "", // Contract number (if stored on session)
+        CT1: (session as any).container1 || "", // Container 1
         DRN: session.driverName || "", // Driver's Name
-        LPC: session.transporterCompany || session.origin || session.senderOrganization || "", // Loading Point Company
+        LPC: session.transporterCompany || session.origin || (session as any).senderOrganization || "", // Loading Point Company
         NET: session.netWeightKg || 0, // Net Weight
         SLN: session.sealNumber || "", // Seal Number
-        TRL: session.trailerNumber || session.trailerPlate || "", // Trailer Number
-        UPC: session.destination || session.receiverOrganization || "", // Unloading Point Company
+        TRL: (session as any).trailerNumber || (session as any).trailerPlate || "", // Trailer Number
+        UPC: session.destination || (session as any).receiverOrganization || "", // Unloading Point Company
         VNO: session.plateNumber || "", // Vehicle Number
-        WGT: session.grossWeightKg || session.weightKg || 0, // Gross Weight
+        WGT: session.grossWeightKg || (session as any).weightKg || 0, // Gross Weight
         
         // New fields (updated API format)
-        PRM: session.premium || session.prm || "", // Premium/Permit number
-        CT2: session.container2 || "", // Container 2
-        CT3: session.container3 || "", // Container 3
-        CT4: session.container4 || "", // Container 4
-        TID: session.transactionId || session.tid || "", // Transaction ID
+        PRM: (session as any).premium || (session as any).prm || "", // Premium/Permit number
+        CT2: (session as any).container2 || "", // Container 2
+        CT3: (session as any).container3 || "", // Container 3
+        CT4: (session as any).container4 || "", // Container 4
+        TID: (session as any).transactionId || (session as any).tid || "", // Transaction ID
       }
       
       return NextResponse.json(thirdPartyData, { status: 200 })
