@@ -325,10 +325,58 @@ export function FullHistoryTable({
       return false;
     }
     const driver = log.driverId ? drivers.find((d) => d.id === log.driverId) : undefined;
-    const transportCompany = log.transportCompanyId
+    let transportCompany = log.transportCompanyId
       ? transportCompanies.find((c) => c.id === log.transportCompanyId)
       : undefined;
-    const contractNumber = transportCompany?.contract || "";
+
+    // If user clicks send before reference data finishes loading, resolve company on-demand.
+    if (!transportCompany && log.transportCompanyId) {
+      try {
+        const tcRes = await fetch("/api/transport-companies", { cache: "no-store" });
+        if (tcRes.ok) {
+          const companies = await tcRes.json();
+          if (Array.isArray(companies)) {
+            const matched = companies.find((c: any) => c.id === log.transportCompanyId);
+            if (matched) {
+              transportCompany = matched;
+            }
+          }
+        }
+      } catch (e) {
+        console.warn("Failed to resolve transport company on-demand:", e);
+      }
+    }
+
+    // Resolve contract: transport company first, then sender org, then receiver org.
+    let contractNumber = (transportCompany?.contract || "").trim();
+    if (!contractNumber && log.senderOrganizationId) {
+      try {
+        const senderRes = await fetch("/api/organizations?type=sender", { cache: "no-store" });
+        if (senderRes.ok) {
+          const orgs = await senderRes.json();
+          if (Array.isArray(orgs)) {
+            const senderOrg = orgs.find((o: any) => o.id === log.senderOrganizationId);
+            contractNumber = (senderOrg?.contract || "").trim();
+          }
+        }
+      } catch (e) {
+        console.warn("Failed to resolve sender org contract on-demand:", e);
+      }
+    }
+    if (!contractNumber && log.receiverOrganizationId) {
+      try {
+        const receiverRes = await fetch("/api/organizations?type=receiver", { cache: "no-store" });
+        if (receiverRes.ok) {
+          const orgs = await receiverRes.json();
+          if (Array.isArray(orgs)) {
+            const receiverOrg = orgs.find((o: any) => o.id === log.receiverOrganizationId);
+            contractNumber = (receiverOrg?.contract || "").trim();
+          }
+        }
+      } catch (e) {
+        console.warn("Failed to resolve receiver org contract on-demand:", e);
+      }
+    }
     const formData = {
       aktNumber: uniqueCode,
       uniqueCode,
@@ -351,17 +399,26 @@ export function FullHistoryTable({
       transporterCompany: transportCompany?.name || "—",
       contractNumber,
       contract: contractNumber,
+      con: contractNumber,
       senderOrganization: log.senderOrganization || "",
       senderOrganizationName: log.senderOrganization || "",
+      senderOrganizationId: log.senderOrganizationId || "",
       receiverOrganization: log.receiverOrganization || "",
       receiverOrganizationName: log.receiverOrganization || "",
+      receiverOrganizationId: log.receiverOrganizationId || "",
+      transportCompanyId: log.transportCompanyId || "",
       sealNumber: log.sealNumber || "",
       trailerPlate: log.trailerPlate || "",
       trailerNumber: log.trailerPlate || "",
     };
     const sendResult = await sendFormData(formData);
     if (!sendResult.success) {
-      console.warn("Third-party autofill send failed (non-blocking):", sendResult.error);
+      toast({
+        title: "Алдаа",
+        description: sendResult.error || "3rd party data хадгалахад алдаа гарлаа.",
+        variant: "destructive",
+      });
+      return false;
     }
     const dbResult = await sendTruckLogToCustoms(log.id);
     if (dbResult.success) {

@@ -272,7 +272,8 @@ export function useThirdPartyAutofill() {
               formData.productName ||
               "", // Тээвэрлэгч байгууллагын нэр / Бүтээгдэхүүн
             CMN: formData.convoyManifestNumber || formData.cmn || "", // Convoy manifest number
-            CON: formData.contractNumber || formData.contract || "", // Гэрээний дугаар
+            CON: formData.contractNumber || formData.contract || formData.con || "", // Гэрээний дугаар
+            con: formData.contractNumber || formData.contract || formData.con || "", // lowercase compatibility
             CT1: formData.container1 || "", // Чингэлэг 1
             DRN: formData.driverPhone || formData.driverRegistrationNumber
               ? buildDRN(
