@@ -1517,13 +1517,25 @@ export const InSessionForm = forwardRef<
               }
             }
 
+            // Try to resolve contract number from selected transport company (primary contract source)
+            let contractNumber = ""
+            if (formState.transporterCompanyId) {
+              const selectedTransportCompany = transportCompanies.find(
+                (c) => c.id === formState.transporterCompanyId
+              )
+              const tcContract = selectedTransportCompany?.contract ?? ""
+              if (tcContract && typeof tcContract === "string") {
+                contractNumber = tcContract
+              }
+            }
+
             const thirdPartyData = [
               {
                 // Core fields (original format)
                 AKT: savedSession.session.uniqueCode,
                 CAR: productName,
                 CMN: "",
-                CON: "",
+                CON: contractNumber || "",
                 CT1: "",
                 DRN: buildDRN(
                   formState.driverName,

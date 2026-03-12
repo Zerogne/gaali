@@ -1608,6 +1608,7 @@ export const OutSessionForm = forwardRef<
         // Get sender and receiver organization names
         let senderOrgName = "";
         let receiverOrgName = "";
+        let contractNumber = "";
 
         if (formState.senderOrganizationId) {
           try {
@@ -1643,13 +1644,23 @@ export const OutSessionForm = forwardRef<
           }
         }
 
+        // Try to resolve contract number from selected transport company (primary contract source)
+        if (formState.transporterCompanyId) {
+          const selectedTransportCompany = transportCompanies.find(
+            (c) => c.id === formState.transporterCompanyId
+          );
+          if (selectedTransportCompany?.contract) {
+            contractNumber = selectedTransportCompany.contract;
+          }
+        }
+
         const thirdPartyData = [
           {
             // Core fields (original format)
             AKT: uniqueCode,
             CAR: productName,
             CMN: "",
-            CON: "",
+            CON: contractNumber || "",
             CT1: "",
             DRN: buildDRN(
               formState.driverName,
