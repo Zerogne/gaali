@@ -60,6 +60,27 @@ export async function POST(request: Request) {
       const transportCompanyId = String(firstPayload.transportCompanyId || body.transportCompanyId || "").trim()
       const senderOrganizationId = String(firstPayload.senderOrganizationId || body.senderOrganizationId || "").trim()
       const receiverOrganizationId = String(firstPayload.receiverOrganizationId || body.receiverOrganizationId || "").trim()
+      const transportCompanyName = String(
+        firstPayload.transporterCompany ||
+          firstPayload.transportCompanyName ||
+          body.transporterCompany ||
+          body.transportCompanyName ||
+          ""
+      ).trim()
+      const senderOrganizationName = String(
+        firstPayload.senderOrganization ||
+          firstPayload.senderOrganizationName ||
+          body.senderOrganization ||
+          body.senderOrganizationName ||
+          ""
+      ).trim()
+      const receiverOrganizationName = String(
+        firstPayload.receiverOrganization ||
+          firstPayload.receiverOrganizationName ||
+          body.receiverOrganization ||
+          body.receiverOrganizationName ||
+          ""
+      ).trim()
 
       // 1) transport company contract
       if (transportCompanyId) {
@@ -69,6 +90,17 @@ export async function POST(request: Request) {
           resolvedContract = String(tc?.contract || "").trim()
         } catch (err) {
           console.warn("[ThirdParty Save] Failed to resolve transport company contract:", err)
+        }
+      }
+
+      // 1b) transport company contract by company name (for old logs without IDs)
+      if (!resolvedContract && transportCompanyName && transportCompanyName !== "—") {
+        try {
+          const transportCompanies = await getCompanyCollection<any>(companyId, "transportCompanies")
+          const tc = await transportCompanies.findOne({ name: transportCompanyName })
+          resolvedContract = String(tc?.contract || "").trim()
+        } catch (err) {
+          console.warn("[ThirdParty Save] Failed to resolve transport company contract by name:", err)
         }
       }
 
@@ -83,6 +115,17 @@ export async function POST(request: Request) {
         }
       }
 
+      // 2b) sender org contract by name (for old logs without IDs)
+      if (!resolvedContract && senderOrganizationName) {
+        try {
+          const orgs = await getCompanyCollection<any>(companyId, "organizations")
+          const sender = await orgs.findOne({ name: senderOrganizationName })
+          resolvedContract = String(sender?.contract || "").trim()
+        } catch (err) {
+          console.warn("[ThirdParty Save] Failed to resolve sender organization contract by name:", err)
+        }
+      }
+
       // 3) receiver org contract
       if (!resolvedContract && receiverOrganizationId) {
         try {
@@ -91,6 +134,17 @@ export async function POST(request: Request) {
           resolvedContract = String(receiver?.contract || "").trim()
         } catch (err) {
           console.warn("[ThirdParty Save] Failed to resolve receiver organization contract:", err)
+        }
+      }
+
+      // 3b) receiver org contract by name (for old logs without IDs)
+      if (!resolvedContract && receiverOrganizationName) {
+        try {
+          const orgs = await getCompanyCollection<any>(companyId, "organizations")
+          const receiver = await orgs.findOne({ name: receiverOrganizationName })
+          resolvedContract = String(receiver?.contract || "").trim()
+        } catch (err) {
+          console.warn("[ThirdParty Save] Failed to resolve receiver organization contract by name:", err)
         }
       }
     }
@@ -146,6 +200,7 @@ export async function POST(request: Request) {
     return NextResponse.json({
       success: true,
       code: uniqueCode,
+      contract: resolvedContract || "",
       url: fileUrl,
       message: "Data saved successfully",
     })
