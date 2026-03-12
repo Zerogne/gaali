@@ -295,7 +295,27 @@ export function FullHistoryTable({
   ]);
 
   const performSendToThirdParty = async (log: TruckLog): Promise<boolean> => {
-    const uniqueCode = uniqueCodes.get(log.id);
+    // Prefer already-fetched unique code; if missing (e.g. user clicks before effect finishes),
+    // resolve it on-demand for this single log.
+    let uniqueCode = uniqueCodes.get(log.id);
+    if (!uniqueCode) {
+      try {
+        const singleMap = await fetchUniqueCodesForLogs([log]);
+        const resolved = singleMap.get(log.id);
+        if (resolved) {
+          uniqueCode = resolved;
+          // Cache it so UI shows the code next time without extra fetch
+          setUniqueCodes((prev) => {
+            const next = new Map(prev);
+            next.set(log.id, resolved);
+            return next;
+          });
+        }
+      } catch (e) {
+        console.warn("Failed to resolve uniqueCode on-demand for log:", log.id, e);
+      }
+    }
+
     if (!uniqueCode) {
       toast({
         title: "Алдаа",
@@ -305,6 +325,10 @@ export function FullHistoryTable({
       return false;
     }
     const driver = log.driverId ? drivers.find((d) => d.id === log.driverId) : undefined;
+    const transportCompany = log.transportCompanyId
+      ? transportCompanies.find((c) => c.id === log.transportCompanyId)
+      : undefined;
+    const contractNumber = transportCompany?.contract || "";
     const formData = {
       aktNumber: uniqueCode,
       uniqueCode,
@@ -323,8 +347,10 @@ export function FullHistoryTable({
       netWeight: log.netWeightKg ?? 0,
       origin: log.origin || "",
       destination: log.destination || "",
-      transportCompanyName: transportCompanies.find((c) => c.id === log.transportCompanyId)?.name || "—",
-      transporterCompany: transportCompanies.find((c) => c.id === log.transportCompanyId)?.name || "—",
+      transportCompanyName: transportCompany?.name || "—",
+      transporterCompany: transportCompany?.name || "—",
+      contractNumber,
+      contract: contractNumber,
       senderOrganization: log.senderOrganization || "",
       senderOrganizationName: log.senderOrganization || "",
       receiverOrganization: log.receiverOrganization || "",
