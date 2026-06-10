@@ -2376,9 +2376,10 @@ export const OutSessionForm = forwardRef<
                           notes: e.target.value,
                         }))
                       }
-                      disabled={hasInSessionData}
+                      // OUT note must always be editable and is entered fresh by the
+                      // operator (not pulled from / locked by the IN session).
                       // Textarea has a default `min-h-16` in the shared component, so we must override it here.
-                      className="text-base resize-none h-12 min-h-0 w-full !bg-blue-400 !text-black !border-blue-400 placeholder:!text-gray-600"
+                      className="text-base resize-none h-12 min-h-0 w-full"
                       placeholder="Нэмэлт мэдээлэл..."
                     />
                   </div>

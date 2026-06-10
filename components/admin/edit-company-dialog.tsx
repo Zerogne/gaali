@@ -14,7 +14,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { updateCompany } from "@/lib/admin/actions";
-import { Eye, EyeOff, Pencil } from "lucide-react";
+import { Edit, Eye, EyeOff } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -89,7 +89,7 @@ export function EditCompanyDialog({ company }: EditCompanyDialogProps) {
           title="Edit company"
           aria-label="Edit company"
         >
-          <Pencil className="h-4 w-4 mr-1.5" />
+          <Edit className="h-4 w-4 mr-1.5" />
           Edit
         </Button>
       </DialogTrigger>
