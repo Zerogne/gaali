@@ -91,7 +91,6 @@ interface OutSessionFormProps {
   onPlateChange?: (plate: string) => void;
   onHasUnsavedDataChange?: (hasData: boolean) => void;
   onSaveRequest?: () => Promise<boolean>;
-  streamUrl?: string;
   cameraAutofill?: any; // Not used - kept for prop compatibility (auto-fill disabled in Out Session)
   editLog?: TruckLog | null;
   editLogId?: string | null;
@@ -116,7 +115,6 @@ export const OutSessionForm = forwardRef<
       onPlateChange,
       onHasUnsavedDataChange,
       onSaveRequest,
-      streamUrl,
       cameraAutofill: externalCameraAutofill, // Not used - kept for prop compatibility
       editLog,
       editLogId,
@@ -1210,9 +1208,8 @@ export const OutSessionForm = forwardRef<
               }
             }
 
-            if (isEmpty(prev.notes) && inLog?.comments) {
-              updates.notes = inLog.comments;
-            }
+            // Note: "Нэмэлт мэдээлэл" (notes) is intentionally NOT auto-filled from
+            // the IN session — the OUT note must be entered fresh by the operator.
 
             return { ...prev, ...updates };
           });

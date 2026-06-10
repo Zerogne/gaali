@@ -169,13 +169,15 @@ export function FilterableSelect({
 
       isHandlingSelectRef.current = true;
       setIsCreating(true);
+      // Close the popover immediately so the dropdown doesn't overlay the
+      // create dialog that onCreateNewDialog is about to open.
+      setOpen(false);
+      setSearchQuery("");
       try {
         const newValue = await onCreateNewDialog(initialValue.trim());
         if (newValue) {
           // Use ref to prevent dependency issues
           onValueChangeRef.current?.(newValue);
-          setOpen(false);
-          setSearchQuery("");
         }
       } catch (error) {
         console.error("Error creating new value via dialog:", error);

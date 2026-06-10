@@ -36,7 +36,6 @@ function InSessionContent() {
   const { toast } = useToast();
   const cameraAutofill = useLprPlateAutofill({ camera: 1 }); // Entry camera
   const [currentPlate, setCurrentPlate] = useState<string>("");
-  const [streamUrl, setStreamUrl] = useState<string | undefined>(undefined);
   const gaaliBridgeDownloadUrl =
     process.env.NEXT_PUBLIC_GAALI_BRIDGE_URL ?? "/Gaali%20Bridge.exe";
   const formRef = useRef<InSessionFormHandle>(null);
@@ -103,31 +102,6 @@ function InSessionContent() {
         });
     }
   }, [editLogId, router]);
-
-  // Fetch camera stream URL from config
-  useEffect(() => {
-    const fetchStreamUrl = async () => {
-      try {
-        const response = await fetch("/api/camera/config");
-        if (response.ok) {
-          const config = await response.json();
-          // Don't use MJPEG - use WebSocket instead
-          // streamUrl is null to prevent MJPEG loading errors
-          // Video will come from direct camera WebSocket connection
-          const url = config.streamUrl || undefined; // Will be null, which is correct
-          setStreamUrl(url);
-        } else {
-          // Don't use fallback MJPEG - use WebSocket instead
-          setStreamUrl(undefined);
-        }
-      } catch (error) {
-        console.error("Failed to fetch camera stream URL:", error);
-        // Don't use fallback MJPEG - use WebSocket instead
-        setStreamUrl(undefined);
-      }
-    };
-    fetchStreamUrl();
-  }, []);
 
   // Track if user manually edited the plate field
   const handlePlateChange = (value: string) => {
@@ -269,7 +243,6 @@ function InSessionContent() {
                 autoFillPlate={null}
                 onPlateChange={handlePlateChange}
                 onHasUnsavedDataChange={setHasUnsavedData}
-                streamUrl={streamUrl}
                 cameraAutofill={cameraAutofill}
                 editLog={editLog}
                 editLogId={editLogId}

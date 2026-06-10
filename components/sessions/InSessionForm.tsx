@@ -85,7 +85,6 @@ interface InSessionFormProps {
   onPlateChange?: (plate: string) => void;
   onHasUnsavedDataChange?: (hasData: boolean) => void;
   onSaveRequest?: () => Promise<boolean>;
-  streamUrl?: string;
   cameraAutofill?: ReturnType<typeof useLprPlateAutofill>;
   editLog?: TruckLog | null;
   editLogId?: string | null;
@@ -109,7 +108,6 @@ export const InSessionForm = forwardRef<
       onPlateChange,
       onHasUnsavedDataChange,
       onSaveRequest,
-      streamUrl,
       cameraAutofill: externalCameraAutofill,
       editLog,
       editLogId,
